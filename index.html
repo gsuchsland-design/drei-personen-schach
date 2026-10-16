@@ -110,7 +110,37 @@ body.fullscreen #captured { margin:2px 0; }
 #clkPause { padding:2px 10px; font-size:13px; cursor:pointer; background:#3a3a3a; color:#eee; border:1px solid #666; border-radius:4px; }
 #setupModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:220; align-items:center; justify-content:center; }
 #setupModal.show { display:flex; }
-#setupBox { background:#222; border:2px solid #555; border-radius:10px; padding:20px 24px; color:#ddd; min-width:300px; }
+#setupBox { background:#222; border:2px solid #555; border-radius:10px; padding:20px 24px; color:#ddd; min-width:300px; max-height:94vh; overflow:auto; }
+#setupBox input[type=text] { width:150px; padding:3px 5px; background:#333; color:#fff; border:1px solid #666; border-radius:4px; }
+#micBtn { position:fixed; top:6px; left:338px; z-index:150; padding:4px 10px; font-size:14px; cursor:pointer; background:#333; color:#eee; border:1px solid #666; border-radius:5px; opacity:.9; }
+#micBtn.off { background:#a33; border-color:#d55; }
+.netModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:230; align-items:center; justify-content:center; }
+.netModal.show { display:flex; }
+.netBox { background:#222; border:2px solid #6a4fb0; border-radius:12px; padding:18px 22px; color:#ddd; width:min(440px,94vw); max-height:94vh; overflow:auto; font-size:14px; }
+.netBox h3 { font-size:17px; margin-bottom:10px; color:#fff; }
+.netBox p { margin:6px 0 10px; }
+.netBox button, .netBox a.btn { display:block; width:100%; margin-top:10px; padding:9px; font-size:15px; cursor:pointer; background:#2a6; color:#fff; border:none; border-radius:7px; text-align:center; text-decoration:none; }
+.netBox button:disabled { opacity:.5; cursor:default; }
+.netBox input[type=text], .netBox input:not([type]) { width:100%; padding:8px; font-size:16px; background:#333; color:#fff; border:1px solid #777; border-radius:6px; margin-bottom:8px; }
+.netBox label { display:block; margin:6px 0; cursor:pointer; }
+.lbStat { background:#2d2840; border-radius:6px; padding:7px 10px; margin-bottom:10px; color:#e6dcff; }
+.lbSeat { padding:6px 4px; border-bottom:1px solid #333; display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.lbDot { width:12px; height:12px; border-radius:50%; display:inline-block; }
+.lbIc { margin-left:auto; font-size:13px; }
+.lbLbl { margin:12px 0 4px; font-weight:bold; }
+.lbLinkRow { display:flex; gap:6px; } .lbLinkRow input { flex:1; margin:0 !important; font-size:13px !important; }
+.lbLinkRow button { width:auto !important; margin:0 !important; padding:6px 12px !important; }
+.lbShareRow { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; }
+.lbShareRow > * { margin:0 !important; padding:8px !important; font-size:14px !important; border-radius:7px; text-align:center; text-decoration:none; color:#fff; }
+#lbShare { grid-column:1 / -1; background:#7a3fc4 !important; }
+#lbWa { background:#1f9c55; } #lbSms { background:#3a6ea8; } #lbMail { background:#666; } #lbFb { background:#3b5998; }
+.lbHint { font-size:12px; color:#aaa; margin-top:8px; }
+#lbQR { text-align:center; margin-top:8px; } #lbQR svg { background:#fff; border-radius:6px; width:150px; height:150px; }
+.lbMedia { display:flex; gap:6px; } .lbMedia button { flex:1; background:#2a6; } .lbMedia button.off { background:#a33; }
+.netBox .lbLeave { background:#444; font-size:13px; padding:7px; }
+#toast { position:fixed; left:50%; top:54px; transform:translateX(-50%); z-index:400; background:rgba(40,30,70,.95); color:#fff; border:1px solid #8a6fd0;
+  border-radius:8px; padding:8px 14px; font-size:14px; max-width:92vw; opacity:0; pointer-events:none; transition:opacity .3s; text-align:center; }
+#toast.show { opacity:1; }
 #setupBox h3 { margin-bottom:14px; font-size:16px; color:#eee; }
 #setupBox .row { margin:10px 0; font-size:14px; display:flex; align-items:center; gap:8px; }
 #setupBox input[type=number] { width:70px; padding:3px; background:#333; color:#fff; border:1px solid #666; border-radius:4px; }
@@ -130,7 +160,7 @@ body.fullscreen #captured { margin:2px 0; }
 #logBox.collapsed #logList { display:none; }
 #logBox.collapsed #logHead { border-bottom:none; }
 /* ---------- Knopfleiste unten (falls oben etwas verdeckt) ---------- */
-body.barBottom #menuBtn,body.barBottom #btn3d,body.barBottom #rulesBtn,body.barBottom #soundBtn,body.barBottom #fsBtn2,body.barBottom #avBtn { top:auto !important; bottom:6px; }
+body.barBottom #menuBtn,body.barBottom #btn3d,body.barBottom #rulesBtn,body.barBottom #soundBtn,body.barBottom #fsBtn2,body.barBottom #avBtn,body.barBottom #micBtn { top:auto !important; bottom:6px; }
 body.barBottom #logBox { top:auto; bottom:6px; }
 body.barBottom #avMenu { top:auto; bottom:46px; }
 body.barBottom #viewBar { bottom:48px; }
@@ -141,10 +171,10 @@ body.barBottom #selfView { bottom:50px; }
   body.barBottom { padding:6px 4px 46px !important; }
   #panel { margin-top:0; }
   #menuBtn,#btn3d,#rulesBtn,#soundBtn { padding:3px 8px; font-size:13px; top:6px; }
-  #btn3d { left:44px; } #rulesBtn { left:88px; } #soundBtn { left:124px; } #fsBtn2 { left:162px; padding:3px 8px; font-size:13px; } #avBtn { left:200px; padding:3px 8px; font-size:13px; } #avMenu { left:6px; right:6px; min-width:0; } #selfView { width:112px; }
+  #btn3d { left:41px; } #rulesBtn { left:79px; } #soundBtn { left:115px; } #fsBtn2 { left:151px; padding:3px 8px; font-size:13px; } #avBtn { left:186px; padding:3px 8px; font-size:13px; } #micBtn { left:222px; padding:3px 8px; font-size:13px; } #avMenu { left:6px; right:6px; min-width:0; } #selfView { width:112px; }
   #avStrip { gap:6px; } #avStrip .avCv { height:clamp(70px,17vh,150px); max-width:48vw; }
   #rulesBtn .lbl { display:none; }
-  #logBox { width:auto; min-width:150px; max-width:46vw; font-size:11px; }
+  #logBox { width:auto; min-width:128px; max-width:46vw; font-size:11px; }
   #logHead { padding:4px 5px; gap:4px; } #logHead button { padding:2px 6px; font-size:11px; }
   #status { font-size:13px; }
   .clk { font-size:12px; min-width:0; padding:2px 6px; }
@@ -162,17 +192,19 @@ body.barBottom #selfView { bottom:50px; }
 <button id="soundBtn" onclick="toggleSound()" title="Ton ein/aus">🔊</button>
 <button id="fsBtn2" onclick="toggleFullscreen()" title="Vollbild – Adressleiste ausblenden">⛶</button>
 <button id="avBtn" onclick="toggleAvMenu()" title="Mitspieler und Kamera">👥</button>
+<button id="micBtn" onclick="toggleMic()" title="Mikrofon an/aus – dich selbst stumm schalten" style="display:none">🎤</button>
 <div id="avMenu">
   <label><input type="checkbox" id="chkAvOn" onchange="toggleAvatars()"> Mitspieler-Fenster / Monitore anzeigen</label>
   <hr>
   <button id="camToggle" onclick="camStream?camOff():camOn()">📷 Kamera einschalten</button>
+  <button id="micToggle" onclick="toggleMic()" style="margin-top:6px;display:none">🎤 Mikrofon</button>
   <div class="sub">Bei ausgeschalteter Kamera zeigen:</div>
   <label><input type="radio" name="camOffMode" value="still" checked onchange="setCamOffMode(this.value)"> Standbild (letztes Bild)</label>
   <label><input type="radio" name="camOffMode" value="avatar" onchange="setCamOffMode(this.value)"> Avatar</label>
   <label><input type="checkbox" id="chkSelf" checked onchange="showSelf=this.checked;updateSelfView()"> Eigenes Bild klein anzeigen</label>
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 14:55</div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 17:30 · Online</div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -309,11 +341,49 @@ body.barBottom #selfView { bottom:50px; }
       <input type="number" id="tcGameMin" value="15" min="1"> Minuten</div>
     <div class="hint">Verbraucht → Spieler kann nicht mehr ziehen, bleibt aber schlagbar.</div>
     <div class="hint" style="margin-left:0">Nichts angehakt = ohne Zeitkontrolle.</div>
-    <button onclick="startFromSetup()">Spiel starten</button>
+    <button onclick="startFromSetup()">Spiel starten (an diesem Gerät)</button>
+    <div class="row" style="font-weight:bold;margin:18px 0 2px;border-top:1px solid #444;padding-top:12px">🌐 Online mit Freunden</div>
+    <div class="row"><span style="width:86px">Dein Name</span><input type="text" id="olName" maxlength="18" placeholder="Name"></div>
+    <div class="row"><span style="width:86px">Deine Farbe</span><select id="olColor"><option value="B">Blau (beginnt)</option><option value="G">Grün</option><option value="R">Rot</option></select></div>
+    <div class="row"><span style="width:86px">Freie Plätze</span><select id="olAI"><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
+    <div class="row"><label><input type="checkbox" id="olCam" checked> Kamera</label><label style="margin-left:14px"><input type="checkbox" id="olMic" checked> Mikrofon</label></div>
+    <div class="hint" style="margin-left:0">Die Zeitkontrolle von oben gilt auch online.</div>
+    <button onclick="netCreate()" style="background:#7a3fc4">🌐 Online-Spiel erstellen &amp; einladen</button>
+    <button class="installBtn" onclick="doInstall()" style="display:none;background:#555">📲 Als App installieren</button>
     <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
     <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie aus Datei laden</button>
   </div>
 </div>
+<div id="lobbyModal" class="netModal"><div class="netBox">
+  <h3>🌐 Online-Spiel</h3>
+  <div id="lbStatus" class="lbStat"></div>
+  <div id="lbSeats"></div>
+  <div id="lbHost">
+    <div class="lbLbl">Einladungslink</div>
+    <div class="lbLinkRow"><input id="lbLink" readonly onclick="this.select()"><button onclick="copyInvite()" title="Link kopieren">📋</button></div>
+    <div class="lbShareRow">
+      <button id="lbShare" onclick="shareInvite()">📤 Einladen über …</button>
+      <a id="lbWa" target="_blank" rel="noopener">WhatsApp</a><a id="lbSms">SMS</a><a id="lbMail">E-Mail</a><a id="lbFb" target="_blank" rel="noopener">Facebook</a>
+    </div>
+    <div class="lbHint">„Einladen über …“ öffnet das Teilen-Menü deines Handys – dort findest du auch Instagram, Signal, Telegram usw. Sitzt ihr zusammen, kann man auch den QR-Code scannen.</div>
+    <div id="lbQR"></div>
+    <button id="lbStart" onclick="netStart()" disabled>▶ Spiel starten</button>
+  </div>
+  <div id="lbGuest"><div class="lbHint">Der Gastgeber startet das Spiel, sobald alle da sind.</div></div>
+  <div class="lbMedia"><button id="lbCam" onclick="camStream?camOff():camOn()">📷</button><button id="lbMic" onclick="toggleMic()">🎤</button></div>
+  <button class="lbLeave" onclick="netLeave()">Abbrechen</button>
+</div></div>
+<div id="joinModal" class="netModal"><div class="netBox">
+  <h3>♟️ Einladung zum Drei-Personen-Schach</h3>
+  <p>Du wurdest zu einer Partie eingeladen. Wie heißt du?</p>
+  <input type="text" id="jnName" maxlength="18" placeholder="Dein Name" onkeydown="if(event.key==='Enter')netJoin()">
+  <label><input type="checkbox" id="jnCam" checked> Kamera einschalten</label>
+  <label><input type="checkbox" id="jnMic" checked> Mikrofon einschalten</label>
+  <button onclick="netJoin()">Mitspielen</button>
+  <button class="installBtn" style="display:none;background:#555" onclick="doInstall()">📲 Als App installieren</button>
+  <div class="lbHint">Tipp: Im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann hast du das Spiel wie eine App.</div>
+  <button class="lbLeave" onclick="location.href=location.pathname">Nein danke, lieber allein spielen</button>
+</div></div>
 <div id="logBox" class="collapsed">
   <div id="logHead"><span>Züge</span>
     <button id="btnUndo" onclick="undoMove()" title="Letzten Zug zurücknehmen (Strg+Z)" disabled>↶ Zurück</button>
@@ -321,6 +391,475 @@ body.barBottom #selfView { bottom:50px; }
   </div>
   <ol id="logList"></ol>
 </div>
+<script>
+// ================= Online-Spiel (PeerJS / WebRTC) =================
+// Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
+// Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
+const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
+  seats:{},lobby:{},q:[],calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
+let netApplying=false,micStream=null,installEvt=null;
+const QS=new URLSearchParams(location.search);
+const NET_CODE_URL=(QS.get('spiel')||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function netName(p){const s=NET.on&&NET.lobby[p];return s&&s.name?s.name:'';}
+function netBlocks(p){return NET.on&&p!==NET.seat;}
+function randCode(){const a='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<6;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
+function netLink(){return location.origin+location.pathname+'?spiel='+NET.code;}
+function toast(msg,ms=4200){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
+  t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms);
+}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function needPeerJS(){
+  if(window.Peer)return true;
+  try{await loadScript('https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js');return !!window.Peer;}catch(e){return false;}
+}
+function peerOpts(){   // für Tests: eigener Vermittlungs-Server über ?peerhost=…
+  const h=QS.get('peerhost');if(!h)return{debug:0};
+  return{host:h,port:+(QS.get('peerport')||9000),path:'/',secure:QS.get('peersecure')==='1',debug:0};
+}
+function makePeer(id){
+  return new Promise((res,rej)=>{
+    const p=id?new Peer(id,peerOpts()):new Peer(peerOpts());
+    const to=setTimeout(()=>rej({type:'timeout'}),15000);
+    p.on('open',()=>{clearTimeout(to);res(p);});
+    p.on('error',e=>{clearTimeout(to);rej(e);});
+  });
+}
+// ---------- Bild & Ton ----------
+function dummyTracks(){
+  if(NET.dv)return;
+  const c=document.createElement('canvas');c.width=64;c.height=48;c.getContext('2d').fillRect(0,0,64,48);
+  NET.dv=c.captureStream(1).getVideoTracks()[0];
+  try{const a=ac()||new (window.AudioContext||window.webkitAudioContext)();NET.da=a.createMediaStreamDestination().stream.getAudioTracks()[0];}catch(e){}
+}
+function outStream(){
+  dummyTracks();
+  const v=camStream?camStream.getVideoTracks()[0]:NET.dv,a=micStream?micStream.getAudioTracks()[0]:NET.da;
+  return new MediaStream([v,a].filter(Boolean));
+}
+function micLive(){return !!(micStream&&micStream.getAudioTracks()[0]&&micStream.getAudioTracks()[0].enabled);}
+async function micOn(){
+  const err=m=>{const e=document.getElementById('camErr');if(e)e.textContent=m;};
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){err('Dieser Browser erlaubt hier kein Mikrofon.');return false;}
+  try{micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});}
+  catch(e){err('Mikrofon startet nicht: '+(e.name==='NotAllowedError'?'Zugriff abgelehnt (Schloss-Symbol → Berechtigungen → Mikrofon).':e.name==='NotFoundError'?'Kein Mikrofon gefunden.':e.name));return false;}
+  netTracks();netAV();syncAvUI();return true;
+}
+function toggleMic(){
+  if(!micStream){micOn();return;}
+  const t=micStream.getAudioTracks()[0];if(t)t.enabled=!t.enabled;
+  netAV();syncAvUI();toast(micLive()?'🎤 Mikrofon an':'🔇 Du bist stumm geschaltet',1800);
+}
+function netTracks(){   // aktuelle Kamera/Mikrofon an alle laufenden Verbindungen geben
+  if(!NET.on)return;dummyTracks();
+  const v=camStream?camStream.getVideoTracks()[0]:NET.dv,a=micStream?micStream.getAudioTracks()[0]:NET.da;
+  for(const c of Object.values(NET.calls)){
+    const pc=c&&c.peerConnection;if(!pc)continue;
+    for(const tr of pc.getTransceivers()){
+      const k=tr.receiver&&tr.receiver.track&&tr.receiver.track.kind;
+      const want=k==='video'?v:k==='audio'?a:null;
+      if(want&&tr.sender&&tr.sender.track!==want)tr.sender.replaceTrack(want).catch(()=>{});
+    }
+  }
+}
+function grabStill(p){
+  const a=AV[p],v=a.video;if(!v||v.readyState<2)return;
+  const c=document.createElement('canvas');c.width=AV_W;c.height=AV_H;const x=c.getContext('2d');
+  const vr=v.videoWidth/v.videoHeight||4/3;let w=AV_W,h=AV_W/vr;if(h<AV_H){h=AV_H;w=AV_H*vr;}
+  if(a.mirror){x.translate(AV_W,0);x.scale(-1,1);}
+  x.drawImage(v,(AV_W-w)/2,(AV_H-h)/2,w,h);a.still=c;
+}
+function netAV(){   // eigenen Kamera-/Mikrofonstatus mitteilen
+  if(!NET.on||!NET.seat)return;
+  const m={t:'av',p:NET.seat,cam:!!camStream,mic:micLive()};
+  NET.avs[NET.seat]={cam:m.cam,mic:m.mic};
+  if(NET.host){netBroadcast(m);hostLobby();}else netToHost(m);
+  renderLobby();
+}
+function vidFor(id){
+  if(!NET.vids[id]){
+    const v=document.createElement('video');v.autoplay=true;v.playsInline=true;v.setAttribute('playsinline','');
+    let box=document.getElementById('netVids');
+    if(!box){box=document.createElement('div');box.id='netVids';box.style.cssText='position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:0;pointer-events:none;overflow:hidden';document.body.appendChild(box);}
+    box.appendChild(v);NET.vids[id]=v;
+  }
+  return NET.vids[id];
+}
+function hookCall(call){
+  const old=NET.calls[call.peer];if(old&&old!==call){try{old.close();}catch(e){}}
+  NET.calls[call.peer]=call;
+  call.on('stream',s=>{const v=vidFor(call.peer);if(v.srcObject!==s){v.srcObject=s;v.play().catch(()=>{});}netAttach();});
+  call.on('close',()=>{if(NET.calls[call.peer]===call)delete NET.calls[call.peer];netAttach();});
+  call.on('error',()=>{});
+}
+function netCall(id){
+  if(!NET.peer||!id||id===NET.peer.id||NET.calls[id])return;
+  try{const c=NET.peer.call(id,outStream());if(c)hookCall(c);}catch(e){}
+}
+function netAttach(){   // Videos den Spielerfenstern zuordnen
+  if(!NET.on)return;
+  for(const p of TURN_ORDER){
+    if(p===NET.seat)continue;
+    const s=NET.lobby[p],id=s&&s.id,v=id&&NET.calls[id]?NET.vids[id]:null,av=NET.avs[p]||{};
+    const a=AV[p];
+    if(v){a.video=v;a.mirror=false;
+      if(av.cam===false){if(!a.videoOff&&a.camWasOn)grabStill(p);a.videoOff=true;a.camWasOn=false;}
+      else{a.videoOff=false;a.camWasOn=true;}}
+    else{a.video=null;a.videoOff=!!a.still;}
+  }
+}
+// ---------- Nachrichten ----------
+function netSend(conn,m){try{if(conn&&conn.open)conn.send(ser(m));}catch(e){}}
+function netToHost(m){netSend(NET.hostConn,m);}
+function netBroadcast(m,except){
+  if(!NET.host)return;
+  for(const p of TURN_ORDER){const s=NET.seats[p];if(s&&s.conn&&s.conn!==except)netSend(s.conn,m);}
+}
+function netOrigin(m){   // Zug/Ereignis, das auf diesem Gerät entstanden ist
+  if(!NET.on||netApplying)return;
+  if(NET.host){m.clock=clock;m.timeUsed=timeUsed;netBroadcast(m);}else netToHost(m);
+}
+// ---------- Gastgeber ----------
+async function netCreate(){
+  const me=document.getElementById('olColor').value;
+  const name=(document.getElementById('olName').value||'').trim().slice(0,18)||'Gastgeber';
+  try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
+  const mOn=document.getElementById('tcMoveOn').checked,gOn=document.getElementById('tcGameOn').checked;
+  const ms=Math.max(5,+document.getElementById('tcMoveSec').value||60),gm=Math.max(1,+document.getElementById('tcGameMin').value||15);
+  const lvl=document.getElementById('olAI').value||'medium';
+  NET.cfg={tc:{move:mOn?ms*1000:0,game:gOn?gm*60000:0},lvl};
+  NET.on=true;NET.host=true;NET.seat=me;NET.started=false;
+  for(const p of TURN_ORDER)NET.seats[p]=p===me?{kind:'me',name}:{kind:'open'};
+  document.getElementById('setupModal').classList.remove('show');
+  showLobby();lbStatus('Verbinde mit dem Vermittlungsdienst …');
+  ac();dummyTracks();
+  const wc=document.getElementById('olCam').checked,wm=document.getElementById('olMic').checked;
+  (async()=>{if(wc)await camOn();if(wm)await micOn();renderLobby();})();
+  if(!await needPeerJS()){lbStatus('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.');return;}
+  for(let i=0;i<4&&!NET.peer;i++){
+    NET.code=randCode();
+    try{NET.peer=await makePeer('dps-'+NET.code);}
+    catch(e){if(e.type!=='unavailable-id'){lbStatus('⚠️ Verbindung fehlgeschlagen ('+(e.type||'Fehler')+'). Bitte später noch einmal versuchen.');return;}}
+  }
+  if(!NET.peer)return;
+  NET.peer.on('connection',hostAccept);
+  NET.peer.on('call',c=>{c.answer(outStream());hookCall(c);});
+  NET.peer.on('disconnected',()=>{try{NET.peer.reconnect();}catch(e){}});
+  try{history.replaceState(null,'',location.pathname+'?spiel='+NET.code+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):''));}catch(e){}
+  lbStatus('Bereit! Schicke deinen Freunden den Einladungslink.');
+  hostLobby();renderInvite();
+}
+function hostLobby(){
+  if(!NET.host)return;
+  const L={};
+  for(const p of TURN_ORDER){const s=NET.seats[p];L[p]={kind:s.kind,name:s.kind==='ai'||s.kind==='dropped'?'':(s.name||''),
+    id:s.kind==='me'?(NET.peer&&NET.peer.id):s.kind==='peer'?s.id:null,av:NET.avs[p]||null};}
+  NET.lobby=L;
+  netBroadcast({t:'lobby',lobby:L,started:NET.started,lvl:NET.cfg.lvl});
+  renderLobby();netAttach();
+  if(NET.started){updateStatus();renderClocks();}
+}
+function hostAccept(conn){
+  conn.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}hostRecv(conn,m);});
+  conn.on('close',()=>hostDrop(conn));
+  conn.on('error',()=>hostDrop(conn));
+}
+function seatOfConn(conn){return TURN_ORDER.find(p=>NET.seats[p].conn===conn);}
+function hostRecv(conn,m){
+  if(m.t==='hello'){
+    let p=TURN_ORDER.find(q=>NET.seats[q].token&&NET.seats[q].token===m.token);
+    if(p&&NET.seats[p].kind==='peer'){   // derselbe Mitspieler kommt neu herein (alte Verbindung hängt noch)
+      const old=NET.seats[p].conn;NET.seats[p].conn=null;try{old&&old.close();}catch(e){}
+      const oid=NET.seats[p].id;if(oid&&NET.calls[oid]){try{NET.calls[oid].close();}catch(e){}delete NET.calls[oid];}
+    }
+    if(!p&&!NET.started)p=TURN_ORDER.find(q=>NET.seats[q].kind==='open');
+    if(!p&&NET.started)p=TURN_ORDER.find(q=>NET.seats[q].kind==='dropped');
+    if(!p){netSend(conn,{t:'full'});setTimeout(()=>conn.close(),500);return;}
+    const name=String(m.name||'').slice(0,18)||'Gast';
+    NET.seats[p]={kind:'peer',name,id:conn.peer,conn,token:m.token,seen:performance.now()};
+    NET.avs[p]=m.av||null;
+    netSend(conn,{t:'welcome',seat:p});
+    toast(m.re?`${name} ist wieder da.`:`${name} spielt ${PNAMES[p]} mit.`);snd('move');
+    if(NET.started){
+      aiPlayers[p]=null;cancelAI();
+      const send=()=>{if(moveAnim){setTimeout(send,200);return;}netSend(conn,{t:'sync',data:netSyncData()});netBroadcast({t:'seat',p,ai:null},conn);maybeAI();};
+      send();
+    }
+    hostLobby();
+    setTimeout(()=>netCall(conn.peer),300);
+    return;
+  }
+  const p=seatOfConn(conn);if(!p)return;
+  NET.seats[p].seen=performance.now();
+  if(m.t==='ping')return;
+  if(m.t==='bye'){hostDrop(conn);try{conn.close();}catch(e){}return;}
+  if(m.t==='av'){NET.avs[p]={cam:m.cam,mic:m.mic};netBroadcast({t:'av',p,cam:m.cam,mic:m.mic},conn);hostLobby();return;}
+  if(m.t==='mv'||m.t==='promo'){m.p=p;m.fromConn=conn;NET.q.push(m);netPump();return;}
+  if(m.t==='resync'){netSend(conn,{t:'sync',data:netSyncData()});return;}
+}
+function hostDrop(conn){
+  const p=seatOfConn(conn);if(!p)return;
+  const s=NET.seats[p],name=s.name;
+  if(NET.started){
+    NET.seats[p]={kind:'dropped',token:s.token,name};
+    aiPlayers[p]=NET.cfg.lvl;netBroadcast({t:'seat',p,ai:aiPlayers[p]});
+    toast(`${name} ist nicht mehr verbunden – der Computer spielt ${PNAMES[p]} weiter. Mit dem Link kann ${name} zurückkommen.`,6500);
+    maybeAI();
+  } else {NET.seats[p]={kind:'open'};toast(`${name} hat die Runde verlassen.`);}
+  delete NET.avs[p];
+  if(s.id&&NET.calls[s.id]){try{NET.calls[s.id].close();}catch(e){}delete NET.calls[s.id];}
+  AV[p].video=null;AV[p].still=null;AV[p].videoOff=false;
+  hostLobby();
+}
+function netStart(){
+  if(!NET.host||NET.started)return;
+  NET.started=true;
+  const ai={};
+  for(const p of TURN_ORDER){const s=NET.seats[p];if(s.kind==='open'){s.kind='ai';}ai[p]=s.kind==='ai'?NET.cfg.lvl:null;}
+  const cfg={tc:NET.cfg.tc,ai};
+  hostLobby();
+  netBroadcast({t:'start',cfg});
+  netBeginGame(cfg);
+}
+function netSyncData(){
+  return{gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,tc,clock,timeUsed,flagged,
+    moveLeft,aiPlayers,eliminated,status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
+}
+// ---------- Gast ----------
+function openJoin(){
+  setupOpen=true;
+  let nm='';try{nm=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
+  document.getElementById('jnName').value=nm;
+  document.getElementById('joinModal').classList.add('show');
+}
+async function netJoin(){
+  const name=(document.getElementById('jnName').value||'').trim().slice(0,18)||'Gast';
+  try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
+  let token='';try{token=localStorage.getItem('dreiSchach.tok.'+NET_CODE_URL)||'';}catch(e){}
+  if(!token){token=randCode()+randCode();try{localStorage.setItem('dreiSchach.tok.'+NET_CODE_URL,token);}catch(e){}}
+  document.getElementById('joinModal').classList.remove('show');
+  NET.on=true;NET.host=false;NET.code=NET_CODE_URL;
+  showLobby();lbStatus('Verbinde …');
+  ac();dummyTracks();
+  const wc=document.getElementById('jnCam').checked,wm=document.getElementById('jnMic').checked;
+  (async()=>{if(wc)await camOn();if(wm)await micOn();renderLobby();})();
+  if(!await needPeerJS()){lbStatus('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.');return;}
+  try{NET.peer=await makePeer(null);}catch(e){lbStatus('⚠️ Verbindung fehlgeschlagen ('+(e.type||'Fehler')+').');return;}
+  NET.peer.on('call',c=>{c.answer(outStream());hookCall(c);});
+  NET.peer.on('error',e=>{if(e.type==='peer-unavailable'){if(!NET.seat)joinFail();else guestLost();}});
+  NET.peer.on('disconnected',()=>{try{NET.peer.reconnect();}catch(e){}});
+  NET.myName=name;NET.token=token;
+  guestConnect(false);
+  NET.joinTimer=setTimeout(()=>{if(!NET.seat)joinFail();},15000);
+}
+function guestConnect(re){
+  const c=NET.peer.connect('dps-'+NET.code,{reliable:true});NET.hostConn=c;NET.hostSeen=performance.now();
+  c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,av:{cam:!!camStream,mic:micLive()}}));
+  c.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}if(NET.hostConn===c){NET.hostSeen=performance.now();NET.retries=0;joinRecv(m);}});
+  c.on('close',()=>{if(NET.hostConn===c)guestLost();});
+}
+function guestLost(){
+  if(!NET.on||NET.leaving)return;
+  if(!NET.seat){joinFail();return;}
+  NET.retries=(NET.retries||0)+1;
+  if(NET.retries>6){hostGone();return;}
+  toast('Verbindung unterbrochen – verbinde neu …',3000);
+  NET.hostConn=null;
+  setTimeout(()=>{if(!NET.on)return;try{if(NET.peer.disconnected)NET.peer.reconnect();}catch(e){}guestConnect(true);},1500);
+}
+function joinFail(){
+  clearTimeout(NET.joinTimer);
+  lbStatus('⚠️ Dieses Spiel wurde nicht gefunden. Vielleicht hat der Gastgeber es schon beendet oder die Seite geschlossen.');
+}
+function hostGone(){
+  if(!NET.on||NET.leaving)return;
+  lbStatus('Die Verbindung zum Gastgeber ist getrennt.');
+  NET.on=false;cancelAI();
+  for(const p of TURN_ORDER){if(p!==NET.seat){AV[p].video=null;}}
+  alert('Die Verbindung zum Gastgeber ist abgebrochen. Das Online-Spiel ist beendet.');
+}
+function joinRecv(m){
+  if(m.t==='welcome'){clearTimeout(NET.joinTimer);NET.seat=m.seat;rotation=TURN_ORDER.indexOf(m.seat);
+    lbStatus(`Du spielst ${PNAMES[m.seat]}. Warte, bis der Gastgeber das Spiel startet …`);
+    for(const p of TURN_ORDER)if(p!==NET.seat)AV[p].still=null;
+    camFix();syncAvUI();updateSelfView();netAV();renderLobby();return;}
+  if(m.t==='ping')return;
+  if(m.t==='bye'){NET.retries=99;hostGone();return;}
+  if(m.t==='full'){clearTimeout(NET.joinTimer);lbStatus('Dieses Spiel ist leider schon voll.');NET.on=false;return;}
+  if(m.t==='lobby'){NET.lobby=m.lobby;
+    for(const p of TURN_ORDER){const s=m.lobby[p];if(s&&s.av)NET.avs[p]=s.av;}
+    // Bild/Ton zu den anderen Gästen: der mit der „kleineren“ Kennung ruft an
+    for(const p of TURN_ORDER){const s=m.lobby[p];if(s&&s.kind==='peer'&&p!==NET.seat&&s.id&&NET.peer&&NET.peer.id<s.id)netCall(s.id);}
+    renderLobby();netAttach();if(NET.started){updateStatus();renderClocks();}return;}
+  if(m.t==='start'){netBeginGame(m.cfg);return;}
+  if(m.t==='sync'){netApplySync(m.data);return;}
+  if(m.t==='seat'){aiPlayers[m.p]=m.ai;updateStatus();renderClocks();return;}
+  if(m.t==='av'){NET.avs[m.p]={cam:m.cam,mic:m.mic};netAttach();renderLobby();return;}
+  if(m.t==='pause'){paused=m.on;lastTick=performance.now();renderClocks();toast(paused?'⏸ Der Gastgeber hat die Uhr angehalten.':'▶ Weiter geht’s!',2200);return;}
+  if(m.t==='mv'||m.t==='promo'||m.t==='to'){NET.q.push(m);netPump();return;}
+}
+function camFix(){   // eigenes Kamerabild gehört zum eigenen Platz
+  if(!NET.on||!NET.seat)return;
+  for(const p of TURN_ORDER){const a=AV[p];if(p!==NET.seat&&a.mirror&&a.video&&camStream&&a.video.srcObject===camStream){AV[NET.seat].video=a.video;AV[NET.seat].mirror=true;AV[NET.seat].videoOff=false;a.video=null;a.mirror=false;}}
+}
+function netApplySync(d){
+  cancelAI();moveAnim=null;kicks=[];NET.q=[];
+  gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
+  gameOver=d.gameOver;turnNote=d.turnNote||'';capturedBy=d.capturedBy;moveLog=d.moveLog||[];history=[];
+  tc=d.tc;clock=d.clock;timeUsed=d.timeUsed;flagged=d.flagged||new Set();moveLeft=d.moveLeft||tc.move;
+  aiPlayers=d.aiPlayers;eliminated=d.eliminated||new Set();
+  selected=null;validMoves=new Set();castleMap={};promoPending=null;pendingNote='';
+  NET.started=true;hideNetModals();waitingStart=false;paused=false;lastTick=performance.now();
+  rotation=TURN_ORDER.indexOf(NET.seat);
+  renderLog();updateCaptured();
+  if(gameOver){const el=document.getElementById('status');el.textContent=d.status;el.style.color=d.statusColor;}
+  else updateStatus();
+  renderClocks();resizeCanvas();draw();netViewMine();netWake();
+}
+// ---------- gemeinsamer Spielablauf ----------
+function hideNetModals(){
+  for(const id of['lobbyModal','joinModal','setupModal'])document.getElementById(id).classList.remove('show');
+  setupOpen=false;document.getElementById('startBtn').classList.remove('show');
+}
+function netBeginGame(cfg){
+  NET.started=true;tc=cfg.tc;aiPlayers=cfg.ai;
+  hideNetModals();waitingStart=false;
+  rotation=TURN_ORDER.indexOf(NET.seat);
+  initGame();
+  startPlay();
+  resizeCanvas();netViewMine();netWake();
+  toast(`Los geht’s! Du spielst ${PNAMES[NET.seat]}.`+(TURN_ORDER[0]===NET.seat?' Du beginnst.':''),3500);
+}
+function netViewMine(){
+  const f=document.getElementById('chkFollow');if(f)f.checked=false;
+  const f2=document.getElementById('chkFollow2d');if(f2)f2.checked=false;
+  if(window.V3&&V3.on)V3.view(NET.seat);
+  fitBoard();draw();
+}
+async function netWake(){
+  try{if('wakeLock' in navigator&&!NET.wake){NET.wake=await navigator.wakeLock.request('screen');NET.wake.addEventListener('release',()=>{NET.wake=null;});}}catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&NET.on&&NET.started)netWake();});
+function netPump(){
+  while(NET.q.length){
+    const m=NET.q[0];
+    if(moveAnim)return;
+    if(promoPending&&m.t!=='promo')return;
+    NET.q.shift();
+    if(m.t==='mv'){
+      const p=cur();
+      if(gameOver||p!==m.p||!gameState[m.from]||gameState[m.from].player!==p){
+        if(NET.host&&m.fromConn)netSend(m.fromConn,{t:'sync',data:netSyncData()});
+        else if(!NET.host)netToHost({t:'resync'});
+        continue;
+      }
+      const vm=getValidMoves(m.from,movedPieces,epTarget);
+      if(!vm.moves.has(C2F[m.to])){
+        if(NET.host&&m.fromConn)netSend(m.fromConn,{t:'sync',data:netSyncData()});else if(!NET.host)netToHost({t:'resync'});
+        continue;
+      }
+      if(NET.host){netBroadcast({t:'mv',p,from:m.from,to:m.to,clock,timeUsed},m.fromConn);}
+      else if(m.clock){clock=m.clock;timeUsed=m.timeUsed;}
+      cancelAI();
+      selected=C2F[m.from];validMoves=vm.moves;castleMap=vm.castles;draw();
+      startMoveAnim(m.from,m.to,()=>{netApplying=true;try{doMove(m.from,m.to);}finally{netApplying=false;}setTimeout(netPump,0);});
+      return;
+    }
+    if(m.t==='promo'){
+      if(!promoPending)continue;
+      if(NET.host)netBroadcast({t:'promo',piece:m.piece},m.fromConn);
+      netApplying=true;try{finishPromotion(m.piece);}finally{netApplying=false;}
+      continue;
+    }
+    if(m.t==='to'){
+      if(m.clock){clock=m.clock;timeUsed=m.timeUsed;}
+      netApplying=true;try{timeOut(m.p,m.kind);}finally{netApplying=false;}
+      continue;
+    }
+  }
+}
+setInterval(()=>{if(NET.on&&NET.q.length)netPump();},300);
+// Lebenszeichen: wer 15 s nichts hört, gilt als getrennt (Computer übernimmt, Rückkehr per Link jederzeit)
+setInterval(()=>{
+  if(!NET.on||!NET.peer)return;
+  const now=performance.now();
+  if(NET.host){
+    netBroadcast({t:'ping'});
+    for(const p of TURN_ORDER){const s=NET.seats[p];if(s&&s.kind==='peer'&&s.conn&&now-(s.seen||now)>15000){const c=s.conn;hostDrop(c);try{c.close();}catch(e){}}}
+  } else if(NET.hostConn){
+    netToHost({t:'ping'});
+    if(NET.seat&&now-NET.hostSeen>15000){const c=NET.hostConn;NET.hostConn=null;try{c.close();}catch(e){}guestLost();}
+  }
+},3000);
+window.addEventListener('pagehide',()=>{if(!NET.on)return;NET.leaving=true;if(NET.host)netBroadcast({t:'bye'});else netToHost({t:'bye'});});
+function netLeave(){
+  if(!confirm(NET.host?'Online-Spiel beenden? Deine Mitspieler werden getrennt.':'Online-Spiel verlassen?'))return false;
+  NET.leaving=true;
+  try{if(NET.host)netBroadcast({t:'bye'});else netToHost({t:'bye'});}catch(e){}
+  try{NET.peer&&NET.peer.destroy();}catch(e){}
+  location.href=location.pathname;
+  return true;
+}
+// ---------- Warteraum-Anzeige ----------
+function showLobby(){
+  setupOpen=true;
+  document.getElementById('lbHost').style.display=NET.host?'':'none';
+  document.getElementById('lbGuest').style.display=NET.host?'none':'';
+  document.getElementById('lobbyModal').classList.add('show');
+  renderLobby();
+}
+function lbStatus(t){document.getElementById('lbStatus').textContent=t;}
+function renderLobby(){
+  const box=document.getElementById('lbSeats');if(!box)return;
+  const L=NET.host?null:NET.lobby;let h='';
+  for(const p of TURN_ORDER){
+    let name='',st='',av=NET.avs[p]||{};
+    if(NET.host){const s=NET.seats[p]||{};
+      name=s.kind==='me'?`${s.name} (du)`:s.kind==='peer'?s.name:s.kind==='ai'||s.kind==='dropped'?`Computer (${MONSTERS[p].name})`:'';
+      st=s.kind==='open'?'wartet auf Mitspieler …':'';
+    } else {const s=(L&&L[p])||{};
+      name=p===NET.seat?`${netName(p)||'Du'} (du)`:s.kind==='me'?`${s.name} (Gastgeber)`:s.kind==='peer'?s.name:s.kind==='ai'||s.kind==='dropped'?`Computer (${MONSTERS[p].name})`:'';
+      st=s.kind==='open'&&p!==NET.seat?'wartet auf Mitspieler …':'';
+    }
+    if(p===NET.seat)av={cam:!!camStream,mic:micLive()};
+    const icons=name&&!name.startsWith('Computer')?` <span class="lbIc">${av.cam?'📷':'🚫📷'} ${av.mic?'🎤':'🔇'}</span>`:'';
+    h+=`<div class="lbSeat"><span class="lbDot" style="background:${PCOLOR[p]}"></span><b style="color:${PCOLOR[p]}">${PNAMES[p]}</b> <span>${esc(name)||'<i>'+st+'</i>'}</span>${icons}</div>`;
+  }
+  box.innerHTML=h;
+  const open=NET.host&&TURN_ORDER.some(p=>NET.seats[p]&&NET.seats[p].kind==='open');
+  const b=document.getElementById('lbStart');if(b){b.disabled=!NET.peer;b.textContent=open?'▶ Spiel starten (freie Plätze: Computer)':'▶ Spiel starten';}
+  const mb=document.getElementById('lbMic'),cb=document.getElementById('lbCam');
+  if(mb){mb.textContent=micLive()?'🎤 Mikrofon an':'🔇 Mikrofon aus';mb.classList.toggle('off',!micLive());}
+  if(cb){cb.textContent=camStream?'📷 Kamera an':'🚫 Kamera aus';cb.classList.toggle('off',!camStream);}
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const INVITE_TXT='Spiel mit mir Drei-Personen-Schach! ♟️ Tippe auf den Link, um mitzuspielen:';
+function renderInvite(){
+  const link=netLink();
+  document.getElementById('lbLink').value=link;
+  document.getElementById('lbShare').style.display=navigator.share?'':'none';
+  document.getElementById('lbWa').href='https://wa.me/?text='+encodeURIComponent(INVITE_TXT+' '+link);
+  document.getElementById('lbSms').href='sms:?&body='+encodeURIComponent(INVITE_TXT+' '+link);
+  document.getElementById('lbMail').href='mailto:?subject='+encodeURIComponent('Einladung: Drei-Personen-Schach')+'&body='+encodeURIComponent(INVITE_TXT+'\n'+link+'\n\nTipp: Im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann hast du das Spiel wie eine App.');
+  document.getElementById('lbFb').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(link);
+  makeQR(link);
+}
+async function makeQR(link){
+  const el=document.getElementById('lbQR');el.innerHTML='';
+  if(!window.qrcode){try{await loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js');}catch(e){return;}}
+  try{const q=qrcode(0,'M');q.addData(link);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2});}catch(e){}
+}
+function shareInvite(){navigator.share({title:'Drei-Personen-Schach',text:INVITE_TXT,url:netLink()}).catch(()=>{});}
+function copyInvite(){
+  const l=netLink();
+  (navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(()=>toast('Link kopiert ✓',1800))
+    .catch(()=>{const i=document.getElementById('lbLink');i.select();try{document.execCommand('copy');toast('Link kopiert ✓',1800);}catch(e){}});
+}
+// ---------- „App installieren“ ----------
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;document.querySelectorAll('.installBtn').forEach(b=>b.style.display='');});
+function doInstall(){if(!installEvt)return;installEvt.prompt();installEvt.userChoice.finally(()=>{installEvt=null;document.querySelectorAll('.installBtn').forEach(b=>b.style.display='none');});}
+</script>
 <script>
 let CANVAS_ID='c',FIT_PAD=3.8;
 let SIDE=38,TH=SIDE*Math.sqrt(3)/2;
@@ -795,7 +1334,7 @@ function updateStatus(){
   let txt=turnNote;
   if(gameOver)txt+=' Remis!';
   else{
-    txt+=aiPlayers[p]?`${PNAMES[p]} (Computer) überlegt …`:`${PNAMES[p]} am Zug`;
+    txt+=aiPlayers[p]?`${PNAMES[p]} (Computer) überlegt …`:(NET.on&&p===NET.seat)?`Du bist am Zug (${PNAMES[p]})`:`${PNAMES[p]}${netName(p)?' ('+netName(p)+')':''} am Zug`;
     const chk=TURN_ORDER.filter(x=>isInCheck(x,gameState));
     if(chk.length)txt+=' — SCHACH: '+chk.map(x=>PNAMES[x]).join(' & ')+'!';
     if(helpDuty&&helpDuty.helper===p)txt+=helpDuty.mated?` — HILFSPFLICHT: ${PNAMES[helpDuty.victim]} aus dem Matt befreien!`:` — HILFSPFLICHT: ${PNAMES[helpDuty.victim]} steht im Schach und darf nicht mattgesetzt werden!`;
@@ -822,6 +1361,7 @@ function snapshot(){
     clock:Object.assign({},clock),flagged:new Set(flagged),moveLeft,timeUsed:Object.assign({},timeUsed)};
 }
 function undoMove(){
+  if(NET.on){toast('Im Online-Spiel kann man keine Züge zurücknehmen.',2500);return;}
   if(promoPending||moveAnim||!history.length)return;
   cancelAI();
   undoOnce();
@@ -943,7 +1483,7 @@ function drawAvatar(p,t){
   drawNameTag(x,p,ai);
 }
 function drawNameTag(x,p,ai){
-  const name=ai?MONSTERS[p].name:('Spieler '+PNAMES[p]);
+  const name=ai?MONSTERS[p].name:(netName(p)||('Spieler '+PNAMES[p]))+(NET.on&&NET.avs[p]&&NET.avs[p].mic===false&&p!==NET.seat?'  🔇':'')+(NET.on&&p===NET.seat&&!micLive()?'  🔇':'');
   x.font='bold 15px sans-serif';const w=x.measureText(name).width+16;
   x.fillStyle='rgba(0,0,0,.55)';roundRect(x,8,AV_H-28,w,21,6);x.fill();
   x.fillStyle=AVCOL[p];x.fillText(name,16,AV_H-12);
@@ -1123,7 +1663,12 @@ function syncAvUI(){
   document.getElementById('chkAvOn').checked=avatarsOn;document.getElementById('chkMon').checked=avatarsOn;
   document.getElementById('camToggle').textContent=camStream?'📷 Kamera ausschalten':'📷 Kamera einschalten';
   document.getElementById('camToggle').style.background=camStream?'#a33':'#2a6';
-  const me=meP();document.getElementById('camInfo').textContent=`Dein Bild erscheint im Fenster von ${PNAMES[me]}.`+(camStream?' Kamera läuft.':'');
+  if(typeof NET!=='undefined'){const ml=micLive(),mb=document.getElementById('micBtn'),mt=document.getElementById('micToggle');
+    mb.style.display=NET.on?'':'none';mt.style.display=NET.on?'':'none';
+    mb.textContent=ml?'🎤':'🔇';mb.classList.toggle('off',NET.on&&!ml);
+    mt.textContent=!micStream?'🎤 Mikrofon einschalten':ml?'🔇 Stumm schalten':'🎤 Stummschaltung aufheben';mt.style.background=ml?'#2a6':'#a33';
+    if(NET.on)renderLobby();}
+  const me=meP();if(typeof NET!=='undefined'&&NET.on)camFix();document.getElementById('camInfo').textContent=`Dein Bild erscheint im Fenster von ${PNAMES[me]}.`+(camStream?' Kamera läuft.':'');
 }
 function setBarBottom(on){
   document.body.classList.toggle('barBottom',on);try{localStorage.setItem('dreiSchach.barBottom',on?'1':'0');}catch(e){}
@@ -1135,7 +1680,7 @@ document.addEventListener('pointerdown',e=>{const m=document.getElementById('avM
 // ---------- eigene Kamera (Probelauf; im Multiplayer geht dasselbe Bild an die Mitspieler) ----------
 let camStream=null,camOffMode='still',showSelf=true;
 try{camOffMode=localStorage.getItem('dreiSchach.camOffMode')||'still';}catch(e){}
-function meP(){return TURN_ORDER.find(p=>!aiPlayers[p])||'B';}
+function meP(){if(NET.on&&NET.seat)return NET.seat;return TURN_ORDER.find(p=>!aiPlayers[p])||'B';}
 function setCamOffMode(v){camOffMode=v;try{localStorage.setItem('dreiSchach.camOffMode',v);}catch(e){}}
 async function camOn(){
   const err=m=>{document.getElementById('camErr').textContent=m;};
@@ -1155,7 +1700,7 @@ async function camOn(){
   try{await v.play();}catch(e){}
   const a=AV[meP()];a.video=v;a.videoOff=false;a.mirror=true;a.still=null;
   if(!avatarsOn)toggleAvatars();
-  syncAvUI();updateSelfView();
+  syncAvUI();updateSelfView();netTracks();netAV();
 }
 function camOff(){
   const a=AV[meP()];
@@ -1166,7 +1711,7 @@ function camOff(){
   }
   if(camStream)camStream.getTracks().forEach(t=>t.stop());
   camStream=null;a.video=null;a.videoOff=true;
-  syncAvUI();updateSelfView();
+  syncAvUI();updateSelfView();netTracks();netAV();
 }
 function updateSelfView(){
   const on=showSelf&&(camStream||AV[meP()].still)&&avatarsOn;
@@ -1363,7 +1908,7 @@ function applyGameData(d){
   const sb=document.getElementById('startBtn');sb.textContent='▶ Fortsetzen';sb.classList.add('show');
   updateStatus();renderClocks();resizeCanvas();
 }
-function autosave(){try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
+function autosave(){if(NET.on)return;try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
 function resumeAutosave(){
   try{const t=localStorage.getItem(SAVE_KEY);if(t)applyGameData(deser(t));}
   catch(e){alert('Die letzte Partie konnte nicht geladen werden.');}
@@ -1441,8 +1986,9 @@ function renderClocks(){
   }
   document.getElementById('clkPause').textContent=paused?'▶':'⏸';
 }
-function togglePause(){if(waitingStart){startPlay();return;}paused=!paused;lastTick=performance.now();renderClocks();if(paused)cancelAI();else maybeAI();}
+function togglePause(){if(NET.on&&!NET.host){toast('Nur der Gastgeber kann die Uhr anhalten.',2500);return;}if(waitingStart){startPlay();return;}paused=!paused;lastTick=performance.now();renderClocks();if(paused)cancelAI();else maybeAI();if(NET.on)netBroadcast({t:'pause',on:paused});}
 function timeOut(p,kind){
+  if(NET.on&&NET.host&&!netApplying)netBroadcast({t:'to',p,kind,clock,timeUsed});
   snd('beep');
   if(promoPending){finishPromotion('Q');return;}   // Zug ist schon gemacht – Dame wählen
   history.push(snapshot());
@@ -1462,8 +2008,9 @@ setInterval(()=>{
   if(!flagged.has(p))timeUsed[p]+=dt;
   if(moveAnim)return;   // während der Zuganimation keinen Zeitablauf auslösen
   if(!(tc.move||tc.game)){renderClocks();return;}
-  if(tc.game&&!flagged.has(p)){clock[p]-=dt;if(clock[p]<=0){clock[p]=0;timeOut(p,'game');return;}}
-  if(tc.move){moveLeft-=dt;if(moveLeft<=0){timeOut(p,'move');return;}}
+  const guest=NET.on&&!NET.host;   // Gäste warten auf die Entscheidung des Gastgebers
+  if(tc.game&&!flagged.has(p)){clock[p]-=dt;if(clock[p]<=0){clock[p]=0;if(!guest){timeOut(p,'game');return;}}}
+  if(tc.move){moveLeft-=dt;if(moveLeft<=0){moveLeft=0;if(!guest){timeOut(p,'move');return;}}}
   renderClocks();
 },200);
 function openSetup(){
@@ -1498,6 +2045,7 @@ function cancelAI(){if(aiTimer){clearTimeout(aiTimer);aiTimer=null;if(selected&&
 function maybeAI(){
   cancelAI();
   if(gameOver||paused||setupOpen||promoPending||!aiPlayers[cur()])return;
+  if(NET.on&&!NET.host)return;   // Computerzüge rechnet nur der Gastgeber
   // reiner Computer-Durchlauf: mindestens 5 Sekunden pro Zug, damit man zuschauen kann
   const onlyAI=TURN_ORDER.every(p=>aiPlayers[p]);
   aiTimer=setTimeout(()=>{aiTimer=null;aiMove();},onlyAI?2600:400+Math.random()*300);
@@ -1637,6 +2185,7 @@ function aiMove(){
   aiTimer=setTimeout(()=>{
     aiTimer=null;
     if(gameOver||paused||cur()!==p){selected=null;validMoves=new Set();draw();return;}
+    netOrigin({t:'mv',p,from:best.from,to:best.to});
     startMoveAnim(best.from,best.to,()=>{doMove(best.from,best.to);if(promoPending)finishPromotion('Q');});
   },allAI?1700:800);
 }
@@ -1707,6 +2256,7 @@ function doMove(fromCoord,toCoord){
   // Promotion?
   if(pd.piece==='P'&&isPromoRow(toCoord,player)){
     promoPending={to:toCoord,player,ep:newEP};
+    if(netApplying||(NET.on&&NET.host&&aiPlayers[player])){draw();return;}   // Mitspieler/Computer wählt selbst
     document.getElementById('promoTitle').textContent=`${PNAMES[player]}: Bauernumwandlung`;
     document.getElementById('promoModal').classList.add('show');
     draw();return;
@@ -1718,6 +2268,7 @@ function doMove(fromCoord,toCoord){
 function finishPromotion(piece){
   document.getElementById('promoModal').classList.remove('show');
   if(!promoPending)return;
+  netOrigin({t:'promo',piece});
   gameState[promoPending.to]={piece,player:promoPending.player};
   if(moveLog.length)moveLog[moveLog.length-1].promo=piece;
   const ep=promoPending.ep;promoPending=null;advanceTurn(ep);markLastMove();
@@ -2009,10 +2560,10 @@ document.getElementById('c').addEventListener('click',e=>{
   if(fid)onFieldClick(fid);
 });
 function onFieldClick(fid){
-  if(promoPending||gameOver||setupOpen||paused||moveAnim||aiPlayers[cur()])return;
+  if(promoPending||gameOver||setupOpen||paused||moveAnim||aiPlayers[cur()]||netBlocks(cur()))return;
   const coord=COORD_LABELS[fid],pd=gameState[coord],player=cur();
   if(selected){
-    if(validMoves.has(fid)){const from=COORD_LABELS[selected];startMoveAnim(from,coord,()=>doMove(from,coord));}
+    if(validMoves.has(fid)){const from=COORD_LABELS[selected];netOrigin({t:'mv',p:player,from,to:coord});startMoveAnim(from,coord,()=>doMove(from,coord));}
     else if(pd&&pd.player===player&&fid!==selected){
       const{moves,castles}=getValidMoves(coord,movedPieces,epTarget);
       selected=fid;validMoves=moves;castleMap=castles;draw();
@@ -2091,7 +2642,7 @@ function rotateBoard(){if(window.V3&&V3.on){V3.rotate();return;}rotation=(rotati
 document.getElementById('chkPieces').onchange=e=>{showPieces=e.target.checked;draw();};
 
 document.getElementById('chkHints').onchange=e=>{showHints=e.target.checked;draw();};
-document.getElementById('btnReset').onclick=()=>openSetup();
+document.getElementById('btnReset').onclick=()=>{if(NET.on){netLeave();return;}openSetup();};
 window.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undoMove();}
 });
@@ -2099,7 +2650,8 @@ resizeCanvas();
 initGame();
 resizeCanvas();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
-openSetup();
+try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
+if(NET_CODE_URL)openJoin();else openSetup();
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
 try{if(localStorage.getItem('dreiSchach.barBottom')==='1')setBarBottom(true);}catch(e){}
 syncAvUI();
