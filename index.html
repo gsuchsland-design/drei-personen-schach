@@ -129,9 +129,16 @@ body.fullscreen #captured { margin:2px 0; }
 #logList .num { color:#888; display:inline-block; width:26px; }
 #logBox.collapsed #logList { display:none; }
 #logBox.collapsed #logHead { border-bottom:none; }
+/* ---------- Knopfleiste unten (falls oben etwas verdeckt) ---------- */
+body.barBottom #menuBtn,body.barBottom #btn3d,body.barBottom #rulesBtn,body.barBottom #soundBtn,body.barBottom #fsBtn2,body.barBottom #avBtn { top:auto !important; bottom:6px; }
+body.barBottom #logBox { top:auto; bottom:6px; }
+body.barBottom #avMenu { top:auto; bottom:46px; }
+body.barBottom #viewBar { bottom:48px; }
+body.barBottom #selfView { bottom:50px; }
 /* ---------- Handy / schmale Bildschirme ---------- */
 @media (max-width:700px){
   body { padding:44px 4px 4px !important; }
+  body.barBottom { padding:6px 4px 46px !important; }
   #panel { margin-top:0; }
   #menuBtn,#btn3d,#rulesBtn,#soundBtn { padding:3px 8px; font-size:13px; top:6px; }
   #btn3d { left:44px; } #rulesBtn { left:88px; } #soundBtn { left:124px; } #fsBtn2 { left:162px; padding:3px 8px; font-size:13px; } #avBtn { left:200px; padding:3px 8px; font-size:13px; } #avMenu { left:6px; right:6px; min-width:0; } #selfView { width:112px; }
@@ -165,7 +172,7 @@ body.fullscreen #captured { margin:2px 0; }
   <label><input type="checkbox" id="chkSelf" checked onchange="showSelf=this.checked;updateSelfView()"> Eigenes Bild klein anzeigen</label>
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 14:45</div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 14:55</div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -183,6 +190,8 @@ body.fullscreen #captured { margin:2px 0; }
   <button id="btnRotate" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="rotateBoard()">↻ Brett drehen</button>
   <label><input type="checkbox" id="chkCoordRing" checked> Koordinaten-Ring</label>
   <label><input type="checkbox" id="chkFollow2d"> Brett folgt Spieler am Zug</label>
+  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="toggleAvMenu()">👥 Mitspieler &amp; Kamera</button>
+  <label title="Wenn oben etwas die Knöpfe verdeckt"><input type="checkbox" id="chkBarBottom" onchange="setBarBottom(this.checked)"> Knopfleiste unten</label>
 </div>
 <div id="info">Klick auf Figur → Züge · Zweiter Klick → Ziehen · Rad = Zoom · Ziehen = Bewegen · Doppelklick = Einpassen</div>
 </div>
@@ -1116,9 +1125,13 @@ function syncAvUI(){
   document.getElementById('camToggle').style.background=camStream?'#a33':'#2a6';
   const me=meP();document.getElementById('camInfo').textContent=`Dein Bild erscheint im Fenster von ${PNAMES[me]}.`+(camStream?' Kamera läuft.':'');
 }
+function setBarBottom(on){
+  document.body.classList.toggle('barBottom',on);try{localStorage.setItem('dreiSchach.barBottom',on?'1':'0');}catch(e){}
+  document.getElementById('chkBarBottom').checked=on;setTimeout(resizeCanvas,30);
+}
 function toggleAvMenu(){const m=document.getElementById('avMenu');m.classList.toggle('show');syncAvUI();}
 document.addEventListener('pointerdown',e=>{const m=document.getElementById('avMenu');
-  if(m&&m.classList.contains('show')&&!m.contains(e.target)&&e.target.id!=='avBtn')m.classList.remove('show');});
+  if(m&&m.classList.contains('show')&&!m.contains(e.target)&&e.target.id!=='avBtn'&&!(e.target.closest&&e.target.closest('#controls')))m.classList.remove('show');});
 // ---------- eigene Kamera (Probelauf; im Multiplayer geht dasselbe Bild an die Mitspieler) ----------
 let camStream=null,camOffMode='still',showSelf=true;
 try{camOffMode=localStorage.getItem('dreiSchach.camOffMode')||'still';}catch(e){}
@@ -2088,6 +2101,7 @@ resizeCanvas();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 openSetup();
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
+try{if(localStorage.getItem('dreiSchach.barBottom')==='1')setBarBottom(true);}catch(e){}
 syncAvUI();
 document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=true;
 layoutStrip();resizeCanvas();
