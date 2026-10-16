@@ -145,6 +145,11 @@ body.fullscreen #captured { margin:2px 0; }
 #toast { position:fixed; left:50%; top:54px; transform:translateX(-50%); z-index:400; background:rgba(40,30,70,.95); color:#fff; border:1px solid #8a6fd0;
   border-radius:8px; padding:8px 14px; font-size:14px; max-width:92vw; opacity:0; pointer-events:none; transition:opacity .3s; text-align:center; }
 #toast.show { opacity:1; }
+#specReq { display:none; position:fixed; left:50%; bottom:64px; transform:translateX(-50%); z-index:410; background:rgba(40,30,70,.97); color:#fff;
+  border:2px solid #8a6fd0; border-radius:10px; padding:10px 12px; font-size:15px; max-width:94vw; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
+#specReq.show { display:flex; }
+#specReq button { padding:7px 16px; font-size:15px; border:none; border-radius:6px; background:#2a6; color:#fff; cursor:pointer; }
+#avStrip.three .avCv { max-width:31vw; }
 #setupBox h3 { margin-bottom:14px; font-size:16px; color:#eee; }
 #setupBox .row { margin:10px 0; font-size:14px; display:flex; align-items:center; gap:8px; }
 #setupBox input[type=number] { width:70px; padding:3px; background:#333; color:#fff; border:1px solid #666; border-radius:4px; }
@@ -202,13 +207,15 @@ body.barBottom #selfView { bottom:50px; }
   <hr>
   <button id="camToggle" onclick="camStream?camOff():camOn()">📷 Kamera einschalten</button>
   <button id="micToggle" onclick="toggleMic()" style="margin-top:6px;display:none">🎤 Mikrofon</button>
+  <div id="avSpecRow" style="display:none;margin-top:8px">Zuschauer: <select id="avSpec" onchange="setSpecMode(this.value)" style="background:#333;color:#fff;border:1px solid #666;border-radius:4px;padding:2px">
+    <option value="ask">nachfragen</option><option value="always">immer erlauben</option><option value="never">nicht erlauben</option></select></div>
   <div class="sub">Bei ausgeschalteter Kamera zeigen:</div>
   <label><input type="radio" name="camOffMode" value="still" checked onchange="setCamOffMode(this.value)"> Standbild (letztes Bild)</label>
   <label><input type="radio" name="camOffMode" value="avatar" onchange="setCamOffMode(this.value)"> Avatar</label>
   <label><input type="checkbox" id="chkSelf" checked onchange="showSelf=this.checked;updateSelfView()"> Eigenes Bild klein anzeigen</label>
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 17:30 · Online</div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 18:00 · Online + Zuschauer</div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -371,12 +378,16 @@ body.barBottom #selfView { bottom:50px; }
     </div>
     <div class="lbHint">„Einladen über …“ öffnet das Teilen-Menü deines Handys – dort findest du auch Instagram, Signal, Telegram usw. Sitzt ihr zusammen, kann man auch den QR-Code scannen.</div>
     <div id="lbQR"></div>
+    <div class="lbLbl">Wer zu spät kommt</div>
+    <select id="lbSpec" onchange="setSpecMode(this.value)" style="width:100%;padding:7px;background:#333;color:#fff;border:1px solid #666;border-radius:6px;font-size:14px">
+      <option value="ask">darf zuschauen – ich werde vorher gefragt</option><option value="always">darf immer zuschauen</option><option value="never">darf nicht zuschauen</option></select>
     <button id="lbStart" onclick="netStart()" disabled>▶ Spiel starten</button>
   </div>
   <div id="lbGuest"><div class="lbHint">Der Gastgeber startet das Spiel, sobald alle da sind.</div></div>
   <div class="lbMedia"><button id="lbCam" onclick="camStream?camOff():camOn()">📷</button><button id="lbMic" onclick="toggleMic()">🎤</button></div>
   <button class="lbLeave" onclick="netLeave()">Abbrechen</button>
 </div></div>
+<div id="specReq"><span id="specReqTxt"></span><button onclick="specAnswer(true)">Ja</button><button onclick="specAnswer(false)" style="background:#a33">Nein</button></div>
 <div id="joinModal" class="netModal"><div class="netBox">
   <h3>♟️ Einladung zum Drei-Personen-Schach</h3>
   <p>Du wurdest zu einer Partie eingeladen. Wie heißt du?</p>
@@ -400,7 +411,8 @@ body.barBottom #selfView { bottom:50px; }
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
-  seats:{},lobby:{},q:[],calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
+  seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
+try{NET.specMode=localStorage.getItem('dreiSchach.specMode')||'ask';}catch(e){}
 let netApplying=false,micStream=null,installEvt=null;
 const QS=new URLSearchParams(location.search);
 const NET_CODE_URL=(QS.get('spiel')||'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -439,6 +451,7 @@ function dummyTracks(){
 }
 function outStream(){
   dummyTracks();
+  if(NET.spec)return new MediaStream([NET.dv,NET.da].filter(Boolean));
   const v=camStream?camStream.getVideoTracks()[0]:NET.dv,a=micStream?micStream.getAudioTracks()[0]:NET.da;
   return new MediaStream([v,a].filter(Boolean));
 }
@@ -524,6 +537,7 @@ function netToHost(m){netSend(NET.hostConn,m);}
 function netBroadcast(m,except){
   if(!NET.host)return;
   for(const p of TURN_ORDER){const s=NET.seats[p];if(s&&s.conn&&s.conn!==except)netSend(s.conn,m);}
+  for(const z of Object.values(NET.specs))if(z.conn!==except)netSend(z.conn,m);
 }
 function netOrigin(m){   // Zug/Ereignis, das auf diesem Gerät entstanden ist
   if(!NET.on||netApplying)return;
@@ -565,7 +579,8 @@ function hostLobby(){
   for(const p of TURN_ORDER){const s=NET.seats[p];L[p]={kind:s.kind,name:s.kind==='ai'||s.kind==='dropped'?'':(s.name||''),
     id:s.kind==='me'?(NET.peer&&NET.peer.id):s.kind==='peer'?s.id:null,av:NET.avs[p]||null};}
   NET.lobby=L;
-  netBroadcast({t:'lobby',lobby:L,started:NET.started,lvl:NET.cfg.lvl});
+  NET.specList=Object.values(NET.specs).map(z=>({id:z.conn.peer,name:z.name}));
+  netBroadcast({t:'lobby',lobby:L,specs:NET.specList,started:NET.started,lvl:NET.cfg.lvl});
   renderLobby();netAttach();
   if(NET.started){updateStatus();renderClocks();}
 }
@@ -584,7 +599,11 @@ function hostRecv(conn,m){
     }
     if(!p&&!NET.started)p=TURN_ORDER.find(q=>NET.seats[q].kind==='open');
     if(!p&&NET.started)p=TURN_ORDER.find(q=>NET.seats[q].kind==='dropped');
-    if(!p){netSend(conn,{t:'full'});setTimeout(()=>conn.close(),500);return;}
+    if(!p){
+      if(NET.specMode==='never'){netSend(conn,{t:'full',denied:true});setTimeout(()=>conn.close(),500);return;}
+      if(NET.specMode==='always'||NET.specTokens.has(m.token)){hostAddSpec(conn,m);return;}
+      netSend(conn,{t:'wait'});specAsk(conn,m);return;
+    }
     const name=String(m.name||'').slice(0,18)||'Gast';
     NET.seats[p]={kind:'peer',name,id:conn.peer,conn,token:m.token,seen:performance.now()};
     NET.avs[p]=m.av||null;
@@ -599,6 +618,11 @@ function hostRecv(conn,m){
     setTimeout(()=>netCall(conn.peer),300);
     return;
   }
+  if(NET.specs[conn.peer]){   // Zuschauer
+    if(m.t==='bye'){hostDropSpec(conn);try{conn.close();}catch(e){}}
+    else if(m.t==='resync')netSend(conn,{t:'sync',data:netSyncData()});
+    return;
+  }
   const p=seatOfConn(conn);if(!p)return;
   NET.seats[p].seen=performance.now();
   if(m.t==='ping')return;
@@ -607,7 +631,46 @@ function hostRecv(conn,m){
   if(m.t==='mv'||m.t==='promo'){m.p=p;m.fromConn=conn;NET.q.push(m);netPump();return;}
   if(m.t==='resync'){netSend(conn,{t:'sync',data:netSyncData()});return;}
 }
+function hostAddSpec(conn,m){
+  const name=String(m.name||'').slice(0,18)||'Gast';
+  for(const[id,z]of Object.entries(NET.specs))if(z.token===m.token&&id!==conn.peer){delete NET.specs[id];try{z.conn.close();}catch(e){}if(NET.calls[id]){try{NET.calls[id].close();}catch(e){}delete NET.calls[id];}}
+  NET.specs[conn.peer]={conn,name,token:m.token};NET.specTokens.add(m.token);
+  netSend(conn,{t:'spec'});
+  if(NET.started){const send=()=>{if(moveAnim){setTimeout(send,200);return;}netSend(conn,{t:'sync',data:netSyncData()});};send();}
+  if(!m.re){toast(`👀 ${name} schaut jetzt zu.`);netBroadcast({t:'note',txt:`👀 ${name} schaut jetzt zu.`},conn);}
+  hostLobby();
+  setTimeout(()=>netCall(conn.peer),300);
+}
+function hostDropSpec(conn){
+  const z=NET.specs[conn.peer];if(!z)return;
+  delete NET.specs[conn.peer];
+  if(NET.calls[conn.peer]){try{NET.calls[conn.peer].close();}catch(e){}delete NET.calls[conn.peer];}
+  hostLobby();
+}
+function specAsk(conn,m){
+  NET.specReqs.push({conn,m});conn._pending=true;showSpecReq();snd('move');
+}
+function showSpecReq(){
+  const box=document.getElementById('specReq'),r=NET.specReqs[0];
+  if(!r){box.classList.remove('show');return;}
+  document.getElementById('specReqTxt').textContent=`👀 ${String(r.m.name||'Jemand').slice(0,18)} möchte zuschauen. Erlauben?`;
+  box.classList.add('show');
+}
+function specAnswer(ok){
+  const r=NET.specReqs.shift();showSpecReq();if(!r)return;
+  r.conn._pending=false;
+  if(!r.conn.open)return;
+  if(ok)hostAddSpec(r.conn,r.m);
+  else{netSend(r.conn,{t:'full',denied:true});setTimeout(()=>{try{r.conn.close();}catch(e){}},500);}
+}
+function setSpecMode(v){
+  NET.specMode=v;try{localStorage.setItem('dreiSchach.specMode',v);}catch(e){}
+  for(const id of['lbSpec','avSpec']){const e=document.getElementById(id);if(e)e.value=v;}
+  if(v!=='ask')while(NET.specReqs.length)specAnswer(v==='always');
+}
 function hostDrop(conn){
+  if(NET.specs[conn.peer]){hostDropSpec(conn);return;}
+  if(conn._pending){NET.specReqs=NET.specReqs.filter(r=>r.conn!==conn);showSpecReq();return;}
   const p=seatOfConn(conn);if(!p)return;
   const s=NET.seats[p],name=s.name;
   if(NET.started){
@@ -670,7 +733,7 @@ function guestConnect(re){
 }
 function guestLost(){
   if(!NET.on||NET.leaving)return;
-  if(!NET.seat){joinFail();return;}
+  if(!NET.seat&&!NET.spec){joinFail();return;}
   NET.retries=(NET.retries||0)+1;
   if(NET.retries>6){hostGone();return;}
   toast('Verbindung unterbrochen – verbinde neu …',3000);
@@ -695,11 +758,20 @@ function joinRecv(m){
     camFix();syncAvUI();updateSelfView();netAV();renderLobby();return;}
   if(m.t==='ping')return;
   if(m.t==='bye'){NET.retries=99;hostGone();return;}
-  if(m.t==='full'){clearTimeout(NET.joinTimer);lbStatus('Dieses Spiel ist leider schon voll.');NET.on=false;return;}
-  if(m.t==='lobby'){NET.lobby=m.lobby;
+  if(m.t==='note'){toast(m.txt);return;}
+  if(m.t==='wait'){clearTimeout(NET.joinTimer);lbStatus('Alle Plätze sind schon besetzt. Der Gastgeber wird gefragt, ob du zuschauen darfst …');return;}
+  if(m.t==='spec'){clearTimeout(NET.joinTimer);NET.spec=true;NET.seat=null;
+    if(camStream)camOff();if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+    for(const p of TURN_ORDER){AV[p].video=null;AV[p].still=null;AV[p].videoOff=false;}
+    document.querySelector('#lobbyModal .lbMedia').style.display='none';
+    lbStatus('👀 Du schaust zu. Du siehst und hörst die Spieler, kannst aber nicht mitziehen. Das Brett erscheint, sobald die Partie beginnt.');
+    syncAvUI();updateSelfView();renderLobby();layoutStrip();return;}
+  if(m.t==='full'){clearTimeout(NET.joinTimer);lbStatus(m.denied?'Alle Plätze sind besetzt, und der Gastgeber lässt gerade keine Zuschauer zu.':'Dieses Spiel ist leider schon voll.');NET.on=false;return;}
+  if(m.t==='lobby'){NET.lobby=m.lobby;NET.specList=m.specs||[];
+    if(!NET.spec&&NET.seat)for(const z of NET.specList)netCall(z.id);   // Spieler senden Bild/Ton auch an Zuschauer
     for(const p of TURN_ORDER){const s=m.lobby[p];if(s&&s.av)NET.avs[p]=s.av;}
     // Bild/Ton zu den anderen Gästen: der mit der „kleineren“ Kennung ruft an
-    for(const p of TURN_ORDER){const s=m.lobby[p];if(s&&s.kind==='peer'&&p!==NET.seat&&s.id&&NET.peer&&NET.peer.id<s.id)netCall(s.id);}
+    for(const p of TURN_ORDER){const s=m.lobby[p];if(NET.seat&&!NET.spec&&s&&s.kind==='peer'&&p!==NET.seat&&s.id&&NET.peer&&NET.peer.id<s.id)netCall(s.id);}
     renderLobby();netAttach();if(NET.started){updateStatus();renderClocks();}return;}
   if(m.t==='start'){netBeginGame(m.cfg);return;}
   if(m.t==='sync'){netApplySync(m.data);return;}
@@ -720,7 +792,7 @@ function netApplySync(d){
   aiPlayers=d.aiPlayers;eliminated=d.eliminated||new Set();
   selected=null;validMoves=new Set();castleMap={};promoPending=null;pendingNote='';
   NET.started=true;hideNetModals();waitingStart=false;paused=false;lastTick=performance.now();
-  rotation=TURN_ORDER.indexOf(NET.seat);
+  rotation=Math.max(0,TURN_ORDER.indexOf(NET.seat));
   renderLog();updateCaptured();
   if(gameOver){const el=document.getElementById('status');el.textContent=d.status;el.style.color=d.statusColor;}
   else updateStatus();
@@ -734,13 +806,15 @@ function hideNetModals(){
 function netBeginGame(cfg){
   NET.started=true;tc=cfg.tc;aiPlayers=cfg.ai;
   hideNetModals();waitingStart=false;
-  rotation=TURN_ORDER.indexOf(NET.seat);
+  rotation=Math.max(0,TURN_ORDER.indexOf(NET.seat));
   initGame();
   startPlay();
   resizeCanvas();netViewMine();netWake();
-  toast(`Los geht’s! Du spielst ${PNAMES[NET.seat]}.`+(TURN_ORDER[0]===NET.seat?' Du beginnst.':''),3500);
+  if(NET.spec)toast('Die Partie beginnt – du schaust zu. Mit ↻ drehst du das Brett.',3500);
+  else toast(`Los geht’s! Du spielst ${PNAMES[NET.seat]}.`+(TURN_ORDER[0]===NET.seat?' Du beginnst.':''),3500);
 }
 function netViewMine(){
+  if(NET.spec){fitBoard();draw();return;}
   const f=document.getElementById('chkFollow');if(f)f.checked=false;
   const f2=document.getElementById('chkFollow2d');if(f2)f2.checked=false;
   if(window.V3&&V3.on)V3.view(NET.seat);
@@ -812,6 +886,7 @@ function netLeave(){
 }
 // ---------- Warteraum-Anzeige ----------
 function showLobby(){
+  const ls=document.getElementById('lbSpec');if(ls)ls.value=NET.specMode;
   setupOpen=true;
   document.getElementById('lbHost').style.display=NET.host?'':'none';
   document.getElementById('lbGuest').style.display=NET.host?'none':'';
@@ -835,6 +910,8 @@ function renderLobby(){
     const icons=name&&!name.startsWith('Computer')?` <span class="lbIc">${av.cam?'📷':'🚫📷'} ${av.mic?'🎤':'🔇'}</span>`:'';
     h+=`<div class="lbSeat"><span class="lbDot" style="background:${PCOLOR[p]}"></span><b style="color:${PCOLOR[p]}">${PNAMES[p]}</b> <span>${esc(name)||'<i>'+st+'</i>'}</span>${icons}</div>`;
   }
+  const sl=NET.host?Object.values(NET.specs).map(z=>z.name):(NET.specList||[]).map(z=>z.name);
+  if(sl.length)h+=`<div class="lbSeat">👀 <span>Zuschauer: ${sl.map(esc).join(', ')}</span></div>`;
   box.innerHTML=h;
   const open=NET.host&&TURN_ORDER.some(p=>NET.seats[p]&&NET.seats[p].kind==='open');
   const b=document.getElementById('lbStart');if(b){b.disabled=!NET.peer;b.textContent=open?'▶ Spiel starten (freie Plätze: Computer)':'▶ Spiel starten';}
@@ -1687,7 +1764,8 @@ function syncAvUI(){
   document.getElementById('camToggle').textContent=camStream?'📷 Kamera ausschalten':'📷 Kamera einschalten';
   document.getElementById('camToggle').style.background=camStream?'#a33':'#2a6';
   if(typeof NET!=='undefined'){const ml=micLive(),mb=document.getElementById('micBtn'),mt=document.getElementById('micToggle');
-    mb.style.display=NET.on?'':'none';mt.style.display=NET.on?'':'none';
+    mb.style.display=NET.on&&!NET.spec?'':'none';mt.style.display=NET.on&&!NET.spec?'':'none';
+    document.getElementById('avSpecRow').style.display=NET.on&&NET.host?'':'none';document.getElementById('avSpec').value=NET.specMode;
     mb.textContent=ml?'🎤':'🔇';mb.classList.toggle('off',NET.on&&!ml);
     mt.textContent=!micStream?'🎤 Mikrofon einschalten':ml?'🔇 Stumm schalten':'🎤 Stummschaltung aufheben';mt.style.background=ml?'#2a6':'#a33';
     if(NET.on)renderLobby();}
@@ -1743,13 +1821,15 @@ function updateSelfView(){
 }
 function stripPlayers(){   // die beiden Gegner des Spielers, der unten sitzt
   const me=TURN_ORDER[Math.max(0,rotation)];
-  const i=TURN_ORDER.indexOf(me);return[TURN_ORDER[(i+1)%3],TURN_ORDER[(i+2)%3]];   // links / rechts wie auf dem Brett
+  const i=TURN_ORDER.indexOf(me);
+  if(NET.spec)return[TURN_ORDER[(i+1)%3],me,TURN_ORDER[(i+2)%3]];   // Zuschauer: alle drei
+  return[TURN_ORDER[(i+1)%3],TURN_ORDER[(i+2)%3]];   // links / rechts wie auf dem Brett
 }
 function layoutStrip(){
   const st=document.getElementById('avStrip');if(!st)return;
   const show=avatarsOn&&!(window.V3&&V3.on);
   const was=st.style.display;
-  st.style.display=show?'flex':'none';
+  st.style.display=show?'flex':'none';st.classList.toggle('three',!!NET.spec);
   if(show){
     const want=stripPlayers();
     if(st.dataset.p!==want.join('')){
