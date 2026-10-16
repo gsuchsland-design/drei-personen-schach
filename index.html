@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<title>Drei-Personen-Schach</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; overflow:hidden; }
+body { background:#1e1e1e; display:flex; flex-direction:column; align-items:center; padding:8px; font-family:sans-serif; }
+h2 { color:#eee; margin:4px 0; font-size:15px; }
+#controls { margin:4px 0; display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center; }
+label { color:#ccc; font-size:12px; cursor:pointer; }
+canvas { display:block; cursor:default; }
+#fullscreenBtn { padding:3px 10px; font-size:12px; cursor:pointer; }
+body.fullscreen { padding:0; overflow:hidden; }
+body.fullscreen #info { display:none; }
+body.fullscreen #captured { margin:2px 0; }
+#info { color:#aaa; font-size:11px; margin:2px 0; }
+#status { color:#fff; font-size:14px; font-weight:bold; margin:4px 0; min-height:20px; text-align:center; }
+#tooltip { position:fixed; background:rgba(0,0,0,.85); color:#fff; padding:3px 8px;
+           border-radius:3px; font-size:11px; pointer-events:none; display:none; z-index:99; }
+#captured { display:flex; gap:16px; justify-content:center; margin:4px 0; }
+.cap-box { background:#333; border-radius:4px; padding:4px 8px; min-width:80px; text-align:center; }
+.cap-box span { font-size:11px; display:block; margin-bottom:2px; }
+.cap-pieces { font-size:13px; line-height:1.4; min-height:16px; }
+#promoModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,.75); z-index:200; align-items:center; justify-content:center; }
+#promoModal.show { display:flex; }
+#promoBox { background:#222; border:2px solid #555; border-radius:10px; padding:20px; text-align:center; }
+#promoBox h3 { color:#eee; margin-bottom:12px; font-size:14px; }
+.promo-btn { font-size:28px; cursor:pointer; padding:8px 14px; margin:4px;
+  background:#333; border:1px solid #666; border-radius:6px; color:#fff; }
+.promo-btn:hover { background:#555; }
+#menuBtn { position:fixed; top:6px; left:6px; z-index:150; padding:4px 10px; font-size:16px; cursor:pointer;
+  background:#333; color:#eee; border:1px solid #666; border-radius:5px; opacity:.85; }
+#menuBtn:hover { opacity:1; }
+#panel { margin-top:30px; }
+#panel.hidden { display:none; }
+#rulesBtn { position:fixed; top:6px; left:98px; z-index:150; padding:4px 10px; font-size:14px; font-weight:bold; cursor:pointer;
+  background:#333; color:#eee; border:1px solid #666; border-radius:5px; opacity:.85; }
+#rulesBtn:hover,#soundBtn:hover { opacity:1; }
+#soundBtn { position:fixed; top:6px; left:200px; z-index:150; padding:4px 10px; font-size:14px; cursor:pointer;
+  background:#333; color:#eee; border:1px solid #666; border-radius:5px; opacity:.85; }
+#rulesModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:230; overflow:auto; }
+#rulesModal.show { display:block; }
+#rulesBox { max-width:1180px; margin:24px auto; background:#222; border:2px solid #555; border-radius:12px; padding:18px 22px; color:#ddd;
+  display:flex; gap:22px; flex-wrap:wrap; position:relative; }
+#rulesText { flex:1 1 420px; font-size:14px; line-height:1.5; }
+#rulesText h2 { color:#fff; font-size:20px; margin:0 0 10px; }
+#rulesText h3 { color:#ffd23f; font-size:15px; margin:14px 0 4px; }
+#rulesText ul { margin:2px 0 2px 20px; } #rulesText li { margin:2px 0; }
+#rulesText b { color:#fff; }
+#rulesDemo { flex:1 1 520px; display:flex; flex-direction:column; gap:8px; }
+#demoC { background:#1a1a1a; border-radius:8px; width:100%; cursor:pointer; }
+#demoBtns { display:flex; flex-wrap:wrap; gap:6px; }
+#demoBtns button, #demoPlace button, #demoPlace select { padding:4px 9px; font-size:13px; cursor:pointer; background:#3a3a3a; color:#eee; border:1px solid #666; border-radius:5px; }
+#demoBtns button.on, #demoPlace button.on { background:#7a6420; border-color:#ffd23f; }
+#demoPlace { display:flex; gap:6px; align-items:center; flex-wrap:wrap; font-size:13px; }
+#demoExpl { background:#2c2c2c; border-left:3px solid #ffd23f; padding:8px 10px; font-size:13.5px; min-height:64px; border-radius:4px; }
+#rulesClose { position:absolute; top:10px; right:12px; font-size:20px; background:none; border:none; color:#ccc; cursor:pointer; }
+#startBtn { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:160;
+  padding:18px 46px; font-size:26px; font-weight:bold; cursor:pointer; color:#fff; background:#2a9d4a;
+  border:3px solid #7fe39b; border-radius:14px; box-shadow:0 6px 30px rgba(0,0,0,.6); }
+#startBtn:hover { background:#33b457; }
+#startBtn.show { display:block; }
+#c3 { display:none; touch-action:none; }
+#btn3d { position:fixed; top:6px; left:52px; z-index:150; padding:4px 10px; font-size:14px; font-weight:bold; cursor:pointer;
+  background:#333; color:#eee; border:1px solid #666; border-radius:5px; opacity:.85; }
+#btn3d:hover { opacity:1; }
+#viewBar { display:none; position:fixed; bottom:10px; left:50%; transform:translateX(-50%); z-index:150; gap:6px; align-items:center;
+  background:rgba(28,28,28,.92); border:1px solid #555; border-radius:8px; padding:6px 10px; color:#ddd; font-size:12px; flex-wrap:wrap; justify-content:center; }
+#viewBar.show { display:flex; }
+#viewBar button { padding:3px 10px; font-size:12px; cursor:pointer; background:#3a3a3a; color:#eee; border:1px solid #666; border-radius:4px; }
+#viewBar .hint { color:#888; font-size:11px; }
+#clocks { display:none; flex-wrap:wrap; gap:10px; justify-content:center; margin:2px 0 4px; font-family:monospace; }
+#clocks.on { display:flex; }
+.clk { padding:3px 10px; border-radius:5px; background:#2a2a2a; border:2px solid transparent; font-size:14px; min-width:96px; text-align:center; }
+.clk.act { border-color:currentColor; background:#333; }
+.clk.low { animation:blink 1s infinite; }
+.clk.out { opacity:.45; text-decoration:line-through; }
+@keyframes blink { 50% { opacity:.55; } }
+#clkPause { padding:2px 10px; font-size:13px; cursor:pointer; background:#3a3a3a; color:#eee; border:1px solid #666; border-radius:4px; }
+#setupModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:220; align-items:center; justify-content:center; }
+#setupModal.show { display:flex; }
+#setupBox { background:#222; border:2px solid #555; border-radius:10px; padding:20px 24px; color:#ddd; min-width:300px; }
+#setupBox h3 { margin-bottom:14px; font-size:16px; color:#eee; }
+#setupBox .row { margin:10px 0; font-size:14px; display:flex; align-items:center; gap:8px; }
+#setupBox input[type=number] { width:70px; padding:3px; background:#333; color:#fff; border:1px solid #666; border-radius:4px; }
+#setupBox .hint { font-size:11px; color:#999; margin:-4px 0 6px 26px; }
+#setupBox select { padding:3px; background:#333; color:#fff; border:1px solid #666; border-radius:4px; }
+#setupBox button { margin-top:14px; width:100%; padding:8px; font-size:15px; cursor:pointer; background:#2a6; color:#fff; border:none; border-radius:6px; }
+#logBox { position:fixed; top:6px; right:6px; width:230px; z-index:140; background:rgba(28,28,28,.94);
+  border:1px solid #555; border-radius:6px; color:#ddd; font-size:12px; box-shadow:0 2px 10px rgba(0,0,0,.5); }
+#logHead { display:flex; align-items:center; gap:6px; padding:5px 7px; border-bottom:1px solid #444; }
+#logHead span { flex:1; font-weight:bold; }
+#logHead button { padding:2px 8px; font-size:12px; cursor:pointer; background:#3a3a3a; color:#eee; border:1px solid #666; border-radius:4px; }
+#logHead button:disabled { opacity:.4; cursor:default; }
+#logList { list-style:none; max-height:55vh; overflow-y:auto; padding:4px 0; font-family:monospace; }
+#logList li { padding:2px 8px; white-space:nowrap; }
+#logList li:nth-child(odd) { background:rgba(255,255,255,.04); }
+#logList .num { color:#888; display:inline-block; width:26px; }
+#logBox.collapsed #logList { display:none; }
+#logBox.collapsed #logHead { border-bottom:none; }
+</style>
+</head><body>
+<button id="menuBtn" onclick="toggleMenu()" title="Menü ein-/ausblenden">☰</button>
+<button id="btn3d" onclick="V3.toggle()" title="Zwischen 2D- und 3D-Ansicht umschalten">3D</button>
+<button id="rulesBtn" onclick="openRules()" title="Spielanleitung">📖 Regeln</button>
+<button id="soundBtn" onclick="toggleSound()" title="Ton ein/aus">🔊</button>
+<div id="panel">
+<h2>Drei-Personen-Schach</h2>
+<div id="controls">
+  <label><input type="checkbox" id="chkLabels"> Koordinaten</label>
+  <label><input type="checkbox" id="chkPieces" checked> Figuren</label>
+  <label><input type="checkbox" id="chkHints" checked> Zugvorschau</label>
+  <button id="btnReset" style="padding:3px 10px;font-size:12px;cursor:pointer;">Neu</button>
+  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="saveGameFile()" title="Partie als Datei speichern">💾 Speichern</button>
+  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="document.getElementById('loadFile').click()" title="Gespeicherte Partie laden">📂 Laden</button>
+  <input type="file" id="loadFile" accept=".json,application/json" style="display:none" onchange="loadGameFile(this)">
+  <button id="fullscreenBtn" onclick="toggleFullscreen()" title="Vollbild (Esc beendet)">⛶ Vollbild</button>
+  <button id="btnFit" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="if(window.V3&&V3.on)V3.view('cur');else{fitBoard();draw();}">⤢ Einpassen</button>
+  <button id="btnRotate" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="rotateBoard()">↻ Brett drehen</button>
+  <label><input type="checkbox" id="chkCoordRing" checked> Koordinaten-Ring</label>
+  <label><input type="checkbox" id="chkFollow2d"> Brett folgt Spieler am Zug</label>
+</div>
+<div id="info">Klick auf Figur → Züge · Zweiter Klick → Ziehen · Rad = Zoom · Ziehen = Bewegen · Doppelklick = Einpassen</div>
+</div>
+<div id="status">Blau am Zug</div>
+<div id="clocks">
+  <div class="clk" id="clkB" style="color:#5599ff"></div>
+  <div class="clk" id="clkG" style="color:#44ee22"></div>
+  <div class="clk" id="clkR" style="color:#ff5533"></div>
+  <button id="clkPause" onclick="togglePause()" title="Uhr anhalten">⏸</button>
+</div>
+<canvas id="c" width="880" height="720"></canvas>
+<canvas id="c3"></canvas>
+<div id="viewBar">
+  <span>Blick von:</span>
+  <button onclick="V3.view('B')" style="color:#5599ff">Blau</button>
+  <button onclick="V3.view('G')" style="color:#44ee22">Grün</button>
+  <button onclick="V3.view('R')" style="color:#ff5533">Rot</button>
+  <button onclick="V3.view('top')">Oben</button>
+  <label><input type="checkbox" id="chkFollow" checked> folgt Spieler am Zug</label>
+  <span class="hint">Ziehen = drehen · Rechtsklick/Shift = verschieben · Rad = Zoom</span>
+</div>
+<div id="promoModal">
+  <div id="promoBox">
+    <h3 id="promoTitle">Bauernumwandlung — wähle Figur:</h3>
+    <button class="promo-btn" onclick="finishPromotion('Q')">♛</button>
+    <button class="promo-btn" onclick="finishPromotion('R')">♜</button>
+    <button class="promo-btn" onclick="finishPromotion('B')">♝</button>
+    <button class="promo-btn" onclick="finishPromotion('N')">♞</button>
+  </div>
+</div>
+<div id="tooltip"></div>
+<div id="rulesModal" onclick="if(event.target===this)closeRules()">
+ <div id="rulesBox">
+  <button id="rulesClose" onclick="closeRules()" title="Schließen">✕</button>
+  <div id="rulesText">
+   <h2>Drei-Personen-Schach – Spielanleitung</h2>
+   <h3>Spieler und Brett</h3>
+   <ul>
+    <li>Drei Spieler: <b style="color:#5599ff">Blau</b>, <b style="color:#44ee22">Grün</b>, <b style="color:#ff5533">Rot</b>. Gezogen wird reihum: Blau → Grün → Rot.</li>
+    <li>Das Brett ist ein Davidstern aus drei Sektionen mit je 4 × 8 Feldern: Reihen <b>A–D</b>, Spalten <b>1–8</b>. Reihe A ist die eigene Grundreihe, Reihe D liegt an der Brettmitte.</li>
+    <li>Jeder Spieler hat 16 Figuren wie im normalen Schach. Der König steht auf A5, die Dame auf A4.</li>
+   </ul>
+   <h3>Züge über die Mitte</h3>
+   <ul>
+    <li>Wer über die eigene Reihe D hinauszieht, betritt eine <b>Nachbarsektion</b> – auf deren Reihe D – und zieht dort weiter in Richtung ihrer Reihe A.</li>
+    <li>Die Spalte wird dabei gespiegelt: aus Spalte c wird Spalte <b>9 − c</b>.</li>
+    <li><b>Turm und Dame (gerade):</b> Aus den Spalten 1–3 geht es in die eine, aus 6–8 in die andere Nachbarsektion. Aus den mittleren Spalten 4 und 5 sind <b>beide</b> Sektionen erreichbar.</li>
+    <li><b>Läufer und Dame (schräg):</b> Ein Läufer kreuzt ebenfalls in eine Nachbarsektion, an der Spitze der Mitte in beide.</li>
+    <li><b>Springer:</b> zwei Schritte vor/zurück und einer seitlich (oder umgekehrt), auch über die Mitte. Einige Übergänge an den Grenzen sind ausgeschlossen.</li>
+    <li><b>König:</b> ein Feld in jede Richtung, auch hinüber in die Nachbarsektionen.</li>
+    <li>Rechts kannst du alle Fälle ausprobieren.</li>
+   </ul>
+   <h3>Bauern</h3>
+   <ul>
+    <li>In der eigenen Sektion ziehen Bauern Richtung Mitte (A → D), aus Reihe B auch zwei Felder.</li>
+    <li>Über die Mitte gelangen sie in eine Nachbarsektion und ziehen dort weiter Richtung deren Reihe A. Geschlagen wird schräg nach vorn, auch über die Mitte.</li>
+    <li><b>Umwandlung:</b> auf der Reihe A einer fremden Sektion.</li>
+    <li><b>En passant:</b> Nach einem Doppelschritt dürfen <b>beide</b> Gegner en passant schlagen, bis der Spieler mit dem Doppelschritt wieder zieht.</li>
+   </ul>
+   <h3>Rochade</h3>
+   <ul><li>König (A5) und Turm unbewegt, Felder dazwischen frei und nicht bedroht. Kurz: König nach A7, Turm A8 → A6. Lang: König nach A3, Turm A1 → A4.</li></ul>
+   <h3>Schach, Hilfspflicht und Matt</h3>
+   <ul>
+    <li>Wer im Schach steht, muss es aufheben. Kein Zug darf den eigenen König im Schach lassen.</li>
+    <li><b>Hilfspflicht:</b> Steht ein Spieler im Schach und kommt der dritte Spieler <i>vor</i> ihm an die Reihe, darf dieser keinen Zug machen, nach dem der Bedrohte matt wäre. Ist der Bedrohte bereits matt, muss der dritte Spieler ihn befreien – kann er das nicht, bleibt es beim Matt.</li>
+    <li><b>Schachmatt beendet das Spiel.</b> Es gewinnt, <b>wer dem König Schach gibt</b> – nicht, wer nur Fluchtfelder nimmt. Die beiden anderen verlieren.</li>
+   </ul>
+   <h3>Kein Zug möglich</h3>
+   <ul><li>Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Kann niemand mehr ziehen, entscheidet die Punktewertung.</li></ul>
+   <h3>Zeit und Punkte</h3>
+   <ul>
+    <li>Wahlweise Zeit pro Zug (abgelaufen → Zug verfällt) und/oder pro Partie (verbraucht → keine Züge mehr, Figuren bleiben schlagbar).</li>
+    <li>Punkte: eigene Figuren auf dem Brett + geschlagene gegnerische Figuren. Bauer 1, Springer und Läufer 3, Turm 4, Dame 6. Bei Gleichstand gewinnt, wer weniger Zeit verbraucht hat.</li>
+   </ul>
+   <h3>Bedienung</h3>
+   <ul>
+    <li>Figur anklicken → mögliche Züge leuchten → Zielfeld anklicken. „↶ Zurück“ bzw. Strg+Z nimmt Züge zurück.</li>
+    <li>☰ Menü · 3D-Ansicht · 💾 Speichern / 📂 Laden · ⏸ Pause · 🔊 Ton.</li>
+   </ul>
+  </div>
+  <div id="rulesDemo">
+   <div id="demoBtns"></div>
+   <canvas id="demoC" width="560" height="470"></canvas>
+   <div id="demoExpl"></div>
+   <div id="demoPlace">
+    <span>Selbst ausprobieren:</span>
+    <button data-p="R">♜</button><button data-p="B">♝</button><button data-p="N">♞</button>
+    <button data-p="Q">♛</button><button data-p="K">♚</button><button data-p="P">♟</button>
+    <select id="demoColor"><option value="B">Blau</option><option value="G">Grün</option><option value="R">Rot</option></select>
+    <span style="color:#999">→ Feld anklicken</span>
+   </div>
+  </div>
+ </div>
+</div>
+<button id="startBtn" onclick="startPlay()">▶ Start</button>
+<div id="setupModal">
+  <div id="setupBox">
+    <h3>Neues Spiel</h3>
+    <div class="row" style="font-weight:bold;margin-bottom:2px">Spieler</div>
+    <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
+    <div class="row"><span style="color:#44ee22;width:46px">Grün</span><select id="plG" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
+    <div class="row"><span style="color:#ff5533;width:46px">Rot</span><select id="plR" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
+    <div class="row" style="font-weight:bold;margin:14px 0 2px">Zeitkontrolle</div>
+    <div class="row"><input type="checkbox" id="tcMoveOn"><label for="tcMoveOn">Zeit pro Zug:</label>
+      <input type="number" id="tcMoveSec" value="60" min="5" step="5"> Sekunden</div>
+    <div class="hint">Abgelaufen → Zug verfällt, der Nächste ist dran.</div>
+    <div class="row"><input type="checkbox" id="tcGameOn"><label for="tcGameOn">Zeit pro Partie:</label>
+      <input type="number" id="tcGameMin" value="15" min="1"> Minuten</div>
+    <div class="hint">Verbraucht → Spieler kann nicht mehr ziehen, bleibt aber schlagbar.</div>
+    <div class="hint" style="margin-left:0">Nichts angehakt = ohne Zeitkontrolle.</div>
+    <button onclick="startFromSetup()">Spiel starten</button>
+    <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
+    <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie aus Datei laden</button>
+  </div>
+</div>
+<div id="logBox" class="collapsed">
+  <div id="logHead"><span>Züge</span>
+    <button id="btnUndo" onclick="undoMove()" title="Letzten Zug zurücknehmen (Strg+Z)" disabled>↶ Zurück</button>
+    <button id="btnLogToggle" onclick="toggleLog()" title="Protokoll ein-/ausklappen">+</button>
+  </div>
+  <ol id="logList"></ol>
+</div>
+<script>
+let CANVAS_ID='c',FIT_PAD=3.8;
+let SIDE=38,TH=SIDE*Math.sqrt(3)/2;
+let ox=50,oy=30,zoom=1.0;
+
+function resizeCanvas(){
+  const cv=document.getElementById('c');
+  const panel=document.getElementById('panel');
+  const fs=!!document.fullscreenElement;
+  const avw=window.innerWidth-(fs?0:16);
+  const avh=window.innerHeight
+    -document.getElementById('status').offsetHeight
+    -document.getElementById('clocks').offsetHeight
+    -(panel.classList.contains('hidden')?0:panel.offsetHeight)
+    -(fs?4:24);
+  cv.width=Math.max(300,avw);cv.height=Math.max(250,avh);
+  if(window.V3&&V3.resize)V3.resize(cv.width,cv.height);
+  fitBoard();draw();
+}
+window.addEventListener('resize',resizeCanvas);
+
+// Brett so einpassen, dass es die Zeichenfläche ausfüllt (inkl. Rand für Beschriftung & geschlagene Figuren)
+function fitBoard(){
+  const cv=document.getElementById(CANVAS_ID);
+  zoom=1;ox=0;oy=0;buildFields();
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const d of Object.values(FIELDS))for(const[x,y]of d.pts){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}
+  const pad=SIDE*FIT_PAD;x0-=pad;y0-=pad;x1+=pad;y1+=pad;
+  zoom=Math.min(cv.width/(x1-x0),cv.height/(y1-y0));
+  ox=(cv.width-(x1-x0)*zoom)/2-x0*zoom;
+  oy=(cv.height-(y1-y0)*zoom)/2-y0*zoom;
+}
+
+function toggleFullscreen(){
+  if(document.fullscreenElement){document.exitFullscreen();return;}
+  const el=document.documentElement;
+  if(el.requestFullscreen)el.requestFullscreen().catch(()=>alert('Vollbild wird hier nicht unterstützt – öffne die Datei direkt im Browser.'));
+}
+document.addEventListener('fullscreenchange',()=>{
+  const fs=!!document.fullscreenElement;
+  document.getElementById('fullscreenBtn').textContent=fs?'✕ Vollbild beenden':'⛶ Vollbild';
+  document.getElementById('panel').classList.toggle('hidden',fs);
+  document.body.style.padding=fs?'0':'8px';
+  setTimeout(resizeCanvas,60);
+});
+function toggleMenu(){
+  document.getElementById('panel').classList.toggle('hidden');
+  resizeCanvas();
+}
+
+const RAW_FIELDS={"F1":["1,22","0,22"],"F2":["2,22","3,22"],"F3":["4,22","5,22"],"F4":["6,22","7,22"],"F5":["4,24","5,24"],"F6":["4,20","5,20"],"F7":["2,20","3,20"],"F8":["2,24","3,24"],"F9":["6,24","6,25"],"F10":["4,26","4,27"],"F11":["4,30","4,31"],"F12":["5,32","5,31"],"F13":["5,28","5,27"],"F14":["6,28","6,29"],"F15":["7,30","7,29"],"F16":["7,26","7,25"],"F17":["1,21","2,21"],"F18":["3,19","4,19"],"F19":["5,21","6,21"],"F20":["5,23","6,23"],"F21":["7,24","7,23"],"F22":["7,28","7,27"],"F23":["6,26","6,27"],"F24":["5,26","5,25"],"F25":["4,29","4,28"],"F26":["4,32","4,33"],"F27":["5,30","5,29"],"F28":["6,31","6,30"],"F29":["3,25","4,25"],"F30":["1,23","2,23"],"F31":["4,23","3,23"],"F32":["4,21","3,21"],"F33":["8,21","8,20"],"F34":["9,18","9,17"],"F35":["10,17","10,16"],"F36":["10,15","10,14"],"F37":["11,12","11,11"],"F38":["7,21","7,20"],"F39":["6,18","6,17"],"F40":["5,15","5,14"],"F41":["4,12","4,11"],"F42":["8,22","9,22"],"F43":["10,22","11,22"],"F44":["12,22","13,22"],"F45":["14,22","15,22"],"F46":["8,23","8,24"],"F47":["9,26","9,27"],"F48":["10,29","10,30"],"F49":["11,32","11,33"],"F50":["9,31","9,30"],"F51":["8,28","8,27"],"F52":["10,25","10,26"],"F53":["11,28","11,29"],"F54":["11,25","12,25"],"F55":["9,23","10,23"],"F56":["11,23","12,23"],"F57":["13,23","14,23"],"F58":["14,21","13,21"],"F59":["11,21","12,21"],"F60":["12,19","11,19"],"F61":["9,21","10,21"],"F62":["10,19","10,18"],"F63":["9,14","9,13"],"F64":["8,17","8,16"],"F65":["7,18","7,19"],"F66":["7,14","7,15"],"F67":["5,12","5,13"],"F68":["4,15","4,16"],"F69":["4,13","4,14"],"F70":["5,16","5,17"],"F71":["6,19","6,20"],"F72":["4,18","4,17"],"F73":["5,18","5,19"],"F74":["6,13","6,14"],"F75":["7,16","7,17"],"F76":["8,19","8,18"],"F77":["9,20","9,19"],"F78":["9,15","9,16"],"F79":["8,15","8,14"],"F80":["10,13","10,12"],"F81":["11,13","11,14"],"F82":["11,17","11,18"],"F83":["10,20","11,20"],"F84":["10,24","11,24"],"F85":["11,27","11,26"],"F86":["10,27","10,28"],"F87":["9,29","9,28"],"F88":["8,26","8,25"],"F89":["9,24","9,25"],"F90":["8,29","8,30"],"F91":["10,31","10,32"],"F92":["11,31","11,30"],"F93":["12,24","13,24"],"F94":["12,20","13,20"],"F95":["6,15","6,16"],"F96":["11,16","11,15"]};
+const COORD_LABELS={"F41":"RA1","F67":"RA2","F74":"RA3","F66":"RA4","F79":"RA5","F63":"RA6","F80":"RA7","F37":"RA8","F69":"RB1","F40":"RB2","F95":"RB3","F75":"RB4","F64":"RB5","F78":"RB6","F36":"RB7","F81":"RB8","F68":"RC1","F70":"RC2","F39":"RC3","F65":"RC4","F76":"RC5","F34":"RC6","F35":"RC7","F96":"RC8","F72":"RD1","F73":"RD2","F71":"RD3","F38":"RD4","F33":"RD5","F77":"RD6","F62":"RD7","F82":"RD8","F26":"BA1","F11":"BA2","F25":"BA3","F10":"BA4","F29":"BA5","F8":"BA6","F30":"BA7","F1":"BA8","F12":"BB1","F27":"BB2","F13":"BB3","F24":"BB4","F5":"BB5","F31":"BB6","F2":"BB7","F17":"BB8","F28":"BC1","F14":"BC2","F23":"BC3","F9":"BC4","F20":"BC5","F3":"BC6","F32":"BC7","F7":"BC8","F15":"BD1","F22":"BD2","F16":"BD3","F21":"BD4","F4":"BD5","F19":"BD6","F6":"BD7","F18":"BD8","F45":"GA1","F57":"GA2","F93":"GA3","F54":"GA4","F85":"GA5","F53":"GA6","F92":"GA7","F49":"GA8","F58":"GB1","F44":"GB2","F56":"GB3","F84":"GB4","F52":"GB5","F86":"GB6","F48":"GB7","F91":"GB8","F94":"GC1","F59":"GC2","F43":"GC3","F55":"GC4","F89":"GC5","F47":"GC6","F87":"GC7","F50":"GC8","F60":"GD1","F83":"GD2","F61":"GD3","F42":"GD4","F46":"GD5","F88":"GD6","F51":"GD7","F90":"GD8"};
+const C2F={};for(const[f,c]of Object.entries(COORD_LABELS))C2F[c]=f;
+const COLORED_FIDS=new Set(["F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12","F13","F14","F15","F16","F33","F34","F36","F37","F46","F47","F48","F49","F50","F51","F52","F53","F54","F55","F56","F57","F58","F59","F60","F61","F62","F63","F64","F65","F66","F67","F69","F70","F71","F72","F95","F96"]);
+
+// Geometry
+function triVerts(r,c){
+  const s=SIDE*zoom,h=TH*zoom,left=ox+c*(s/2),top=oy+r*h;
+  if((r+c)%2===0)return[[left,top+h],[left+s,top+h],[left+s/2,top]];
+  return[[left,top],[left+s,top],[left+s/2,top+h]];
+}
+function makeDiamond(k1,k2){
+  const[r1,c1]=k1.split(',').map(Number),[r2,c2]=k2.split(',').map(Number);
+  const v1=triVerts(r1,c1),v2=triVerts(r2,c2);
+  const pk=p=>`${Math.round(p[0]*4)},${Math.round(p[1]*4)}`,seen={},pts=[];
+  for(const p of[...v1,...v2]){const k=pk(p);if(!seen[k]){seen[k]=true;pts.push(p);}}
+  if(pts.length!==4)return null;
+  const mx=(pts[0][0]+pts[1][0]+pts[2][0]+pts[3][0])/4,my=(pts[0][1]+pts[1][1]+pts[2][1]+pts[3][1])/4;
+  pts.sort((a,b)=>Math.atan2(a[1]-my,a[0]-mx)-Math.atan2(b[1]-my,b[0]-mx));
+  return{pts,cx:mx,cy:my};
+}
+const FIELDS={};
+// 2D-Drehung animieren: Zielwinkel wird weich angefahren (optional mit Verzögerung)
+const rotAnim={cur:null,from:0,to:0,t0:0,dur:1300,delayNext:0};
+function rotAnimAngle(target){
+  const now=performance.now();
+  if(rotAnim.cur===null){Object.assign(rotAnim,{cur:target,from:target,to:target,raw:target});return target;}
+  if(Math.abs(target-rotAnim.raw)>1e-6){          // neues Ziel → weich hindrehen (kürzester Weg)
+    rotAnim.raw=target;let t=target;
+    while(t-rotAnim.cur>Math.PI)t-=2*Math.PI;while(t-rotAnim.cur<-Math.PI)t+=2*Math.PI;
+    rotAnim.from=rotAnim.cur;rotAnim.to=t;rotAnim.t0=now+rotAnim.delayNext;rotAnim.delayNext=0;
+  }
+  const k=Math.min(1,Math.max(0,(now-rotAnim.t0)/rotAnim.dur)),e=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+  rotAnim.cur=rotAnim.from+(rotAnim.to-rotAnim.from)*e;
+  if(k<1)requestFrame();
+  return rotAnim.cur;
+}
+let frameReq=false;
+function requestFrame(){if(frameReq)return;frameReq=true;requestAnimationFrame(()=>{frameReq=false;draw();});}
+function buildFields(){
+  for(const[fid,keys]of Object.entries(RAW_FIELDS)){const d=makeDiamond(keys[0],keys[1]);if(d)FIELDS[fid]=d;}
+  if(rotation>=0){
+    // Brett so drehen, dass die Sektion des gewählten Spielers unten liegt (beide Spitzen symmetrisch nach unten)
+    const vp=TURN_ORDER[rotation],[cx,cy]=boardCenter();
+    let sx=0,sy=0;for(let i=1;i<=8;i++){const d=FIELDS[C2F[`${vp}A${i}`]];sx+=d.cx-cx;sy+=d.cy-cy;}
+    const aT=Math.PI/2-Math.atan2(sy,sx);
+    const a=rotAnimAngle(aT),co=Math.cos(a),si=Math.sin(a);
+    const rot=([x,y])=>[cx+co*(x-cx)-si*(y-cy),cy+si*(x-cx)+co*(y-cy)];
+    for(const d of Object.values(FIELDS)){d.pts=d.pts.map(rot);[d.cx,d.cy]=rot([d.cx,d.cy]);}
+  }
+}
+
+// Movement logic (all verified)
+const ROW_IDX={A:1,B:2,C:3,D:4};
+const IDX_ROW=['','A','B','C','D'];
+const LOW_NBR={R:'B',B:'G',G:'R'};
+const HIGH_NBR={R:'G',B:'R',G:'B'};
+const SEC_NBRS={R:['B','G'],B:['R','G'],G:['R','B']};
+// Ungültige Springer-Übergänge zwischen Sektionen (gilt in beide Richtungen) – nie kürzen!
+const KNIGHT_EXCLUDE='BC1:RD7,BC2:RD6,BC2:RD8,BC3:RD7,BC4:RD6,BC5:GD3,BC6:GD2,BC7:GD1,BC7:GD3,BC8:GD2,BD1:RC7,BD1:RD6,BD2:RC6,BD2:RC8,BD3:RC5,BD3:RC7,BD3:RD8,BD6:GC2,BD6:GC4,BD6:GD1,BD7:GC1,BD7:GC3,BD8:GC2,BD8:GD3,GC5:RD3,GC6:RD2,GC7:RD1,GC7:RD3,GC8:RD2,GD6:RC2,GD6:RC4,GD6:RD1,GD7:RC1,GD7:RC3,GD8:RC2,GD8:RD3';
+const KX=new Set();for(const p of KNIGHT_EXCLUDE.split(',')){const[a,b]=p.split(':');KX.add(a+':'+b);KX.add(b+':'+a);}
+
+function crossRook(sec,col){
+  if(col<=3)return[LOW_NBR[sec]];
+  if(col>=6)return[HIGH_NBR[sec]];
+  return[LOW_NBR[sec],HIGH_NBR[sec]];
+}
+function crossBishop(sec,col,dc){
+  if(col<=3)return[LOW_NBR[sec]];
+  if(col>=6)return[HIGH_NBR[sec]];
+  if((col===4&&dc===-1)||(col===5&&dc===1))return[LOW_NBR[sec],HIGH_NBR[sec]];
+  return[];
+}
+
+function rookRay(sec,row,col,dr,dc,maxN,state,player,forAtk){
+  const out=[];
+  for(let n=1;n<=maxN;n++){
+    const r=row+n*dr,c=col+n*dc;
+    if(c<1||c>8)break;
+    if(r>=1&&r<=4){
+      const coord2=sec+IDX_ROW[r]+c,occ=state[coord2];
+      if(!occ)out.push(coord2);
+      else{if(forAtk||occ.player!==player)out.push(coord2);break;}
+    } else if(r>4&&dr>0){
+      const nr=9-r,crossCol=dc===0?col:c,nc=dc===0?9-col:9-c;
+      if(nr>=1&&nr<=4&&nc>=1&&nc<=8){
+        for(const ns of crossRook(sec,crossCol)){
+          const entry=ns+IDX_ROW[nr]+nc,occ0=state[entry];
+          if(!occ0){
+            out.push(entry);
+            for(let m=1;m<maxN;m++){
+              const r2=nr-m;if(r2<1)break;
+              const c3=ns+IDX_ROW[r2]+nc,occ2=state[c3];
+              if(!occ2)out.push(c3);
+              else{if(forAtk||occ2.player!==player)out.push(c3);break;}
+            }
+          } else if(forAtk||occ0.player!==player)out.push(entry);
+        }
+      }
+      break;
+    } else break;
+  }
+  return out;
+}
+
+function bishopRay(sec,row,col,dr,dc,maxN,state,player,forAtk){
+  const out=[];
+  for(let n=1;n<=maxN;n++){
+    const r=row+n*dr,c=col+n*dc;
+    if(c<1||c>8)break;
+    if(r>=1&&r<=4){
+      const coord2=sec+IDX_ROW[r]+c,occ=state[coord2];
+      if(!occ)out.push(coord2);
+      else{if(forAtk||occ.player!==player)out.push(coord2);break;}
+    } else if(r>4){
+      const nr=9-r,nc=9-c;
+      if(nr<1||nr>4||nc<1||nc>8)break;
+      const nbs=crossBishop(sec,c,dc);if(!nbs.length)break;
+      for(const ns of nbs){
+        const entry=ns+IDX_ROW[nr]+nc,occ0=state[entry];
+        if(!occ0){
+          out.push(entry);
+          for(let m=1;m<maxN;m++){
+            const r2=nr+m*(-dr),c2=nc+m*(-dc);
+            if(r2<1||r2>4||c2<1||c2>8)break;
+            const c3=ns+IDX_ROW[r2]+c2,occ2=state[c3];
+            if(!occ2)out.push(c3);
+            else{if(forAtk||occ2.player!==player)out.push(c3);break;}
+          }
+        } else if(forAtk||occ0.player!==player)out.push(entry);
+      }
+      break;
+    } else break;
+  }
+  return out;
+}
+
+// En-passant-Einträge: {pawnCoord, landCoord, by}; gültig für beide Gegner, bis der Verursacher wieder zieht
+function epFind(list,coord,player){return list?list.find(e=>e.landCoord===coord&&e.by!==player)||null:null;}
+function rawMoves(coord,piece,player,state,epTarget,forAtk){
+  const sec=coord[0],row=ROW_IDX[coord[1]],col=parseInt(coord.slice(2));
+  const out=new Set();
+  if(piece==='R'||piece==='Q')
+    for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]])
+      rookRay(sec,row,col,dr,dc,12,state,player,forAtk).forEach(c=>out.add(c));
+  if(piece==='B'||piece==='Q')
+    for(const[dr,dc]of[[1,1],[1,-1],[-1,1],[-1,-1]])
+      bishopRay(sec,row,col,dr,dc,12,state,player,forAtk).forEach(c=>out.add(c));
+  if(piece==='K'){
+    for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]])
+      rookRay(sec,row,col,dr,dc,1,state,player,forAtk).forEach(c=>out.add(c));
+    for(const[dr,dc]of[[1,1],[1,-1],[-1,1],[-1,-1]])
+      bishopRay(sec,row,col,dr,dc,1,state,player,forAtk).forEach(c=>out.add(c));
+  }
+  if(piece==='N'){
+    for(const[dr,dc]of[[1,2],[1,-2],[-1,2],[-1,-2],[2,1],[2,-1],[-2,1],[-2,-1]]){
+      const nr=row+dr,nc=col+dc;
+      if(nr>=1&&nr<=4&&nc>=1&&nc<=8){
+        const c2=sec+IDX_ROW[nr]+nc;
+        if(C2F[c2]){const occ=state[c2];if(!occ||(forAtk?true:occ.player!==player))out.add(c2);}
+      } else if(nr>4&&nc>=1&&nc<=8){
+        const nnr=9-nr,nnc=9-nc;
+        if(nnr>=1&&nnr<=4&&nnc>=1&&nnc<=8)
+          for(const ns of SEC_NBRS[sec]){
+            const c2=ns+IDX_ROW[nnr]+nnc;
+            if(KX.has(coord+':'+c2))continue;
+            if(C2F[c2]){const occ=state[c2];if(!occ||(forAtk?true:occ.player!==player))out.add(c2);}
+          }
+      }
+    }
+  }
+  if(piece==='P'){
+    // Direction: +1 in own section (A→D), -1 in opponent section (D→A)
+    const own=(sec===player);
+    const dr=own?1:-1;
+    // Diagonal captures
+    const cr=row+dr;
+    for(const dc of[-1,1]){
+      const cc=col+dc;if(cc<1||cc>8)continue;
+      if(cr>=1&&cr<=4){
+        const c2=sec+IDX_ROW[cr]+cc;
+        if(C2F[c2]){
+          if(forAtk)out.add(c2);
+          else{
+            const occ=state[c2];
+            if(occ&&occ.player!==player)out.add(c2);
+            if(epFind(epTarget,c2,player))out.add(c2);
+          }
+        }
+      } else if(cr>4&&dr>0){
+        const nr2=9-cr,nc2=9-cc;
+        if(nr2>=1&&nr2<=4&&nc2>=1&&nc2<=8)
+          for(const ns of crossRook(sec,cc)){
+            const c2=ns+IDX_ROW[nr2]+nc2;
+            if(C2F[c2]){
+              if(forAtk)out.add(c2);
+              else{
+                const occ=state[c2];
+                if(occ&&occ.player!==player)out.add(c2);
+                if(epFind(epTarget,c2,player))out.add(c2);
+              }
+            }
+          }
+      } else if(cr<1){/* at edge, no captures beyond */}
+    }
+    // Forward moves (not attack detection)
+    if(!forAtk){
+      const isHome=own&&coord[1]==='B';
+      let blocked=false;
+      for(let step=1;step<=(isHome?2:1)&&!blocked;step++){
+        const r=row+dr*step;
+        if(r>=1&&r<=4){
+          const c2=sec+IDX_ROW[r]+col;
+          if(!state[c2])out.add(c2);else blocked=true;
+        } else if(r>4&&dr>0){
+          const nr=9-r,nc=9-col;
+          if(nr>=1&&nr<=4&&nc>=1&&nc<=8)
+            for(const ns of crossRook(sec,col)){
+              const c2=ns+IDX_ROW[nr]+nc;
+              if(!state[c2])out.add(c2);
+            }
+          blocked=true;
+        } else blocked=true;
+      }
+    }
+  }
+  return out;
+}
+
+function isAttacked(coord,byPlayer,state){
+  for(const[c,pd]of Object.entries(state)){
+    if(pd.player!==byPlayer)continue;
+    if(rawMoves(c,pd.piece,byPlayer,state,null,true).has(coord))return true;
+  }
+  return false;
+}
+function isInCheck(player,state){
+  const kc=Object.keys(state).find(c=>state[c]&&state[c].piece==='K'&&state[c].player===player);
+  if(!kc)return false;
+  return['B','R','G'].filter(p=>p!==player).some(ep=>isAttacked(kc,ep,state));
+}
+function moveLeavesCheck(fromCoord,toCoord,player,state,epTarget){
+  const ns=Object.assign({},state);
+  const epE=ns[fromCoord].piece==='P'&&epFind(epTarget,toCoord,player);
+  if(epE)delete ns[epE.pawnCoord];
+  ns[toCoord]=ns[fromCoord];delete ns[fromCoord];
+  return isInCheck(player,ns);
+}
+
+function getCastles(kingCoord,player,state,moved){
+  const result=[];
+  if(moved.has(kingCoord)||isInCheck(player,state))return result;
+  if(kingCoord!==`${kingCoord[0]}A5`)return result;
+  const sec=kingCoord[0];
+  const enemies=['B','R','G'].filter(p=>p!==player);
+  const atk=c=>enemies.some(ep=>isAttacked(c,ep,state));
+  // Kingside
+  const ksR=`${sec}A8`;
+  if(!moved.has(ksR)&&state[ksR]&&state[ksR].piece==='R'&&state[ksR].player===player){
+    if(!state[`${sec}A6`]&&!state[`${sec}A7`]&&!atk(`${sec}A6`)&&!atk(`${sec}A7`))
+      result.push({toCoord:`${sec}A7`,rookFrom:ksR,rookTo:`${sec}A6`});
+  }
+  // Queenside
+  const qsR=`${sec}A1`;
+  if(!moved.has(qsR)&&state[qsR]&&state[qsR].piece==='R'&&state[qsR].player===player){
+    if(!state[`${sec}A2`]&&!state[`${sec}A3`]&&!state[`${sec}A4`]&&!atk(`${sec}A4`)&&!atk(`${sec}A3`))
+      result.push({toCoord:`${sec}A3`,rookFrom:qsR,rookTo:`${sec}A4`});
+  }
+  return result;
+}
+
+// Legale Zielfelder (Könige werden nie geschlagen, eigener König darf nicht im Schach bleiben)
+function legalTargets(coord,state,ep){
+  const pd=state[coord];if(!pd)return[];
+  const out=[];
+  for(const to of rawMoves(coord,pd.piece,pd.player,state,ep,false)){
+    if(state[to]&&state[to].piece==='K')continue;
+    if(!moveLeavesCheck(coord,to,pd.player,state,ep))out.push(to);
+  }
+  return out;
+}
+function applyMove(state,from,to,ep){
+  const ns=Object.assign({},state),pd=ns[from];
+  const epE=pd.piece==='P'&&epFind(ep,to,pd.player);
+  if(epE)delete ns[epE.pawnCoord];
+  ns[to]=(pd.piece==='P'&&isPromoRow(to,pd.player))?{piece:'Q',player:pd.player}:pd;
+  delete ns[from];return ns;
+}
+function applyCastle(state,from,cm){
+  const ns=Object.assign({},state);
+  ns[cm.toCoord]=ns[from];delete ns[from];
+  ns[cm.rookTo]=ns[cm.rookFrom];delete ns[cm.rookFrom];return ns;
+}
+function hasAnyMoveS(player,state,ep){
+  for(const[coord,pd]of Object.entries(state)){
+    if(!pd||pd.player!==player)continue;
+    if(legalTargets(coord,state,ep).length)return true;
+    if(pd.piece==='K'&&getCastles(coord,player,state,movedPieces).length)return true;
+  }
+  return false;
+}
+function isMated(player,state,ep){
+  return isInCheck(player,state)&&!hasAnyMoveS(player,state,ep);
+}
+
+function getValidMoves(coord,moved,ep){
+  const pd=gameState[coord];if(!pd)return{moves:new Set(),castles:{}};
+  const{piece,player}=pd;
+  const duty=helpDuty&&helpDuty.helper===player;
+  const moves=new Set(),castles={};
+  for(const to of legalTargets(coord,gameState,ep)){
+    if(duty&&isMated(helpDuty.victim,applyMove(gameState,coord,to,ep),ep))continue;
+    moves.add(C2F[to]);
+  }
+  if(piece==='K')
+    for(const cm of getCastles(coord,player,gameState,moved)){
+      if(duty&&isMated(helpDuty.victim,applyCastle(gameState,coord,cm),null))continue;
+      const fid=C2F[cm.toCoord];moves.add(fid);castles[fid]=cm;
+    }
+  return{moves,castles};
+}
+function playerHasValidMove(player,ep){
+  if(flagged.has(player))return false;
+  for(const[coord,pd]of Object.entries(gameState))
+    if(pd&&pd.player===player&&getValidMoves(coord,movedPieces,ep).moves.size)return true;
+  return false;
+}
+
+// Game state
+const PIECES={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟'};
+const PCOLOR={R:'#ff5533',B:'#5599ff',G:'#44ee22'};
+const A_ROW=['R','N','B','Q','K','B','N','R'];
+const TURN_ORDER=['B','G','R'];
+const PNAMES={B:'Blau',R:'Rot',G:'Grün'};
+
+let gameState={},movedPieces=new Set(),epTarget=null,promoPending=null,castleMap={};
+let turnIdx=0,selected=null,validMoves=new Set(),capturedBy={B:[],R:[],G:[]},eliminated=new Set();
+// capturedBy[capturingPlayer] = [{piece, fromPlayer}]
+let gameOver=false,helpDuty=null,turnNote='',waitingStart=false;
+let history=[],moveLog=[];
+// Zeitkontrolle
+let tc={move:0,game:0};            // ms; 0 = aus
+let timeUsed={B:0,G:0,R:0};
+const VALUE={P:1,N:3,B:3,R:4,Q:6,K:0};
+let clock={B:0,G:0,R:0},moveLeft=0,flagged=new Set(),paused=false,setupOpen=false,lastTick=0,pendingNote=''; // Schnappschüsse für Rücknahme, Zugprotokoll
+let rotation=0; // Index in TURN_ORDER: dieser Spieler sitzt unten (-1 = ungedreht, intern für 3D)
+let showCoordRing=true;
+
+function initGame(){
+  gameState={};capturedBy={B:[],R:[],G:[]};movedPieces=new Set(); // reset
+  epTarget=[];promoPending=null;castleMap={};eliminated=new Set();
+  turnIdx=0;selected=null;validMoves=new Set();gameOver=false;helpDuty=null;turnNote='';history=[];moveLog=[];renderLog();
+  clock={B:tc.game,G:tc.game,R:tc.game};timeUsed={B:0,G:0,R:0};flagged=new Set();paused=false;pendingNote='';startTurnClock();
+  for(const p of['R','B','G'])
+    for(let i=1;i<=8;i++){
+      gameState[`${p}A${i}`]={piece:A_ROW[i-1],player:p};
+      gameState[`${p}B${i}`]={piece:'P',player:p};
+    }
+  updateStatus();updateCaptured();draw();
+  maybeAI();
+}
+function cur(){return TURN_ORDER[turnIdx];}
+// Gewinner eines Matts: wer dem König tatsächlich Schach gibt – nicht, wer nur Fluchtfelder nimmt
+function mateWinner(victim,mover,state){
+  const kc=Object.keys(state).find(c=>state[c].piece==='K'&&state[c].player===victim);
+  if(kc&&isAttacked(kc,mover,state))return mover;
+  return TURN_ORDER.find(x=>x!==victim&&x!==mover);
+}
+function advanceTurn(newEP=null){
+  const mover=cur();
+  selected=null;validMoves=new Set();castleMap={};helpDuty=null;turnNote=pendingNote;pendingNote='';
+  const nxt=TURN_ORDER[(turnIdx+1)%3],thd=TURN_ORDER[(turnIdx+2)%3];
+  // En passant: alte Einträge des Ziehenden verfallen, geschlagene/bewegte Bauern ebenso
+  const epList=(epTarget||[]).filter(e=>e.by!==mover&&gameState[e.pawnCoord]&&
+    gameState[e.pawnCoord].piece==='P'&&gameState[e.pawnCoord].player===e.by);
+  if(newEP)epList.push(newEP);
+  // 1. Nächster Spieler matt → Spiel vorbei; Sieger ist, wer Schach gibt
+  if(isMated(nxt,gameState,epList))return endGame(mateWinner(nxt,mover,gameState),nxt);
+  // 2. Übernächster Spieler im Schach → der Spieler dazwischen hat Hilfspflicht:
+  //    er darf keinen Zug machen, nach dem der Bedrohte matt ist (ist er schon matt: er muss ihn befreien)
+  if(isInCheck(thd,gameState)){
+    const mated=isMated(thd,gameState,epList);
+    helpDuty={helper:nxt,victim:thd,mater:mover,mated};
+    if(!playerHasValidMove(nxt,epList)){
+      if(mated){
+        turnNote=`${PNAMES[nxt]} kann ${PNAMES[thd]} nicht helfen. `;
+        helpDuty=null;return endGame(mateWinner(thd,mover,gameState),thd);
+      }
+      helpDuty=null;   // jeder mögliche Zug führt zum Matt (oder kein Zug möglich) → keine Einschränkung
+    }
+  }
+  turnIdx=(turnIdx+1)%3;epTarget=epList;
+  // 3. Wer nicht ziehen kann, wird übersprungen
+  for(let s=0;s<3;s++){
+    if(playerHasValidMove(cur(),epTarget))break;
+    turnNote+=flagged.has(cur())?`${PNAMES[cur()]} hat keine Zeit mehr. `:`${PNAMES[cur()]} kann nicht ziehen. `;
+    if(s===2){turnNote+='Niemand kann ziehen.';gameOver=true;break;}
+    turnIdx=(turnIdx+1)%3;
+  }
+  startTurnClock();
+  updateStatus();updateCaptured();draw();
+  if(gameOver)endByPoints();
+  else maybeAI();
+}
+function endGame(winner,loser){
+  gameOver=true;setTimeout(()=>snd('mate'),250);
+  const el=document.getElementById('status');
+  el.textContent=`${turnNote}SCHACHMATT gegen ${PNAMES[loser]} – ${PNAMES[winner]} gewinnt!`;
+  el.style.color=PCOLOR[winner];
+  updateCaptured();renderClocks();draw();
+  setTimeout(()=>alert(`♚ SCHACHMATT gegen ${PNAMES[loser]}!\n${PNAMES[winner]} gewinnt.`),80);
+}
+function updateStatus(){
+  if(gameOver)return;
+  if(waitingStart){const el=document.getElementById('status');el.textContent='Bereit – drücke ▶ Start';el.style.color='#fff';return;}
+  const p=cur(),el=document.getElementById('status');
+  let txt=turnNote;
+  if(gameOver)txt+=' Remis!';
+  else{
+    txt+=aiPlayers[p]?`${PNAMES[p]} (Computer) überlegt …`:`${PNAMES[p]} am Zug`;
+    const chk=TURN_ORDER.filter(x=>isInCheck(x,gameState));
+    if(chk.length)txt+=' — SCHACH: '+chk.map(x=>PNAMES[x]).join(' & ')+'!';
+    if(helpDuty&&helpDuty.helper===p)txt+=helpDuty.mated?` — HILFSPFLICHT: ${PNAMES[helpDuty.victim]} aus dem Matt befreien!`:` — HILFSPFLICHT: ${PNAMES[helpDuty.victim]} steht im Schach und darf nicht mattgesetzt werden!`;
+  }
+  el.textContent=txt;el.style.color=PCOLOR[p];
+}
+function updateCaptured(){
+  for(const cp of['B','R','G']){
+    const el=document.getElementById(`cap${cp}`);if(!el)continue;
+    el.innerHTML=capturedBy[cp].map(e=>`<span style="color:${PCOLOR[e.from]}">${PIECES[e.piece]}</span>`).join('');
+  }
+}
+
+function isPromoRow(coord,player){
+  return coord[1]==='A'&&coord[0]!==player;
+}
+
+function snapshot(){
+  return{gameState:Object.assign({},gameState),movedPieces:new Set(movedPieces),
+    epTarget:(epTarget||[]).slice(),turnIdx,helpDuty,gameOver,turnNote,
+    capturedBy:{B:capturedBy.B.slice(),R:capturedBy.R.slice(),G:capturedBy.G.slice()},
+    logLen:moveLog.length,status:document.getElementById('status').textContent,
+    statusColor:document.getElementById('status').style.color,
+    clock:Object.assign({},clock),flagged:new Set(flagged),moveLeft,timeUsed:Object.assign({},timeUsed)};
+}
+function undoMove(){
+  if(promoPending||moveAnim||!history.length)return;
+  cancelAI();
+  undoOnce();
+  // gegen den Computer: so weit zurück, bis wieder ein Mensch am Zug ist
+  if(TURN_ORDER.some(p=>!aiPlayers[p]))while(history.length&&aiPlayers[cur()])undoOnce();
+  if(!TURN_ORDER.some(p=>!aiPlayers[p]))paused=true;   // nur Computer: anhalten, sonst zieht er sofort weiter
+  renderClocks();  autosave();
+}
+function undoOnce(){
+  const h=history.pop();
+  gameState=h.gameState;movedPieces=h.movedPieces;epTarget=h.epTarget;turnIdx=h.turnIdx;
+  helpDuty=h.helpDuty;gameOver=h.gameOver;turnNote=h.turnNote;capturedBy=h.capturedBy;
+  moveLog.length=h.logLen;
+  clock=h.clock;timeUsed=h.timeUsed;flagged=h.flagged;moveLeft=tc.move;lastTick=performance.now();
+  selected=null;validMoves=new Set();castleMap={};
+  updateStatus();
+  if(gameOver){const el=document.getElementById('status');el.textContent=h.status;el.style.color=h.statusColor;}
+  updateCaptured();renderLog();renderClocks();draw();
+}
+function moveText(e){
+  let t;
+  if(e.timeout)return `<i style="color:#bbb">${e.timeout==='move'?'Zugzeit abgelaufen':'Partiezeit verbraucht'}</i>`;
+  if(e.castle)t=e.castle;
+  else{
+    t=`${PIECES[e.piece]} ${e.from}${e.cap?'×':'–'}${e.to}`;
+    if(e.cap)t+=` <span style="color:${PCOLOR[e.capFrom]}">${PIECES[e.cap]}</span>`;
+    if(e.ep)t+=' e.p.';
+    if(e.promo)t+=`=${PIECES[e.promo]}`;
+  }
+  if(e.mark)t+=`<b style="color:#ff5555">${e.mark}</b>`;
+  return t;
+}
+function renderLog(){
+  const ol=document.getElementById('logList');if(!ol)return;
+  ol.innerHTML=moveLog.map((e,i)=>`<li><span class="num">${i+1}.</span><span style="color:${PCOLOR[e.player]}">●</span> ${moveText(e)}</li>`).join('');
+  ol.scrollTop=ol.scrollHeight;
+  const b=document.getElementById('btnUndo');if(b)b.disabled=!history.length;
+}
+// ---------- Geräusche (Klangsynthese, keine Dateien nötig) ----------
+let AC=null,soundOn=true;
+try{soundOn=localStorage.getItem('dreiSchach.sound')!=='0';}catch(e){}
+function ac(){
+  if(!soundOn)return null;
+  try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){return null;}
+  return AC;
+}
+function toggleSound(){
+  soundOn=!soundOn;try{localStorage.setItem('dreiSchach.sound',soundOn?'1':'0');}catch(e){}
+  document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';if(soundOn)snd('move');
+}
+function tone(a,{f0,f1,dur,type='sine',vol=0.25,at=0}){
+  const t=a.currentTime+at,o=a.createOscillator(),g=a.createGain();
+  o.type=type;o.frequency.setValueAtTime(f0,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+0.008);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+0.02);
+}
+function noise(a,{dur,freq=2000,q=1,type='bandpass',vol=0.3,at=0,sweep=0}){
+  const t=a.currentTime+at,n=Math.floor(a.sampleRate*dur),buf=a.createBuffer(1,n,a.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+  const src=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();
+  src.buffer=buf;fl.type=type;fl.frequency.setValueAtTime(freq,t);if(sweep)fl.frequency.exponentialRampToValueAtTime(sweep,t+dur);fl.Q.value=q;
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  src.connect(fl).connect(g).connect(a.destination);src.start(t);
+}
+function snd(kind){
+  const a=ac();if(!a)return;
+  if(kind==='move'){noise(a,{dur:0.05,freq:2200,q:2,vol:0.5});tone(a,{f0:520,f1:180,dur:0.07,vol:0.18});}
+  else if(kind==='kick'){tone(a,{f0:160,f1:45,dur:0.18,vol:0.45});noise(a,{dur:0.35,freq:600,type:'highpass',sweep:5000,vol:0.22,at:0.03});}
+  else if(kind==='land'){noise(a,{dur:0.04,freq:3200,q:3,vol:0.35});tone(a,{f0:900,f1:400,dur:0.05,vol:0.1});}
+  else if(kind==='check'){tone(a,{f0:880,dur:0.14,type:'triangle',vol:0.22});tone(a,{f0:660,dur:0.2,type:'triangle',vol:0.22,at:0.15});}
+  else if(kind==='mate'){[523,659,784,1047].forEach((f,i)=>tone(a,{f0:f,dur:i===3?0.6:0.18,type:'triangle',vol:0.25,at:i*0.16}));}
+  else if(kind==='end'){[784,659,523].forEach((f,i)=>tone(a,{f0:f,dur:0.25,type:'triangle',vol:0.22,at:i*0.2}));}
+  else if(kind==='beep'){tone(a,{f0:440,dur:0.12,type:'square',vol:0.08});tone(a,{f0:440,dur:0.12,type:'square',vol:0.08,at:0.18});}
+}
+
+// ---------- Spielanleitung mit Übungsbrett ----------
+const DEMOS=[
+ {name:'Turm am Rand',pieces:{BC2:'R'},sel:'BC2',txt:'Der <b>Turm auf BC2</b> zieht geradeaus über die Mitte. Aus Spalte 2 gelangt er nur in <b>eine</b> Nachbarsektion (hier Grün) und landet dort in Spalte 9 − 2 = <b>7</b>. Er zieht weiter bis zur Reihe A.'},
+ {name:'Turm in der Mitte',pieces:{BD5:'R'},sel:'BD5',txt:'Aus den mittleren Spalten 4 und 5 gabelt sich der Weg: Der <b>Turm auf BD5</b> erreicht <b>beide</b> Nachbarsektionen – in Spalte 9 − 5 = <b>4</b>.'},
+ {name:'Läufer',pieces:{BD4:'B'},sel:'BD4',txt:'Der <b>Läufer auf BD4</b> zieht schräg. Über die Mitte geht es in beide Nachbarsektionen, wo er schräg weiter Richtung Reihe A läuft.'},
+ {name:'Springer',pieces:{BD4:'N'},sel:'BD4',txt:'Der <b>Springer auf BD4</b> springt zwei Felder vor und eins seitlich (oder umgekehrt) – auch über die Mitte in beide Nachbarsektionen.'},
+ {name:'Dame',pieces:{BD4:'Q'},sel:'BD4',txt:'Die <b>Dame auf BD4</b> verbindet Turm- und Läuferzüge und erreicht so von der Mitte aus große Teile aller drei Sektionen.'},
+ {name:'König',pieces:{BD4:'K'},sel:'BD4',txt:'Der <b>König auf BD4</b> zieht ein Feld weit – auch hinüber auf die angrenzenden D-Felder der Nachbarsektionen.'},
+ {name:'Bauer über die Mitte',pieces:{BD5:'P',GD5:{p:'P',c:'G'},RD3:{p:'P',c:'R'}},sel:'BD5',txt:'Der <b>blaue Bauer auf BD5</b> zieht über die Mitte in beide Nachbarsektionen (GD4 oder RD4) und kann dort auch <b>schräg schlagen</b> (rot markiert). Danach zieht er Richtung Reihe A der fremden Sektion.'},
+ {name:'Bauer in fremder Sektion',pieces:{RC4:'P'},sel:'RC4',txt:'Ein <b>blauer Bauer in Rots Sektion</b> zieht in Richtung Rots Reihe A. Erreicht er sie, wird er <b>umgewandelt</b> (Dame, Turm, Läufer oder Springer).'},
+];
+const demo={idx:0,state:{},sel:null,place:null,color:'B'};
+function withDemo(fn){
+  const keys=['gameState','selected','validMoves','castleMap','moveLog','capturedBy','kicks','moveAnim','zoom','ox','oy','rotation','showLabels','showCoordRing','showPieces','showHints'];
+  const sv={gameState,selected,validMoves,castleMap,moveLog,capturedBy,kicks,moveAnim,zoom,ox,oy,rotation,showLabels,showCoordRing,showPieces,showHints};
+  const rotSave=Object.assign({},rotAnim),v3=window.V3&&V3.on;
+  if(window.V3)V3.on=false;
+  CANVAS_ID='demoC';FIT_PAD=1.1;
+  gameState=demo.state;castleMap={};moveLog=[];capturedBy={B:[],G:[],R:[]};kicks=[];moveAnim=null;
+  showLabels=true;showCoordRing=true;showPieces=true;showHints=true;
+  rotation=Math.max(0,TURN_ORDER.indexOf(demo.color));rotAnim.cur=null;
+  let r;
+  try{
+    fitBoard();
+    selected=demo.sel?C2F[demo.sel]:null;
+    validMoves=new Set();
+    if(demo.sel&&gameState[demo.sel]){const pd=gameState[demo.sel];
+      for(const t of rawMoves(demo.sel,pd.piece,pd.player,gameState,null,false))validMoves.add(C2F[t]);}
+    r=fn();
+  } finally {
+    CANVAS_ID='c';FIT_PAD=3.8;
+    gameState=sv.gameState;selected=sv.selected;validMoves=sv.validMoves;castleMap=sv.castleMap;moveLog=sv.moveLog;
+    capturedBy=sv.capturedBy;kicks=sv.kicks;moveAnim=sv.moveAnim;zoom=sv.zoom;ox=sv.ox;oy=sv.oy;rotation=sv.rotation;
+    showLabels=sv.showLabels;showCoordRing=sv.showCoordRing;showPieces=sv.showPieces;showHints=sv.showHints;
+    Object.assign(rotAnim,rotSave);if(window.V3)V3.on=v3;
+    buildFields();   // Felder des Hauptbretts wiederherstellen
+  }
+  return r;
+}
+function cur_demoSafe(){return demo.color;}
+function renderDemo(){
+  const savedTurn=turnIdx;turnIdx=TURN_ORDER.indexOf(demo.color);   // Gegnerfarben für Schlagmarkierung
+  withDemo(()=>draw());
+  turnIdx=savedTurn;
+}
+function showDemo(i){
+  const d=DEMOS[i];demo.idx=i;demo.place=null;demo.color='B';document.getElementById('demoColor').value='B';
+  demo.state={};for(const[c,v]of Object.entries(d.pieces))demo.state[c]=typeof v==='string'?{piece:v,player:'B'}:{piece:v.p,player:v.c};
+  demo.sel=d.sel;
+  document.querySelectorAll('#demoBtns button').forEach((b,k)=>b.classList.toggle('on',k===i));
+  document.querySelectorAll('#demoPlace button').forEach(b=>b.classList.remove('on'));
+  document.getElementById('demoExpl').innerHTML=d.txt;
+  renderDemo();
+}
+function openRules(){
+  const box=document.getElementById('demoBtns');
+  if(!box.children.length){
+    DEMOS.forEach((d,i)=>{const b=document.createElement('button');b.textContent=d.name;b.onclick=()=>showDemo(i);box.appendChild(b);});
+    document.querySelectorAll('#demoPlace button').forEach(b=>b.onclick=()=>{
+      demo.place=b.dataset.p;document.querySelectorAll('#demoPlace button').forEach(x=>x.classList.toggle('on',x===b));
+      document.querySelectorAll('#demoBtns button').forEach(x=>x.classList.remove('on'));
+      document.getElementById('demoExpl').innerHTML='Klicke ein Feld an, um die Figur dorthin zu stellen. Alle Felder, die sie von dort erreicht, leuchten auf.';
+    });
+    document.getElementById('demoColor').onchange=e=>{demo.color=e.target.value;
+      if(demo.sel&&demo.state[demo.sel])demo.state[demo.sel].player=demo.color;renderDemo();};
+    document.getElementById('demoC').addEventListener('click',e=>{
+      const cv=e.target,r=cv.getBoundingClientRect();
+      const x=(e.clientX-r.left)*cv.width/r.width,y=(e.clientY-r.top)*cv.height/r.height;
+      const fid=withDemo(()=>{buildFields();return fidAt(x,y);});
+      if(!fid)return;const coord=COORD_LABELS[fid];
+      if(demo.place){demo.state={};demo.state[coord]={piece:demo.place,player:demo.color};demo.sel=coord;
+        const n=withDemo(()=>validMoves.size);
+        document.getElementById('demoExpl').innerHTML=`<b>${PIECES[demo.place]} auf ${coord}</b>: ${n} mögliche Zielfelder. Felder in anderen Sektionen zeigen die Züge über die Mitte.`;}
+      else if(demo.state[coord])demo.sel=coord;
+      renderDemo();
+    });
+  }
+  document.getElementById('rulesModal').classList.add('show');
+  cancelAI();rulesWasPaused=paused;paused=true;renderClocks();
+  showDemo(demo.idx||0);
+}
+let rulesWasPaused=false;
+function closeRules(){
+  document.getElementById('rulesModal').classList.remove('show');
+  paused=rulesWasPaused;lastTick=performance.now();renderClocks();if(!paused)maybeAI();
+}
+
+// ---------- Speichern / Laden ----------
+const SAVE_KEY='dreiSchach.autosave';
+function ser(v){return JSON.stringify(v,(k,x)=>x instanceof Set?{__set:[...x]}:x);}
+function deser(t){return JSON.parse(t,(k,x)=>x&&typeof x==='object'&&Array.isArray(x.__set)?new Set(x.__set):x);}
+function gameData(){
+  return{v:1,saved:new Date().toISOString(),gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
+    capturedBy,moveLog,history,tc,clock,timeUsed,flagged,moveLeft,aiPlayers,rotation,
+    status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
+}
+function applyGameData(d){
+  cancelAI();moveAnim=null;kicks=[];
+  gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
+  gameOver=d.gameOver;turnNote=d.turnNote||'';capturedBy=d.capturedBy;moveLog=d.moveLog||[];history=d.history||[];
+  tc=d.tc;clock=d.clock;timeUsed=d.timeUsed;flagged=d.flagged||new Set();moveLeft=d.moveLeft||tc.move;
+  aiPlayers=d.aiPlayers||{B:null,G:null,R:null};if(typeof d.rotation==='number'&&d.rotation>=0)rotation=d.rotation;
+  selected=null;validMoves=new Set();castleMap={};promoPending=null;pendingNote='';
+  for(const p of TURN_ORDER){const el=document.getElementById('pl'+p);if(el)el.value=aiPlayers[p]||'';}
+  document.getElementById('setupModal').classList.remove('show');setupOpen=false;
+  renderLog();updateCaptured();
+  if(gameOver){const el=document.getElementById('status');el.textContent=d.status;el.style.color=d.statusColor;renderClocks();draw();return;}
+  // pausiert mit Startknopf („Fortsetzen“)
+  waitingStart=true;paused=true;
+  const sb=document.getElementById('startBtn');sb.textContent='▶ Fortsetzen';sb.classList.add('show');
+  updateStatus();renderClocks();resizeCanvas();
+}
+function autosave(){try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
+function resumeAutosave(){
+  try{const t=localStorage.getItem(SAVE_KEY);if(t)applyGameData(deser(t));}
+  catch(e){alert('Die letzte Partie konnte nicht geladen werden.');}
+}
+function saveGameFile(){
+  const d=new Date(),pad=n=>String(n).padStart(2,'0');
+  const name=`drei-schach-partie_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}.json`;
+  const blob=new Blob([ser(gameData())],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+function loadGameFile(inp){
+  const f=inp.files&&inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=deser(r.result);if(!d.gameState||!d.capturedBy)throw 0;applyGameData(d);}
+    catch(e){alert('Diese Datei ist keine gültige Drei-Personen-Schach-Partie.');}
+    inp.value='';};
+  r.readAsText(f);
+}
+function markLastMove(){
+  const e=moveLog[moveLog.length-1];if(!e)return;
+  if(gameOver&&document.getElementById('status').textContent.includes('SCHACHMATT'))e.mark='#';
+  else if(TURN_ORDER.some(x=>isInCheck(x,gameState))){e.mark='+';setTimeout(()=>snd('check'),180);}
+  else e.mark='';
+  renderLog();
+  autosave();
+}
+function score(p){
+  let v=0;
+  for(const pd of Object.values(gameState))if(pd.player===p)v+=VALUE[pd.piece];
+  for(const e of capturedBy[p])v+=VALUE[e.piece];
+  return v;
+}
+function ranking(){
+  return TURN_ORDER.map(p=>({p,pts:score(p),t:timeUsed[p],sec:Math.ceil(timeUsed[p]/1000)}))
+    .sort((a,b)=>b.pts-a.pts||a.sec-b.sec);
+}
+function endByPoints(){
+  setTimeout(()=>snd('end'),250);
+  const r=ranking(),top=r.filter(x=>x.pts===r[0].pts&&x.sec===r[0].sec);
+  const tbl=r.map(x=>`${PNAMES[x.p]} ${x.pts} P. (${fmtTime(x.t)})`).join(' · ');
+  const el=document.getElementById('status');
+  let msg;
+  if(top.length>1)msg=`Remis zwischen ${top.map(x=>PNAMES[x.p]).join(' & ')}`;
+  else{
+    msg=`${PNAMES[r[0].p]} gewinnt nach Punkten`;
+    if(r[1].pts===r[0].pts)msg+=' (weniger Zeit verbraucht)';
+  }
+  el.textContent=`Niemand kann mehr ziehen – ${msg}! ${tbl}`;
+  el.style.color=top.length>1?'#fff':PCOLOR[r[0].p];
+  renderClocks();
+  setTimeout(()=>alert(`Niemand kann mehr ziehen.\n${msg}!\n\n${r.map(x=>`${PNAMES[x.p]}: ${x.pts} Punkte, ${fmtTime(x.t)} verbraucht`).join('\n')}`),80);
+}
+function fmtTime(ms){
+  const t=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(t/60),s=t%60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function startTurnClock(){moveLeft=tc.move;lastTick=performance.now();renderClocks();}
+function renderClocks(){
+  const box=document.getElementById('clocks');if(!box)return;
+  box.classList.add('on');
+  for(const p of TURN_ORDER){
+    const el=document.getElementById('clk'+p);
+    const act=p===cur()&&!gameOver;
+    let t=`${aiPlayers[p]?'🤖 ':''}${PNAMES[p]} ${score(p)} P.`;
+    t+=tc.game?' · '+fmtTime(clock[p]):' · ⌛'+fmtTime(timeUsed[p]);
+    if(tc.move&&act)t+=` ⏱${fmtTime(moveLeft)}`;
+    el.textContent=t;
+    el.classList.toggle('act',act);
+    el.classList.toggle('out',flagged.has(p));
+    el.classList.toggle('low',act&&((tc.move&&moveLeft<10000)||(tc.game&&clock[p]<30000)));
+  }
+  document.getElementById('clkPause').textContent=paused?'▶':'⏸';
+}
+function togglePause(){if(waitingStart){startPlay();return;}paused=!paused;lastTick=performance.now();renderClocks();if(paused)cancelAI();else maybeAI();}
+function timeOut(p,kind){
+  snd('beep');
+  if(promoPending){finishPromotion('Q');return;}   // Zug ist schon gemacht – Dame wählen
+  history.push(snapshot());
+  moveLog.push({player:p,timeout:kind,mark:''});
+  if(kind==='game')flagged.add(p);
+  pendingNote=kind==='move'?`${PNAMES[p]}: Zugzeit abgelaufen. `:`${PNAMES[p]}: Partiezeit verbraucht. `;
+  if(helpDuty&&helpDuty.helper===p&&isMated(helpDuty.victim,gameState,epTarget)){   // Helfer hat nicht geholfen → Matt bleibt
+    turnNote=pendingNote+`${PNAMES[p]} hat ${PNAMES[helpDuty.victim]} nicht geholfen. `;pendingNote='';
+    const h=helpDuty;helpDuty=null;endGame(mateWinner(h.victim,h.mater,gameState),h.victim);
+  } else advanceTurn(null);
+  markLastMove();
+}
+setInterval(()=>{
+  const now=performance.now(),dt=now-lastTick;lastTick=now;
+  if(gameOver||paused||setupOpen)return;
+  const p=cur();
+  if(!flagged.has(p))timeUsed[p]+=dt;
+  if(moveAnim)return;   // während der Zuganimation keinen Zeitablauf auslösen
+  if(!(tc.move||tc.game)){renderClocks();return;}
+  if(tc.game&&!flagged.has(p)){clock[p]-=dt;if(clock[p]<=0){clock[p]=0;timeOut(p,'game');return;}}
+  if(tc.move){moveLeft-=dt;if(moveLeft<=0){timeOut(p,'move');return;}}
+  renderClocks();
+},200);
+function openSetup(){
+  let has=false;try{has=!!localStorage.getItem(SAVE_KEY);}catch(e){}
+  document.getElementById('btnResume').style.display=has?'':'none';
+  cancelAI();setupOpen=true;document.getElementById('startBtn').classList.remove('show');document.getElementById('setupModal').classList.add('show');}
+function startFromSetup(){
+  const mOn=document.getElementById('tcMoveOn').checked,gOn=document.getElementById('tcGameOn').checked;
+  const ms=Math.max(5,+document.getElementById('tcMoveSec').value||60),gm=Math.max(1,+document.getElementById('tcGameMin').value||15);
+  tc={move:mOn?ms*1000:0,game:gOn?gm*60000:0};
+  for(const p of TURN_ORDER)aiPlayers[p]=document.getElementById('pl'+p).value||null;
+  document.getElementById('setupModal').classList.remove('show');setupOpen=false;
+  waitingStart=true;
+  initGame();paused=true;cancelAI();
+  document.getElementById('startBtn').textContent='▶ Start';
+  document.getElementById('startBtn').classList.add('show');
+  updateStatus();renderClocks();resizeCanvas();
+}
+function startPlay(){
+  waitingStart=false;paused=false;lastTick=performance.now();
+  document.getElementById('startBtn').classList.remove('show');
+  updateStatus();renderClocks();draw();maybeAI();
+}
+// ================= Computergegner =================
+let aiPlayers={B:null,G:null,R:null},aiTimer=null;
+function cancelAI(){if(aiTimer){clearTimeout(aiTimer);aiTimer=null;if(selected&&aiPlayers[cur()]){selected=null;validMoves=new Set();}}}
+function maybeAI(){
+  cancelAI();
+  if(gameOver||paused||setupOpen||promoPending||!aiPlayers[cur()])return;
+  // reiner Computer-Durchlauf: mindestens 5 Sekunden pro Zug, damit man zuschauen kann
+  const onlyAI=TURN_ORDER.every(p=>aiPlayers[p]);
+  aiTimer=setTimeout(()=>{aiTimer=null;aiMove();},onlyAI?2600:400+Math.random()*300);
+}
+function allLegalMoves(p){
+  const out=[];
+  for(const[coord,pd]of Object.entries(gameState)){
+    if(!pd||pd.player!==p)continue;
+    const{moves,castles}=getValidMoves(coord,movedPieces,epTarget);
+    for(const fid of moves)out.push({from:coord,to:COORD_LABELS[fid],castle:castles[fid]||null,castles});
+  }
+  return out;
+}
+// Bewertung einer Stellung aus Sicht von p (nach dem eigenen Zug, bevor die Gegner ziehen)
+function evalAfter(p,ns,mv){
+  const opp=TURN_ORDER.filter(x=>x!==p);
+  const mat=q=>{let v=0;for(const pd of Object.values(ns))if(pd.player===q)v+=VALUE[pd.piece];return v;};
+  let e=mat(p)-0.5*(mat(opp[0])+mat(opp[1]));
+  // Matt / Schach
+  const nxt=TURN_ORDER[(TURN_ORDER.indexOf(p)+1)%3],thd=TURN_ORDER[(TURN_ORDER.indexOf(p)+2)%3];
+  if(isInCheck(nxt,ns)){e+=0.3;if(!hasAnyMoveS(nxt,ns,null))return mateWinner(nxt,p,ns)===p?1e4:-1e4;}
+  if(isInCheck(thd,ns)){e+=0.3;if(!hasAnyMoveS(thd,ns,null))e+=mateWinner(thd,p,ns)===p?40:-40;}
+  // Bedrohungen: Angriffs- und Deckungskarten
+  const att={},def=new Set();
+  for(const[c,pd]of Object.entries(ns)){
+    const sq=rawMoves(c,pd.piece,pd.player,ns,null,true);
+    if(pd.player===p){for(const t of sq)def.add(t);}
+    else for(const t of sq){const v=VALUE[pd.piece]||10;if(att[t]===undefined||v<att[t])att[t]=v;}
+  }
+  const losses=[];
+  for(const[c,pd]of Object.entries(ns)){
+    if(pd.player!==p||pd.piece==='K'||att[c]===undefined)continue;
+    const v=VALUE[pd.piece];
+    losses.push(def.has(c)?Math.max(0,v-att[c]):v);
+  }
+  losses.sort((a,b)=>b-a);
+  e-=(losses[0]||0)*0.9+(losses[1]||0)*0.45;   // zwei Gegner können je einmal schlagen
+  // eigene Angriffe auf ungedeckte Gegnerfiguren (kleiner Bonus)
+  // Stellung: Entwicklung, Vormarsch, Rochade
+  if(!mv)return e;
+  const pd=ns[mv.castle?mv.castle.toCoord:mv.to];
+  if(mv.castle)e+=0.35;
+  else if(pd){
+    const from=gameState[mv.from];
+    if(from.piece==='K')e-=0.25;
+    if((from.piece==='N'||from.piece==='B')&&mv.from[1]==='A')e+=0.15;
+    if(from.piece==='P'){const ownSec=mv.to[0]===p;const r='ABCD'.indexOf(mv.to[1]);e+=ownSec?0.03*r:0.12+0.04*(3-r);}
+    if(from.piece==='Q'&&moveLog.length<9)e-=0.15;
+  }
+  return e;
+}
+// Stellungsbewertung, wenn p selbst am Zug ist (Ende der Vorausberechnung)
+function evalPos(p,ns){
+  if(isInCheck(p,ns)&&!hasAnyMoveS(p,ns,null))return -1e4;
+  const opp=TURN_ORDER.filter(x=>x!==p);
+  const mat=q=>{let v=0;for(const pd of Object.values(ns))if(pd.player===q)v+=VALUE[pd.piece];return v;};
+  let e=mat(p)-0.5*(mat(opp[0])+mat(opp[1]));
+  if(isInCheck(p,ns))e-=0.4;
+  // eigene bedrohte Figuren (am Zug kann man nur eine retten)
+  const att={},def=new Set();
+  for(const[c,pd]of Object.entries(ns)){
+    const sq=rawMoves(c,pd.piece,pd.player,ns,null,true);
+    if(pd.player===p){for(const t of sq)def.add(t);}
+    else for(const t of sq){const v=VALUE[pd.piece]||10;if(att[t]===undefined||v<att[t])att[t]=v;}
+  }
+  const losses=[];
+  for(const[c,pd]of Object.entries(ns)){
+    if(pd.player!==p||pd.piece==='K'||att[c]===undefined)continue;
+    losses.push(def.has(c)?Math.max(0,VALUE[pd.piece]-att[c]):VALUE[pd.piece]);
+  }
+  losses.sort((a,b)=>b-a);
+  return e-(losses[1]||0)*0.6-(losses[0]||0)*0.15;
+}
+// beste Antwort eines Spielers in einer simulierten Stellung (eine Ebene, gierig)
+function bestReply(q,state){
+  let best=null,bv=-1e9;
+  for(const[c,pd]of Object.entries(state)){
+    if(pd.player!==q)continue;
+    for(const to of legalTargets(c,state,null)){
+      const ns=applyMove(state,c,to,null),v=evalAfter(q,ns,null);
+      if(v>bv){bv=v;best=ns;}
+    }
+  }
+  return best||state;   // kann nicht ziehen → Stellung bleibt
+}
+// bester eigener Folgezug (für „Meister“): Wert der Stellung, wenn p wieder am Zug ist
+function bestOwnFollow(p,state){
+  if(isInCheck(p,state)&&!hasAnyMoveS(p,state,null))return -1e4;
+  let bv=-1e9,any=false;
+  for(const[c,pd]of Object.entries(state)){
+    if(pd.player!==p)continue;
+    for(const to of legalTargets(c,state,null)){any=true;
+      const v=evalAfter(p,applyMove(state,c,to,null),null);if(v>bv)bv=v;}
+  }
+  return any?bv:evalPos(p,state);
+}
+function aiMove(){
+  if(gameOver||paused||setupOpen||promoPending||moveAnim)return;
+  const p=cur(),lvl=aiPlayers[p];if(!lvl)return;
+  const moves=allLegalMoves(p);if(!moves.length)return;
+  let best=null;
+  if(lvl==='easy'){
+    const caps=moves.filter(m=>gameState[m.to]);
+    best=(caps.length&&Math.random()<0.5)?caps[Math.floor(Math.random()*caps.length)]:moves[Math.floor(Math.random()*moves.length)];
+  } else {
+    const scored=moves.map(m=>{
+      const ns=m.castle?applyCastle(gameState,m.from,m.castle):applyMove(gameState,m.from,m.to,epTarget);
+      return{m,ns,v:evalAfter(p,ns,m)+Math.random()*(lvl==='medium'?0.12:0.04)};
+    }).sort((a,b)=>b.v-a.v);
+    best=scored[0].m;
+    if(lvl==='master'&&scored[0].v<1e3){
+      // Meister: 14 Kandidaten → beide Gegner antworten → eigener bester Folgezug
+      const i=TURN_ORDER.indexOf(p),q1=TURN_ORDER[(i+1)%3],q2=TURN_ORDER[(i+2)%3];
+      let bv=-1e9;
+      for(const c of scored.slice(0,14)){
+        const ns3=bestReply(q2,bestReply(q1,c.ns));
+        const v=bestOwnFollow(p,ns3)+0.3*c.v;
+        if(v>bv){bv=v;best=c.m;}
+      }
+    }
+    if(lvl==='hard'&&scored[0].v<1e3){
+      // stark: die besten Kandidaten weiterdenken – beide Gegner antworten nacheinander
+      const i=TURN_ORDER.indexOf(p),q1=TURN_ORDER[(i+1)%3],q2=TURN_ORDER[(i+2)%3];
+      let bv=-1e9;
+      for(const c of scored.slice(0,10)){
+        const ns3=bestReply(q2,bestReply(q1,c.ns));
+        const v=evalPos(p,ns3)+0.3*c.v;
+        if(v>bv){bv=v;best=c.m;}
+      }
+    }
+  }
+  // 1. Figur auswählen und Zugmöglichkeiten zeigen
+  const allAI=TURN_ORDER.every(q=>aiPlayers[q]);
+  const vm=getValidMoves(best.from,movedPieces,epTarget);
+  selected=C2F[best.from];validMoves=vm.moves;castleMap=vm.castles;draw();
+  // 2. kurz „überlegen“, 3. Zug animiert ausführen
+  aiTimer=setTimeout(()=>{
+    aiTimer=null;
+    if(gameOver||paused||cur()!==p){selected=null;validMoves=new Set();draw();return;}
+    startMoveAnim(best.from,best.to,()=>{doMove(best.from,best.to);if(promoPending)finishPromotion('Q');});
+  },allAI?1700:800);
+}
+
+function toggleLog(){
+  const b=document.getElementById('logBox');b.classList.toggle('collapsed');
+  document.getElementById('btnLogToggle').textContent=b.classList.contains('collapsed')?'+':'–';
+}
+
+function doMove(fromCoord,toCoord){
+  const player=cur(),pd=gameState[fromCoord];
+  let newEP=null;
+  history.push(snapshot());
+  const entry={player,piece:pd.piece,from:fromCoord,to:toCoord,cap:null,capFrom:null,ep:false,castle:null,promo:null,mark:''};
+
+  // Castling?
+  const tFid=C2F[toCoord];
+  if(castleMap[tFid]){
+    const cm=castleMap[tFid];
+    gameState[toCoord]=pd;delete gameState[fromCoord];
+    gameState[cm.rookTo]=gameState[cm.rookFrom];delete gameState[cm.rookFrom];
+    movedPieces.add(fromCoord);movedPieces.add(cm.rookFrom);
+    entry.castle=cm.rookFrom.endsWith('8')?'0-0':'0-0-0';moveLog.push(entry);
+    advanceTurn(null);markLastMove();return;
+  }
+
+  // En passant capture
+  const epE=pd.piece==='P'&&epFind(epTarget,toCoord,player);
+  if(epE){
+    const cap=gameState[epE.pawnCoord];
+    if(cap){capturedBy[player].push({piece:cap.piece,from:cap.player});entry.cap=cap.piece;entry.capFrom=cap.player;entry.ep=true;entry.capSq=epE.pawnCoord;}
+    delete gameState[epE.pawnCoord];
+  } else {
+    const target=gameState[toCoord];
+    if(target){
+      capturedBy[player].push({piece:target.piece,from:target.player});
+      entry.cap=target.piece;entry.capFrom=target.player;entry.capSq=toCoord;
+      if(target.piece==='K'){
+        eliminated.add(target.player);
+        for(const c of Object.keys(gameState))
+          if(gameState[c]&&gameState[c].player===target.player)delete gameState[c];
+        gameState[toCoord]=pd;delete gameState[fromCoord];
+        movedPieces.add(fromCoord);
+        updateStatus();updateCaptured();draw();
+        const remaining=TURN_ORDER.filter(p=>!eliminated.has(p));
+        setTimeout(()=>{
+          if(remaining.length===1)alert(`🏆 ${PNAMES[remaining[0]]} gewinnt!`);
+          else alert(`${PNAMES[player]} hat den König von ${PNAMES[target.player]} geschlagen!\n${PNAMES[target.player]} scheidet aus.`);
+          advanceTurn(null);
+        },80);
+        return;
+      }
+    }
+  }
+
+  // Track en passant: pawn moves 2 squares forward from home (own B row)
+  if(pd.piece==='P'){
+    const fsec=fromCoord[0],frow=fromCoord[1],tsec=toCoord[0],trow=toCoord[1];
+    // Own section: B→D (2 steps forward)
+    if(fsec===player&&frow==='B'&&tsec===player&&trow==='D')
+      newEP={pawnCoord:toCoord,landCoord:`${fsec}C${fromCoord.slice(2)}`,by:player};
+  }
+
+  gameState[toCoord]=pd;delete gameState[fromCoord];
+  movedPieces.add(fromCoord);
+  moveLog.push(entry);renderLog();
+
+  // Promotion?
+  if(pd.piece==='P'&&isPromoRow(toCoord,player)){
+    promoPending={to:toCoord,player,ep:newEP};
+    document.getElementById('promoTitle').textContent=`${PNAMES[player]}: Bauernumwandlung`;
+    document.getElementById('promoModal').classList.add('show');
+    draw();return;
+  }
+
+  advanceTurn(newEP);markLastMove();
+}
+
+function finishPromotion(piece){
+  document.getElementById('promoModal').classList.remove('show');
+  if(!promoPending)return;
+  gameState[promoPending.to]={piece,player:promoPending.player};
+  if(moveLog.length)moveLog[moveLog.length-1].promo=piece;
+  const ep=promoPending.ep;promoPending=null;advanceTurn(ep);markLastMove();
+}
+
+// Rendering
+let showLabels=false,showPieces=true,showSection=false,showHints=true;
+
+// Mitte der Außenkante eines Feldes (die vom Nachbarfeld abgewandte Kante) + Normale nach außen
+function outerEdge(fid,nbrFid){
+  const d=FIELDS[fid],n=FIELDS[nbrFid];if(!d||!n)return null;
+  const ax=d.cx-n.cx,ay=d.cy-n.cy;
+  let best=null,bv=-1e9;
+  for(let i=0;i<4;i++){
+    const p=d.pts[i],q=d.pts[(i+1)%4];
+    const mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2;
+    const v=(mx-d.cx)*ax+(my-d.cy)*ay;
+    if(v>bv){bv=v;best={mx,my,ex:q[0]-p[0],ey:q[1]-p[1]};}
+  }
+  let nx=-best.ey,ny=best.ex;const l=Math.hypot(nx,ny)||1;nx/=l;ny/=l;
+  if(nx*(best.mx-d.cx)+ny*(best.my-d.cy)<0){nx=-nx;ny=-ny;}
+  return{mx:best.mx,my:best.my,nx,ny};
+}
+// Draw coordinate ring labels outside each section
+function boardCenter(){
+  let bcx=0,bcy=0,n=0;
+  for(const s of['R','B','G'])for(let c=1;c<=8;c++){const fid=C2F[`${s}D${c}`];if(fid&&FIELDS[fid]){bcx+=FIELDS[fid].cx;bcy+=FIELDS[fid].cy;n++;}}
+  return[bcx/n,bcy/n];
+}
+const SEC_COL={R:'#ff9977',B:'#88aaff',G:'#88ee66'};
+function coordRingLayout(){
+  const fs=Math.max(8,10*zoom),dist=SIDE*zoom*0.28+fs*0.6,out=[];
+  const pos=(fid,nbr)=>{const e=outerEdge(fid,nbr);return e?[e.mx+e.nx*dist,e.my+e.ny*dist]:null;};
+  for(const sec of['R','B','G']){
+    const col=SEC_COL[sec];
+    for(let ci=1;ci<=8;ci++){
+      const p=pos(C2F[`${sec}A${ci}`],C2F[`${sec}B${ci}`]);
+      if(p)out.push({txt:String(ci),x:p[0],y:p[1],col});
+    }
+    for(const row of['A','B','C','D']){
+      const p1=pos(C2F[`${sec}${row}1`],C2F[`${sec}${row}2`]);if(p1)out.push({txt:row,x:p1[0],y:p1[1],col});
+      const p8=pos(C2F[`${sec}${row}8`],C2F[`${sec}${row}7`]);if(p8)out.push({txt:row,x:p8[0],y:p8[1],col});
+    }
+  }
+  return out;
+}
+function drawCoordRing(ctx){
+  if(!showCoordRing)return;
+  const fs=Math.max(8,10*zoom);
+  ctx.font=`bold ${fs}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const l of coordRingLayout()){
+    ctx.lineWidth=2.5;ctx.strokeStyle='rgba(0,0,0,0.85)';ctx.strokeText(l.txt,l.x,l.y);
+    ctx.fillStyle=l.col;ctx.fillText(l.txt,l.x,l.y);
+  }
+}
+
+// Geschlagene Figuren außen vor der eigenen A-Reihe (Felder A1–A4):
+// je Gegnerfarbe eigene Reihe(n), alle Figuren einzeln, sortiert nach Stärke (Dame, Turm, Läufer, Springer, Bauer)
+const CAP_ORDER=['Q','R','B','N','P'];
+function capturedLayout(){
+  const items=[];
+  const fs=Math.max(11,16*zoom),lblFs=Math.max(8,10*zoom);
+  const rowH=fs*1.1,cellW=fs*0.95;
+  for(const cp of['R','B','G']){
+    const list=capturedBy[cp];if(!list.length)continue;
+    const e2=outerEdge(C2F[`${cp}A2`],C2F[`${cp}B2`]),e3=outerEdge(C2F[`${cp}A3`],C2F[`${cp}B3`]);
+    const a1=FIELDS[C2F[`${cp}A1`]],a4=FIELDS[C2F[`${cp}A4`]];
+    if(!e2||!e3||!a1||!a4)continue;
+    let nx=e2.nx+e3.nx,ny=e2.ny+e3.ny;const nl=Math.hypot(nx,ny)||1;nx/=nl;ny/=nl;
+    let vx=a4.cx-a1.cx,vy=a4.cy-a1.cy;const vl=Math.hypot(vx,vy)||1;vx/=vl;vy/=vl;
+    if(vx<-0.01||(Math.abs(vx)<=0.01&&vy<0)){vx=-vx;vy=-vy;} // Lesereihenfolge links→rechts
+    const ax=(e2.mx+e3.mx)/2,ay=(e2.my+e3.my)/2;
+    const start=SIDE*zoom*0.28+lblFs*1.2+fs*0.75;
+    // 4 feste Reihen: pro Gegnerfarbe eine Offiziersreihe (Dame, Turm, Läufer, Springer) und eine Bauernreihe
+    const lines=[];
+    TURN_ORDER.filter(p=>p!==cp).forEach((opp,k)=>{
+      const mine=list.filter(e=>e.from===opp);
+      const off=mine.filter(e=>e.piece!=='P').sort((x,y)=>CAP_ORDER.indexOf(x.piece)-CAP_ORDER.indexOf(y.piece));
+      const paw=mine.filter(e=>e.piece==='P');
+      lines.push({opp,ps:off,slot:k*2});
+      lines.push({opp,ps:paw,slot:k*2+1});
+    });
+    lines.forEach(ln=>{
+      if(!ln.ps.length)return;
+      const dist=start+ln.slot*rowH+(ln.slot>=2?rowH*0.5:0);
+      const rx=ax+nx*dist,ry=ay+ny*dist;
+      ln.ps.forEach((ce,i)=>{
+        const off=(i-(ln.ps.length-1)/2)*cellW;
+        items.push({x:rx+vx*off,y:ry+vy*off,piece:ce.piece,player:ln.opp,fs,ref:ce});
+      });
+    });
+  }
+  return items;
+}
+function drawCaptured(ctx){
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=4;
+  const lay=capturedLayout();
+  for(const it of lay){
+    if(kickHidden(it.ref))continue;
+    ctx.font=`${it.fs}px serif`;ctx.fillStyle=PCOLOR[it.player];
+    ctx.fillText(PIECES[it.piece],it.x,it.y);
+  }
+  ctx.shadowBlur=0;
+  // fliegende geschlagene Figuren
+  for(const k of kicks){
+    const it=lay.find(x=>x.ref===k.ref),a=FIELDS[C2F[k.capSq]],f=FIELDS[C2F[k.from]],tt=FIELDS[C2F[k.to]];
+    if(!it||!a||!f||!tt)continue;
+    let dx=tt.cx-f.cx,dy=tt.cy-f.cy;const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+    const big=Math.max(13,26*zoom),P=kickPath(k,[a.cx,a.cy],[it.x,it.y],[dx,dy],big*1.6);
+    const size=big+(it.fs-big)*P.e+big*0.35*Math.sin(Math.PI*P.e);
+    ctx.save();ctx.translate(P.x,P.y-P.h);ctx.rotate(P.spin);
+    ctx.font=`${size}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=10;ctx.fillStyle=PCOLOR[k.player];
+    ctx.fillText(PIECES[k.piece],0,0);ctx.restore();
+  }
+}
+
+
+function fieldFill(fid){
+  const s=COORD_LABELS[fid][0],col=COLORED_FIDS.has(fid);
+  if(showSection)return col?(s==='R'?'#bb2200':s==='B'?'#1144bb':'#117700'):(s==='R'?'#330000':s==='B'?'#000a20':'#001500');
+  if(!col)return'#111';
+  return s==='R'?'#cc3311':s==='B'?'#2255cc':'#22aa00';
+}
+// ---------- Zuganimation ----------
+let moveAnim=null;   // {items:[{piece,player,from,to}],t0,dur,done}
+// ---------- geschlagene Figur wird weggekickt und fliegt an den Rand ----------
+let kicks=[];   // {ref,piece,player,capSq,dir:[from,to],t0,dur}
+function startKick(ref,capSq,from,to){
+  const allAI=TURN_ORDER.every(p=>aiPlayers[p]);
+  const kdur=allAI?1150:900;
+  kicks.push({ref,piece:ref.piece,player:ref.from,capSq,from,to,t0:performance.now(),dur:kdur});
+  setTimeout(()=>{if(kicks.some(k=>k.ref===ref))snd('land');},kdur-60);
+  kickFrame();
+}
+let kickReq=false;
+function kickFrame(){
+  if(kickReq)return;kickReq=true;
+  requestAnimationFrame(()=>{
+    kickReq=false;
+    const now=performance.now(),all=Object.values(capturedBy).flat();
+    kicks=kicks.filter(k=>now-k.t0<k.dur&&all.includes(k.ref));   // fertig oder zurückgenommen → weg
+    draw();
+    if(kicks.length)kickFrame();
+  });
+}
+function kickHidden(ref){return kicks.some(k=>k.ref===ref);}
+// Flugbahn: Stoß in Zugrichtung, Bogen, Landung auf dem Platz (Bézier). a,b,c = Start, Kontrollpunkt, Ziel
+function kickPath(k,start,target,dirv,lift){
+  const t=Math.min(1,(performance.now()-k.t0)/k.dur),e=1-Math.pow(1-t,2.2);
+  const dl=Math.hypot(target[0]-start[0],target[1]-start[1])||1;
+  const c=[start[0]+dirv[0]*dl*0.45,start[1]+dirv[1]*dl*0.45];
+  const u=1-e;
+  return{x:u*u*start[0]+2*u*e*c[0]+e*e*target[0],y:u*u*start[1]+2*u*e*c[1]+e*e*target[1],
+         h:Math.sin(Math.PI*e)*lift,spin:e*Math.PI*2.5,t,e};
+}
+function startMoveAnim(from,to,done){
+  const pd=gameState[from],items=[{piece:pd.piece,player:pd.player,from,to}];
+  const cm=castleMap[C2F[to]];
+  if(cm)items.push({piece:'R',player:pd.player,from:cm.rookFrom,to:cm.rookTo});
+  const allAI=TURN_ORDER.every(p=>aiPlayers[p]);
+  const who=pd.player;
+  moveAnim={items,t0:performance.now(),dur:allAI?900:(aiPlayers[pd.player]?650:380),done:()=>{
+    if(cur()!==who||gameOver)return;
+    const n=moveLog.length;done();
+    const e=moveLog[n];   // neuer Protokolleintrag dieses Zuges
+    snd(e&&e.cap?'kick':'move');
+    if(e&&e.cap&&e.capSq){const list=capturedBy[who];startKick(list[list.length-1],e.capSq,from,to);}
+  }};
+  selected=null;validMoves=new Set();
+  animFrame();
+}
+function animProgress(){
+  if(!moveAnim)return 1;
+  const k=Math.min(1,(performance.now()-moveAnim.t0)/moveAnim.dur);
+  return k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+}
+function animFrame(){
+  if(!moveAnim)return;
+  if(performance.now()-moveAnim.t0>=moveAnim.dur){
+    const d=moveAnim.done;moveAnim=null;d();draw();return;
+  }
+  draw();requestAnimationFrame(animFrame);
+}
+function animHidden(coord){return moveAnim&&moveAnim.items.some(it=>it.from===coord);}
+
+// Goldenes Kreuz über dem König (2D)
+function drawKingCross(ctx,x,y,size){
+  const cx=x,cy=y-size*0.47,h=size*0.25,w=size*0.17,lw=Math.max(1.5,size*0.065);
+  ctx.save();ctx.lineCap='round';ctx.shadowBlur=0;
+  for(const[col,extra]of[['rgba(0,0,0,0.85)',lw*0.9],['#ffd700',0]]){
+    ctx.strokeStyle=col;ctx.lineWidth=lw+extra;
+    ctx.beginPath();ctx.moveTo(cx,cy-h/2);ctx.lineTo(cx,cy+h/2);
+    ctx.moveTo(cx-w/2,cy-h*0.12);ctx.lineTo(cx+w/2,cy-h*0.12);ctx.stroke();
+  }
+  ctx.restore();
+}
+// Start- und Zielfeld des letzten Zuges
+function lastMoveFids(){
+  const e=moveLog[moveLog.length-1];
+  return e&&e.from?{from:C2F[e.from],to:C2F[e.to]}:{from:null,to:null};
+}
+function draw(){
+  if(CANVAS_ID==='c'&&window.V3&&V3.on){V3.sync();return;}
+  // 2D: Brett zum Spieler am Zug drehen (Drehung um die Brettmitte – Zoom bleibt erhalten)
+  if(CANVAS_ID==='c'&&document.getElementById('chkFollow2d').checked&&!gameOver){
+    const ri=TURN_ORDER.indexOf(cur());if(ri>=0&&ri!==rotation&&!moveAnim){rotation=ri;rotAnim.delayNext=500;}
+  }
+  buildFields();
+  const cv=document.getElementById(CANVAS_ID),ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const checkedKings=new Set();
+  for(const pl of TURN_ORDER)if(isInCheck(pl,gameState)){
+    const kc=Object.keys(gameState).find(c=>gameState[c].piece==='K'&&gameState[c].player===pl);
+    if(kc)checkedKings.add(C2F[kc]);
+  }
+  const lm=lastMoveFids();
+  for(const[fid,d]of Object.entries(FIELDS)){
+    const coord=COORD_LABELS[fid],isSel=fid===selected;
+    const isV=validMoves.has(fid)&&showHints;
+    const isEnemy=isV&&gameState[coord]&&gameState[coord].player!==cur();
+    const isCastle=isV&&!!castleMap[fid];
+    ctx.beginPath();ctx.moveTo(d.pts[0][0],d.pts[0][1]);
+    for(let i=1;i<4;i++)ctx.lineTo(d.pts[i][0],d.pts[i][1]);ctx.closePath();
+    if(isSel){ctx.fillStyle='#ffdd00';ctx.shadowColor='#ffaa00';ctx.shadowBlur=12;}
+    else if(isCastle){ctx.fillStyle='rgba(80,200,255,0.6)';ctx.shadowColor='#88ddff';ctx.shadowBlur=8;}
+    else if(isEnemy){ctx.fillStyle='#ff3300';ctx.shadowColor='#ff0000';ctx.shadowBlur=8;}
+    else if(isV){ctx.fillStyle='rgba(255,220,50,0.55)';ctx.shadowColor='#ffcc00';ctx.shadowBlur=6;}
+    else{ctx.fillStyle=fieldFill(fid);ctx.shadowBlur=0;}
+    ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#444';ctx.lineWidth=0.5;ctx.stroke();
+    if((fid===lm.from||fid===lm.to)&&!isSel&&!isV){
+      ctx.save();ctx.fillStyle=fid===lm.to?'rgba(255,200,40,0.45)':'rgba(255,200,40,0.22)';ctx.fill();
+      ctx.strokeStyle='rgba(255,210,60,0.9)';ctx.lineWidth=Math.max(1.5,2.2*zoom);ctx.stroke();ctx.restore();
+    }
+    if(checkedKings.has(fid)){ctx.save();ctx.strokeStyle='#ff1a1a';ctx.lineWidth=Math.max(2,3.5*zoom);
+      ctx.shadowColor='#ff0000';ctx.shadowBlur=14;ctx.stroke();ctx.restore();}
+    if(showPieces){
+      const pd=animHidden(coord)?null:gameState[coord];
+      if(pd){
+        ctx.font=`${Math.max(13,26*zoom)}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+        if(isSel){ctx.shadowColor='#ffffff';ctx.shadowBlur=14;}
+        else{ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=5;}
+        ctx.fillStyle=PCOLOR[pd.player];
+        const py=showLabels?d.cy-4*zoom:d.cy,fsz=Math.max(13,26*zoom);
+        ctx.fillText(PIECES[pd.piece],d.cx,py);ctx.shadowBlur=0;
+        if(pd.piece==='K')drawKingCross(ctx,d.cx,py,fsz);
+      }
+    }
+    if(showLabels&&zoom>=0.55){
+      ctx.font=`bold ${Math.max(5,6.5*zoom)}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+      const col2=COLORED_FIDS.has(fid),sec=COORD_LABELS[fid][0];
+      ctx.fillStyle=col2?'rgba(255,255,255,0.7)':(sec==='R'?'#ff7755':sec==='B'?'#6699ff':'#55ee55');
+      ctx.fillText(coord,d.cx,(showPieces&&gameState[coord])?d.cy+4*zoom:d.cy);
+    }
+  }
+  if(moveAnim&&showPieces){
+    const e=animProgress();
+    for(const it of moveAnim.items){
+      const a=FIELDS[C2F[it.from]],b=FIELDS[C2F[it.to]];if(!a||!b)continue;
+      const x=a.cx+(b.cx-a.cx)*e,y=a.cy+(b.cy-a.cy)*e,sc=1+0.25*Math.sin(Math.PI*e);
+      ctx.font=`${Math.max(13,26*zoom)*sc}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=10;ctx.fillStyle=PCOLOR[it.player];
+      ctx.fillText(PIECES[it.piece],x,y);ctx.shadowBlur=0;
+      if(it.piece==='K')drawKingCross(ctx,x,y,Math.max(13,26*zoom)*sc);
+    }
+  }
+  drawCaptured(ctx);
+  drawCoordRing(ctx);
+}
+
+// Interaction
+function pointIn(x,y,d){
+  const p=d.pts;let inside=false;
+  for(let i=0,j=3;i<4;j=i++){
+    const xi=p[i][0],yi=p[i][1],xj=p[j][0],yj=p[j][1];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
+  }
+  return inside;
+}
+function fidAt(mx,my){
+  for(const[f,d]of Object.entries(FIELDS))if(pointIn(mx,my,d))return f;
+  return null;
+}
+
+document.getElementById('c').addEventListener('click',e=>{
+  if(dragDist>5)return;
+  const r=e.target.getBoundingClientRect(),fid=fidAt(e.clientX-r.left,e.clientY-r.top);
+  if(fid)onFieldClick(fid);
+});
+function onFieldClick(fid){
+  if(promoPending||gameOver||setupOpen||paused||moveAnim||aiPlayers[cur()])return;
+  const coord=COORD_LABELS[fid],pd=gameState[coord],player=cur();
+  if(selected){
+    if(validMoves.has(fid)){const from=COORD_LABELS[selected];startMoveAnim(from,coord,()=>doMove(from,coord));}
+    else if(pd&&pd.player===player&&fid!==selected){
+      const{moves,castles}=getValidMoves(coord,movedPieces,epTarget);
+      selected=fid;validMoves=moves;castleMap=castles;draw();
+    } else{selected=null;validMoves=new Set();castleMap={};draw();}
+  } else {
+    if(pd&&pd.player===player){
+      const{moves,castles}=getValidMoves(coord,movedPieces,epTarget);
+      selected=fid;validMoves=moves;castleMap=castles;draw();
+    }
+  }
+}
+
+const cv=document.getElementById('c');
+cv.addEventListener('wheel',e=>{
+  e.preventDefault();const f=e.deltaY<0?1.1:0.9;
+  const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  ox=mx-(mx-ox)*f;oy=my-(my-oy)*f;zoom*=f;draw();
+},{passive:false});
+let drag=false,dx=0,dy=0,dragDist=0;
+cv.addEventListener('mousedown',e=>{drag=true;dragDist=0;dx=e.clientX;dy=e.clientY;cv.style.cursor='grabbing';});
+window.addEventListener('mouseup',()=>{drag=false;cv.style.cursor='default';});
+window.addEventListener('mousemove',e=>{
+  if(drag){dragDist+=Math.abs(e.clientX-dx)+Math.abs(e.clientY-dy);ox+=e.clientX-dx;oy+=e.clientY-dy;dx=e.clientX;dy=e.clientY;draw();}
+  const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  const tip=document.getElementById('tooltip'),fid=fidAt(mx,my);
+  if(fid&&!drag){
+    const coord=COORD_LABELS[fid],pd2=gameState[coord];
+    tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
+    tip.textContent=`${coord}${pd2?' | '+PNAMES[pd2.player]+' '+PIECES[pd2.piece]:''}`;
+  } else tip.style.display='none';
+});
+document.getElementById('chkLabels').onchange=e=>{showLabels=e.target.checked;draw();};
+document.getElementById('chkFollow2d').onchange=()=>draw();
+document.getElementById('chkCoordRing').onchange=e=>{showCoordRing=e.target.checked;draw();};
+cv.addEventListener('dblclick',()=>{fitBoard();draw();});
+function rotateBoard(){if(window.V3&&V3.on){V3.rotate();return;}rotation=(rotation+1)%3;fitBoard();draw();}
+document.getElementById('chkPieces').onchange=e=>{showPieces=e.target.checked;draw();};
+
+document.getElementById('chkHints').onchange=e=>{showHints=e.target.checked;draw();};
+document.getElementById('btnReset').onclick=()=>openSetup();
+window.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undoMove();}
+});
+resizeCanvas();
+initGame();
+resizeCanvas();
+openSetup();
+document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ================= 3D-Ansicht (three.js) =================
+window.V3={on:false};
+(function(){
+  let R=null,scene,camera,fieldGroup,pieceGroup,capGroup,labelGroup;
+  const fieldMesh={},matCache={};
+  let sideDir={},lastCur=null;
+  const cam={theta:0,phi:0.95,r:24,tx:0,tz:0},goal={theta:0,phi:0.95,r:24,tx:0,tz:0};
+
+  function withBase(fn){
+    const s={zoom,ox,oy,rotation};zoom=1;ox=0;oy=0;rotation=-1;buildFields();
+    const out=fn();
+    zoom=s.zoom;ox=s.ox;oy=s.oy;rotation=s.rotation;buildFields();
+    return out;
+  }
+  let BC=[0,0];
+  const W=(x,y)=>[(x-BC[0])/SIDE,(y-BC[1])/SIDE];   // Bildkoordinate → Welt (x,z)
+
+  // ---------- Figuren-Geometrie ----------
+  const GEO={};
+  const BASE=[[0,0],[0.3,0],[0.3,0.05],[0.26,0.09],[0.22,0.11]];
+  function lathe(pts){return new THREE.LatheGeometry(BASE.concat(pts).map(([r,h])=>new THREE.Vector2(r,h)),28);}
+  function at(g,x,y,z){g.translate(x,y,z);return g;}
+  function pieceGeos(t){
+    if(GEO[t])return GEO[t];
+    const g=[];
+    if(t==='P'){g.push(lathe([[0.16,0.15],[0.1,0.3],[0.15,0.33],[0.08,0.36],[0,0.36]]));g.push(at(new THREE.SphereGeometry(0.12,20,14),0,0.45,0));}
+    if(t==='R'){g.push(lathe([[0.19,0.15],[0.16,0.46],[0.23,0.49],[0.23,0.62],[0.15,0.62],[0.15,0.57],[0,0.57]]));
+      for(let i=0;i<4;i++){const a=i*Math.PI/2;g.push(at(new THREE.BoxGeometry(0.1,0.08,0.1),Math.cos(a)*0.17,0.66,Math.sin(a)*0.17));}}
+    if(t==='B'){g.push(lathe([[0.16,0.15],[0.09,0.44],[0.16,0.47],[0.09,0.5],[0,0.5]]));
+      g.push(new THREE.LatheGeometry([[0,0.5],[0.13,0.54],[0.14,0.62],[0.1,0.7],[0,0.77]].map(([r,h])=>new THREE.Vector2(r,h)),28));
+      g.push(at(new THREE.SphereGeometry(0.045,12,10),0,0.8,0));}
+    if(t==='Q'){g.push(lathe([[0.18,0.15],[0.1,0.54],[0.19,0.58],[0.12,0.62],[0.21,0.74],[0,0.7]]));
+      for(let i=0;i<8;i++){const a=i*Math.PI/4;g.push(at(new THREE.SphereGeometry(0.04,10,8),Math.cos(a)*0.2,0.76,Math.sin(a)*0.2));}
+      g.push(at(new THREE.SphereGeometry(0.07,14,10),0,0.78,0));}
+    if(t==='K'){g.push(lathe([[0.19,0.15],[0.11,0.57],[0.2,0.61],[0.13,0.65],[0.18,0.77],[0,0.77]]));
+    }
+    if(t==='N'){g.push(lathe([[0.19,0.15],[0.17,0.23],[0,0.23]]));
+      const s=new THREE.Shape();
+      const P=[[-0.15,0.2],[0.12,0.2],[0.08,0.36],[0.2,0.46],[0.28,0.5],[0.26,0.6],[0.1,0.68],[0.04,0.78],[-0.04,0.68],[-0.15,0.52]];
+      s.moveTo(P[0][0],P[0][1]);for(const p of P.slice(1))s.lineTo(p[0],p[1]);s.closePath();
+      const e=new THREE.ExtrudeGeometry(s,{depth:0.15,bevelEnabled:true,bevelSize:0.02,bevelThickness:0.02,bevelSegments:2});
+      e.translate(0,0,-0.075);g.push(e);}
+    return GEO[t]=g;
+  }
+  function pmat(player,hl){
+    const k=player+(hl||'');
+    if(matCache[k])return matCache[k];
+    const c=new THREE.Color(PCOLOR[player]);
+    const m=new THREE.MeshStandardMaterial({color:c,roughness:0.35,metalness:0.15});
+    if(hl==='sel'){m.emissive=new THREE.Color('#ffffff');m.emissiveIntensity=0.35;}
+    return matCache[k]=m;
+  }
+  let GOLD=null,crossList=[],knightList=[];
+  function goldMat(){return GOLD||(GOLD=new THREE.MeshStandardMaterial({color:'#ffd23f',metalness:0.3,roughness:0.3,emissive:'#c89400',emissiveIntensity:0.6}));}
+  function makePiece(t,player,hl){
+    const grp=new THREE.Group();
+    for(const g of pieceGeos(t)){const m=new THREE.Mesh(g,pmat(player,hl));m.castShadow=true;m.receiveShadow=true;grp.add(m);}
+    if(t==='K'){   // goldenes Kreuz – flach, wird im Bild immer frontal zur Kamera gedreht
+      if(!GEO.cross)GEO.cross=[at(new THREE.BoxGeometry(0.085,0.36,0.05),0,0,0),at(new THREE.BoxGeometry(0.26,0.085,0.05),0,0.05,0)];
+      const cg=new THREE.Group();cg.position.set(0,0.95,0);
+      for(const g of GEO.cross){const m=new THREE.Mesh(g,goldMat());m.castShadow=true;cg.add(m);}
+      grp.add(cg);crossList.push(cg);
+    }
+    if(t==='N'){const d=sideDir[player];grp.rotation.y=-Math.atan2(-d[1],-d[0]);knightList.push(grp);}  // Springer: wird im Bild ins Profil gedreht
+    return grp;
+  }
+
+  // ---------- Szene aufbauen ----------
+  function init(){
+    if(R)return true;
+    if(!window.THREE){alert('Die 3D-Ansicht braucht eine Internetverbindung (three.js wird geladen). Bitte online öffnen und erneut versuchen.');return false;}
+    const cv=document.getElementById('c3');
+    try{R=new THREE.WebGLRenderer({canvas:cv,antialias:true});}
+    catch(e){alert('Dein Browser unterstützt kein WebGL – 3D ist hier leider nicht möglich.');R=null;return false;}
+    R.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
+    scene=new THREE.Scene();scene.background=new THREE.Color('#1e1e1e');
+    camera=new THREE.PerspectiveCamera(42,1,0.1,200);
+    scene.add(new THREE.HemisphereLight(0xffffff,0x303040,0.6));
+    const dl=new THREE.DirectionalLight(0xffffff,0.85);dl.position.set(6,16,5);dl.castShadow=true;
+    dl.shadow.mapSize.set(2048,2048);Object.assign(dl.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:1,far:50});
+    dl.shadow.bias=-0.0005;scene.add(dl);
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:0.35}));
+    ground.rotation.x=-Math.PI/2;ground.position.y=-0.13;ground.receiveShadow=true;scene.add(ground);
+
+    fieldGroup=new THREE.Group();pieceGroup=new THREE.Group();capGroup=new THREE.Group();labelGroup=new THREE.Group();
+    scene.add(fieldGroup,pieceGroup,capGroup,labelGroup);
+
+    withBase(()=>{
+      BC=boardCenter();
+      for(const[fid,d]of Object.entries(FIELDS)){
+        const sh=new THREE.Shape();const p0=W(...d.pts[0]);sh.moveTo(p0[0],p0[1]);
+        for(const p of d.pts.slice(1)){const q=W(...p);sh.lineTo(q[0],q[1]);}
+        sh.closePath();
+        const g=new THREE.ExtrudeGeometry(sh,{depth:0.12,bevelEnabled:false});g.rotateX(Math.PI/2);
+        const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:fieldFill(fid),roughness:0.8}));
+        m.receiveShadow=true;m.userData.fid=fid;fieldMesh[fid]=m;fieldGroup.add(m);
+        const ed=new THREE.LineSegments(new THREE.EdgesGeometry(g),new THREE.LineBasicMaterial({color:'#4a4a4a'}));
+        fieldGroup.add(ed);
+        const c=W(d.cx,d.cy);m.userData.c=c;
+      }
+      // Blickrichtung je Spieler: von der Brettmitte zur eigenen A-Reihe
+      for(const p of TURN_ORDER){
+        let sx=0,sz=0;for(let i=1;i<=8;i++){const c=W(FIELDS[C2F[`${p}A${i}`]].cx,FIELDS[C2F[`${p}A${i}`]].cy);sx+=c[0];sz+=c[1];}
+        const l=Math.hypot(sx,sz)||1;sideDir[p]=[sx/l,sz/l];
+      }
+      // Koordinaten-Ring als Schilder
+      for(const l of coordRingLayout()){
+        const cnv=document.createElement('canvas');cnv.width=64;cnv.height=64;
+        const x=cnv.getContext('2d');x.font='bold 44px monospace';x.textAlign='center';x.textBaseline='middle';
+        x.lineWidth=6;x.strokeStyle='rgba(0,0,0,.85)';x.strokeText(l.txt,32,34);x.fillStyle=l.col;x.fillText(l.txt,32,34);
+        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cnv),depthWrite:false}));
+        const w=W(l.x,l.y);sp.position.set(w[0],0.12,w[1]);sp.scale.set(0.5,0.5,1);labelGroup.add(sp);
+      }
+    });
+    setupInput(cv);
+    preset(cur(),true);
+    loop();
+    return true;
+  }
+
+  // ---------- Zustand → Szene ----------
+  const HL={sel:'#ffdd00',castle:'#50c8ff',enemy:'#ff3300',valid:'#e6c63a'};
+  function sync(){
+    if(!R)return;
+    const checked=new Set();
+    for(const pl of TURN_ORDER)if(isInCheck(pl,gameState)){
+      const kc=Object.keys(gameState).find(c=>gameState[c].piece==='K'&&gameState[c].player===pl);if(kc)checked.add(C2F[kc]);
+    }
+    const lm=lastMoveFids();
+    for(const[fid,m]of Object.entries(fieldMesh)){
+      const coord=COORD_LABELS[fid],isV=validMoves.has(fid)&&showHints;
+      let col=fieldFill(fid),em='#000000',ei=0;
+      if(fid===selected){col=HL.sel;em=HL.sel;ei=0.35;}
+      else if(isV&&castleMap[fid]){col=HL.castle;em=HL.castle;ei=0.3;}
+      else if(isV&&gameState[coord]&&gameState[coord].player!==cur()){col=HL.enemy;em=HL.enemy;ei=0.35;}
+      else if(isV){col=HL.valid;em=HL.valid;ei=0.25;}
+      if((fid===lm.from||fid===lm.to)&&ei===0){col=fid===lm.to?'#c9a227':'#7a6420';em='#ffc828';ei=fid===lm.to?0.25:0.1;}
+      if(checked.has(fid)){em='#ff0000';ei=0.8;}
+      m.material.color.set(col);m.material.emissive.set(em);m.material.emissiveIntensity=ei;
+    }
+    // Figuren
+    pieceGroup.clear();crossList=[];knightList=[];
+    pieceGroup.visible=showPieces;
+    for(const[coord,pd]of Object.entries(gameState)){
+      if(animHidden(coord))continue;
+      const fid=C2F[coord],m=fieldMesh[fid];if(!m)continue;
+      const g=makePiece(pd.piece,pd.player,fid===selected?'sel':'');
+      g.position.set(m.userData.c[0],0,m.userData.c[1]);
+      g.traverse(o=>o.userData.fid=fid);
+      pieceGroup.add(g);
+    }
+    // bewegte Figur(en): gleiten mit kleinem Hüpfer
+    if(moveAnim){
+      const e=animProgress();
+      for(const it of moveAnim.items){
+        const a=fieldMesh[C2F[it.from]],b=fieldMesh[C2F[it.to]];if(!a||!b)continue;
+        const g=makePiece(it.piece,it.player,'');
+        g.position.set(a.userData.c[0]+(b.userData.c[0]-a.userData.c[0])*e,0.55*Math.sin(Math.PI*e),
+                       a.userData.c[1]+(b.userData.c[1]-a.userData.c[1])*e);
+        pieceGroup.add(g);
+      }
+      return;   // Rest ändert sich während der Animation nicht
+    }
+    // geschlagene Figuren
+    capGroup.clear();
+    const cap=withBase(()=>capturedLayout());
+    for(const it of cap){
+      if(kickHidden(it.ref))continue;
+      const g=makePiece(it.piece,it.player,'');const w=W(it.x,it.y);
+      g.position.set(w[0],-0.13,w[1]);g.scale.setScalar(0.55);capGroup.add(g);
+    }
+    // fliegende geschlagene Figuren: Stoß, hoher Bogen, Überschlag, Landung am Rand
+    for(const k of kicks){
+      const it=cap.find(x=>x.ref===k.ref),a=fieldMesh[C2F[k.capSq]],f=fieldMesh[C2F[k.from]],tt=fieldMesh[C2F[k.to]];
+      if(!it||!a||!f||!tt)continue;
+      let dx=tt.userData.c[0]-f.userData.c[0],dz=tt.userData.c[1]-f.userData.c[1];const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;
+      const w=W(it.x,it.y),P=kickPath(k,a.userData.c,w,[dx,dz],2.4);
+      const g=makePiece(k.piece,k.player,'');g.userData.noFace=true;   // fliegende Figur wirbelt frei
+      g.position.set(P.x,-0.13*P.e+P.h,P.y);
+      g.rotation.set(P.spin*0.8,0,P.spin*0.5);g.scale.setScalar(1-0.45*P.e);
+      capGroup.add(g);
+    }
+    labelGroup.visible=showCoordRing;
+    // Kamera folgt dem Spieler am Zug
+    if(cur()!==lastCur&&!moveAnim){lastCur=cur();const pl=cur();
+      if(document.getElementById('chkFollow').checked&&!gameOver)setTimeout(()=>{if(cur()===pl&&V3.on)preset(pl);},500);}
+  }
+
+  // ---------- Kamera ----------
+  function preset(p,instant){
+    let th;
+    if(p==='top'){th=goal.theta;Object.assign(goal,{theta:th,phi:0.02,r:20,tx:0,tz:0});}
+    else{const d=sideDir[p];th=Math.atan2(d[1],d[0]);Object.assign(goal,{theta:th,phi:0.95,r:19,tx:0,tz:0});}
+    // kürzester Drehweg
+    while(goal.theta-cam.theta>Math.PI)goal.theta-=2*Math.PI;
+    while(goal.theta-cam.theta<-Math.PI)goal.theta+=2*Math.PI;
+    if(instant)Object.assign(cam,goal);
+  }
+  function applyCam(){
+    const sp=Math.sin(cam.phi);
+    camera.position.set(cam.tx+cam.r*sp*Math.cos(cam.theta),cam.r*Math.cos(cam.phi),cam.tz+cam.r*sp*Math.sin(cam.theta));
+    camera.lookAt(cam.tx,0,cam.tz);
+  }
+  let lastT=performance.now();
+  function loop(){
+    const now=performance.now(),dt=Math.min(0.1,(now-lastT)/1000);lastT=now;
+    if(!V3.on){requestAnimationFrame(loop);return;}
+    const f=1-Math.exp(-dt*2.6);   // gleichmäßiger Schwenk, unabhängig von der Bildrate
+    for(const k of['theta','phi','r','tx','tz'])cam[k]+=(goal[k]-cam[k])*f;
+    applyCam();
+    // Königskreuze frontal zur Kamera drehen
+    const wp=new THREE.Vector3();
+    // Springer immer im Profil zeigen, Schnauze Richtung Brettmitte
+    for(const kg of knightList){
+      if(kg.userData.noFace)continue;
+      kg.getWorldPosition(wp);
+      let a=Math.atan2(camera.position.x-wp.x,camera.position.z-wp.z);
+      if(Math.cos(a)*(-wp.x)+(-Math.sin(a))*(-wp.z)<0)a+=Math.PI;
+      kg.rotation.y=a;
+    }
+    for(const cg of crossList){cg.getWorldPosition(wp);cg.rotation.y=Math.atan2(camera.position.x-wp.x,camera.position.z-wp.z)-(cg.parent?cg.parent.rotation.y:0);}
+    R.render(scene,camera);
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- Maus / Touch ----------
+  let ray=null,ndc=null;
+  function pick(cv,e){
+    const r=cv.getBoundingClientRect();
+    ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
+    ray.setFromCamera(ndc,camera);
+    const hits=ray.intersectObjects([pieceGroup,fieldGroup],true);
+    for(const h of hits)if(h.object.userData.fid)return h.object.userData.fid;
+    return null;
+  }
+  function setupInput(cv){
+    ray=new THREE.Raycaster();ndc=new THREE.Vector2();
+    let down=null;
+    cv.addEventListener('contextmenu',e=>e.preventDefault());
+    cv.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,lx:e.clientX,ly:e.clientY,btn:e.button,shift:e.shiftKey,moved:0};cv.setPointerCapture(e.pointerId);});
+    cv.addEventListener('pointermove',e=>{
+      const tip=document.getElementById('tooltip');
+      if(down){
+        const dx=e.clientX-down.lx,dy=e.clientY-down.ly;down.lx=e.clientX;down.ly=e.clientY;down.moved+=Math.abs(dx)+Math.abs(dy);
+        if(down.moved<5)return;
+        tip.style.display='none';
+        if(down.btn===2||down.shift){   // verschieben
+          // Bildschirm-Rechts/Vorwärts auf der Brettebene
+          const s=cam.r*0.0016,ct=Math.cos(cam.theta),st=Math.sin(cam.theta);
+          const fx=-ct,fz=-st,rx=st,rz=-ct;
+          goal.tx+=(-rx*dx+fx*dy)*s;goal.tz+=(-rz*dx+fz*dy)*s;
+          goal.tx=Math.max(-12,Math.min(12,goal.tx));goal.tz=Math.max(-12,Math.min(12,goal.tz));
+        } else {                         // drehen / kippen
+          goal.theta+=dx*0.008;goal.phi=Math.max(0.02,Math.min(1.45,goal.phi-dy*0.008));
+        }
+        Object.assign(cam,goal);
+        return;
+      }
+      const fid=pick(cv,e);
+      if(fid){const coord=COORD_LABELS[fid],pd=gameState[coord];
+        tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
+        tip.textContent=`${coord}${pd?' | '+PNAMES[pd.player]+' '+PIECES[pd.piece]:''}`;}
+      else tip.style.display='none';
+    });
+    cv.addEventListener('pointerup',e=>{
+      if(down&&down.moved<5&&down.btn===0){const fid=pick(cv,e);if(fid)onFieldClick(fid);}
+      down=null;
+    });
+    cv.addEventListener('pointerleave',()=>{document.getElementById('tooltip').style.display='none';});
+    cv.addEventListener('wheel',e=>{e.preventDefault();goal.r=Math.max(6,Math.min(60,goal.r*(e.deltaY<0?0.9:1.1)));},{passive:false});
+    cv.addEventListener('dblclick',()=>preset(cur()));
+  }
+
+  // ---------- öffentliche Funktionen ----------
+  V3.sync=sync;
+  V3.resize=(w,h)=>{if(!R)return;R.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};
+  V3.view=p=>{if(V3.on)preset(p==='cur'?cur():p);};
+  V3.rotate=()=>{goal.theta+=2*Math.PI/3;};
+  V3.toggle=()=>{
+    if(!V3.on&&!init())return;
+    V3.on=!V3.on;
+    document.getElementById('c').style.display=V3.on?'none':'block';
+    document.getElementById('c3').style.display=V3.on?'block':'none';
+    document.getElementById('viewBar').classList.toggle('show',V3.on);
+    document.getElementById('btn3d').textContent=V3.on?'2D':'3D';
+    document.getElementById('tooltip').style.display='none';
+    resizeCanvas();
+    if(V3.on){lastCur=cur();preset(cur(),true);}
+  };
+})();
+</script>
+</body></html>
