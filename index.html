@@ -219,7 +219,7 @@ body.barBottom #selfView { bottom:50px; }
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <div id="avPlayers"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 21:45 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 00:15 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -1229,8 +1229,8 @@ function crossRook(sec,col){
 function crossBishop(sec,col,dc){
   if(col<=3)return[LOW_NBR[sec]];
   if(col>=6)return[HIGH_NBR[sec]];
-  if((col===4&&dc===-1)||(col===5&&dc===1))return[LOW_NBR[sec],HIGH_NBR[sec]];
-  return[];
+  if((col===4&&dc===-1)||(col===5&&dc===1))return[LOW_NBR[sec],HIGH_NBR[sec]];   // genau durch den Mittelpunkt
+  return[col===4?LOW_NBR[sec]:HIGH_NBR[sec]];   // schräg an der Mitte vorbei, z. B. Rot D6 ↔ Grün D4
 }
 
 function rookRay(sec,row,col,dr,dc,maxN,state,player,forAtk){
