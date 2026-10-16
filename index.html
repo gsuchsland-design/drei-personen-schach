@@ -219,7 +219,7 @@ body.barBottom #selfView { bottom:50px; }
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <div id="avPlayers"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 00:15 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 00:30 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -309,7 +309,7 @@ body.barBottom #selfView { bottom:50px; }
    <h3>Schach, Hilfspflicht und Matt</h3>
    <ul>
     <li>Wer im Schach steht, muss es aufheben. Kein Zug darf den eigenen König im Schach lassen.</li>
-    <li><b>Hilfspflicht:</b> Steht ein Spieler im Schach und kommt der dritte Spieler <i>vor</i> ihm an die Reihe, darf dieser keinen Zug machen, nach dem der Bedrohte matt wäre. Ist der Bedrohte bereits matt, muss der dritte Spieler ihn befreien – kann er das nicht, bleibt es beim Matt.</li>
+    <li><b>Hilfspflicht:</b> Steht ein Spieler im Schach und kommt der dritte Spieler <i>vor</i> ihm an die Reihe, darf dieser keinen Zug machen, nach dem der Bedrohte matt wäre. Ist der Bedrohte bereits matt, muss der dritte Spieler ihn befreien – kann er das nicht, bleibt es beim Matt. Kann sich der Bedrohte ohnehin selbst retten, egal was der dritte Spieler zieht, gibt es keine Einschränkung.</li>
     <li><b>Schachmatt beendet das Spiel.</b> Es gewinnt, <b>wer dem König Schach gibt</b> – nicht, wer nur Fluchtfelder nimmt. Die beiden anderen verlieren.</li>
    </ul>
    <h3>Kein Zug möglich</h3>
@@ -1557,7 +1557,18 @@ function advanceTurn(newEP=null){
   if(isInCheck(thd,gameState)){
     const mated=isMated(thd,gameState,epList);
     helpDuty={helper:nxt,victim:thd,mater:mover,mated};
-    if(!playerHasValidMove(nxt,epList)){
+    // Kann sich der Bedrohte ohnehin selbst helfen, egal was der Helfer zieht, gibt es keine Pflicht:
+    // Sie greift nur, wenn mindestens ein Zug des Helfers den Bedrohten mattsetzen würde.
+    if(!mated){
+      let binds=false;
+      outer: for(const[coord,pd]of Object.entries(gameState)){
+        if(!pd||pd.player!==nxt)continue;
+        for(const to of legalTargets(coord,gameState,epList))
+          if(isMated(thd,applyMove(gameState,coord,to,epList),epList)){binds=true;break outer;}
+      }
+      if(!binds)helpDuty=null;
+    }
+    if(helpDuty&&!playerHasValidMove(nxt,epList)){
       if(mated){
         turnNote=`${PNAMES[nxt]} kann ${PNAMES[thd]} nicht helfen. `;
         helpDuty=null;return endGame(mateWinner(thd,mover,gameState),thd);
@@ -1597,7 +1608,7 @@ function updateStatus(){
     txt+=aiPlayers[p]?`${PNAMES[p]} (Computer) überlegt …`:(NET.on&&p===NET.seat)?`Du bist am Zug (${PNAMES[p]})`:`${PNAMES[p]}${netName(p)?' ('+netName(p)+')':''} am Zug`;
     const chk=TURN_ORDER.filter(x=>isInCheck(x,gameState));
     if(chk.length)txt+=' — SCHACH: '+chk.map(x=>PNAMES[x]).join(' & ')+'!';
-    if(helpDuty&&helpDuty.helper===p)txt+=helpDuty.mated?` — HILFSPFLICHT: ${PNAMES[helpDuty.victim]} aus dem Matt befreien!`:` — HILFSPFLICHT: ${PNAMES[helpDuty.victim]} steht im Schach und darf nicht mattgesetzt werden!`;
+    if(helpDuty&&helpDuty.helper===p)txt+=helpDuty.mated?` — HILFSPFLICHT: ${PNAMES[helpDuty.victim]} ist matt – du musst ihn befreien!`:` — HILFSPFLICHT: Manche deiner Züge würden ${PNAMES[helpDuty.victim]} mattsetzen – die sind gesperrt.`;
   }
   el.textContent=txt;el.style.color=PCOLOR[p];
 }
@@ -2887,6 +2898,7 @@ window.addEventListener('mouseup',()=>{drag=false;cv.style.cursor='default';});
 window.addEventListener('mousemove',e=>{
   if(drag){dragDist+=Math.abs(e.clientX-dx)+Math.abs(e.clientY-dy);ox+=e.clientX-dx;oy+=e.clientY-dy;dx=e.clientX;dy=e.clientY;draw();}
   const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  if(window.V3&&V3.on)return;   // im 3D-Modus zeigt die 3D-Ansicht selbst an, was unter der Maus liegt
   const tip=document.getElementById('tooltip'),fid=fidAt(mx,my);
   if(NO_HOVER||performance.now()-lastTouch<1500){tip.style.display='none';return;}   // Touch: keine Hover-Tooltips
   if(fid&&!drag){
