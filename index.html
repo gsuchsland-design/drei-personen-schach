@@ -2125,20 +2125,18 @@ window.V3={on:false};
     // ---------- Monitore mit den Mitspielern hinter jeder Sektion ----------
     monGroup=new THREE.Group();scene.add(monGroup);
     let maxR=0;for(const m of Object.values(fieldMesh)){const[x,z]=m.userData.c;maxR=Math.max(maxR,Math.hypot(x,z));}
-    const D=maxR+4.6,MW=4.6,MH=3.45,MY=1.25;
+    const D=maxR+1.9,MW=5.6,MH=4.2,MY=0.1;
     const bezMat=new THREE.MeshStandardMaterial({color:'#1c1c1c',roughness:0.45,metalness:0.5});
     for(const p of TURN_ORDER){
       const g=new THREE.Group(),d=sideDir[p];g.position.set(d[0]*D,0,d[1]*D);
       const tex=new THREE.CanvasTexture(avCanvas(p));tex.minFilter=THREE.LinearFilter;
-      const head=new THREE.Group();head.position.y=MY;head.rotation.x=-0.16;   // leicht nach hinten geneigt
+      const head=new THREE.Group();head.position.y=MY;head.rotation.x=-0.3;   // leicht nach hinten geneigt
       const scr=new THREE.Mesh(new THREE.PlaneGeometry(MW,MH),new THREE.MeshBasicMaterial({map:tex}));scr.position.set(0,MH/2+0.2,0.13);
       const bez=new THREE.Mesh(new THREE.BoxGeometry(MW+0.36,MH+0.36,0.22),bezMat);bez.position.set(0,MH/2+0.2,0);
       const glow=new THREE.Mesh(new THREE.BoxGeometry(MW+0.56,MH+0.56,0.1),new THREE.MeshStandardMaterial({color:PCOLOR[p],emissive:PCOLOR[p],emissiveIntensity:0.55}));
       glow.position.set(0,MH/2+0.2,-0.08);
       head.add(glow,bez,scr);
-      const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.16,MY+0.4,16),bezMat);pole.position.y=(MY+0.4)/2-0.13;pole.castShadow=true;
-      const base=new THREE.Mesh(new THREE.CylinderGeometry(0.9,1.0,0.1,32),bezMat);base.position.y=-0.08;base.receiveShadow=true;
-      g.add(head,pole,base);
+      g.add(head);   // ohne Fuß: der Monitor schwebt hinter der Sektion
       g.lookAt(0,0,0);   // Bildschirm zur Brettmitte
       monGroup.add(g);monitors[p]={g,tex};
     }
