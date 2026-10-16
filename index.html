@@ -1105,6 +1105,7 @@ let avatarsOn=true;try{avatarsOn=localStorage.getItem('dreiSchach.avatars')!=='0
 function toggleAvatars(){
   avatarsOn=!avatarsOn;try{localStorage.setItem('dreiSchach.avatars',avatarsOn?'1':'0');}catch(e){}
   syncAvUI();layoutStrip();resizeCanvas();
+  if(window.V3&&V3.refit)V3.refit(true);
 }
 function syncAvUI(){
   document.getElementById('avBtn').style.opacity=avatarsOn?'':'0.45';
@@ -1193,6 +1194,7 @@ function ac(){
 function toggleViewBar(){
   const vb=document.getElementById('viewBar');vb.classList.toggle('mini');
   document.getElementById('vbToggle').textContent=vb.classList.contains('mini')?'🎥 ▴':'▾';
+  if(window.V3&&V3.refit)V3.refit(false);
 }
 function toggleSound(){
   soundOn=!soundOn;try{localStorage.setItem('dreiSchach.sound',soundOn?'1':'0');}catch(e){}
@@ -2005,6 +2007,8 @@ cv.addEventListener('wheel',e=>{
   ox=mx-(mx-ox)*f;oy=my-(my-oy)*f;zoom*=f;draw();
 },{passive:false});
 let drag=false,dx=0,dy=0,dragDist=0,lastTouch=0;
+const NO_HOVER=matchMedia('(hover: none)').matches;
+window.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){lastTouch=performance.now();document.getElementById('tooltip').style.display='none';}},true);
 // ---- 2D Touch: ein Finger verschiebt, zwei Finger zoomen (und verschieben), Antippen wählt ----
 {
   const tp=new Map();let pinch=null,last=null;
@@ -2047,7 +2051,7 @@ window.addEventListener('mousemove',e=>{
   if(drag){dragDist+=Math.abs(e.clientX-dx)+Math.abs(e.clientY-dy);ox+=e.clientX-dx;oy+=e.clientY-dy;dx=e.clientX;dy=e.clientY;draw();}
   const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
   const tip=document.getElementById('tooltip'),fid=fidAt(mx,my);
-  if(performance.now()-lastTouch<1000){tip.style.display='none';return;}   // Touch: keine Hover-Tooltips
+  if(NO_HOVER||performance.now()-lastTouch<1500){tip.style.display='none';return;}   // Touch: keine Hover-Tooltips
   if(fid&&!drag){
     const coord=COORD_LABELS[fid],pd2=gameState[coord];
     tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
@@ -2085,7 +2089,8 @@ window.V3={on:false};
   let R=null,scene,camera,fieldGroup,pieceGroup,capGroup,labelGroup;
   const fieldMesh={},matCache={};
   let sideDir={},lastCur=null;
-  const cam={theta:0,phi:0.95,r:24,tx:0,tz:0},goal={theta:0,phi:0.95,r:24,tx:0,tz:0};
+  const cam={theta:0,phi:0.95,r:24,tx:0,ty:0,tz:0},goal={theta:0,phi:0.95,r:24,tx:0,ty:0,tz:0};
+  let userZoomed=false,MON_W=5.6,MON_H=4.2;
 
   function withBase(fn){
     const s={zoom,ox,oy,rotation};zoom=1;ox=0;oy=0;rotation=-1;buildFields();
@@ -2198,7 +2203,7 @@ window.V3={on:false};
     // ---------- Monitore mit den Mitspielern hinter jeder Sektion ----------
     monGroup=new THREE.Group();scene.add(monGroup);
     let maxR=0;for(const m of Object.values(fieldMesh)){const[x,z]=m.userData.c;maxR=Math.max(maxR,Math.hypot(x,z));}
-    const D=maxR+1.9,MW=5.6,MH=4.2,MY=0.1;
+    const D=maxR+1.9,MW=MON_W,MH=MON_H,MY=0.1;
     const bezMat=new THREE.MeshStandardMaterial({color:'#1c1c1c',roughness:0.45,metalness:0.5});
     for(const p of TURN_ORDER){
       const g=new THREE.Group(),d=sideDir[p];g.position.set(d[0]*D,0,d[1]*D);
@@ -2297,10 +2302,51 @@ window.V3={on:false};
     const c=Math.cos(d),s=Math.sin(d),tx=goal.tx,tz=goal.tz;
     goal.tx=tx*c-tz*s;goal.tz=tx*s+tz*c;
   }
+  // ---------- Startansicht automatisch an Bildschirm und Monitore anpassen ----------
+  const monOn=()=>avatarsOn&&monGroup;
+  function fitPoints(th){
+    const pts=[];
+    for(const m of Object.values(fieldMesh))pts.push({v:new THREE.Vector3(m.userData.c[0],0.4,m.userData.c[1]),lx:0.97,ly:0.9});
+    for(const sp of labelGroup.children)pts.push({v:sp.position.clone(),lx:0.99,ly:0.92});
+    if(monOn()){
+      monGroup.updateMatrixWorld(true);const cx=Math.cos(th),cz=Math.sin(th);
+      for(const p of TURN_ORDER){
+        const d=sideDir[p];if(d[0]*cx+d[1]*cz>=0.55)continue;   // eigener Monitor ist ausgeblendet
+        const h=monitors[p].head,w=MON_W/2+0.3,top=MON_H+0.5,bot=-0.1;
+        for(const[x,y]of[[-w,bot],[w,bot],[-w,top],[w,top]])pts.push({v:h.localToWorld(new THREE.Vector3(x,y,0)),lx:1.02,ly:0.97});
+      }
+    }
+    return pts;
+  }
+  const fitCam=new THREE.PerspectiveCamera();
+  function fitR(th,ph,ty,pts){
+    fitCam.copy(camera);let lo=4,hi=120;
+    // unten freihalten, was die Perspektiv-Leiste verdeckt
+    const vb=document.getElementById('viewBar'),ch=R.domElement.clientHeight||1;
+    const vbH=vb&&vb.classList.contains('show')?vb.offsetHeight+14:0,botCut=Math.min(0.8,2*vbH/ch);
+    const v=new THREE.Vector3(),sp=Math.sin(ph);
+    for(let i=0;i<24;i++){
+      const r=(lo+hi)/2;
+      fitCam.position.set(r*sp*Math.cos(th),ty+r*Math.cos(ph),r*sp*Math.sin(th));fitCam.lookAt(0,ty,0);fitCam.updateMatrixWorld(true);
+      let ok=true;
+      for(const p of pts){v.copy(p.v).project(fitCam);if(v.z>1||Math.abs(v.x)>p.lx||v.y>p.ly||v.y<-(p.ly-botCut)){ok=false;break;}}
+      if(ok)hi=r;else lo=r;
+    }
+    return hi;
+  }
+  function fitTy(){return monOn()?1.4*monScale:0;}
+  function refit(force){
+    if(!R||(userZoomed&&!force))return;
+    goal.ty=fitTy();goal.tx=0;goal.tz=0;
+    goal.r=fitR(goal.theta,goal.phi,goal.ty,fitPoints(goal.theta));
+    if(force)userZoomed=false;
+  }
   function preset(p,instant){
     let th;
-    if(p==='top'){th=goal.theta;Object.assign(goal,{theta:th,phi:0.02,r:20,tx:0,tz:0});}
-    else{const d=sideDir[p];th=Math.atan2(d[1],d[0]);Object.assign(goal,{theta:th,phi:0.95,r:19,tx:0,tz:0});}
+    if(p==='top'){th=goal.theta;Object.assign(goal,{theta:th,phi:0.02,tx:0,tz:0});}
+    else{const d=sideDir[p];th=Math.atan2(d[1],d[0]);Object.assign(goal,{theta:th,phi:0.95,tx:0,tz:0});}
+    goal.ty=p==='top'?0:fitTy();
+    goal.r=fitR(th,goal.phi,goal.ty,fitPoints(th));userZoomed=false;
     // kürzester Drehweg
     while(goal.theta-cam.theta>Math.PI)goal.theta-=2*Math.PI;
     while(goal.theta-cam.theta<-Math.PI)goal.theta+=2*Math.PI;
@@ -2308,15 +2354,15 @@ window.V3={on:false};
   }
   function applyCam(){
     const sp=Math.sin(cam.phi);
-    camera.position.set(cam.tx+cam.r*sp*Math.cos(cam.theta),cam.r*Math.cos(cam.phi),cam.tz+cam.r*sp*Math.sin(cam.theta));
-    camera.lookAt(cam.tx,0,cam.tz);
+    camera.position.set(cam.tx+cam.r*sp*Math.cos(cam.theta),cam.ty+cam.r*Math.cos(cam.phi),cam.tz+cam.r*sp*Math.sin(cam.theta));
+    camera.lookAt(cam.tx,cam.ty,cam.tz);
   }
   let lastT=performance.now();
   function loop(){
     const now=performance.now(),dt=Math.min(0.1,(now-lastT)/1000);lastT=now;
     if(!V3.on){requestAnimationFrame(loop);return;}
     const f=1-Math.exp(-dt*2.6);   // gleichmäßiger Schwenk, unabhängig von der Bildrate
-    for(const k of['theta','phi','r','tx','tz'])cam[k]+=(goal[k]-cam[k])*f;
+    for(const k of['theta','phi','r','tx','ty','tz'])cam[k]+=(goal[k]-cam[k])*f;
     applyCam();
     // Monitore: nur sichtbar, wenn Mitspieler eingeblendet; den Monitor auf der eigenen Seite ausblenden
     if(monGroup){
@@ -2375,7 +2421,7 @@ window.V3={on:false};
       if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
       if(pinch&&ptrs.size>=2){
         const t=twoInfo();
-        goal.r=Math.max(6,Math.min(60,pinch.r*pinch.d/t.d));
+        goal.r=Math.max(6,Math.min(120,pinch.r*pinch.d/t.d));userZoomed=true;
         pan(t.mx-pinch.mx,t.my-pinch.my);pinch.mx=t.mx;pinch.my=t.my;
         Object.assign(cam,goal);return;
       }
@@ -2388,7 +2434,7 @@ window.V3={on:false};
         Object.assign(cam,goal);
         return;
       }
-      if(e.pointerType==='touch')return;
+      if(e.pointerType==='touch'||NO_HOVER)return;
       const fid=pick(cv,e);
       if(fid){const coord=COORD_LABELS[fid],pd=gameState[coord];
         tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
@@ -2404,18 +2450,19 @@ window.V3={on:false};
     cv.addEventListener('pointerup',end);
     cv.addEventListener('pointercancel',end);
     cv.addEventListener('pointerleave',()=>{document.getElementById('tooltip').style.display='none';});
-    cv.addEventListener('wheel',e=>{e.preventDefault();goal.r=Math.max(6,Math.min(60,goal.r*(e.deltaY<0?0.9:1.1)));},{passive:false});
+    cv.addEventListener('wheel',e=>{e.preventDefault();goal.r=Math.max(6,Math.min(120,goal.r*(e.deltaY<0?0.9:1.1)));userZoomed=true;},{passive:false});
     cv.addEventListener('dblclick',()=>preset(cur()));
   }
 
   // ---------- öffentliche Funktionen ----------
   V3.sync=sync;
-  V3.resize=(w,h)=>{if(!R)return;R.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};
+  V3.resize=(w,h)=>{if(!R)return;R.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();refit(false);};
+  V3.refit=f=>refit(f);
   V3.view=p=>{if(V3.on)preset(p==='cur'?cur():p);};
   V3.rotate=()=>{goal.theta+=2*Math.PI/3;};
   V3.setMonScale=v=>{monScale=Math.max(0.5,Math.min(1.8,+v||1));
     try{localStorage.setItem('dreiSchach.monScale',String(monScale));}catch(e){}
-    for(const p of TURN_ORDER)if(monitors[p])monitors[p].head.scale.setScalar(monScale);};
+    for(const p of TURN_ORDER)if(monitors[p])monitors[p].head.scale.setScalar(monScale);refit(false);};
   V3.monScale=()=>monScale;
   V3.avatarTick=()=>{if(!monGroup||!monGroup.visible)return;for(const p of TURN_ORDER)if(monitors[p].g.visible)monitors[p].tex.needsUpdate=true;};
   V3.camInfo=()=>({r:goal.r,theta:goal.theta,phi:goal.phi,tx:goal.tx,tz:goal.tz});
