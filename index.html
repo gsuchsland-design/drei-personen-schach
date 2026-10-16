@@ -180,6 +180,7 @@ body.fullscreen #captured { margin:2px 0; }
   <button onclick="V3.view('R')" style="color:#ff5533">Rot</button>
   <button onclick="V3.view('top')">Oben</button>
   <label><input type="checkbox" id="chkFollow" checked> folgt Spieler am Zug</label>
+  <label title="Größe der Mitspieler-Monitore">🖥️ <input type="range" id="monSize" min="50" max="180" step="5" value="100" style="width:90px;vertical-align:middle" oninput="V3.setMonScale(this.value/100)"></label>
   <span class="hint">Ziehen = drehen · Rechtsklick/Shift = verschieben · Rad = Zoom</span>
  </span>
  <button id="vbToggle" onclick="toggleViewBar()" title="Leiste ein-/ausklappen">▾</button>
@@ -2004,6 +2005,7 @@ openSetup();
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
 document.getElementById('avBtn').style.opacity=avatarsOn?'':'0.45';
 layoutStrip();resizeCanvas();
+try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -2060,6 +2062,7 @@ window.V3={on:false};
     return matCache[k]=m;
   }
   let GOLD=null,crossList=[],knightList=[],monGroup=null;const monitors={};
+  let monScale=1;try{monScale=parseFloat(localStorage.getItem('dreiSchach.monScale'))||1;}catch(e){}
   function goldMat(){return GOLD||(GOLD=new THREE.MeshStandardMaterial({color:'#ffd23f',metalness:0.3,roughness:0.3,emissive:'#c89400',emissiveIntensity:0.6}));}
   function makePiece(t,player,hl){
     const grp=new THREE.Group();
@@ -2138,7 +2141,7 @@ window.V3={on:false};
       head.add(glow,bez,scr);
       g.add(head);   // ohne Fuß: der Monitor schwebt hinter der Sektion
       g.lookAt(0,0,0);   // Bildschirm zur Brettmitte
-      monGroup.add(g);monitors[p]={g,tex};
+      monGroup.add(g);monitors[p]={g,tex,head};head.scale.setScalar(monScale);
     }
     setupInput(cv);
     preset(cur(),true);
@@ -2340,6 +2343,10 @@ window.V3={on:false};
   V3.resize=(w,h)=>{if(!R)return;R.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};
   V3.view=p=>{if(V3.on)preset(p==='cur'?cur():p);};
   V3.rotate=()=>{goal.theta+=2*Math.PI/3;};
+  V3.setMonScale=v=>{monScale=Math.max(0.5,Math.min(1.8,+v||1));
+    try{localStorage.setItem('dreiSchach.monScale',String(monScale));}catch(e){}
+    for(const p of TURN_ORDER)if(monitors[p])monitors[p].head.scale.setScalar(monScale);};
+  V3.monScale=()=>monScale;
   V3.avatarTick=()=>{if(!monGroup||!monGroup.visible)return;for(const p of TURN_ORDER)if(monitors[p].g.visible)monitors[p].tex.needsUpdate=true;};
   V3.camInfo=()=>({r:goal.r,theta:goal.theta,phi:goal.phi,tx:goal.tx,tz:goal.tz});
   V3.screenPos=coord=>{const m=fieldMesh[C2F[coord]];if(!m)return null;applyCam();camera.updateMatrixWorld();
