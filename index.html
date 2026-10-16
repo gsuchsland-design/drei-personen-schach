@@ -146,6 +146,8 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #toast { position:fixed; left:50%; top:54px; transform:translateX(-50%); z-index:400; background:rgba(40,30,70,.95); color:#fff; border:1px solid #8a6fd0;
   border-radius:8px; padding:8px 14px; font-size:14px; max-width:92vw; opacity:0; pointer-events:none; transition:opacity .3s; text-align:center; }
 #toast.show { opacity:1; }
+#netBanner { display:none; position:fixed; left:0; right:0; top:0; z-index:420; background:#7a4b00; color:#fff; padding:8px 12px; font-size:14px; text-align:center; }
+#netBanner.show { display:block; }
 #specReq { display:none; position:fixed; left:50%; bottom:64px; transform:translateX(-50%); z-index:410; background:rgba(40,30,70,.97); color:#fff;
   border:2px solid #8a6fd0; border-radius:10px; padding:10px 12px; font-size:15px; max-width:94vw; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
 #specReq.show { display:flex; }
@@ -217,7 +219,7 @@ body.barBottom #selfView { bottom:50px; }
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <div id="avPlayers"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 19:00 · © 2026 Guido Suchsland</div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 19:30 · © 2026 Guido Suchsland</div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -570,10 +572,8 @@ async function netCreate(){
     catch(e){if(e.type!=='unavailable-id'){lbStatus('⚠️ Verbindung fehlgeschlagen ('+(e.type||'Fehler')+'). Bitte später noch einmal versuchen.');return;}}
   }
   if(!NET.peer)return;
-  NET.peer.on('connection',hostAccept);
-  NET.peer.on('call',c=>{c.answer(outStream());hookCall(c);});
-  NET.peer.on('disconnected',()=>{try{NET.peer.reconnect();}catch(e){}});
-  try{history.replaceState(null,'',location.pathname+'?spiel='+NET.code+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):''));}catch(e){}
+  wirePeer(NET.peer);
+  try{window.history.replaceState(null,'',location.pathname+'?spiel='+NET.code+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):''));}catch(e){}
   lbStatus('Bereit! Schicke deinen Freunden den Einladungslink.');
   hostLobby();renderInvite();
 }
@@ -585,7 +585,7 @@ function hostLobby(){
   NET.lobby=L;
   NET.specList=Object.values(NET.specs).map(z=>({id:z.conn.peer,name:z.name}));
   netBroadcast({t:'lobby',lobby:L,specs:NET.specList,started:NET.started,lvl:NET.cfg.lvl});
-  renderLobby();netAttach();
+  renderLobby();netAttach();hostSave();
   if(NET.started){updateStatus();renderClocks();}
 }
 function hostAccept(conn){
@@ -598,6 +598,7 @@ function hostRecv(conn,m){
   if(m.t==='hello'){
     if(m.token&&NET.banned.has(m.token)){netSend(conn,{t:'kicked',again:true});setTimeout(()=>conn.close(),500);return;}
     let p=TURN_ORDER.find(q=>NET.seats[q].token&&NET.seats[q].token===m.token);
+    if(p&&NET.seats[p].timer)clearTimeout(NET.seats[p].timer);
     if(p&&NET.seats[p].kind==='peer'){   // derselbe Mitspieler kommt neu herein (alte Verbindung hängt noch)
       const old=NET.seats[p].conn;NET.seats[p].conn=null;try{old&&old.close();}catch(e){}
       const oid=NET.seats[p].id;if(oid&&NET.calls[oid]){try{NET.calls[oid].close();}catch(e){}delete NET.calls[oid];}
@@ -631,7 +632,7 @@ function hostRecv(conn,m){
   const p=seatOfConn(conn);if(!p)return;
   NET.seats[p].seen=performance.now();
   if(m.t==='ping')return;
-  if(m.t==='bye'){hostDrop(conn);try{conn.close();}catch(e){}return;}
+  if(m.t==='bye'){hostDrop(conn,true);try{conn.close();}catch(e){}return;}
   if(m.t==='av'){NET.avs[p]={cam:m.cam,mic:m.mic};netBroadcast({t:'av',p,cam:m.cam,mic:m.mic},conn);hostLobby();return;}
   if(m.t==='mv'||m.t==='promo'){m.p=p;m.fromConn=conn;NET.q.push(m);netPump();return;}
   if(m.t==='resync'){netSend(conn,{t:'sync',data:netSyncData()});return;}
@@ -693,11 +694,58 @@ function netKick(kind,key){
   netBroadcast({t:'note',txt:`${name} wurde vom Gastgeber aus dem Spiel genommen.`},conn);
   hostLobby();syncAvUI();
 }
-function hostDrop(conn){
+const AWAY_MS=90000;
+function startAway(p,a){
+  a.timer=setTimeout(()=>{if(NET.seats[p]!==a)return;
+    const name=a.name;
+    if(NET.started){NET.seats[p]={kind:'dropped',token:a.token,name};aiPlayers[p]=NET.cfg.lvl;netBroadcast({t:'seat',p,ai:aiPlayers[p]});
+      toast(`${name} ist nicht zurückgekommen – der Computer spielt ${PNAMES[p]} weiter. Mit dem Link kann ${name} jederzeit zurück.`,6500);maybeAI();}
+    else NET.seats[p]={kind:'open'};
+    AV[p].video=null;hostLobby();},AWAY_MS);
+}
+// ---------- Gastgeber-Spiel sichern, damit es ein Schließen des Tabs überlebt ----------
+const HOST_KEY='dreiSchach.host';
+function hostSave(){
+  if(!NET.on||!NET.host||!NET.code||NET.leaving)return;
+  try{const seats={};for(const p of TURN_ORDER){const x=NET.seats[p]||{};seats[p]={kind:x.kind==='peer'?'away':x.kind,name:x.name,token:x.token};}
+    localStorage.setItem(HOST_KEY,ser({code:NET.code,at:Date.now(),seat:NET.seat,cfg:NET.cfg,started:NET.started,seats,specTokens:NET.specTokens,
+      banned:NET.banned,specMode:NET.specMode,cam:!!camStream,mic:micLive(),data:NET.started?netSyncData():null}));}catch(e){}
+}
+function hostSaved(){
+  try{const d=deser(localStorage.getItem(HOST_KEY)||'null');if(d&&d.code===NET_CODE_URL&&Date.now()-d.at<6*3600e3)return d;}catch(e){}
+  return null;
+}
+async function netResumeHost(d){
+  NET.on=true;NET.host=true;NET.seat=d.seat;NET.code=d.code;NET.cfg=d.cfg;NET.specMode=d.specMode||'ask';
+  NET.specTokens=d.specTokens||new Set();NET.banned=d.banned||new Set();
+  for(const p of TURN_ORDER){const x=d.seats[p]||{kind:'open'};NET.seats[p]={kind:x.kind,name:x.name,token:x.token};if(x.kind==='away')startAway(p,NET.seats[p]);}
+  document.getElementById('setupModal').classList.remove('show');
+  if(d.started&&d.data){netApplySync(d.data);maybeAI();}
+  else{NET.started=false;showLobby();lbStatus('Spiel wird wiederhergestellt …');}
+  showBanner('Dein Spiel wird wiederhergestellt …');
+  ac();dummyTracks();
+  (async()=>{if(d.cam)await camOn();if(d.mic)await micOn();})();
+  if(!await needPeerJS()){showBanner('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.');return;}
+  for(let i=0;i<40&&!NET.peer;i++){try{NET.peer=await makePeer('dps-'+NET.code);}catch(e){await sleep(3000);}}   // alte Kennung wird nach ca. 1 Min. frei
+  if(!NET.peer){showBanner('⚠️ Das Spiel konnte nicht wiederhergestellt werden. Bitte erstelle ein neues.');return;}
+  wirePeer(NET.peer);hideBanner();
+  toast('✓ Dein Spiel ist wieder da. Deine Mitspieler verbinden sich automatisch neu.',4500);
+  hostLobby();if(!NET.started){renderInvite();lbStatus('Bereit! Schicke deinen Freunden den Einladungslink.');}
+}
+setInterval(hostSave,5000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')hostSave();});   // so lange wartet das Spiel auf einen Mitspieler, der kurz weg ist
+function hostDrop(conn,hard){
   if(NET.specs[conn.peer]){hostDropSpec(conn);return;}
   if(conn._pending){NET.specReqs=NET.specReqs.filter(r=>r.conn!==conn);showSpecReq();return;}
   const p=seatOfConn(conn);if(!p)return;
   const s=NET.seats[p],name=s.name;
+  if(!hard){   // Verbindung weg, aber nicht abgemeldet → kurz warten
+    const a={kind:'away',name,token:s.token,since:Date.now()};NET.seats[p]=a;
+    if(s.id&&NET.calls[s.id]){try{NET.calls[s.id].close();}catch(e){}delete NET.calls[s.id];}
+    toast(`${name} ist kurz weg – wir warten bis zu ${AWAY_MS/1000} Sekunden.`,4500);
+    netBroadcast({t:'note',txt:`${name} ist kurz weg – wir warten einen Moment.`});
+    startAway(p,a);hostLobby();return;
+  }
   if(NET.started){
     NET.seats[p]={kind:'dropped',token:s.token,name};
     aiPlayers[p]=NET.cfg.lvl;netBroadcast({t:'seat',p,ai:aiPlayers[p]});
@@ -713,7 +761,7 @@ function netStart(){
   if(!NET.host||NET.started)return;
   NET.started=true;
   const ai={};
-  for(const p of TURN_ORDER){const s=NET.seats[p];if(s.kind==='open'){s.kind='ai';}ai[p]=s.kind==='ai'?NET.cfg.lvl:null;}
+  for(const p of TURN_ORDER){const s=NET.seats[p];if(s.kind==='open'){s.kind='ai';}ai[p]=s.kind==='ai'||s.kind==='dropped'?NET.cfg.lvl:null;}
   const cfg={tc:NET.cfg.tc,ai};
   hostLobby();
   netBroadcast({t:'start',cfg});
@@ -743,31 +791,84 @@ async function netJoin(){
   (async()=>{if(wc)await camOn();if(wm)await micOn();renderLobby();})();
   if(!await needPeerJS()){lbStatus('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.');return;}
   try{NET.peer=await makePeer(null);}catch(e){lbStatus('⚠️ Verbindung fehlgeschlagen ('+(e.type||'Fehler')+').');return;}
-  NET.peer.on('call',c=>{c.answer(outStream());hookCall(c);});
-  NET.peer.on('error',e=>{if(e.type==='peer-unavailable'){if(!NET.seat)joinFail();else guestLost();}});
-  NET.peer.on('disconnected',()=>{try{NET.peer.reconnect();}catch(e){}});
+  wirePeer(NET.peer);
   NET.myName=name;NET.token=token;
   guestConnect(false);
-  NET.joinTimer=setTimeout(()=>{if(!NET.seat)joinFail();},15000);
+  NET.joinTimer=setTimeout(()=>{if(!NET.seat&&!NET.spec)joinFail();},12000);
 }
+// ---------- Verbindung überlebt Ausflüge in andere Apps ----------
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function wirePeer(pr){
+  if(NET.host)pr.on('connection',hostAccept);
+  pr.on('call',c=>{c.answer(outStream());hookCall(c);});
+  pr.on('disconnected',()=>{if(NET.peer===pr)netRevive();});
+  pr.on('close',()=>{if(NET.peer===pr)netRevive();});
+  pr.on('error',e=>{
+    if(NET.peer!==pr)return;
+    if(e.type==='peer-unavailable'){if(!NET.host){if(!NET.seat&&!NET.spec)joinFail();else guestLost();}return;}
+    if(['network','server-error','socket-error','socket-closed','disconnected'].includes(e.type))netRevive();
+  });
+}
+let reviving=false;
+async function netRevive(){   // Verbindung zum Vermittlungsdienst wiederherstellen (gleiche Kennung beim Gastgeber)
+  if(!NET.on||NET.leaving||reviving||!window.Peer)return;
+  reviving=true;
+  try{
+    for(let i=0;i<120&&NET.on&&!NET.leaving;i++){
+      const pr=NET.peer;
+      if(pr&&pr.open&&!pr.disconnected&&!pr.destroyed)return;
+      if(document.visibilityState==='hidden'){await sleep(2000);continue;}
+      if(NET.host)showBanner('Verbindung wird wiederhergestellt …');
+      if(pr&&!pr.destroyed&&pr.disconnected){try{pr.reconnect();}catch(e){}await sleep(3000);if(pr.open&&!pr.disconnected)break;}
+      if(pr&&!pr.destroyed&&!pr.disconnected&&!pr.open){await sleep(2000);continue;}
+      try{if(pr&&!pr.destroyed)pr.destroy();}catch(e){}
+      try{const np=await makePeer(NET.host?'dps-'+NET.code:null);NET.peer=np;wirePeer(np);
+        if(!NET.host){NET.hostConn=null;guestConnect(true);}
+        break;}
+      catch(e){await sleep(3000);}   // z. B. Kennung noch belegt → kurz warten
+    }
+  } finally {reviving=false;if(NET.host&&NET.peer&&NET.peer.open)hideBanner();}
+}
+function showBanner(t){let b=document.getElementById('netBanner');if(!b){b=document.createElement('div');b.id='netBanner';document.body.appendChild(b);}b.textContent=t;b.classList.add('show');}
+function hideBanner(){const b=document.getElementById('netBanner');if(b)b.classList.remove('show');}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible'||!NET.on)return;
+  const now=performance.now();
+  if(NET.host){for(const p of TURN_ORDER){const x=NET.seats[p];if(x)x.seen=now;}}
+  else NET.hostSeen=now;
+  NET.lastBeat=now;
+  netRevive();
+  if(!NET.host&&(NET.seat||NET.spec)&&!(NET.hostConn&&NET.hostConn.open))guestLost();
+});
 function guestConnect(re){
   const c=NET.peer.connect('dps-'+NET.code,{reliable:true});NET.hostConn=c;NET.hostSeen=performance.now();
   c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,av:{cam:!!camStream,mic:micLive()}}));
-  c.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}if(NET.hostConn===c){NET.hostSeen=performance.now();NET.retries=0;joinRecv(m);}});
+  c.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}if(NET.hostConn===c){NET.hostSeen=performance.now();NET.retries=0;
+    if(NET.lostSince){NET.lostSince=0;hideBanner();clearTimeout(NET.lostTimer);NET.lostTimer=null;toast('✓ Wieder verbunden',2000);}joinRecv(m);}});
   c.on('close',()=>{if(NET.hostConn===c)guestLost();});
 }
 function guestLost(){
   if(!NET.on||NET.leaving)return;
   if(!NET.seat&&!NET.spec){joinFail();return;}
-  NET.retries=(NET.retries||0)+1;
-  if(NET.retries>6){hostGone();return;}
-  toast('Verbindung unterbrochen – verbinde neu …',3000);
+  if(NET.lostTimer)return;   // läuft schon
+  NET.lostSince=NET.lostSince||performance.now();
+  if(performance.now()-NET.lostSince>15*60000){hostGone();return;}
+  showBanner('⏳ Verbindung zum Gastgeber unterbrochen – vielleicht ist er kurz in einer anderen App. Ich verbinde automatisch neu …');
+  try{if(NET.hostConn)NET.hostConn.close();}catch(e){}
   NET.hostConn=null;
-  setTimeout(()=>{if(!NET.on)return;try{if(NET.peer.disconnected)NET.peer.reconnect();}catch(e){}guestConnect(true);},1500);
+  NET.lostTimer=setTimeout(()=>{NET.lostTimer=null;if(!NET.on||NET.leaving)return;
+    if(NET.peer&&NET.peer.open&&!NET.peer.disconnected){guestConnect(true);NET.lostTimer=setTimeout(()=>{NET.lostTimer=null;if(!(NET.hostConn&&NET.hostConn.open))guestLost();},8000);}
+    else{netRevive();NET.lostTimer=setTimeout(()=>{NET.lostTimer=null;guestLost();},4000);}
+  },2500);
 }
-function joinFail(){
-  clearTimeout(NET.joinTimer);
-  lbStatus('⚠️ Dieses Spiel wurde nicht gefunden. Vielleicht hat der Gastgeber es schon beendet oder die Seite geschlossen.');
+function joinFail(){   // Gastgeber (noch) nicht erreichbar → bis zu 15 Minuten automatisch weiter versuchen
+  clearTimeout(NET.joinTimer);clearTimeout(NET.joinRetry);
+  if(!NET.on||NET.seat||NET.spec)return;
+  NET.joinSince=NET.joinSince||performance.now();
+  if(performance.now()-NET.joinSince>15*60000){lbStatus('⚠️ Dieses Spiel wurde nicht gefunden. Vielleicht hat der Gastgeber es beendet. Frag ihn nach einem neuen Link.');return;}
+  lbStatus('⏳ Der Gastgeber ist gerade nicht erreichbar – vielleicht ist er kurz in einer anderen App. Ich versuche es automatisch weiter, lass diese Seite einfach offen …');
+  NET.joinRetry=setTimeout(()=>{if(!NET.on||NET.seat||NET.spec)return;try{if(NET.hostConn)NET.hostConn.close();}catch(e){}
+    if(NET.peer&&NET.peer.open){guestConnect(false);NET.joinTimer=setTimeout(joinFail,12000);}else{netRevive();NET.joinRetry=setTimeout(joinFail,5000);}},4000);
 }
 function hostGone(){
   if(!NET.on||NET.leaving)return;
@@ -896,7 +997,8 @@ setInterval(()=>{if(NET.on&&NET.q.length)netPump();},300);
 // Lebenszeichen: wer 15 s nichts hört, gilt als getrennt (Computer übernimmt, Rückkehr per Link jederzeit)
 setInterval(()=>{
   if(!NET.on||!NET.peer)return;
-  const now=performance.now();
+  const now=performance.now(),frozen=now-(NET.lastBeat||now)>7000;NET.lastBeat=now;
+  if(frozen){for(const p of TURN_ORDER){const x=NET.seats[p];if(x)x.seen=now;}NET.hostSeen=now;return;}   // Seite war eingefroren
   if(NET.host){
     netBroadcast({t:'ping'});
     for(const p of TURN_ORDER){const s=NET.seats[p];if(s&&s.kind==='peer'&&s.conn&&now-(s.seen||now)>15000){const c=s.conn;hostDrop(c);try{c.close();}catch(e){}}}
@@ -905,10 +1007,12 @@ setInterval(()=>{
     if(NET.seat&&now-NET.hostSeen>15000){const c=NET.hostConn;NET.hostConn=null;try{c.close();}catch(e){}guestLost();}
   }
 },3000);
-window.addEventListener('pagehide',()=>{if(!NET.on)return;NET.leaving=true;if(NET.host)netBroadcast({t:'bye'});else netToHost({t:'bye'});});
+// Kein automatisches Abmelden beim Verlassen der Seite: Ein Neuladen oder Wegwischen soll das Spiel nicht beenden.
+window.addEventListener('pageshow',e=>{if(e.persisted&&NET.on)netRevive();});
 function netLeave(){
   if(!confirm(NET.host?'Online-Spiel beenden? Deine Mitspieler werden getrennt.':'Online-Spiel verlassen?'))return false;
   NET.leaving=true;
+  if(NET.host){try{localStorage.removeItem(HOST_KEY);}catch(e){}}
   try{if(NET.host)netBroadcast({t:'bye'});else netToHost({t:'bye'});}catch(e){}
   try{NET.peer&&NET.peer.destroy();}catch(e){}
   location.href=location.pathname;
@@ -930,10 +1034,10 @@ function renderLobby(){
   for(const p of TURN_ORDER){
     let name='',st='',av=NET.avs[p]||{};
     if(NET.host){const s=NET.seats[p]||{};
-      name=s.kind==='me'?`${s.name} (du)`:s.kind==='peer'?s.name:s.kind==='ai'||s.kind==='dropped'?`Computer (${MONSTERS[p].name})`:'';
+      name=s.kind==='me'?`${s.name} (du)`:s.kind==='peer'?s.name:s.kind==='away'?`${s.name} (kurz weg …)`:s.kind==='ai'||s.kind==='dropped'?`Computer (${MONSTERS[p].name})`:'';
       st=s.kind==='open'?'wartet auf Mitspieler …':'';
     } else {const s=(L&&L[p])||{};
-      name=p===NET.seat?`${netName(p)||'Du'} (du)`:s.kind==='me'?`${s.name} (Gastgeber)`:s.kind==='peer'?s.name:s.kind==='ai'||s.kind==='dropped'?`Computer (${MONSTERS[p].name})`:'';
+      name=p===NET.seat?`${netName(p)||'Du'} (du)`:s.kind==='me'?`${s.name} (Gastgeber)`:s.kind==='peer'?s.name:s.kind==='away'?`${s.name} (kurz weg …)`:s.kind==='ai'||s.kind==='dropped'?`Computer (${MONSTERS[p].name})`:'';
       st=s.kind==='open'&&p!==NET.seat?'wartet auf Mitspieler …':'';
     }
     if(p===NET.seat)av={cam:!!camStream,mic:micLive()};
@@ -2044,7 +2148,7 @@ function applyGameData(d){
   const sb=document.getElementById('startBtn');sb.textContent='▶ Fortsetzen';sb.classList.add('show');
   updateStatus();renderClocks();resizeCanvas();
 }
-function autosave(){if(NET.on)return;try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
+function autosave(){if(NET.on){hostSave();return;}try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
 function resumeAutosave(){
   try{const t=localStorage.getItem(SAVE_KEY);if(t)applyGameData(deser(t));}
   catch(e){alert('Die letzte Partie konnte nicht geladen werden.');}
@@ -2138,7 +2242,7 @@ function timeOut(p,kind){
   markLastMove();
 }
 setInterval(()=>{
-  const now=performance.now(),dt=now-lastTick;lastTick=now;
+  const now=performance.now(),dt=Math.min(now-lastTick,1000);lastTick=now;   // eingefrorene Seite (Hintergrund) kostet keine Bedenkzeit
   if(gameOver||paused||setupOpen)return;
   const p=cur();
   if(!flagged.has(p))timeUsed[p]+=dt;
@@ -2785,7 +2889,7 @@ initGame();
 resizeCanvas();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
-if(NET_CODE_URL)openJoin();else openSetup();
+if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else openSetup();
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
 try{if(localStorage.getItem('dreiSchach.barBottom')==='1')setBarBottom(true);}catch(e){}
 syncAvUI();
