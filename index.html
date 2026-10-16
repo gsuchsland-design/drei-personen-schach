@@ -10,8 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Symbols+2&text=%E2%99%94%E2%99%95%E2%99%96%E2%99%97%E2%99%98%E2%99%99%E2%99%9A%E2%99%9B%E2%99%9C%E2%99%9D%E2%99%9E%E2%99%9F&display=swap" rel="stylesheet">
+<style>@font-face{font-family:"Noto Sans Symbols 2";src:url(lib/noto-chess.woff2) format("woff2");unicode-range:U+2654-265F;font-display:swap;}</style>
 <title>Drei-Personen-Schach</title>
 <style>
 * { box-sizing:border-box; margin:0; padding:0; }
@@ -131,6 +130,8 @@ body.fullscreen #captured { margin:2px 0; }
 .lbSeat { padding:6px 4px; border-bottom:1px solid #333; display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
 .lbDot { width:12px; height:12px; border-radius:50%; display:inline-block; }
 .lbIc { margin-left:auto; font-size:13px; }
+button.kick { display:inline-block !important; width:auto !important; margin:0 0 0 6px !important; padding:2px 8px !important; font-size:12px !important; background:#a33 !important; color:#fff; border:none; border-radius:5px; cursor:pointer; }
+#avPlayers .lbSeat { font-size:13px; padding:4px 2px; }
 .lbLbl { margin:12px 0 4px; font-weight:bold; }
 .lbLinkRow { display:flex; gap:6px; } .lbLinkRow input { flex:1; margin:0 !important; font-size:13px !important; }
 .lbLinkRow button { width:auto !important; margin:0 !important; padding:6px 12px !important; }
@@ -215,7 +216,8 @@ body.barBottom #selfView { bottom:50px; }
   <label><input type="checkbox" id="chkSelf" checked onchange="showSelf=this.checked;updateSelfView()"> Eigenes Bild klein anzeigen</label>
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 18:00 · Online + Zuschauer</div>
+  <div id="avPlayers"></div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 19:00 · © 2026 Guido Suchsland</div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -363,6 +365,7 @@ body.barBottom #selfView { bottom:50px; }
     <button class="installBtn" onclick="doInstall()" style="display:none;background:#555">📲 Als App installieren</button>
     <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
     <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie aus Datei laden</button>
+    <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · Alle Rechte vorbehalten</div>
   </div>
 </div>
 <div id="lobbyModal" class="netModal"><div class="netBox">
@@ -398,6 +401,7 @@ body.barBottom #selfView { bottom:50px; }
   <button class="installBtn" style="display:none;background:#555" onclick="doInstall()">📲 Als App installieren</button>
   <div class="lbHint">Tipp: Im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann hast du das Spiel wie eine App.</div>
   <button class="lbLeave" onclick="location.href=location.pathname">Nein danke, lieber allein spielen</button>
+  <div class="lbHint" style="text-align:center">© 2026 Guido Suchsland</div>
 </div></div>
 <div id="logBox" class="collapsed">
   <div id="logHead"><span>Züge</span>
@@ -411,7 +415,7 @@ body.barBottom #selfView { bottom:50px; }
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
-  seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
+  seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
 try{NET.specMode=localStorage.getItem('dreiSchach.specMode')||'ask';}catch(e){}
 let netApplying=false,micStream=null,installEvt=null;
 const QS=new URLSearchParams(location.search);
@@ -428,7 +432,7 @@ function toast(msg,ms=4200){
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function needPeerJS(){
   if(window.Peer)return true;
-  try{await loadScript('https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js');return !!window.Peer;}catch(e){return false;}
+  try{await loadScript('lib/peerjs.min.js');return !!window.Peer;}catch(e){return false;}
 }
 function peerOpts(){   // für Tests: eigener Vermittlungs-Server über ?peerhost=…
   const h=QS.get('peerhost');if(!h)return{debug:0};
@@ -592,6 +596,7 @@ function hostAccept(conn){
 function seatOfConn(conn){return TURN_ORDER.find(p=>NET.seats[p].conn===conn);}
 function hostRecv(conn,m){
   if(m.t==='hello'){
+    if(m.token&&NET.banned.has(m.token)){netSend(conn,{t:'kicked',again:true});setTimeout(()=>conn.close(),500);return;}
     let p=TURN_ORDER.find(q=>NET.seats[q].token&&NET.seats[q].token===m.token);
     if(p&&NET.seats[p].kind==='peer'){   // derselbe Mitspieler kommt neu herein (alte Verbindung hängt noch)
       const old=NET.seats[p].conn;NET.seats[p].conn=null;try{old&&old.close();}catch(e){}
@@ -667,6 +672,26 @@ function setSpecMode(v){
   NET.specMode=v;try{localStorage.setItem('dreiSchach.specMode',v);}catch(e){}
   for(const id of['lbSpec','avSpec']){const e=document.getElementById(id);if(e)e.value=v;}
   if(v!=='ask')while(NET.specReqs.length)specAnswer(v==='always');
+}
+function netKick(kind,key){
+  if(!NET.host)return;
+  let name,conn,token;
+  if(kind==='seat'){const s=NET.seats[key];if(!s||s.kind!=='peer')return;name=s.name;conn=s.conn;token=s.token;
+    if(!confirm(`${name} aus dem Spiel nehmen?\n${NET.started?'Der Computer spielt '+PNAMES[key]+' weiter.':'Der Platz wird wieder frei.'}`))return;
+    if(s.id&&NET.calls[s.id]){try{NET.calls[s.id].close();}catch(e){}delete NET.calls[s.id];}
+    AV[key].video=null;AV[key].still=null;AV[key].videoOff=false;delete NET.avs[key];
+    if(NET.started){NET.seats[key]={kind:'dropped',name};aiPlayers[key]=NET.cfg.lvl;netBroadcast({t:'seat',p:key,ai:aiPlayers[key]},conn);maybeAI();}
+    else NET.seats[key]={kind:'open'};
+  } else {const z=NET.specs[key];if(!z)return;name=z.name;conn=z.conn;token=z.token;
+    if(!confirm(`${name} als Zuschauer entfernen?`))return;
+    delete NET.specs[key];NET.specTokens.delete(token);
+    if(NET.calls[key]){try{NET.calls[key].close();}catch(e){}delete NET.calls[key];}
+  }
+  if(token)NET.banned.add(token);
+  netSend(conn,{t:'kicked'});setTimeout(()=>{try{conn.close();}catch(e){}},400);
+  toast(`${name} wurde aus dem Spiel genommen.`);
+  netBroadcast({t:'note',txt:`${name} wurde vom Gastgeber aus dem Spiel genommen.`},conn);
+  hostLobby();syncAvUI();
 }
 function hostDrop(conn){
   if(NET.specs[conn.peer]){hostDropSpec(conn);return;}
@@ -759,6 +784,11 @@ function joinRecv(m){
   if(m.t==='ping')return;
   if(m.t==='bye'){NET.retries=99;hostGone();return;}
   if(m.t==='note'){toast(m.txt);return;}
+  if(m.t==='kicked'){clearTimeout(NET.joinTimer);NET.leaving=true;NET.on=false;cancelAI();
+    for(const p of TURN_ORDER)if(p!==NET.seat)AV[p].video=null;
+    lbStatus('Der Gastgeber hat dich aus diesem Spiel genommen.');
+    if(!m.again){alert('Der Gastgeber hat dich aus dem Spiel genommen.');location.href=location.pathname;}
+    return;}
   if(m.t==='wait'){clearTimeout(NET.joinTimer);lbStatus('Alle Plätze sind schon besetzt. Der Gastgeber wird gefragt, ob du zuschauen darfst …');return;}
   if(m.t==='spec'){clearTimeout(NET.joinTimer);NET.spec=true;NET.seat=null;
     if(camStream)camOff();if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
@@ -908,11 +938,14 @@ function renderLobby(){
     }
     if(p===NET.seat)av={cam:!!camStream,mic:micLive()};
     const icons=name&&!name.startsWith('Computer')?` <span class="lbIc">${av.cam?'📷':'🚫📷'} ${av.mic?'🎤':'🔇'}</span>`:'';
-    h+=`<div class="lbSeat"><span class="lbDot" style="background:${PCOLOR[p]}"></span><b style="color:${PCOLOR[p]}">${PNAMES[p]}</b> <span>${esc(name)||'<i>'+st+'</i>'}</span>${icons}</div>`;
+    const kick=NET.host&&NET.seats[p]&&NET.seats[p].kind==='peer'?`<button class="kick" onclick="netKick('seat','${p}')" title="Aus dem Spiel nehmen">✕ entfernen</button>`:'';
+    h+=`<div class="lbSeat"><span class="lbDot" style="background:${PCOLOR[p]}"></span><b style="color:${PCOLOR[p]}">${PNAMES[p]}</b> <span>${esc(name)||'<i>'+st+'</i>'}</span>${icons}${kick}</div>`;
   }
-  const sl=NET.host?Object.values(NET.specs).map(z=>z.name):(NET.specList||[]).map(z=>z.name);
-  if(sl.length)h+=`<div class="lbSeat">👀 <span>Zuschauer: ${sl.map(esc).join(', ')}</span></div>`;
+  if(NET.host){for(const[id,z]of Object.entries(NET.specs))h+=`<div class="lbSeat">👀 <span>${esc(z.name)} (schaut zu)</span><button class="kick" style="margin-left:auto !important" onclick="netKick('spec','${id}')">✕ entfernen</button></div>`;}
+  else{const sl=(NET.specList||[]).map(z=>z.name);if(sl.length)h+=`<div class="lbSeat">👀 <span>Zuschauer: ${sl.map(esc).join(', ')}</span></div>`;}
   box.innerHTML=h;
+  const ap=document.getElementById('avPlayers');
+  if(ap)ap.innerHTML=NET.on&&NET.host&&NET.started?'<hr><div class="sub" style="margin:0 0 4px">Mitspieler (nur du als Gastgeber kannst jemanden entfernen):</div>'+h:'';
   const open=NET.host&&TURN_ORDER.some(p=>NET.seats[p]&&NET.seats[p].kind==='open');
   const b=document.getElementById('lbStart');if(b){b.disabled=!NET.peer;b.textContent=open?'▶ Spiel starten (freie Plätze: Computer)':'▶ Spiel starten';}
   const mb=document.getElementById('lbMic'),cb=document.getElementById('lbCam');
@@ -933,7 +966,7 @@ function renderInvite(){
 }
 async function makeQR(link){
   const el=document.getElementById('lbQR');el.innerHTML='';
-  if(!window.qrcode){try{await loadScript('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js');}catch(e){return;}}
+  if(!window.qrcode){try{await loadScript('lib/qrcode.js');}catch(e){return;}}
   try{const q=qrcode(0,'M');q.addData(link);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2});}catch(e){}
 }
 function shareInvite(){navigator.share({title:'Drei-Personen-Schach',text:INVITE_TXT,url:netLink()}).catch(()=>{});}
@@ -2760,7 +2793,7 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="lib/three.min.js"></script>
 <script>
 // ================= 3D-Ansicht (three.js) =================
 window.V3={on:false};
