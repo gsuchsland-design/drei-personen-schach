@@ -438,12 +438,17 @@ function outStream(){
   const v=camStream?camStream.getVideoTracks()[0]:NET.dv,a=micStream?micStream.getAudioTracks()[0]:NET.da;
   return new MediaStream([v,a].filter(Boolean));
 }
+const IS_IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function permHelp(what){
+  if(IS_IOS)return `Der Zugriff wurde abgelehnt. iPhone: In Safari links in der Adressleiste auf „aA“ tippen → „Website-Einstellungen“ → ${what} → „Erlauben“, dann die Seite neu laden (du kommst automatisch auf deinen Platz zurück). Falls der Link in WhatsApp geöffnet wurde: oben rechts „In Safari öffnen“.`;
+  return `Der Zugriff wurde abgelehnt. Tippe links in der Adressleiste auf das Symbol (Schloss bzw. Regler) → Berechtigungen → ${what} → Zulassen, dann die Seite neu laden (du kommst automatisch auf deinen Platz zurück).`;
+}
 function micLive(){return !!(micStream&&micStream.getAudioTracks()[0]&&micStream.getAudioTracks()[0].enabled);}
 async function micOn(){
   const err=m=>{const e=document.getElementById('camErr');if(e)e.textContent=m;};
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){err('Dieser Browser erlaubt hier kein Mikrofon.');return false;}
   try{micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});}
-  catch(e){err('Mikrofon startet nicht: '+(e.name==='NotAllowedError'?'Zugriff abgelehnt (Schloss-Symbol → Berechtigungen → Mikrofon).':e.name==='NotFoundError'?'Kein Mikrofon gefunden.':e.name));return false;}
+  catch(e){err('Mikrofon startet nicht: '+(e.name==='NotAllowedError'?permHelp('Mikrofon'):e.name==='NotFoundError'?'Kein Mikrofon gefunden.':e.name));return false;}
   netTracks();netAV();syncAvUI();return true;
 }
 function toggleMic(){
@@ -1691,7 +1696,7 @@ async function camOn(){
   catch(e){
     try{camStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});}   // zweiter Versuch ohne Wünsche
     catch(e2){const n=e2.name||e.name;
-      err('Kamera startet nicht: '+(n==='NotAllowedError'?'Der Zugriff wurde abgelehnt. Erlaube ihn über das Schloss-Symbol in der Adressleiste → Berechtigungen → Kamera.':
+      err('Kamera startet nicht: '+(n==='NotAllowedError'?permHelp('Kamera'):
         n==='NotFoundError'?'Es wurde keine Kamera gefunden.':n==='NotReadableError'?'Die Kamera wird gerade von einer anderen App benutzt.':(n+': '+(e2.message||''))));
       return;}
   }
