@@ -10,9 +10,13 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Symbols+2&text=%E2%99%94%E2%99%95%E2%99%96%E2%99%97%E2%99%98%E2%99%99%E2%99%9A%E2%99%9B%E2%99%9C%E2%99%9D%E2%99%9E%E2%99%9F&display=swap" rel="stylesheet">
 <title>Drei-Personen-Schach</title>
 <style>
 * { box-sizing:border-box; margin:0; padding:0; }
+/* Schachzeichen immer als Text, nie als Emoji (sonst ignorieren z. B. Samsung-Handys die Farbe) */
+.pc, .promo-btn, #demoPlace button, #tooltip { font-family:"Noto Sans Symbols 2","Segoe UI Symbol","DejaVu Sans","Apple Symbols",serif; font-variant-emoji:text; }
 html,body { height:100%; overflow:hidden; }
 body { background:#1e1e1e; display:flex; flex-direction:column; align-items:center; padding:8px; font-family:sans-serif; }
 h2 { color:#eee; margin:4px 0; font-size:15px; }
@@ -254,10 +258,10 @@ body.barBottom #selfView { bottom:50px; }
 <div id="promoModal">
   <div id="promoBox">
     <h3 id="promoTitle">Bauernumwandlung — wähle Figur:</h3>
-    <button class="promo-btn" onclick="finishPromotion('Q')">♛</button>
-    <button class="promo-btn" onclick="finishPromotion('R')">♜</button>
-    <button class="promo-btn" onclick="finishPromotion('B')">♝</button>
-    <button class="promo-btn" onclick="finishPromotion('N')">♞</button>
+    <button class="promo-btn" onclick="finishPromotion('Q')">♛&#xFE0E;</button>
+    <button class="promo-btn" onclick="finishPromotion('R')">♜&#xFE0E;</button>
+    <button class="promo-btn" onclick="finishPromotion('B')">♝&#xFE0E;</button>
+    <button class="promo-btn" onclick="finishPromotion('N')">♞&#xFE0E;</button>
   </div>
 </div>
 <div id="tooltip"></div>
@@ -317,8 +321,8 @@ body.barBottom #selfView { bottom:50px; }
    <div id="demoExpl"></div>
    <div id="demoPlace">
     <span>Selbst ausprobieren:</span>
-    <button data-p="R">♜</button><button data-p="B">♝</button><button data-p="N">♞</button>
-    <button data-p="Q">♛</button><button data-p="K">♚</button><button data-p="P">♟</button>
+    <button data-p="R">♜&#xFE0E;</button><button data-p="B">♝&#xFE0E;</button><button data-p="N">♞&#xFE0E;</button>
+    <button data-p="Q">♛&#xFE0E;</button><button data-p="K">♚&#xFE0E;</button><button data-p="P">♟&#xFE0E;</button>
     <select id="demoColor"><option value="B">Blau</option><option value="G">Grün</option><option value="R">Rot</option></select>
     <span style="color:#999">→ Feld anklicken</span>
    </div>
@@ -1247,7 +1251,21 @@ function playerHasValidMove(player,ep){
 }
 
 // Game state
-const PIECES={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟'};
+const PIECES={K:'♚\uFE0E',Q:'♛\uFE0E',R:'♜\uFE0E',B:'♝\uFE0E',N:'♞\uFE0E',P:'♟\uFE0E'};
+// Figuren als eingefärbte Sprites: Die Glyphe wird einmal gezeichnet und dann per 'source-in' in Spielerfarbe getönt.
+// So stimmt die Farbe auch dann, wenn ein Gerät die Zeichen als (schwarze) Emojis darstellt.
+const PIECE_FONT='"Noto Sans Symbols 2","Segoe UI Symbol","DejaVu Sans","Apple Symbols",serif';
+let SPRITES={};const SPR=96;
+function pieceSprite(piece,player){
+  const k=piece+player;if(SPRITES[k])return SPRITES[k];
+  const c=document.createElement('canvas');c.width=c.height=SPR*1.5;
+  const x=c.getContext('2d');x.font=`${SPR}px ${PIECE_FONT}`;x.textAlign='center';x.textBaseline='middle';
+  x.fillStyle='#000';x.fillText(PIECES[piece],c.width/2,c.height/2);
+  x.globalCompositeOperation='source-in';x.fillStyle=PCOLOR[player];x.fillRect(0,0,c.width,c.height);
+  return SPRITES[k]=c;
+}
+function drawPiece(ctx,piece,player,x,y,size){const w=size*1.5;ctx.drawImage(pieceSprite(piece,player),x-w/2,y-w/2,w,w);}
+if(document.fonts){document.fonts.load(`20px ${PIECE_FONT}`,'♟').then(()=>{SPRITES={};try{draw();}catch(e){}}).catch(()=>{});}
 const PCOLOR={R:'#ff5533',B:'#5599ff',G:'#44ee22'};
 const A_ROW=['R','N','B','Q','K','B','N','R'];
 const TURN_ORDER=['B','G','R'];
@@ -1349,7 +1367,7 @@ function updateStatus(){
 function updateCaptured(){
   for(const cp of['B','R','G']){
     const el=document.getElementById(`cap${cp}`);if(!el)continue;
-    el.innerHTML=capturedBy[cp].map(e=>`<span style="color:${PCOLOR[e.from]}">${PIECES[e.piece]}</span>`).join('');
+    el.innerHTML=capturedBy[cp].map(e=>`<span class="pc" style="color:${PCOLOR[e.from]}">${PIECES[e.piece]}</span>`).join('');
   }
 }
 
@@ -1392,10 +1410,10 @@ function moveText(e){
   if(e.timeout)return `<i style="color:#bbb">${e.timeout==='move'?'Zugzeit abgelaufen':'Partiezeit verbraucht'}</i>`;
   if(e.castle)t=e.castle;
   else{
-    t=`${PIECES[e.piece]} ${e.from}${e.cap?'×':'–'}${e.to}`;
-    if(e.cap)t+=` <span style="color:${PCOLOR[e.capFrom]}">${PIECES[e.cap]}</span>`;
+    t=`<span class="pc">${PIECES[e.piece]}</span> ${e.from}${e.cap?'×':'–'}${e.to}`;
+    if(e.cap)t+=` <span class="pc" style="color:${PCOLOR[e.capFrom]}">${PIECES[e.cap]}</span>`;
     if(e.ep)t+=' e.p.';
-    if(e.promo)t+=`=${PIECES[e.promo]}`;
+    if(e.promo)t+=`=<span class="pc">${PIECES[e.promo]}</span>`;
   }
   if(e.mark)t+=`<b style="color:#ff5555">${e.mark}</b>`;
   return t;
@@ -1872,7 +1890,7 @@ function openRules(){
       if(!fid)return;const coord=COORD_LABELS[fid];
       if(demo.place){demo.state={};demo.state[coord]={piece:demo.place,player:demo.color};demo.sel=coord;
         const n=withDemo(()=>validMoves.size);
-        document.getElementById('demoExpl').innerHTML=`<b>${PIECES[demo.place]} auf ${coord}</b>: ${n} mögliche Zielfelder. Felder in anderen Sektionen zeigen die Züge über die Mitte.`;}
+        document.getElementById('demoExpl').innerHTML=`<b><span class="pc">${PIECES[demo.place]}</span> auf ${coord}</b>: ${n} mögliche Zielfelder. Felder in anderen Sektionen zeigen die Züge über die Mitte.`;}
       else if(demo.state[coord])demo.sel=coord;
       renderDemo();
     });
@@ -2374,8 +2392,7 @@ function drawCaptured(ctx){
   const lay=capturedLayout();
   for(const it of lay){
     if(kickHidden(it.ref))continue;
-    ctx.font=`${it.fs}px serif`;ctx.fillStyle=PCOLOR[it.player];
-    ctx.fillText(PIECES[it.piece],it.x,it.y);
+    drawPiece(ctx,it.piece,it.player,it.x,it.y,it.fs);
   }
   ctx.shadowBlur=0;
   // fliegende geschlagene Figuren
@@ -2387,8 +2404,8 @@ function drawCaptured(ctx){
     const size=big+(it.fs-big)*P.e+big*0.35*Math.sin(Math.PI*P.e);
     ctx.save();ctx.translate(P.x,P.y-P.h);ctx.rotate(P.spin);
     ctx.font=`${size}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=10;ctx.fillStyle=PCOLOR[k.player];
-    ctx.fillText(PIECES[k.piece],0,0);ctx.restore();
+    ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=10;
+    drawPiece(ctx,k.piece,k.player,0,0,size);ctx.restore();
   }
 }
 
@@ -2517,9 +2534,8 @@ function draw(){
         ctx.font=`${Math.max(13,26*zoom)}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
         if(isSel){ctx.shadowColor='#ffffff';ctx.shadowBlur=14;}
         else{ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=5;}
-        ctx.fillStyle=PCOLOR[pd.player];
         const py=showLabels?d.cy-4*zoom:d.cy,fsz=Math.max(13,26*zoom);
-        ctx.fillText(PIECES[pd.piece],d.cx,py);ctx.shadowBlur=0;
+        drawPiece(ctx,pd.piece,pd.player,d.cx,py,fsz);ctx.shadowBlur=0;
         if(pd.piece==='K')drawKingCross(ctx,d.cx,py,fsz);
       }
     }
@@ -2536,8 +2552,8 @@ function draw(){
       const a=FIELDS[C2F[it.from]],b=FIELDS[C2F[it.to]];if(!a||!b)continue;
       const x=a.cx+(b.cx-a.cx)*e,y=a.cy+(b.cy-a.cy)*e,sc=1+0.25*Math.sin(Math.PI*e);
       ctx.font=`${Math.max(13,26*zoom)*sc}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=10;ctx.fillStyle=PCOLOR[it.player];
-      ctx.fillText(PIECES[it.piece],x,y);ctx.shadowBlur=0;
+      ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=10;
+      drawPiece(ctx,it.piece,it.player,x,y,Math.max(13,26*zoom)*sc);ctx.shadowBlur=0;
       if(it.piece==='K')drawKingCross(ctx,x,y,Math.max(13,26*zoom)*sc);
     }
   }
