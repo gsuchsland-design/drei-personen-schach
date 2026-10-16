@@ -164,6 +164,8 @@ body.fullscreen #captured { margin:2px 0; }
   <label><input type="radio" name="camOffMode" value="avatar" onchange="setCamOffMode(this.value)"> Avatar</label>
   <label><input type="checkbox" id="chkSelf" checked onchange="showSelf=this.checked;updateSelfView()"> Eigenes Bild klein anzeigen</label>
   <div class="sub" id="camInfo"></div>
+  <div class="sub" id="camErr" style="color:#ff8a7a"></div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 14:45</div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -1123,9 +1125,19 @@ try{camOffMode=localStorage.getItem('dreiSchach.camOffMode')||'still';}catch(e){
 function meP(){return TURN_ORDER.find(p=>!aiPlayers[p])||'B';}
 function setCamOffMode(v){camOffMode=v;try{localStorage.setItem('dreiSchach.camOffMode',v);}catch(e){}}
 async function camOn(){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){alert('Dein Browser erlaubt hier keinen Kamerazugriff. (Die Seite muss über https geöffnet sein.)');return;}
-  try{camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480},facingMode:'user'},audio:false});}
-  catch(e){alert('Die Kamera konnte nicht gestartet werden: '+(e.name==='NotAllowedError'?'Der Zugriff wurde nicht erlaubt. Du kannst ihn in den Website-Einstellungen des Browsers freigeben.':e.name==='NotFoundError'?'Es wurde keine Kamera gefunden.':e.message));return;}
+  const err=m=>{document.getElementById('camErr').textContent=m;};
+  err('Kamera wird gestartet … bitte Zugriff erlauben.');
+  if(!window.isSecureContext){err('Kamera geht nur über eine sichere https-Adresse (z. B. die GitHub-Seite).');return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){err('Dieser Browser erlaubt hier keinen Kamerazugriff. Tipp: Öffne die Seite direkt in Chrome (nicht in der Vorschau einer App).');return;}
+  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});}
+  catch(e){
+    try{camStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});}   // zweiter Versuch ohne Wünsche
+    catch(e2){const n=e2.name||e.name;
+      err('Kamera startet nicht: '+(n==='NotAllowedError'?'Der Zugriff wurde abgelehnt. Erlaube ihn über das Schloss-Symbol in der Adressleiste → Berechtigungen → Kamera.':
+        n==='NotFoundError'?'Es wurde keine Kamera gefunden.':n==='NotReadableError'?'Die Kamera wird gerade von einer anderen App benutzt.':(n+': '+(e2.message||''))));
+      return;}
+  }
+  err('');
   const v=document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.srcObject=camStream;
   try{await v.play();}catch(e){}
   const a=AV[meP()];a.video=v;a.videoOff=false;a.mirror=true;a.still=null;
@@ -2313,13 +2325,15 @@ window.V3={on:false};
       for(const p of TURN_ORDER){
         const d=sideDir[p];if(d[0]*cx+d[1]*cz>=0.55)continue;   // eigener Monitor ist ausgeblendet
         const h=monitors[p].head,w=MON_W/2+0.3,top=MON_H+0.5,bot=-0.1;
-        for(const[x,y]of[[-w,bot],[w,bot],[-w,top],[w,top]])pts.push({v:h.localToWorld(new THREE.Vector3(x,y,0)),lx:1.02,ly:0.97});
+        for(const x of[-w,w]){pts.push({v:h.localToWorld(new THREE.Vector3(x,bot,0)),lx:0.99,ly:0.97});   // untere Ecken: gerade noch im Bild
+          pts.push({v:h.localToWorld(new THREE.Vector3(x,top,0)),lx:1e9,ly:1.0});}                          // obere Ecken dürfen seitlich angeschnitten sein
       }
     }
     return pts;
   }
-  const fitCam=new THREE.PerspectiveCamera();
+  let fitCam=null;
   function fitR(th,ph,ty,pts){
+    if(!fitCam)fitCam=new THREE.PerspectiveCamera();
     fitCam.copy(camera);let lo=4,hi=120;
     // unten freihalten, was die Perspektiv-Leiste verdeckt
     const vb=document.getElementById('viewBar'),ch=R.domElement.clientHeight||1;
