@@ -50,6 +50,17 @@ body.fullscreen #captured { margin:2px 0; }
 #rulesBtn:hover,#soundBtn:hover { opacity:1; }
 #avBtn { position:fixed; top:6px; left:292px; z-index:150; padding:4px 10px; font-size:14px; cursor:pointer;
   background:#333; color:#eee; border:1px solid #666; border-radius:5px; opacity:.85; }
+#avMenu { display:none; position:fixed; top:44px; left:200px; z-index:170; background:rgba(28,28,28,.97); border:1px solid #666; border-radius:8px;
+  padding:10px 12px; color:#ddd; font-size:13px; min-width:240px; box-shadow:0 4px 18px rgba(0,0,0,.6); }
+#avMenu.show { display:block; }
+#avMenu label { display:block; margin:5px 0; cursor:pointer; }
+#avMenu hr { border:none; border-top:1px solid #444; margin:8px 0; }
+#avMenu button { width:100%; padding:6px; font-size:13px; cursor:pointer; background:#2a6; color:#fff; border:none; border-radius:5px; }
+#avMenu .sub { color:#999; font-size:11.5px; margin-top:8px; }
+#selfView { display:none; position:fixed; left:10px; bottom:10px; z-index:140; width:160px; border:2px solid #888; border-radius:8px; overflow:hidden; background:#000; }
+#selfView.show { display:block; }
+#selfView canvas { width:100%; display:block; }
+#selfView button { position:absolute; top:2px; right:2px; background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:12px; }
 #avStrip { display:flex; gap:10px; justify-content:center; margin:2px 0 4px; }
 #avStrip .avCv { height:clamp(84px,18vh,190px); width:auto; aspect-ratio:4/3; border:2px solid #555; border-radius:8px; background:#000; }
 #fsBtn2 { position:fixed; top:6px; left:246px; z-index:150; padding:4px 10px; font-size:14px; cursor:pointer;
@@ -123,7 +134,7 @@ body.fullscreen #captured { margin:2px 0; }
   body { padding:44px 4px 4px !important; }
   #panel { margin-top:0; }
   #menuBtn,#btn3d,#rulesBtn,#soundBtn { padding:3px 8px; font-size:13px; top:6px; }
-  #btn3d { left:44px; } #rulesBtn { left:88px; } #soundBtn { left:124px; } #fsBtn2 { left:162px; padding:3px 8px; font-size:13px; } #avBtn { left:200px; padding:3px 8px; font-size:13px; }
+  #btn3d { left:44px; } #rulesBtn { left:88px; } #soundBtn { left:124px; } #fsBtn2 { left:162px; padding:3px 8px; font-size:13px; } #avBtn { left:200px; padding:3px 8px; font-size:13px; } #avMenu { left:6px; right:6px; min-width:0; } #selfView { width:112px; }
   #avStrip { gap:6px; } #avStrip .avCv { height:clamp(70px,17vh,150px); max-width:48vw; }
   #rulesBtn .lbl { display:none; }
   #logBox { width:auto; min-width:150px; max-width:46vw; font-size:11px; }
@@ -143,7 +154,18 @@ body.fullscreen #captured { margin:2px 0; }
 <button id="rulesBtn" onclick="openRules()" title="Spielanleitung">📖<span class="lbl"> Regeln</span></button>
 <button id="soundBtn" onclick="toggleSound()" title="Ton ein/aus">🔊</button>
 <button id="fsBtn2" onclick="toggleFullscreen()" title="Vollbild – Adressleiste ausblenden">⛶</button>
-<button id="avBtn" onclick="toggleAvatars()" title="Mitspieler ein-/ausblenden">👥</button>
+<button id="avBtn" onclick="toggleAvMenu()" title="Mitspieler und Kamera">👥</button>
+<div id="avMenu">
+  <label><input type="checkbox" id="chkAvOn" onchange="toggleAvatars()"> Mitspieler-Fenster / Monitore anzeigen</label>
+  <hr>
+  <button id="camToggle" onclick="camStream?camOff():camOn()">📷 Kamera einschalten</button>
+  <div class="sub">Bei ausgeschalteter Kamera zeigen:</div>
+  <label><input type="radio" name="camOffMode" value="still" checked onchange="setCamOffMode(this.value)"> Standbild (letztes Bild)</label>
+  <label><input type="radio" name="camOffMode" value="avatar" onchange="setCamOffMode(this.value)"> Avatar</label>
+  <label><input type="checkbox" id="chkSelf" checked onchange="showSelf=this.checked;updateSelfView()"> Eigenes Bild klein anzeigen</label>
+  <div class="sub" id="camInfo"></div>
+</div>
+<div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
 <h2>Drei-Personen-Schach</h2>
 <div id="controls">
@@ -180,6 +202,7 @@ body.fullscreen #captured { margin:2px 0; }
   <button onclick="V3.view('R')" style="color:#ff5533">Rot</button>
   <button onclick="V3.view('top')">Oben</button>
   <label><input type="checkbox" id="chkFollow" checked> folgt Spieler am Zug</label>
+  <label><input type="checkbox" id="chkMon" onchange="toggleAvatars()"> Monitore</label>
   <label title="Größe der Mitspieler-Monitore">🖥️ <input type="range" id="monSize" min="50" max="180" step="5" value="100" style="width:90px;vertical-align:middle" oninput="V3.setMonScale(this.value/100)"></label>
   <span class="hint">Ziehen = drehen · Rechtsklick/Shift = verschieben · Rad = Zoom</span>
  </span>
@@ -870,9 +893,12 @@ function drawAvatar(p,t){
   // Kamerabild (Multiplayer) hat Vorrang
   if(a.video&&a.video.readyState>=2&&!a.videoOff){
     const v=a.video,vr=v.videoWidth/v.videoHeight||4/3;let w=AV_W,h=AV_W/vr;if(h<AV_H){h=AV_H;w=AV_H*vr;}
-    x.drawImage(v,(AV_W-w)/2,(AV_H-h)/2,w,h);drawNameTag(x,p,ai);return;
+    x.save();if(a.mirror){x.translate(AV_W,0);x.scale(-1,1);}
+    x.drawImage(v,(AV_W-w)/2,(AV_H-h)/2,w,h);x.restore();
+    if(a.line)drawBubble(x,a.line,AVCOL[p],(t-a.since)/1000);
+    drawNameTag(x,p,ai);return;
   }
-  if(a.still&&a.videoOff){x.drawImage(a.still,0,0,AV_W,AV_H);drawNameTag(x,p,ai);return;}
+  if(a.still&&a.videoOff&&camOffMode==='still'){x.drawImage(a.still,0,0,AV_W,AV_H);drawNameTag(x,p,ai);return;}
   const age=(t-a.since)/1000,sp=ai?M.speed:1;
   // Hintergrund: getönter Bildschirm mit Rasterlinien
   const g=x.createRadialGradient(AV_W/2,AV_H*0.55,20,AV_W/2,AV_H/2,AV_W*0.7);
@@ -1078,8 +1104,48 @@ function emoAfterMove(e){
 let avatarsOn=true;try{avatarsOn=localStorage.getItem('dreiSchach.avatars')!=='0';}catch(e){}
 function toggleAvatars(){
   avatarsOn=!avatarsOn;try{localStorage.setItem('dreiSchach.avatars',avatarsOn?'1':'0');}catch(e){}
+  syncAvUI();layoutStrip();resizeCanvas();
+}
+function syncAvUI(){
   document.getElementById('avBtn').style.opacity=avatarsOn?'':'0.45';
-  layoutStrip();resizeCanvas();
+  document.getElementById('chkAvOn').checked=avatarsOn;document.getElementById('chkMon').checked=avatarsOn;
+  document.getElementById('camToggle').textContent=camStream?'📷 Kamera ausschalten':'📷 Kamera einschalten';
+  document.getElementById('camToggle').style.background=camStream?'#a33':'#2a6';
+  const me=meP();document.getElementById('camInfo').textContent=`Dein Bild erscheint im Fenster von ${PNAMES[me]}.`+(camStream?' Kamera läuft.':'');
+}
+function toggleAvMenu(){const m=document.getElementById('avMenu');m.classList.toggle('show');syncAvUI();}
+document.addEventListener('pointerdown',e=>{const m=document.getElementById('avMenu');
+  if(m&&m.classList.contains('show')&&!m.contains(e.target)&&e.target.id!=='avBtn')m.classList.remove('show');});
+// ---------- eigene Kamera (Probelauf; im Multiplayer geht dasselbe Bild an die Mitspieler) ----------
+let camStream=null,camOffMode='still',showSelf=true;
+try{camOffMode=localStorage.getItem('dreiSchach.camOffMode')||'still';}catch(e){}
+function meP(){return TURN_ORDER.find(p=>!aiPlayers[p])||'B';}
+function setCamOffMode(v){camOffMode=v;try{localStorage.setItem('dreiSchach.camOffMode',v);}catch(e){}}
+async function camOn(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){alert('Dein Browser erlaubt hier keinen Kamerazugriff. (Die Seite muss über https geöffnet sein.)');return;}
+  try{camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480},facingMode:'user'},audio:false});}
+  catch(e){alert('Die Kamera konnte nicht gestartet werden: '+(e.name==='NotAllowedError'?'Der Zugriff wurde nicht erlaubt. Du kannst ihn in den Website-Einstellungen des Browsers freigeben.':e.name==='NotFoundError'?'Es wurde keine Kamera gefunden.':e.message));return;}
+  const v=document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.srcObject=camStream;
+  try{await v.play();}catch(e){}
+  const a=AV[meP()];a.video=v;a.videoOff=false;a.mirror=true;a.still=null;
+  if(!avatarsOn)toggleAvatars();
+  syncAvUI();updateSelfView();
+}
+function camOff(){
+  const a=AV[meP()];
+  if(a.video&&a.video.readyState>=2){   // letztes Bild als Standbild merken
+    const c=document.createElement('canvas');c.width=AV_W;c.height=AV_H;const x=c.getContext('2d'),v=a.video;
+    const vr=v.videoWidth/v.videoHeight||4/3;let w=AV_W,h=AV_W/vr;if(h<AV_H){h=AV_H;w=AV_H*vr;}
+    x.translate(AV_W,0);x.scale(-1,1);x.drawImage(v,(AV_W-w)/2,(AV_H-h)/2,w,h);a.still=c;
+  }
+  if(camStream)camStream.getTracks().forEach(t=>t.stop());
+  camStream=null;a.video=null;a.videoOff=true;
+  syncAvUI();updateSelfView();
+}
+function updateSelfView(){
+  const on=showSelf&&(camStream||AV[meP()].still)&&avatarsOn;
+  document.getElementById('selfView').classList.toggle('show',!!on);
+  document.getElementById('selfView').style.borderColor=AVCOL[meP()];
 }
 function stripPlayers(){   // die beiden Gegner des Spielers, der unten sitzt
   const me=TURN_ORDER[Math.max(0,rotation)];
@@ -1107,8 +1173,11 @@ function avLoop(t){
   if(!avatarsOn)return;
   const in3D=window.V3&&V3.on;
   layoutStrip();
-  const list=in3D?TURN_ORDER:stripPlayers();
+  const list=in3D?TURN_ORDER:stripPlayers().slice();
+  const sv=document.getElementById('selfView'),me=meP();
+  if(sv&&sv.classList.contains('show')&&!list.includes(me))list.push(me);
   for(const p of list)drawAvatar(p,t);
+  if(sv&&sv.classList.contains('show'))document.getElementById('selfCv').getContext('2d').drawImage(avCanvas(me),0,0);
   if(in3D&&V3.avatarTick)V3.avatarTick();
 }
 requestAnimationFrame(avLoop);
@@ -2003,7 +2072,8 @@ resizeCanvas();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 openSetup();
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
-document.getElementById('avBtn').style.opacity=avatarsOn?'':'0.45';
+syncAvUI();
+document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=true;
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
