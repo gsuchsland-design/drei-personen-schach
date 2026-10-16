@@ -219,7 +219,7 @@ body.barBottom #selfView { bottom:50px; }
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <div id="avPlayers"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 21:15 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 16.10. 21:45 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -436,13 +436,30 @@ async function needPeerJS(){
   if(window.Peer)return true;
   try{await loadScript('lib/peerjs.min.js');return !!window.Peer;}catch(e){return false;}
 }
-function peerOpts(){   // für Tests: eigener Vermittlungs-Server über ?peerhost=…
-  const h=QS.get('peerhost');if(!h)return{debug:0};
-  return{host:h,port:+(QS.get('peerport')||9000),path:'/',secure:QS.get('peersecure')==='1',debug:0};
+// Verbindungswege: direkt (STUN) und – wenn ein Netz das blockiert, z. B. im Mobilfunk – über Weiterleitungsserver (TURN)
+let ICE=null;
+async function iceServers(){
+  if(ICE)return ICE;
+  const list=[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']}];
+  try{   // Open Relay (Metered): kostenloser TURN-Dienst mit zeitlich begrenzten Zugangsdaten (TURN-REST-Verfahren)
+    const user=(Math.floor(Date.now()/1000)+24*3600)+':dreischach';
+    const key=await crypto.subtle.importKey('raw',new TextEncoder().encode('openrelayprojectsecret'),{name:'HMAC',hash:'SHA-1'},false,['sign']);
+    const sig=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(user));
+    const cred=btoa(String.fromCharCode(...new Uint8Array(sig)));
+    list.push({urls:['turn:staticauth.openrelay.metered.ca:80','turn:staticauth.openrelay.metered.ca:443','turn:staticauth.openrelay.metered.ca:443?transport=tcp','turns:staticauth.openrelay.metered.ca:443?transport=tcp'],username:user,credential:cred});
+  }catch(e){}
+  list.push({urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'});
+  return ICE=list;
 }
-function makePeer(id){
+function peerOpts(ice){   // für Tests: eigener Vermittlungs-Server über ?peerhost=…
+  const h=QS.get('peerhost'),cfg={config:{iceServers:ice},debug:0};
+  if(!h)return cfg;
+  return Object.assign(cfg,{host:h,port:+(QS.get('peerport')||9000),path:'/',secure:QS.get('peersecure')==='1'});
+}
+async function makePeer(id){
+  const ice=await iceServers();
   return new Promise((res,rej)=>{
-    const p=id?new Peer(id,peerOpts()):new Peer(peerOpts());
+    const p=id?new Peer(id,peerOpts(ice)):new Peer(peerOpts(ice));
     const to=setTimeout(()=>rej({type:'timeout'}),15000);
     p.on('open',()=>{clearTimeout(to);res(p);});
     p.on('error',e=>{clearTimeout(to);rej(e);});
@@ -589,6 +606,8 @@ function hostLobby(){
   if(NET.started){updateStatus();renderClocks();}
 }
 function hostAccept(conn){
+  conn.on('iceStateChanged',st=>{if(st==='failed'&&!conn.open&&!NET.iceWarned){NET.iceWarned=true;setTimeout(()=>NET.iceWarned=false,30000);
+    toast('Jemand versucht beizutreten, aber euer Netz blockiert die direkte Verbindung. Ich probiere andere Wege – hilft es nicht: einer von euch ins WLAN.',7000);}});
   conn.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}hostRecv(conn,m);});
   conn.on('close',()=>hostDrop(conn));
   conn.on('error',()=>hostDrop(conn));
@@ -805,7 +824,7 @@ function wirePeer(pr){
   pr.on('close',()=>{if(NET.peer===pr)netRevive();});
   pr.on('error',e=>{
     if(NET.peer!==pr)return;
-    if(e.type==='peer-unavailable'){if(!NET.host){if(!NET.seat&&!NET.spec)joinFail();else guestLost();}return;}
+    if(e.type==='peer-unavailable'){NET.unavailAt=performance.now();if(!NET.host){if(!NET.seat&&!NET.spec)joinFail();else guestLost();}return;}
     if(['network','server-error','socket-error','socket-closed','disconnected'].includes(e.type))netRevive();
   });
 }
@@ -842,6 +861,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 function guestConnect(re){
   const c=NET.peer.connect('dps-'+NET.code,{reliable:true});NET.hostConn=c;NET.hostSeen=performance.now();
+  c.on('iceStateChanged',st=>{if(st==='failed'||st==='disconnected'&&!c.open)NET.iceFailed=true;});
   c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,av:{cam:!!camStream,mic:micLive()}}));
   c.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}if(NET.hostConn===c){NET.hostSeen=performance.now();NET.retries=0;
     if(NET.lostSince){NET.lostSince=0;hideBanner();clearTimeout(NET.lostTimer);NET.lostTimer=null;toast('✓ Wieder verbunden',2000);}joinRecv(m);}});
@@ -866,7 +886,10 @@ function joinFail(){   // Gastgeber (noch) nicht erreichbar → bis zu 15 Minute
   if(!NET.on||NET.seat||NET.spec)return;
   NET.joinSince=NET.joinSince||performance.now();
   if(performance.now()-NET.joinSince>15*60000){lbStatus('⚠️ Dieses Spiel wurde nicht gefunden. Vielleicht hat der Gastgeber es beendet. Frag ihn nach einem neuen Link.');return;}
-  lbStatus('⏳ Der Gastgeber ist gerade nicht erreichbar – vielleicht ist er kurz in einer anderen App. Ich versuche es automatisch weiter, lass diese Seite einfach offen …');
+  const notFound=NET.unavailAt&&performance.now()-NET.unavailAt<20000;
+  NET.joinTries=(NET.joinTries||0)+1;
+  lbStatus(notFound?'⏳ Der Gastgeber ist gerade nicht erreichbar – vielleicht ist er kurz in einer anderen App. Ich versuche es automatisch weiter, lass diese Seite einfach offen …'
+    :'⏳ Der Gastgeber ist online, aber die Verbindung zu ihm kommt nicht zustande. Das liegt meist am Netz (Mobilfunk, Firmen- oder Hotel-WLAN). Tipp: ins private WLAN wechseln. Ich versuche es automatisch weiter …'+(NET.iceFailed?' (Netzwerk blockiert)':''));
   NET.joinRetry=setTimeout(()=>{if(!NET.on||NET.seat||NET.spec)return;try{if(NET.hostConn)NET.hostConn.close();}catch(e){}
     if(NET.peer&&NET.peer.open){guestConnect(false);NET.joinTimer=setTimeout(joinFail,12000);}else{netRevive();NET.joinRetry=setTimeout(joinFail,5000);}},4000);
 }
