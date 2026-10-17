@@ -243,7 +243,7 @@ body.barBottom #selfView { bottom:50px; }
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <div id="avPlayers"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 18.10. 00:45 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
+  <div class="sub" style="text-align:right;opacity:.6"><span class="verTxt">Version</span> · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -260,6 +260,7 @@ body.barBottom #selfView { bottom:50px; }
   <button id="btnFit" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="if(window.V3&&V3.on)V3.view('cur');else{fitBoard();draw();}">⤢ Einpassen</button>
   <button id="btnRotate" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="rotateBoard()">↻ Brett drehen</button>
   <label><input type="checkbox" id="chkCoordRing" checked> Koordinaten-Ring</label>
+  <label title="Zusätzliche Zeichen für die Spielerfarben: Blau ■, Grün ▲, Rot ●"><input type="checkbox" id="chkSym" onchange="setSym(this.checked)"> Farbsymbole ■▲●</label>
   <label><input type="checkbox" id="chkFollow2d"> Brett folgt Spieler am Zug</label>
   <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="toggleAvMenu()">👥 Mitspieler &amp; Kamera</button>
   <label title="Wenn oben etwas die Knöpfe verdeckt"><input type="checkbox" id="chkBarBottom" onchange="setBarBottom(this.checked)"> Knopfleiste unten</label>
@@ -447,6 +448,8 @@ body.barBottom #selfView { bottom:50px; }
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
+const APP_VER='2026-10-18 02:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return `Version ${dd}.${m}. ${t}`;}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
 try{NET.specMode=localStorage.getItem('dreiSchach.specMode')||'ask';}catch(e){}
@@ -476,6 +479,24 @@ function showAsk(){
 }
 // Meldungen erscheinen in einer schmalen Zeile unter dem Status – sie verdecken weder Brett noch Menü
 let MSG_STICKY='';
+function reloadFresh(){   // neu laden und dabei den Zwischenspeicher umgehen; Spiel-Code bleibt erhalten
+  try{if(NET.on&&NET.host)hostSave();}catch(e){}
+  const q=new URLSearchParams(location.search);q.set('v',Date.now().toString(36));
+  location.replace(location.pathname+'?'+q.toString());
+}
+// Hinweis auf neue Version (prüft ab und zu, ob auf dem Server eine neuere liegt)
+let updSeen='';
+async function checkUpdate(){
+  try{
+    const r=await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+    const m=/const APP_VER='([^']+)'/.exec(await r.text());if(!m||m[1]<=APP_VER||m[1]===updSeen)return;
+    updSeen=m[1];
+    if(NET.on&&NET.started&&!gameOver){showBanner('🆕 Eine neue Version ist verfügbar – lade nach dieser Partie neu.');return;}
+    ask('upd','🆕 Eine neue Version des Spiels ist verfügbar.',[{label:'🔄 Jetzt laden',fn:reloadFresh},{label:'Später',bg:'#555',fn:()=>{}}]);
+  }catch(e){}
+}
+setTimeout(checkUpdate,30000);setInterval(checkUpdate,15*60000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(checkUpdate,2000);});
 function toast(msg,ms=4200){
   const t=document.getElementById('msgLine');if(!t)return;
   document.body.classList.add('online');
@@ -739,6 +760,13 @@ function hostAccept(conn){
 function seatOfConn(conn){return TURN_ORDER.find(p=>NET.seats[p].conn===conn);}
 function hostRecv(conn,m){
   if(m.t==='hello'){
+    if((m.ver||'')!==APP_VER){   // unterschiedliche Versionen rechnen evtl. mit anderen Regeln → angleichen
+      if((m.ver||'')<APP_VER){netSend(conn,{t:'oldver',ver:APP_VER});setTimeout(()=>{try{conn.close();}catch(e){}},800);return;}
+      netSend(conn,{t:'hostold'});setTimeout(()=>{try{conn.close();}catch(e){}},800);
+      ask('hostold','🆕 Ein Mitspieler hat eine neuere Version. Bitte jetzt neu laden – dein Spiel wird wiederhergestellt.',[
+        {label:'🔄 Jetzt neu laden',fn:()=>reloadFresh()},{label:'Später',bg:'#555',fn:()=>{}}]);
+      return;
+    }
     if(m.token&&NET.banned.has(m.token)){netSend(conn,{t:'kicked',again:true});setTimeout(()=>conn.close(),500);return;}
     let p=TURN_ORDER.find(q=>NET.seats[q].token&&NET.seats[q].token===m.token);
     if(p&&NET.seats[p].timer)clearTimeout(NET.seats[p].timer);
@@ -1017,7 +1045,7 @@ document.addEventListener('visibilitychange',()=>{
 function guestConnect(re){
   const c=NET.peer.connect('dps-'+NET.code,{reliable:true});NET.hostConn=c;NET.hostSeen=performance.now();
   c.on('iceStateChanged',st=>{if(st==='failed'||st==='disconnected'&&!c.open)NET.iceFailed=true;});
-  c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,av:{cam:!!camStream,mic:micLive()}}));
+  c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,ver:APP_VER,av:{cam:!!camStream,mic:micLive()}}));
   c.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}if(NET.hostConn===c){NET.hostSeen=performance.now();NET.retries=0;
     if(NET.lostSince){NET.lostSince=0;hideBanner();clearTimeout(NET.lostTimer);NET.lostTimer=null;toast('✓ Wieder verbunden',2000);}joinRecv(m);}});
   c.on('close',()=>{if(NET.hostConn===c)guestLost();});
@@ -1062,6 +1090,13 @@ function joinRecv(m){
     for(const p of TURN_ORDER)if(p!==NET.seat)AV[p].still=null;
     camFix();syncAvUI();updateSelfView();netAV();renderLobby();return;}
   if(m.t==='ping')return;
+  if(m.t==='oldver'){clearTimeout(NET.joinTimer);
+    let tried='';try{tried=sessionStorage.getItem('dreiSchach.reloadFor')||'';}catch(e){}
+    if(tried!==m.ver){try{sessionStorage.setItem('dreiSchach.reloadFor',m.ver);}catch(e){}lbStatus('🆕 Es gibt eine neuere Version – sie wird geladen …');setTimeout(reloadFresh,800);}
+    else lbStatus('🆕 Bitte lade die Seite neu – du hast noch eine ältere Version. (Notfalls ein paar Minuten warten, bis sie überall angekommen ist.)');
+    NET.leaving=true;return;}
+  if(m.t==='hostold'){clearTimeout(NET.joinTimer);lbStatus('🆕 Der Gastgeber hat noch eine ältere Version. Er wurde gebeten, neu zu laden – danach geht es automatisch weiter …');
+    NET.joinSince=0;NET.joinRetry=setTimeout(joinFail,8000);return;}
   if(m.t==='bye'){NET.retries=99;hostGone();return;}
   if(m.t==='note'){toast(m.txt);return;}
   if(m.t==='awayAsk'){awayAsk(m.p,m.name);return;}
@@ -1087,7 +1122,7 @@ function joinRecv(m){
     // Bild/Ton zu den anderen Gästen: der mit der „kleineren“ Kennung ruft an
     for(const p of TURN_ORDER){const s=m.lobby[p];if(NET.seat&&!NET.spec&&s&&s.kind==='peer'&&p!==NET.seat&&s.id&&NET.peer&&NET.peer.id<s.id)netCall(s.id);}
     renderLobby();netAttach();if(NET.started){updateStatus();renderClocks();}return;}
-  if(m.t==='start'){netBeginGame(m.cfg);return;}
+  if(m.t==='start'){unask('end');netBeginGame(m.cfg);return;}
   if(m.t==='sync'){netApplySync(m.data);return;}
   if(m.t==='seat'){aiPlayers[m.p]=m.ai;updateStatus();renderClocks();return;}
   if(m.t==='av'){NET.avs[m.p]={cam:m.cam,mic:m.mic};netAttach();renderLobby();return;}
@@ -1670,6 +1705,10 @@ function pieceSprite(piece,player){
 function drawPiece(ctx,piece,player,x,y,size){const w=size*1.5;ctx.drawImage(pieceSprite(piece,player),x-w/2,y-w/2,w,w);}
 if(document.fonts){document.fonts.load(`20px ${PIECE_FONT}`,'♟').then(()=>{SPRITES={};try{draw();}catch(e){}}).catch(()=>{});}
 const PCOLOR={R:'#ff5533',B:'#5599ff',G:'#44ee22'};
+const PSYM={B:'■',G:'▲',R:'●'};   // Farbenblind-Hilfe: jede Farbe hat zusätzlich ein Zeichen
+let symOn=false;try{symOn=localStorage.getItem('dreiSchach.sym')==='1';}catch(e){}
+function setSym(on){symOn=on;try{localStorage.setItem('dreiSchach.sym',on?'1':'0');}catch(e){}
+  const c=document.getElementById('chkSym');if(c)c.checked=on;renderClocks();draw();if(window.V3&&V3.on&&V3.sync)V3.sync();}
 const A_ROW=['R','N','B','Q','K','B','N','R'];
 const TURN_ORDER=['B','G','R'];
 const PNAMES={B:'Blau',R:'Rot',G:'Grün'};
@@ -1732,7 +1771,16 @@ function advanceTurn(newEP=null){
   startTurnClock();
   updateStatus();updateCaptured();draw();
   if(gameOver)endByPoints();
-  else maybeAI();
+  else{maybeAI();if(NET.on&&!NET.spec&&cur()===NET.seat)notifyTurn();}
+}
+let titleFlash=null;
+function notifyTurn(){
+  try{if(navigator.vibrate)navigator.vibrate([90,60,90]);}catch(e){}
+  snd('turn');
+  if(document.hidden&&!titleFlash){const t0=document.title;let on=false;
+    titleFlash=setInterval(()=>{document.title=(on=!on)?'♟ Du bist dran!':t0;},900);
+    const stop=()=>{if(!document.hidden){clearInterval(titleFlash);titleFlash=null;document.title=t0;document.removeEventListener('visibilitychange',stop);}};
+    document.addEventListener('visibilitychange',stop);}
 }
 // Hilfspflicht für den Spieler `helper` (als Nächster am Zug) bestimmen und in helpDuty setzen.
 // Bedrohter ist der Spieler nach ihm, Schachgebender der davor. Er darf keinen Zug machen, nach dem
@@ -1776,7 +1824,23 @@ function endGame(winner,loser){
   el.textContent=`${turnNote}SCHACHMATT gegen ${PNAMES[loser]} – ${PNAMES[winner]} gewinnt!`;
   el.style.color=PCOLOR[winner];
   updateCaptured();renderClocks();draw();
-  setTimeout(()=>alert(`♚ SCHACHMATT gegen ${PNAMES[loser]}!\n${PNAMES[winner]} gewinnt.`),80);
+  gameEndPrompt(`♚ Schachmatt gegen ${PNAMES[loser]} – ${PNAMES[winner]} gewinnt!`);
+}
+// Spielende: Meldung in der Leiste (kein Fenster), dazu „Revanche“ bzw. „Noch eine Partie“
+function gameEndPrompt(text){
+  if(NET.on&&!NET.host){ask('end',text,[{label:'OK',fn:()=>{}}]);if(!NET.spec)setTimeout(()=>toast('Der Gastgeber kann eine Revanche starten.',5000),1500);return;}
+  ask('end',text,[{label:NET.on?'🔄 Revanche':'🔄 Noch eine Partie',fn:rematch},{label:'Schließen',bg:'#555',fn:()=>{}}]);
+}
+function rematch(){
+  unask('end');
+  if(NET.on){
+    if(!NET.host)return;
+    const ai={};for(const p of TURN_ORDER){const k=NET.seats[p].kind;ai[p]=k==='ai'||k==='dropped'?NET.cfg.lvl:null;}
+    const cfg={tc:NET.cfg.tc,ai};netBroadcast({t:'start',cfg});netBeginGame(cfg);
+    netBroadcast({t:'note',txt:'🔄 Revanche! Neue Partie mit denselben Spielern.'});
+    return;
+  }
+  startFromSetup();startPlay();
 }
 function updateStatus(){
   if(gameOver)return;
@@ -2306,6 +2370,7 @@ function snd(kind){
   else if(kind==='check'){tone(a,{f0:880,dur:0.14,type:'triangle',vol:0.22});tone(a,{f0:660,dur:0.2,type:'triangle',vol:0.22,at:0.15});}
   else if(kind==='mate'){[523,659,784,1047].forEach((f,i)=>tone(a,{f0:f,dur:i===3?0.6:0.18,type:'triangle',vol:0.25,at:i*0.16}));}
   else if(kind==='end'){[784,659,523].forEach((f,i)=>tone(a,{f0:f,dur:0.25,type:'triangle',vol:0.22,at:i*0.2}));}
+  else if(kind==='turn'){tone(a,{f0:660,dur:0.09,type:'sine',vol:0.2});tone(a,{f0:990,dur:0.14,type:'sine',vol:0.2,at:0.1});}
   else if(kind==='beep'){tone(a,{f0:440,dur:0.12,type:'square',vol:0.08});tone(a,{f0:440,dur:0.12,type:'square',vol:0.08,at:0.18});}
 }
 
@@ -2478,7 +2543,7 @@ function endByPoints(){
   el.textContent=`Niemand kann mehr ziehen – ${msg}! ${tbl}`;
   el.style.color=top.length>1?'#fff':PCOLOR[r[0].p];
   renderClocks();
-  setTimeout(()=>alert(`Niemand kann mehr ziehen.\n${msg}!\n\n${r.map(x=>`${PNAMES[x.p]}: ${x.pts} Punkte, ${fmtTime(x.t)} verbraucht`).join('\n')}`),80);
+  gameEndPrompt(`🏁 Niemand kann mehr ziehen – ${msg}!`);
 }
 function fmtTime(ms){
   const t=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(t/60),s=t%60;
@@ -2491,7 +2556,7 @@ function renderClocks(){
   for(const p of TURN_ORDER){
     const el=document.getElementById('clk'+p);
     const act=p===cur()&&!gameOver;
-    let t=`${aiPlayers[p]?'🤖 ':''}${PNAMES[p]} ${score(p)} P.`;
+    let t=`${symOn?PSYM[p]+' ':''}${aiPlayers[p]?'🤖 ':''}${PNAMES[p]} ${score(p)} P.`;
     t+=tc.game?' · '+fmtTime(clock[p]):' · ⌛'+fmtTime(timeUsed[p]);
     if(tc.move&&act)t+=` ⏱${fmtTime(moveLeft)}`;
     el.textContent=t;
@@ -3031,6 +3096,8 @@ function draw(){
         else{ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=5;}
         const py=showLabels?d.cy-4*zoom:d.cy,fsz=Math.max(13,26*zoom);
         drawPiece(ctx,pd.piece,pd.player,d.cx,py,fsz);ctx.shadowBlur=0;
+        if(symOn){ctx.save();ctx.font=`bold ${Math.max(8,fsz*0.42)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.lineWidth=3;ctx.strokeStyle='#000';const sx=d.cx+fsz*0.42,sy=py+fsz*0.36;ctx.strokeText(PSYM[pd.player],sx,sy);ctx.fillStyle='#fff';ctx.fillText(PSYM[pd.player],sx,sy);ctx.restore();}
         if(pd.piece==='K')drawKingCross(ctx,d.cx,py,fsz);
       }
     }
@@ -3075,6 +3142,30 @@ document.getElementById('c').addEventListener('click',e=>{
   const r=e.target.getBoundingClientRect(),fid=fidAt(e.clientX-r.left,e.clientY-r.top);
   if(fid)onFieldClick(fid);
 });
+// Erklärt, warum ein gewünschter Zug nicht geht (Schach, Fesselung, Hilfspflicht)
+function explainNoMoves(coord,player){   // Figur ausgewählt, aber kein Zug möglich: Grund nennen, wenn sie eigentlich ziehen könnte
+  const pd=gameState[coord];
+  for(const x of rawMoves(coord,pd.piece,player,gameState,epTarget,false)){
+    const to=COORD_LABELS[x]||x;if(gameState[to]&&gameState[to].player===player)continue;
+    const why=blockReason(coord,to,player);if(why){toast('🚫 '+why,5500);return;}
+  }
+}
+function blockReason(from,to,player){
+  const pd=gameState[from];if(!pd)return'';
+  const raw=[...rawMoves(from,pd.piece,player,gameState,epTarget,false)].map(x=>COORD_LABELS[x]||x);
+  if(!raw.includes(to)){
+    if(pd.piece==='K'&&getCastles(from,player,gameState,movedPieces).some(c=>c.toCoord===to))return'Rochade ist gerade nicht erlaubt (König steht im Schach oder würde durch ein angegriffenes Feld ziehen).';
+    return'';
+  }
+  const ns=applyMove(gameState,from,to,epTarget);
+  if(isInCheck(player,ns))return isInCheck(player,gameState)?'Du stehst im Schach – erlaubt sind nur Züge, die das Schach aufheben.':
+    (pd.piece==='K'?'Dort würde dein König im Schach stehen.':'Diese Figur ist gefesselt – der Zug würde deinen König ins Schach stellen.');
+  if(helpDuty&&helpDuty.helper===player){
+    if(helpDuty.mated)return`Hilfspflicht: ${PNAMES[helpDuty.victim]} ist matt – du musst einen Zug machen, der ihn befreit.`;
+    if(isMated(helpDuty.victim,ns,epTarget))return`Hilfspflicht: Dieser Zug würde ${PNAMES[helpDuty.victim]} mattsetzen.`;
+  }
+  return'';
+}
 function onFieldClick(fid){
   if(promoPending||gameOver||setupOpen||paused||moveAnim||aiPlayers[cur()]||netBlocks(cur()))return;
   const coord=COORD_LABELS[fid],pd=gameState[coord],player=cur();
@@ -3085,11 +3176,15 @@ function onFieldClick(fid){
     else if(pd&&pd.player===player&&fid!==selected){
       const{moves,castles}=getValidMoves(coord,movedPieces,epTarget);
       selected=fid;validMoves=moves;castleMap=castles;draw();
-    } else{selected=null;validMoves=new Set();castleMap={};draw();}
+      if(!moves.size)explainNoMoves(coord,player);
+    } else{
+      const why=blockReason(COORD_LABELS[selected],coord,player);if(why){toast('🚫 '+why,5500);snd('beep');}
+      selected=null;validMoves=new Set();castleMap={};draw();}
   } else {
     if(pd&&pd.player===player){
       const{moves,castles}=getValidMoves(coord,movedPieces,epTarget);
       selected=fid;validMoves=moves;castleMap=castles;draw();
+      if(!moves.size)explainNoMoves(coord,player);
     }
   }
 }
@@ -3173,6 +3268,8 @@ try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.nam
 if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else openSetup();
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
 try{if(localStorage.getItem('dreiSchach.barBottom')==='1')setBarBottom(true);}catch(e){}
+document.querySelectorAll('.verTxt').forEach(e=>e.textContent=verLabel());
+if(symOn)document.getElementById('chkSym').checked=true;
 syncAvUI();
 document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=true;
 layoutStrip();resizeCanvas();
@@ -3251,6 +3348,14 @@ window.V3={on:false};
   }
   let monScale=1;try{monScale=parseFloat(localStorage.getItem('dreiSchach.monScale'))||1;}catch(e){}
   function goldMat(){return GOLD||(GOLD=new THREE.MeshStandardMaterial({color:'#ffd23f',metalness:0.3,roughness:0.3,emissive:'#c89400',emissiveIntensity:0.6}));}
+  const SYMMAT={},PTOP={};
+  function symSprite(p){
+    if(!SYMMAT[p]){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');
+      x.font='bold 48px sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineWidth=8;x.strokeStyle='#000';x.strokeText(PSYM[p],32,34);x.fillStyle='#fff';x.fillText(PSYM[p],32,34);
+      SYMMAT[p]=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:false});}
+    const s=new THREE.Sprite(SYMMAT[p]);s.scale.set(0.45,0.45,1);s.renderOrder=5;return s;
+  }
+  function pieceTop(g,t){if(PTOP[t]==null){g.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(g);PTOP[t]=b.max.y-g.position.y;}return PTOP[t];}
   function makePiece(t,player,hl){
     const grp=new THREE.Group();
     for(const g of pieceGeos(t)){const m=new THREE.Mesh(g,pmat(player,hl));m.castShadow=true;m.receiveShadow=true;grp.add(m);}
@@ -3366,6 +3471,7 @@ window.V3={on:false};
       const fid=C2F[coord],m=fieldMesh[fid];if(!m)continue;
       const g=makePiece(pd.piece,pd.player,fid===selected?'sel':'');
       g.position.set(m.userData.c[0],0,m.userData.c[1]);
+      if(symOn){const sp=symSprite(pd.player);sp.position.set(0,pieceTop(g,pd.piece)+(pd.piece==='K'?0.75:0.3),0);g.add(sp);}
       g.traverse(o=>o.userData.fid=fid);
       pieceGroup.add(g);
     }
