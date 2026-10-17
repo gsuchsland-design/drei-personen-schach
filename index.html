@@ -181,6 +181,11 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #toast.show { opacity:1; }
 #netBanner { display:none; position:fixed; left:0; right:0; top:0; z-index:420; background:#7a4b00; color:#fff; padding:8px 12px; font-size:14px; text-align:center; }
 #netBanner.show { display:block; }
+#langList { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+#langList button { margin:0 !important; padding:10px 8px !important; font-size:15px !important; background:#333 !important; border:1px solid #555 !important; text-align:left; }
+#langList button.on { background:#2a6 !important; border-color:#3c8 !important; }
+#langList button.sug { border-color:#d4a72c !important; }
+.langBtn { background:#3a3a55 !important; }
 #testBox { display:none; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:450; background:#222; border:2px solid #8a6fd0; border-radius:12px;
   padding:16px 18px; color:#ddd; width:min(380px,92vw); font-size:15px; line-height:1.6; box-shadow:0 8px 40px rgba(0,0,0,.7); }
 #testBox.show { display:block; }
@@ -260,6 +265,7 @@ body.barBottom #selfView { bottom:50px; }
   <label><input type="checkbox" id="chkSelf" checked onchange="showSelf=this.checked;updateSelfView()"> Eigenes Bild klein anzeigen</label>
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
+  <button class="langBtn notr" onclick="openLang()" style="margin-top:6px">🌐 Sprache · Language</button>
   <div id="avPlayers"></div>
   <div class="sub" style="text-align:right;opacity:.6"><span class="verTxt">Version</span> · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
 </div>
@@ -414,6 +420,7 @@ body.barBottom #selfView { bottom:50px; }
     <button class="installBtn" onclick="doInstall()" style="display:none;background:#555">📲 Als App installieren</button>
     <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
     <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie aus Datei laden</button>
+    <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
     <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · Alle Rechte vorbehalten · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
   </div>
 </div>
@@ -446,6 +453,10 @@ body.barBottom #selfView { bottom:50px; }
   <div id="chatEmo"></div>
   <form id="chatForm" onsubmit="event.preventDefault();sendChat();"><input id="chatIn" maxlength="200" placeholder="Nachricht …" autocomplete="off"><button>Senden</button></form>
 </div>
+<div id="langModal" class="netModal notr"><div class="netBox" style="border-color:#2a6">
+  <h3>🌐 Sprache · Language · Langue · Idioma</h3>
+  <div id="langList"></div>
+</div></div>
 <div id="testBox"><b>🔧 Verbindungstest</b><div id="testRes" style="margin-top:8px"></div><button onclick="document.getElementById('testBox').classList.remove('show')">Schließen</button></div>
 
 <div id="joinModal" class="netModal"><div class="netBox">
@@ -458,6 +469,7 @@ body.barBottom #selfView { bottom:50px; }
   <button class="installBtn" style="display:none;background:#555" onclick="doInstall()">📲 Als App installieren</button>
   <div class="lbHint">Tipp: Im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann hast du das Spiel wie eine App.</div>
   <button class="lbLeave" onclick="netTest()" style="background:#3a3a55">🔧 Verbindung testen</button>
+  <button class="lbLeave langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
   <button class="lbLeave" onclick="location.href=location.pathname">Nein danke, lieber allein spielen</button>
   <div class="lbHint" style="text-align:center">Bild und Ton gehen nur an deine Mitspieler und werden nicht gespeichert. Mehr unter <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a>.<br>© 2026 Guido Suchsland</div>
 </div></div>
@@ -469,11 +481,46 @@ body.barBottom #selfView { bottom:50px; }
   <ol id="logList"></ol>
 </div>
 <script>
+// ---------- Sprachen: Auswahl wird gemerkt; die Sprachdatei wird vor dem Spiel geladen ----------
+const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Français','🇫🇷'],['es','Español','🇪🇸'],['it','Italiano','🇮🇹'],['pt','Português','🇵🇹'],
+  ['nl','Nederlands','🇳🇱'],['pl','Polski','🇵🇱'],['tr','Türkçe','🇹🇷'],['ru','Русский','🇷🇺']];   // folgen: ['uk','Українська','🇺🇦'],['zh','中文','🇨🇳']
+var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
+if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
+window.LANG=LANG_SET||'de';
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101803"><\/script>');
+function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
+function trKey(t){return t.replace(/\s+/g,' ').trim();}
+function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
+  if(!window.I18N)return;
+  if(window.I18N.__rules){const r=document.getElementById('rulesText');if(r)r.innerHTML=window.I18N.__rules;}
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;
+    if(!p||p.closest('script,style,#rulesText,.notr'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});
+  const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+  for(const n of nodes){const k=trKey(n.nodeValue);if(!k)continue;const t=window.I18N[k];
+    if(t){const lead=n.nodeValue.match(/^\s*/)[0],trail=n.nodeValue.match(/\s*$/)[0];n.nodeValue=lead+t+trail;}}
+  for(const el of root.querySelectorAll('[title],[placeholder]'))for(const at of['title','placeholder']){const v=el.getAttribute(at);if(v&&window.I18N[trKey(v)])el.setAttribute(at,window.I18N[trKey(v)]);}
+  if(window.I18N.__dir)document.documentElement.dir=window.I18N.__dir;
+  document.documentElement.lang=window.LANG;
+  if(window.I18N['Drei-Personen-Schach'])document.title=window.I18N['Drei-Personen-Schach'];
+}
+function chooseLang(code){
+  try{localStorage.setItem('dreiSchach.lang',code);}catch(e){}
+  if(code===window.LANG&&LANG_SET){document.getElementById('langModal').classList.remove('show');afterLang();return;}
+  if(typeof NET!=='undefined'&&NET.on&&NET.host){try{hostSave();}catch(e){}}
+  location.reload();
+}
+function openLang(){
+  const box=document.getElementById('langList');const sug=(navigator.language||'de').slice(0,2);
+  box.innerHTML=LANGS.map(([c,n,f])=>`<button class="${c===window.LANG&&LANG_SET?'on':(!LANG_SET&&c===sug?'sug':'')}" onclick="chooseLang('${c}')">${f} ${n}</button>`).join('');
+  document.getElementById('langModal').classList.add('show');
+}
+</script>
+<script>
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-18 02:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
-function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return `Version ${dd}.${m}. ${t}`;}
+const APP_VER='2026-10-18 03:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
 try{NET.specMode=localStorage.getItem('dreiSchach.specMode')||'ask';}catch(e){}
@@ -483,7 +530,12 @@ const NET_CODE_URL=(QS.get('spiel')||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 function netName(p){const s=NET.on&&NET.lobby[p];return s&&s.name?s.name:'';}
 function netBlocks(p){return NET.on&&p!==NET.seat;}
 function randCode(){const a='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<6;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
-function netLink(){const t=QS.get('turnapp')&&QS.get('turnkey')?'&turnapp='+encodeURIComponent(QS.get('turnapp'))+'&turnkey='+encodeURIComponent(QS.get('turnkey')):'';return location.origin+location.pathname+'?spiel='+NET.code+t;}
+// Eigener Vermittlungs- und Weiterleitungsserver (Cloudflare Worker, Quelltext im Ordner server/).
+// Leer = öffentlicher PeerJS-Dienst. Ist der eigene Server nicht erreichbar, weicht das Spiel automatisch dorthin aus.
+const OWN_SERVER='';
+let SRV=(QS.get('srv')==='pj'||!OWN_SERVER)?'pj':'own';
+function srvParam(){return SRV==='pj'&&OWN_SERVER?'&srv=pj':'';}
+function netLink(){const t=QS.get('turnapp')&&QS.get('turnkey')?'&turnapp='+encodeURIComponent(QS.get('turnapp'))+'&turnkey='+encodeURIComponent(QS.get('turnkey')):'';return location.origin+location.pathname+'?spiel='+NET.code+srvParam()+t;}
 // Frage an den Nutzer mit Knöpfen; mehrere Fragen werden nacheinander gezeigt. key ersetzt eine ältere Frage gleichen Inhalts.
 const ASKQ=[];
 function ask(key,text,buttons){   // buttons: [{label,cls?,fn}]
@@ -515,8 +567,8 @@ async function checkUpdate(){
     const r=await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'});if(!r.ok)return;
     const m=/const APP_VER='([^']+)'/.exec(await r.text());if(!m||m[1]<=APP_VER||m[1]===updSeen)return;
     updSeen=m[1];
-    if(NET.on&&NET.started&&!gameOver){showBanner('🆕 Eine neue Version ist verfügbar – lade nach dieser Partie neu.');return;}
-    ask('upd','🆕 Eine neue Version des Spiels ist verfügbar.',[{label:'🔄 Jetzt laden',fn:reloadFresh},{label:'Später',bg:'#555',fn:()=>{}}]);
+    if(NET.on&&NET.started&&!gameOver){showBanner(T('🆕 Eine neue Version ist verfügbar – lade nach dieser Partie neu.'));return;}
+    ask('upd',T('🆕 Eine neue Version des Spiels ist verfügbar.'),[{label:T('🔄 Jetzt laden'),fn:reloadFresh},{label:T('Später'),bg:'#555',fn:()=>{}}]);
   }catch(e){}
 }
 setTimeout(checkUpdate,30000);setInterval(checkUpdate,15*60000);
@@ -552,7 +604,16 @@ async function meteredServers(){
 }
 async function iceServers(){
   if(ICE)return ICE;
-  const list=[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']}];
+  const list=[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun.cloudflare.com:3478']}];
+  // eigener Server: kurzlebige Zugangsdaten für die Cloudflare-Weiterleitung (auch über TLS-Port 443)
+  const base=QS.get('peerhost')?`http://${QS.get('peerhost')}:${QS.get('peerport')||9000}`:(OWN_SERVER?'https://'+OWN_SERVER:'');
+  if(base){
+    try{
+      const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),4000);
+      const r=await fetch(base+'/turn',{signal:ctl.signal,cache:'no-store'});clearTimeout(t);
+      if(r.ok){const j=await r.json();const cf=(j.iceServers||[]).filter(x=>x&&x.urls);cf.forEach(x=>{if(x.username)OWN_TURN.add(x);});list.push(...cf);}
+    }catch(e){}
+  }
   // eigener Metered-Zugang (feste Zugangsdaten aus dem Dashboard) – auch über TCP/TLS-Port 443, damit es in Hotel-WLANs klappt
   const own={urls:['stun:stun.relay.metered.ca:80','turn:global.relay.metered.ca:80','turn:global.relay.metered.ca:80?transport=tcp',
       'turn:global.relay.metered.ca:443','turns:global.relay.metered.ca:443?transport=tcp'],
@@ -572,7 +633,7 @@ async function iceServers(){
 // ---------- Verbindungstest: Welche Wege funktionieren auf diesem Gerät/Netz? ----------
 async function netTest(){
   const box=document.getElementById('testBox'),res=document.getElementById('testRes');
-  box.classList.add('show');res.innerHTML='Teste … (dauert bis zu 10 Sekunden)';
+  box.classList.add('show');res.innerHTML=T('Teste … (dauert bis zu 10 Sekunden)');
   const ice=await iceServers();
   const grp=k=>ice.filter(x=>[].concat(x.urls).some(u=>u.includes(k)));
   const gather=servers=>new Promise(done=>{
@@ -584,37 +645,48 @@ async function netTest(){
     pc.createOffer().then(o=>pc.setLocalDescription(o)).catch(()=>end());
     setTimeout(end,9000);
   });
-  const sigP=(async()=>{try{if(!window.Peer&&!await needPeerJS())return'✗ Baustein nicht geladen';const p=await makePeer(null);p.destroy();return'✓';}catch(e){return'✗ ('+(e.type||'Fehler')+')';}})();
+  const sigP=(async()=>{try{if(!window.Peer&&!await needPeerJS())returnT('✗ Baustein nicht geladen');const p=await makePeer(null);p.destroy();return'✓ '+(QS.get('peerhost')?'lokal':SRV==='own'?'Cloudflare':'PeerJS');}catch(e){return'✗ ('+(e.type||T('Fehler'))+')';}})();
   const own=ice.filter(x=>OWN_TURN.has(x)),hasOwn=own.length>0;
   const [sig,stun,eig,orl,pjs]=await Promise.all([sigP,gather(grp('stun:stun.l.google')),hasOwn?gather(own):Promise.resolve(new Set()),gather(grp('openrelay')),gather(grp('peerjs.com'))]);
-  const ok=b=>b?'✅ geht':'❌ keine Antwort';
+  const ok=b=>b?T('✅ geht'):T('❌ keine Antwort');
   const anyRelay=eig.has('relay')||orl.has('relay')||pjs.has('relay');
-  const ua=navigator.userAgent,br=/CriOS|Chrome/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/EdgiOS|Edg\//.test(ua)?'Edge':/Safari/.test(ua)?'Safari':'anderer Browser';
-  res.innerHTML=`<div>Vermittlungsdienst: <b>${sig}</b></div>
-    <div>Direkte Verbindung (STUN): <b>${stun.has('srflx')?'✅ geht':'❌ blockiert'}</b></div>
-    <div>Eigene Weiterleitung (Metered): <b>${hasOwn?ok(eig.has('relay')):'⚪ nicht eingerichtet'}</b></div>
-    <div>Weiterleitung Open Relay: <b>${ok(orl.has('relay'))}</b></div>
-    <div>Weiterleitung PeerJS: <b>${ok(pjs.has('relay'))}</b></div>
-    <div style="color:#999;font-size:12px;margin-top:6px">${br} · ${IS_IOS?'iPhone/iPad':/Android/.test(ua)?'Android':'Computer'} · ${new Date().toLocaleTimeString('de-DE')}</div>
-    <div style="margin-top:8px">${sig!=='✓'?'Der Vermittlungsdienst ist von hier aus nicht erreichbar – vielleicht blockiert ein Werbe-/Tracking-Blocker oder das Netz ihn.':
+  const ua=navigator.userAgent,br=/CriOS|Chrome/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/EdgiOS|Edg\//.test(ua)?'Edge':/Safari/.test(ua)?'Safari':T('anderer Browser');
+  res.innerHTML=T(`<div>Vermittlungsdienst: <b>{0}</b></div>
+    <div>Direkte Verbindung (STUN): <b>{1}</b></div>
+    <div>Eigene Weiterleitung (Cloudflare + Metered): <b>{2}</b></div>
+    <div>Weiterleitung Open Relay: <b>{3}</b></div>
+    <div>Weiterleitung PeerJS: <b>{4}</b></div>
+    <div style="color:#999;font-size:12px;margin-top:6px">{5} · {6} · {7}</div>
+    <div style="margin-top:8px">{8}<br>Bitte mach einen Screenshot davon.</div>`,[sig,stun.has('srflx')?T('✅ geht'):T('❌ blockiert'),hasOwn?ok(eig.has('relay')):T('⚪ nicht eingerichtet'),ok(orl.has('relay')),ok(pjs.has('relay')),br,IS_IOS?'iPhone/iPad':/Android/.test(ua)?'Android':T('Computer'),new Date().toLocaleTimeString(),T(sig!=='✓'?'Der Vermittlungsdienst ist von hier aus nicht erreichbar – vielleicht blockiert ein Werbe-/Tracking-Blocker oder das Netz ihn.':
       (!stun.has('srflx')&&!anyRelay)?'Dieses Netz oder dieser Browser blockiert Echtzeit-Verbindungen (WebRTC) komplett. Bitte einen anderen Browser (Safari oder Chrome) bzw. ein anderes Netz probieren.':
       (!anyRelay&&!hasOwn)?'Direkte Verbindungen gehen. Die kostenlosen Weiterleitungsserver antworten aber nicht – das liegt an den Servern, nicht an deinem Netz. Im Mobilfunk kann die Verbindung deshalb scheitern, bis ein eigener Weiterleitungsserver eingerichtet ist.':
       (!anyRelay)?'Direkte Verbindungen gehen, aber kein Weiterleitungsserver antwortet. Antwortet die eigene Weiterleitung auch in einem anderen Netz nicht, stimmen vermutlich App-Name oder Schlüssel nicht.':
-      'Von hier aus sieht alles gut aus – auch im Mobilfunk sollte es klappen.'}<br>Bitte mach einen Screenshot davon.</div>`;
+      'Von hier aus sieht alles gut aus – auch im Mobilfunk sollte es klappen.')]);
 }
-function peerOpts(ice){   // für Tests: eigener Vermittlungs-Server über ?peerhost=…
+function peerOpts(ice){   // für Tests: lokaler Vermittlungs-Server über ?peerhost=…
   const h=QS.get('peerhost'),cfg={config:{iceServers:ice},debug:0};
-  if(!h)return cfg;
-  return Object.assign(cfg,{host:h,port:+(QS.get('peerport')||9000),path:'/',secure:QS.get('peersecure')==='1'});
+  if(h)return Object.assign(cfg,{host:h,port:+(QS.get('peerport')||9000),path:'/',secure:QS.get('peersecure')==='1'});
+  if(SRV==='own')return Object.assign(cfg,{host:OWN_SERVER,port:443,path:'/',secure:true});
+  return cfg;
 }
-async function makePeer(id){
-  const ice=await iceServers();
+function makePeerOn(id,ice,ms){
   return new Promise((res,rej)=>{
-    const p=id?new Peer(id,peerOpts(ice)):new Peer(peerOpts(ice));
-    const to=setTimeout(()=>rej({type:'timeout'}),15000);
+    let p;try{p=id?new Peer(id,peerOpts(ice)):new Peer(peerOpts(ice));}catch(e){return rej({type:'network'});}
+    const to=setTimeout(()=>{try{p.destroy();}catch(e){}rej({type:'timeout'});},ms);
     p.on('open',()=>{clearTimeout(to);res(p);});
     p.on('error',e=>{clearTimeout(to);rej(e);});
   });
+}
+async function makePeer(id){
+  const ice=await iceServers();
+  if(SRV!=='own'||QS.get('peerhost'))return makePeerOn(id,ice,15000);
+  try{return await makePeerOn(id,ice,8000);}
+  catch(e){
+    // eigener Server nicht erreichbar → auf den öffentlichen PeerJS-Dienst ausweichen
+    if(!['network','server-error','socket-error','socket-closed','timeout'].includes(e&&e.type))throw e;
+    SRV='pj';
+    return makePeerOn(id,ice,15000);
+  }
 }
 // ---------- Bild & Ton ----------
 function dummyTracks(){
@@ -631,21 +703,21 @@ function outStream(){
 }
 const IS_IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 function permHelp(what){
-  if(IS_IOS)return `Der Zugriff wurde abgelehnt. iPhone: In Safari links in der Adressleiste auf „aA“ tippen → „Website-Einstellungen“ → ${what} → „Erlauben“, dann die Seite neu laden (du kommst automatisch auf deinen Platz zurück). Falls der Link in WhatsApp geöffnet wurde: oben rechts „In Safari öffnen“.`;
-  return `Der Zugriff wurde abgelehnt. Tippe links in der Adressleiste auf das Symbol (Schloss bzw. Regler) → Berechtigungen → ${what} → Zulassen, dann die Seite neu laden (du kommst automatisch auf deinen Platz zurück).`;
+  if(IS_IOS)return T(`Der Zugriff wurde abgelehnt. iPhone: In Safari links in der Adressleiste auf „aA“ tippen → „Website-Einstellungen“ → {0} → „Erlauben“, dann die Seite neu laden (du kommst automatisch auf deinen Platz zurück). Falls der Link in WhatsApp geöffnet wurde: oben rechts „In Safari öffnen“.`,[what]);
+  return T(`Der Zugriff wurde abgelehnt. Tippe links in der Adressleiste auf das Symbol (Schloss bzw. Regler) → Berechtigungen → {0} → Zulassen, dann die Seite neu laden (du kommst automatisch auf deinen Platz zurück).`,[what]);
 }
 function micLive(){return !!(micStream&&micStream.getAudioTracks()[0]&&micStream.getAudioTracks()[0].enabled);}
 async function micOn(){
   const err=m=>{const e=document.getElementById('camErr');if(e)e.textContent=m;};
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){err('Dieser Browser erlaubt hier kein Mikrofon.');return false;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){err(T('Dieser Browser erlaubt hier kein Mikrofon.'));return false;}
   try{micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});}
-  catch(e){err('Mikrofon startet nicht: '+(e.name==='NotAllowedError'?permHelp('Mikrofon'):e.name==='NotFoundError'?'Kein Mikrofon gefunden.':e.name));return false;}
+  catch(e){err(T('Mikrofon startet nicht: ')+(e.name==='NotAllowedError'?permHelp(T('Mikrofon')):e.name==='NotFoundError'?T('Kein Mikrofon gefunden.'):e.name));return false;}
   netTracks();netAV();syncAvUI();return true;
 }
 function toggleMic(){
   if(!micStream){micOn();return;}
   const t=micStream.getAudioTracks()[0];if(t)t.enabled=!t.enabled;
-  netAV();syncAvUI();toast(micLive()?'🎤 Mikrofon an':'🔇 Du bist stumm geschaltet',1800);
+  netAV();syncAvUI();toast(micLive()?T('🎤 Mikrofon an'):T('🔇 Du bist stumm geschaltet'),1800);
 }
 function netTracks(){   // aktuelle Kamera/Mikrofon an alle laufenden Verbindungen geben
   if(!NET.on)return;dummyTracks();
@@ -703,7 +775,7 @@ function netCall(id){
 }
 function netRepair(){   // „Verbindung erneuern“: Bild/Ton und Datenverbindung neu aufbauen
   if(!NET.on)return;
-  toast('🔄 Verbindung wird erneuert …',2500);
+  toast(T('🔄 Verbindung wird erneuert …'),2500);
   for(const[id,c]of Object.entries(NET.calls)){try{c.close();}catch(e){}delete NET.calls[id];}
   netRevive();
   if(NET.host){setTimeout(()=>{for(const p of TURN_ORDER){const x=NET.seats[p];if(x&&x.kind==='peer')netCall(x.id);}for(const id of Object.keys(NET.specs))netCall(id);hostLobby();},800);}
@@ -713,7 +785,7 @@ function netRepair(){   // „Verbindung erneuern“: Bild/Ton und Datenverbindu
 const EMOJIS=['👍','👏','😂','😮','😱','😡','🤝','🔥','♟️','❤️'];
 NET.chat=[];let chatUnread=0;
 function myLang(){return (window.LANG||'de');}
-function chatName(m){return m.p?(netName(m.p)||PNAMES[m.p]):(m.name||'Zuschauer');}
+function chatName(m){return m.p?(netName(m.p)||PNAMES[m.p]):(m.name||T('Zuschauer'));}
 function toggleChat(){const b=document.getElementById('chatBox');b.classList.toggle('show');
   if(b.classList.contains('show')){chatUnread=0;renderChat();setTimeout(()=>document.getElementById('chatIn').focus(),50);}updBadge();}
 function updBadge(){const e=document.getElementById('chatBadge');if(!e)return;e.textContent=chatUnread;e.style.display=chatUnread?'block':'none';}
@@ -774,7 +846,7 @@ function netOrigin(m){   // Zug/Ereignis, das auf diesem Gerät entstanden ist
 // ---------- Gastgeber ----------
 async function netCreate(){
   const me=document.getElementById('olColor').value;
-  const name=(document.getElementById('olName').value||'').trim().slice(0,18)||'Gastgeber';
+  const name=(document.getElementById('olName').value||'').trim().slice(0,18)||T('Gastgeber');
   try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
   const mOn=document.getElementById('tcMoveOn').checked,gOn=document.getElementById('tcGameOn').checked;
   const ms=Math.max(5,+document.getElementById('tcMoveSec').value||60),gm=Math.max(1,+document.getElementById('tcGameMin').value||15);
@@ -786,20 +858,20 @@ async function netCreate(){
   rotation=TURN_ORDER.indexOf(me);setTimeout(()=>{layoutStrip();resizeCanvas();fitBoard();draw();if(window.V3&&V3.on)V3.view(me);},50);
   for(const p of TURN_ORDER)NET.seats[p]=p===me?{kind:'me',name}:{kind:'open'};
   document.getElementById('setupModal').classList.remove('show');
-  showLobby();lbStatus('Verbinde mit dem Vermittlungsdienst …');
+  showLobby();lbStatus(T('Verbinde mit dem Vermittlungsdienst …'));
   ac();dummyTracks();
   const wc=document.getElementById('olCam').checked,wm=document.getElementById('olMic').checked;
   (async()=>{if(wc)await camOn();if(wm)await micOn();renderLobby();})();
-  if(!await needPeerJS()){lbStatus('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.');return;}
+  if(!await needPeerJS()){lbStatus(T('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.'));return;}
   for(let i=0;i<4&&!NET.peer;i++){
     NET.code=randCode();
     try{NET.peer=await makePeer('dps-'+NET.code);}
-    catch(e){if(e.type!=='unavailable-id'){lbStatus('⚠️ Verbindung fehlgeschlagen ('+(e.type||'Fehler')+'). Bitte später noch einmal versuchen.');return;}}
+    catch(e){if(e.type!=='unavailable-id'){lbStatus(T('⚠️ Verbindung fehlgeschlagen (')+(e.type||T('Fehler'))+T('). Bitte später noch einmal versuchen.'));return;}}
   }
   if(!NET.peer)return;
   wirePeer(NET.peer);
-  try{window.history.replaceState(null,'',location.pathname+'?spiel='+NET.code+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):''));}catch(e){}
-  lbStatus('Bereit! Schicke deinen Freunden den Einladungslink.');
+  try{window.history.replaceState(null,'',location.pathname+'?spiel='+NET.code+srvParam()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):''));}catch(e){}
+  lbStatus(T('Bereit! Schicke deinen Freunden den Einladungslink.'));
   hostLobby();renderInvite();
 }
 function hostLobby(){
@@ -815,7 +887,7 @@ function hostLobby(){
 }
 function hostAccept(conn){
   conn.on('iceStateChanged',st=>{if(st==='failed'&&!conn.open&&!NET.iceWarned){NET.iceWarned=true;setTimeout(()=>NET.iceWarned=false,30000);
-    toast('Jemand versucht beizutreten, aber euer Netz blockiert die direkte Verbindung. Ich probiere andere Wege – hilft es nicht: einer von euch ins WLAN.',7000);}});
+    toast(T('Jemand versucht beizutreten, aber euer Netz blockiert die direkte Verbindung. Ich probiere andere Wege – hilft es nicht: einer von euch ins WLAN.'),7000);}});
   conn.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}hostRecv(conn,m);});
   conn.on('close',()=>hostDrop(conn));
   conn.on('error',()=>hostDrop(conn));
@@ -826,8 +898,8 @@ function hostRecv(conn,m){
     if((m.ver||'')!==APP_VER){   // unterschiedliche Versionen rechnen evtl. mit anderen Regeln → angleichen
       if((m.ver||'')<APP_VER){netSend(conn,{t:'oldver',ver:APP_VER});setTimeout(()=>{try{conn.close();}catch(e){}},800);return;}
       netSend(conn,{t:'hostold'});setTimeout(()=>{try{conn.close();}catch(e){}},800);
-      ask('hostold','🆕 Ein Mitspieler hat eine neuere Version. Bitte jetzt neu laden – dein Spiel wird wiederhergestellt.',[
-        {label:'🔄 Jetzt neu laden',fn:()=>reloadFresh()},{label:'Später',bg:'#555',fn:()=>{}}]);
+      ask('hostold',T('🆕 Ein Mitspieler hat eine neuere Version. Bitte jetzt neu laden – dein Spiel wird wiederhergestellt.'),[
+        {label:T('🔄 Jetzt neu laden'),fn:()=>reloadFresh()},{label:T('Später'),bg:'#555',fn:()=>{}}]);
       return;
     }
     if(m.token&&NET.banned.has(m.token)){netSend(conn,{t:'kicked',again:true});setTimeout(()=>conn.close(),500);return;}
@@ -844,11 +916,11 @@ function hostRecv(conn,m){
       if(NET.specMode==='always'||NET.specTokens.has(m.token)){hostAddSpec(conn,m);return;}
       netSend(conn,{t:'wait'});specAsk(conn,m);return;
     }
-    const name=String(m.name||'').slice(0,18)||'Gast';
+    const name=String(m.name||'').slice(0,18)||T('Gast');
     NET.seats[p]={kind:'peer',name,id:conn.peer,conn,token:m.token,seen:performance.now()};
     NET.avs[p]=m.av||null;
     netSend(conn,{t:'welcome',seat:p});
-    toast(m.re?`${name} ist wieder da.`:`${name} spielt ${PNAMES[p]} mit.`);snd('move');
+    toast(m.re?T(`{0} ist wieder da.`,[name]):T(`{0} spielt {1} mit.`,[name,PNAMES[p]]));snd('move');
     unask('away'+p);netBroadcast({t:'awayDone',p},conn);
     if(NET.started){
       aiPlayers[p]=null;cancelAI();
@@ -859,7 +931,7 @@ function hostRecv(conn,m){
     if(NET.calls[conn.peer]){try{NET.calls[conn.peer].close();}catch(e){}delete NET.calls[conn.peer];}
     setTimeout(()=>netCall(conn.peer),300);
     if(!NET.started&&!TURN_ORDER.some(q=>NET.seats[q].kind==='open')){
-      lbStatus('Alle drei sind da – gleich geht es los!');netBroadcast({t:'note',txt:'Alle drei sind da – gleich geht es los!'});
+      lbStatus(T('Alle drei sind da – gleich geht es los!'));netBroadcast({t:'note',txt:T('Alle drei sind da – gleich geht es los!')});
       clearTimeout(NET.autoStart);NET.autoStart=setTimeout(()=>{if(!NET.started&&!TURN_ORDER.some(q=>NET.seats[q].kind==='open'||NET.seats[q].kind==='away'))netStart();},2500);
     }
     return;
@@ -883,12 +955,12 @@ function hostRecv(conn,m){
   if(m.t==='resync'){netSend(conn,{t:'sync',data:netSyncData()});return;}
 }
 function hostAddSpec(conn,m){
-  const name=String(m.name||'').slice(0,18)||'Gast';
+  const name=String(m.name||'').slice(0,18)||T('Gast');
   for(const[id,z]of Object.entries(NET.specs))if(z.token===m.token&&id!==conn.peer){delete NET.specs[id];try{z.conn.close();}catch(e){}if(NET.calls[id]){try{NET.calls[id].close();}catch(e){}delete NET.calls[id];}}
   NET.specs[conn.peer]={conn,name,token:m.token};NET.specTokens.add(m.token);
   netSend(conn,{t:'spec'});
   if(NET.started){const send=()=>{if(moveAnim){setTimeout(send,200);return;}netSend(conn,{t:'sync',data:netSyncData()});};send();}
-  if(!m.re){toast(`👀 ${name} schaut jetzt zu.`);netBroadcast({t:'note',txt:`👀 ${name} schaut jetzt zu.`},conn);}
+  if(!m.re){toast(T(`👀 {0} schaut jetzt zu.`,[name]));netBroadcast({t:'note',txt:T(`👀 {0} schaut jetzt zu.`,[name])},conn);}
   hostLobby();
   setTimeout(()=>netCall(conn.peer),300);
 }
@@ -905,7 +977,7 @@ function showSpecReq(){
   const box=document.getElementById('specReq'),r=NET.specReqs[0];
   const was=box.classList.contains('show');
   if(!r){box.classList.remove('show');if(was)resizeCanvas();return;}
-  document.getElementById('specReqTxt').textContent=`👀 ${String(r.m.name||'Jemand').slice(0,18)} möchte zuschauen. Erlauben?`;
+  document.getElementById('specReqTxt').textContent=T(`👀 {0} möchte zuschauen. Erlauben?`,[String(r.m.name||T('Jemand')).slice(0,18)]);
   box.classList.add('show');if(!was)resizeCanvas();
 }
 function specAnswer(ok){
@@ -924,20 +996,20 @@ function netKick(kind,key){
   if(!NET.host)return;
   let name,conn,token;
   if(kind==='seat'){const s=NET.seats[key];if(!s||s.kind!=='peer')return;name=s.name;conn=s.conn;token=s.token;
-    if(!confirm(`${name} aus dem Spiel nehmen?\n${NET.started?'Der Computer spielt '+PNAMES[key]+' weiter.':'Der Platz wird wieder frei.'}`))return;
+    if(!confirm(T(`{0} aus dem Spiel nehmen?\n{1}`,[name,NET.started?T('Der Computer spielt {0} weiter.',[PNAMES[key]]):T('Der Platz wird wieder frei.')])))return;
     if(s.id&&NET.calls[s.id]){try{NET.calls[s.id].close();}catch(e){}delete NET.calls[s.id];}
     AV[key].video=null;AV[key].still=null;AV[key].videoOff=false;delete NET.avs[key];
     if(NET.started){NET.seats[key]={kind:'dropped',name};aiPlayers[key]=NET.cfg.lvl;netBroadcast({t:'seat',p:key,ai:aiPlayers[key]},conn);maybeAI();}
     else NET.seats[key]={kind:'open'};
   } else {const z=NET.specs[key];if(!z)return;name=z.name;conn=z.conn;token=z.token;
-    if(!confirm(`${name} als Zuschauer entfernen?`))return;
+    if(!confirm(T(`{0} als Zuschauer entfernen?`,[name])))return;
     delete NET.specs[key];NET.specTokens.delete(token);
     if(NET.calls[key]){try{NET.calls[key].close();}catch(e){}delete NET.calls[key];}
   }
   if(token)NET.banned.add(token);
   netSend(conn,{t:'kicked'});setTimeout(()=>{try{conn.close();}catch(e){}},400);
-  toast(`${name} wurde aus dem Spiel genommen.`);
-  netBroadcast({t:'note',txt:`${name} wurde vom Gastgeber aus dem Spiel genommen.`},conn);
+  toast(T(`{0} wurde aus dem Spiel genommen.`,[name]));
+  netBroadcast({t:'note',txt:T(`{0} wurde vom Gastgeber aus dem Spiel genommen.`,[name])},conn);
   hostLobby();syncAvUI();
 }
 const AWAY_MS=90000;
@@ -948,22 +1020,22 @@ function startAway(p,a){
   a.timer=setTimeout(()=>{if(NET.seats[p]!==a)return;
     const name=a.name;
     if(NET.started){NET.seats[p]={kind:'dropped',token:a.token,name};aiPlayers[p]=NET.cfg.lvl;netBroadcast({t:'seat',p,ai:aiPlayers[p]});
-      toast(`${name} ist nicht zurückgekommen – der Computer spielt ${PNAMES[p]} weiter. Mit dem Link kann ${name} jederzeit zurück.`,6500);maybeAI();}
+      toast(T(`{0} ist nicht zurückgekommen – der Computer spielt {1} weiter. Mit dem Link kann {2} jederzeit zurück.`,[name,PNAMES[p],name]),6500);maybeAI();}
     else NET.seats[p]={kind:'open'};
     AV[p].video=null;hostLobby();},AWAY_MS);
 }
 function awayAsk(p,name){   // bei allen verbliebenen Spielern: Computer übernehmen lassen oder weiter warten
   if(NET.spec)return;
-  ask('away'+p,`📡 ${name} (${PNAMES[p]}) ist nicht mehr verbunden.`,[
-    {label:'🤖 Computer übernimmt',fn:()=>{if(NET.host)hostAwayAI(p);else netToHost({t:'awayAI',p});}},
-    {label:'⏳ Weiter warten',bg:'#555',fn:()=>{setTimeout(()=>{if(awayStill(p))awayAsk(p,name);},120000);}}]);
+  ask('away'+p,T(`📡 {0} ({1}) ist nicht mehr verbunden.`,[name,PNAMES[p]]),[
+    {label:T('🤖 Computer übernimmt'),fn:()=>{if(NET.host)hostAwayAI(p);else netToHost({t:'awayAI',p});}},
+    {label:T('⏳ Weiter warten'),bg:'#555',fn:()=>{setTimeout(()=>{if(awayStill(p))awayAsk(p,name);},120000);}}]);
 }
 function awayStill(p){const k=NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind;return k==='away';}
 function hostAwayAI(p){
   const a=NET.seats[p];if(!a||a.kind!=='away')return;
   NET.seats[p]={kind:'dropped',token:a.token,name:a.name};aiPlayers[p]=NET.cfg.lvl;
   netBroadcast({t:'seat',p,ai:aiPlayers[p]});netBroadcast({t:'awayDone',p});unask('away'+p);
-  const txt=`🤖 Der Computer spielt jetzt für ${a.name} (${PNAMES[p]}). Mit dem Link kann ${a.name} jederzeit zurück.`;
+  const txt=T(`🤖 Der Computer spielt jetzt für {0} ({1}). Mit dem Link kann {2} jederzeit zurück.`,[a.name,PNAMES[p],a.name]);
   toast(txt,6000);netBroadcast({t:'note',txt});
   AV[p].video=null;hostLobby();maybeAI();
 }
@@ -987,16 +1059,16 @@ async function netResumeHost(d){
   for(const p of TURN_ORDER){const x=d.seats[p]||{kind:'open'};NET.seats[p]={kind:x.kind,name:x.name,token:x.token};if(x.kind==='away')startAway(p,NET.seats[p]);}
   document.getElementById('setupModal').classList.remove('show');
   if(d.started&&d.data){netApplySync(d.data);maybeAI();}
-  else{NET.started=false;showLobby();lbStatus('Spiel wird wiederhergestellt …');}
-  showBanner('Dein Spiel wird wiederhergestellt …');
+  else{NET.started=false;showLobby();lbStatus(T('Spiel wird wiederhergestellt …'));}
+  showBanner(T('Dein Spiel wird wiederhergestellt …'));
   ac();dummyTracks();
   (async()=>{if(d.cam)await camOn();if(d.mic)await micOn();})();
-  if(!await needPeerJS()){showBanner('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.');return;}
+  if(!await needPeerJS()){showBanner(T('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.'));return;}
   for(let i=0;i<40&&!NET.peer;i++){try{NET.peer=await makePeer('dps-'+NET.code);}catch(e){await sleep(3000);}}   // alte Kennung wird nach ca. 1 Min. frei
-  if(!NET.peer){showBanner('⚠️ Das Spiel konnte nicht wiederhergestellt werden. Bitte erstelle ein neues.');return;}
+  if(!NET.peer){showBanner(T('⚠️ Das Spiel konnte nicht wiederhergestellt werden. Bitte erstelle ein neues.'));return;}
   wirePeer(NET.peer);hideBanner();
-  toast('✓ Dein Spiel ist wieder da. Deine Mitspieler verbinden sich automatisch neu.',4500);
-  hostLobby();if(!NET.started){renderInvite();lbStatus('Bereit! Schicke deinen Freunden den Einladungslink.');}
+  toast(T('✓ Dein Spiel ist wieder da. Deine Mitspieler verbinden sich automatisch neu.'),4500);
+  hostLobby();if(!NET.started){renderInvite();lbStatus(T('Bereit! Schicke deinen Freunden den Einladungslink.'));}
 }
 setInterval(hostSave,5000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')hostSave();});   // so lange wartet das Spiel auf einen Mitspieler, der kurz weg ist
@@ -1008,16 +1080,16 @@ function hostDrop(conn,hard){
   if(!hard){   // Verbindung weg, aber nicht abgemeldet → kurz warten
     const a={kind:'away',name,token:s.token,since:Date.now()};NET.seats[p]=a;
     if(s.id&&NET.calls[s.id]){try{NET.calls[s.id].close();}catch(e){}delete NET.calls[s.id];}
-    if(!NET.started){toast(`${name} ist kurz weg – wir warten bis zu ${AWAY_MS/1000} Sekunden.`,4500);
-      netBroadcast({t:'note',txt:`${name} ist kurz weg – wir warten einen Moment.`});}
+    if(!NET.started){toast(T(`{0} ist kurz weg – wir warten bis zu {1} Sekunden.`,[name,AWAY_MS/1000]),4500);
+      netBroadcast({t:'note',txt:T(`{0} ist kurz weg – wir warten einen Moment.`,[name])});}
     startAway(p,a);hostLobby();return;
   }
   if(NET.started){
     NET.seats[p]={kind:'dropped',token:s.token,name};
     aiPlayers[p]=NET.cfg.lvl;netBroadcast({t:'seat',p,ai:aiPlayers[p]});
-    toast(`${name} ist nicht mehr verbunden – der Computer spielt ${PNAMES[p]} weiter. Mit dem Link kann ${name} zurückkommen.`,6500);
+    toast(T(`{0} ist nicht mehr verbunden – der Computer spielt {1} weiter. Mit dem Link kann {2} zurückkommen.`,[name,PNAMES[p],name]),6500);
     maybeAI();
-  } else {NET.seats[p]={kind:'open'};toast(`${name} hat die Runde verlassen.`);}
+  } else {NET.seats[p]={kind:'open'};toast(T(`{0} hat die Runde verlassen.`,[name]));}
   delete NET.avs[p];
   if(s.id&&NET.calls[s.id]){try{NET.calls[s.id].close();}catch(e){}delete NET.calls[s.id];}
   AV[p].video=null;AV[p].still=null;AV[p].videoOff=false;
@@ -1045,7 +1117,7 @@ function openJoin(){
   document.getElementById('joinModal').classList.add('show');
 }
 async function netJoin(){
-  const name=(document.getElementById('jnName').value||'').trim().slice(0,18)||'Gast';
+  const name=(document.getElementById('jnName').value||'').trim().slice(0,18)||T('Gast');
   try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
   let token='';try{token=localStorage.getItem('dreiSchach.tok.'+NET_CODE_URL)||'';}catch(e){}
   if(!token){token=randCode()+randCode();try{localStorage.setItem('dreiSchach.tok.'+NET_CODE_URL,token);}catch(e){}}
@@ -1053,12 +1125,12 @@ async function netJoin(){
   document.body.classList.add('online');setTimeout(resizeCanvas,0);
   document.body.classList.add('netgame');
   NET.on=true;NET.host=false;NET.code=NET_CODE_URL;
-  showLobby();lbStatus('Verbinde …');
+  showLobby();lbStatus(T('Verbinde …'));
   ac();dummyTracks();
   const wc=document.getElementById('jnCam').checked,wm=document.getElementById('jnMic').checked;
   (async()=>{if(wc)await camOn();if(wm)await micOn();renderLobby();})();
-  if(!await needPeerJS()){lbStatus('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.');return;}
-  try{NET.peer=await makePeer(null);}catch(e){lbStatus('⚠️ Verbindung fehlgeschlagen ('+(e.type||'Fehler')+').');return;}
+  if(!await needPeerJS()){lbStatus(T('⚠️ Online-Baustein konnte nicht geladen werden – bitte Internetverbindung prüfen.'));return;}
+  try{NET.peer=await makePeer(null);}catch(e){lbStatus(T('⚠️ Verbindung fehlgeschlagen (')+(e.type||T('Fehler'))+').');return;}
   wirePeer(NET.peer);
   NET.myName=name;NET.token=token;
   guestConnect(false);
@@ -1086,7 +1158,7 @@ async function netRevive(){   // Verbindung zum Vermittlungsdienst wiederherstel
       const pr=NET.peer;
       if(pr&&pr.open&&!pr.disconnected&&!pr.destroyed)return;
       if(document.visibilityState==='hidden'){await sleep(2000);continue;}
-      if(NET.host)showBanner('Verbindung wird wiederhergestellt …');
+      if(NET.host)showBanner(T('Verbindung wird wiederhergestellt …'));
       if(pr&&!pr.destroyed&&pr.disconnected){try{pr.reconnect();}catch(e){}await sleep(3000);if(pr.open&&!pr.disconnected)break;}
       if(pr&&!pr.destroyed&&!pr.disconnected&&!pr.open){await sleep(2000);continue;}
       try{if(pr&&!pr.destroyed)pr.destroy();}catch(e){}
@@ -1114,7 +1186,7 @@ function guestConnect(re){
   c.on('iceStateChanged',st=>{if(st==='failed'||st==='disconnected'&&!c.open)NET.iceFailed=true;});
   c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,ver:APP_VER,av:{cam:!!camStream,mic:micLive()}}));
   c.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}if(NET.hostConn===c){NET.hostSeen=performance.now();NET.retries=0;
-    if(NET.lostSince){NET.lostSince=0;hideBanner();clearTimeout(NET.lostTimer);NET.lostTimer=null;toast('✓ Wieder verbunden',2000);}joinRecv(m);}});
+    if(NET.lostSince){NET.lostSince=0;hideBanner();clearTimeout(NET.lostTimer);NET.lostTimer=null;toast(T('✓ Wieder verbunden'),2000);}joinRecv(m);}});
   c.on('close',()=>{if(NET.hostConn===c)guestLost();});
 }
 function guestLost(){
@@ -1123,7 +1195,7 @@ function guestLost(){
   if(NET.lostTimer)return;   // läuft schon
   NET.lostSince=NET.lostSince||performance.now();
   if(performance.now()-NET.lostSince>15*60000){hostGone();return;}
-  showBanner('⏳ Verbindung zum Gastgeber unterbrochen – vielleicht ist er kurz in einer anderen App. Ich verbinde automatisch neu …');
+  showBanner(T('⏳ Verbindung zum Gastgeber unterbrochen – vielleicht ist er kurz in einer anderen App. Ich verbinde automatisch neu …'));
   try{if(NET.hostConn)NET.hostConn.close();}catch(e){}
   NET.hostConn=null;
   NET.lostTimer=setTimeout(()=>{NET.lostTimer=null;if(!NET.on||NET.leaving)return;
@@ -1135,34 +1207,34 @@ function joinFail(){   // Gastgeber (noch) nicht erreichbar → bis zu 15 Minute
   clearTimeout(NET.joinTimer);clearTimeout(NET.joinRetry);
   if(!NET.on||NET.seat||NET.spec)return;
   NET.joinSince=NET.joinSince||performance.now();
-  if(performance.now()-NET.joinSince>15*60000){lbStatus('⚠️ Dieses Spiel wurde nicht gefunden. Vielleicht hat der Gastgeber es beendet. Frag ihn nach einem neuen Link.');return;}
+  if(performance.now()-NET.joinSince>15*60000){lbStatus(T('⚠️ Dieses Spiel wurde nicht gefunden. Vielleicht hat der Gastgeber es beendet. Frag ihn nach einem neuen Link.'));return;}
   const notFound=NET.unavailAt&&performance.now()-NET.unavailAt<20000;
   NET.joinTries=(NET.joinTries||0)+1;
-  lbStatus(notFound?'⏳ Der Gastgeber ist gerade nicht erreichbar – vielleicht ist er kurz in einer anderen App. Ich versuche es automatisch weiter, lass diese Seite einfach offen …'
-    :'⏳ Der Gastgeber ist online, aber die Verbindung zu ihm kommt nicht zustande. Das liegt meist am Netz (Mobilfunk, Firmen- oder Hotel-WLAN). Tipp: ins private WLAN wechseln. Ich versuche es automatisch weiter …'+(NET.iceFailed?' (Netzwerk blockiert)':''));
+  lbStatus(notFound?T('⏳ Der Gastgeber ist gerade nicht erreichbar – vielleicht ist er kurz in einer anderen App. Ich versuche es automatisch weiter, lass diese Seite einfach offen …')
+    :T('⏳ Der Gastgeber ist online, aber die Verbindung zu ihm kommt nicht zustande. Das liegt meist am Netz (Mobilfunk, Firmen- oder Hotel-WLAN). Tipp: ins private WLAN wechseln. Ich versuche es automatisch weiter …')+(NET.iceFailed?T(' (Netzwerk blockiert)'):''));
   NET.joinRetry=setTimeout(()=>{if(!NET.on||NET.seat||NET.spec)return;try{if(NET.hostConn)NET.hostConn.close();}catch(e){}
     if(NET.peer&&NET.peer.open){guestConnect(false);NET.joinTimer=setTimeout(joinFail,12000);}else{netRevive();NET.joinRetry=setTimeout(joinFail,5000);}},4000);
 }
 function hostGone(){
   if(!NET.on||NET.leaving)return;
-  lbStatus('Die Verbindung zum Gastgeber ist getrennt.');
+  lbStatus(T('Die Verbindung zum Gastgeber ist getrennt.'));
   NET.on=false;cancelAI();
   for(const p of TURN_ORDER){if(p!==NET.seat){AV[p].video=null;}}
-  alert('Die Verbindung zum Gastgeber ist abgebrochen. Das Online-Spiel ist beendet.');
+  alert(T('Die Verbindung zum Gastgeber ist abgebrochen. Das Online-Spiel ist beendet.'));
 }
 function joinRecv(m){
   if(m.t==='welcome'){clearTimeout(NET.joinTimer);NET.seat=m.seat;rotation=TURN_ORDER.indexOf(m.seat);
-    lbStatus(`Du spielst ${PNAMES[m.seat]}. Sobald alle da sind, geht's los – bis dahin könnt ihr euch schon sehen und hören.`);
+    lbStatus(T(`Du spielst {0}. Sobald alle da sind, geht's los – bis dahin könnt ihr euch schon sehen und hören.`,[PNAMES[m.seat]]));
     layoutStrip();resizeCanvas();fitBoard();draw();if(window.V3&&V3.on)V3.view(m.seat);
     for(const p of TURN_ORDER)if(p!==NET.seat)AV[p].still=null;
     camFix();syncAvUI();updateSelfView();netAV();renderLobby();return;}
   if(m.t==='ping')return;
   if(m.t==='oldver'){clearTimeout(NET.joinTimer);
     let tried='';try{tried=sessionStorage.getItem('dreiSchach.reloadFor')||'';}catch(e){}
-    if(tried!==m.ver){try{sessionStorage.setItem('dreiSchach.reloadFor',m.ver);}catch(e){}lbStatus('🆕 Es gibt eine neuere Version – sie wird geladen …');setTimeout(reloadFresh,800);}
-    else lbStatus('🆕 Bitte lade die Seite neu – du hast noch eine ältere Version. (Notfalls ein paar Minuten warten, bis sie überall angekommen ist.)');
+    if(tried!==m.ver){try{sessionStorage.setItem('dreiSchach.reloadFor',m.ver);}catch(e){}lbStatus(T('🆕 Es gibt eine neuere Version – sie wird geladen …'));setTimeout(reloadFresh,800);}
+    else lbStatus(T('🆕 Bitte lade die Seite neu – du hast noch eine ältere Version. (Notfalls ein paar Minuten warten, bis sie überall angekommen ist.)'));
     NET.leaving=true;return;}
-  if(m.t==='hostold'){clearTimeout(NET.joinTimer);lbStatus('🆕 Der Gastgeber hat noch eine ältere Version. Er wurde gebeten, neu zu laden – danach geht es automatisch weiter …');
+  if(m.t==='hostold'){clearTimeout(NET.joinTimer);lbStatus(T('🆕 Der Gastgeber hat noch eine ältere Version. Er wurde gebeten, neu zu laden – danach geht es automatisch weiter …'));
     NET.joinSince=0;NET.joinRetry=setTimeout(joinFail,8000);return;}
   if(m.t==='bye'){NET.retries=99;hostGone();return;}
   if(m.t==='note'){toast(m.txt);return;}
@@ -1173,17 +1245,17 @@ function joinRecv(m){
   if(m.t==='undoDone'){unask('undo'+m.id);toast(m.txt,4000);return;}
   if(m.t==='kicked'){clearTimeout(NET.joinTimer);NET.leaving=true;NET.on=false;cancelAI();
     for(const p of TURN_ORDER)if(p!==NET.seat)AV[p].video=null;
-    lbStatus('Der Gastgeber hat dich aus diesem Spiel genommen.');
-    if(!m.again){alert('Der Gastgeber hat dich aus dem Spiel genommen.');location.href=location.pathname;}
+    lbStatus(T('Der Gastgeber hat dich aus diesem Spiel genommen.'));
+    if(!m.again){alert(T('Der Gastgeber hat dich aus dem Spiel genommen.'));location.href=location.pathname;}
     return;}
-  if(m.t==='wait'){clearTimeout(NET.joinTimer);lbStatus('Alle Plätze sind schon besetzt. Der Gastgeber wird gefragt, ob du zuschauen darfst …');return;}
+  if(m.t==='wait'){clearTimeout(NET.joinTimer);lbStatus(T('Alle Plätze sind schon besetzt. Der Gastgeber wird gefragt, ob du zuschauen darfst …'));return;}
   if(m.t==='spec'){clearTimeout(NET.joinTimer);NET.spec=true;NET.seat=null;
     if(camStream)camOff();if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
     for(const p of TURN_ORDER){AV[p].video=null;AV[p].still=null;AV[p].videoOff=false;}
     document.querySelector('#lobbyModal .lbMedia').style.display='none';
-    lbStatus('👀 Du schaust zu. Du siehst und hörst die Spieler, kannst aber nicht mitziehen. Das Brett erscheint, sobald die Partie beginnt.');
+    lbStatus(T('👀 Du schaust zu. Du siehst und hörst die Spieler, kannst aber nicht mitziehen. Das Brett erscheint, sobald die Partie beginnt.'));
     syncAvUI();updateSelfView();renderLobby();layoutStrip();return;}
-  if(m.t==='full'){clearTimeout(NET.joinTimer);lbStatus(m.denied?'Alle Plätze sind besetzt, und der Gastgeber lässt gerade keine Zuschauer zu.':'Dieses Spiel ist leider schon voll.');NET.on=false;return;}
+  if(m.t==='full'){clearTimeout(NET.joinTimer);lbStatus(m.denied?T('Alle Plätze sind besetzt, und der Gastgeber lässt gerade keine Zuschauer zu.'):T('Dieses Spiel ist leider schon voll.'));NET.on=false;return;}
   if(m.t==='lobby'){NET.lobby=m.lobby;NET.specList=m.specs||[];
     if(!NET.spec&&NET.seat)for(const z of NET.specList)netCall(z.id);   // Spieler senden Bild/Ton auch an Zuschauer
     for(const p of TURN_ORDER){const s=m.lobby[p];if(s&&s.av)NET.avs[p]=s.av;}
@@ -1194,7 +1266,7 @@ function joinRecv(m){
   if(m.t==='sync'){netApplySync(m.data);return;}
   if(m.t==='seat'){aiPlayers[m.p]=m.ai;updateStatus();renderClocks();return;}
   if(m.t==='av'){NET.avs[m.p]={cam:m.cam,mic:m.mic};netAttach();renderLobby();return;}
-  if(m.t==='pause'){paused=m.on;lastTick=performance.now();renderClocks();toast(paused?'⏸ Der Gastgeber hat die Uhr angehalten.':'▶ Weiter geht’s!',2200);return;}
+  if(m.t==='pause'){paused=m.on;lastTick=performance.now();renderClocks();toast(paused?T('⏸ Der Gastgeber hat die Uhr angehalten.'):T('▶ Weiter geht’s!'),2200);return;}
   if(m.t==='mv'||m.t==='promo'||m.t==='to'){NET.q.push(m);netPump();return;}
 }
 function camFix(){   // eigenes Kamerabild gehört zum eigenen Platz
@@ -1227,8 +1299,8 @@ function netBeginGame(cfg){
   initGame();
   startPlay();
   resizeCanvas();netViewMine();netWake();
-  if(NET.spec)toast('Die Partie beginnt – du schaust zu. Mit ↻ drehst du das Brett.',3500);
-  else toast(`Los geht’s! Du spielst ${PNAMES[NET.seat]}.`+(TURN_ORDER[0]===NET.seat?' Du beginnst – die Uhr läuft ab deinem ersten Zug.':` ${PNAMES[TURN_ORDER[0]]} beginnt.`),4500);
+  if(NET.spec)toast(T('Die Partie beginnt – du schaust zu. Mit ↻ drehst du das Brett.'),3500);
+  else toast(T(`Los geht’s! Du spielst {0}.`,[PNAMES[NET.seat]])+(TURN_ORDER[0]===NET.seat?T(' Du beginnst – die Uhr läuft ab deinem ersten Zug.'):T(` {0} beginnt.`,[PNAMES[TURN_ORDER[0]]])),4500);
 }
 function netViewMine(){
   if(NET.spec){fitBoard();draw();return;}
@@ -1296,7 +1368,7 @@ setInterval(()=>{
 // Kein automatisches Abmelden beim Verlassen der Seite: Ein Neuladen oder Wegwischen soll das Spiel nicht beenden.
 window.addEventListener('pageshow',e=>{if(e.persisted&&NET.on)netRevive();});
 function netLeave(){
-  if(!confirm(NET.host?'Online-Spiel beenden? Deine Mitspieler werden getrennt.':'Online-Spiel verlassen?'))return false;
+  if(!confirm(NET.host?T('Online-Spiel beenden? Deine Mitspieler werden getrennt.'):T('Online-Spiel verlassen?')))return false;
   NET.leaving=true;
   if(NET.host){try{localStorage.removeItem(HOST_KEY);}catch(e){}}
   try{if(NET.host)netBroadcast({t:'bye'});else netToHost({t:'bye'});}catch(e){}
@@ -1322,31 +1394,31 @@ function renderLobby(){
   for(const p of TURN_ORDER){
     let name='',st='',av=NET.avs[p]||{};
     if(NET.host){const s=NET.seats[p]||{};
-      name=s.kind==='me'?`${s.name} (du)`:s.kind==='peer'?s.name:s.kind==='away'?`${s.name} (kurz weg …)`:s.kind==='ai'||s.kind==='dropped'?`Computer (${MONSTERS[p].name})`:'';
-      st=s.kind==='open'?'wartet auf Mitspieler …':'';
+      name=s.kind==='me'?T(`{0} (du)`,[s.name]):s.kind==='peer'?s.name:s.kind==='away'?T(`{0} (kurz weg …)`,[s.name]):s.kind==='ai'||s.kind==='dropped'?T(`Computer ({0})`,[MONSTERS[p].name]):'';
+      st=s.kind==='open'?T('wartet auf Mitspieler …'):'';
     } else {const s=(L&&L[p])||{};
-      name=p===NET.seat?`${netName(p)||'Du'} (du)`:s.kind==='me'?`${s.name} (Gastgeber)`:s.kind==='peer'?s.name:s.kind==='away'?`${s.name} (kurz weg …)`:s.kind==='ai'||s.kind==='dropped'?`Computer (${MONSTERS[p].name})`:'';
-      st=s.kind==='open'&&p!==NET.seat?'wartet auf Mitspieler …':'';
+      name=p===NET.seat?T(`{0} (du)`,[netName(p)||T('Du')]):s.kind==='me'?T(`{0} (Gastgeber)`,[s.name]):s.kind==='peer'?s.name:s.kind==='away'?T(`{0} (kurz weg …)`,[s.name]):s.kind==='ai'||s.kind==='dropped'?T(`Computer ({0})`,[MONSTERS[p].name]):'';
+      st=s.kind==='open'&&p!==NET.seat?T('wartet auf Mitspieler …'):'';
     }
     if(p===NET.seat)av={cam:!!camStream,mic:micLive()};
-    const icons=name&&!name.startsWith('Computer')?` <span class="lbIc">${av.cam?'📷':'🚫📷'} ${av.mic?'🎤':'🔇'}</span>`:'';
-    const kick=NET.host&&NET.seats[p]&&NET.seats[p].kind==='peer'?`<button class="kick" onclick="netKick('seat','${p}')" title="Aus dem Spiel nehmen">✕ entfernen</button>`:
-      NET.started&&!NET.spec&&(NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind)==='away'?`<button class="kick" style="background:#556 !important" onclick="${NET.host?`hostAwayAI('${p}')`:`netToHost({t:'awayAI',p:'${p}'})`}">🤖 Computer übernimmt</button>`:'';
+    const icons=name&&!name.startsWith(T('Computer'))?` <span class="lbIc">${av.cam?'📷':'🚫📷'} ${av.mic?'🎤':'🔇'}</span>`:'';
+    const kick=NET.host&&NET.seats[p]&&NET.seats[p].kind==='peer'?T(`<button class="kick" onclick="netKick('seat','{0}')" title="Aus dem Spiel nehmen">✕ entfernen</button>`,[p]):
+      NET.started&&!NET.spec&&(NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind)==='away'?T(`<button class="kick" style="background:#556 !important" onclick="{0}">🤖 Computer übernimmt</button>`,[NET.host?`hostAwayAI('${p}')`:`netToHost({t:'awayAI',p:'${p}'})`]):'';
     h+=`<div class="lbSeat"><span class="lbDot" style="background:${PCOLOR[p]}"></span><b style="color:${PCOLOR[p]}">${PNAMES[p]}</b> <span>${esc(name)||'<i>'+st+'</i>'}</span>${icons}${kick}</div>`;
   }
-  if(NET.host){for(const[id,z]of Object.entries(NET.specs))h+=`<div class="lbSeat">👀 <span>${esc(z.name)} (schaut zu)</span><button class="kick" style="margin-left:auto !important" onclick="netKick('spec','${id}')">✕ entfernen</button></div>`;}
-  else{const sl=(NET.specList||[]).map(z=>z.name);if(sl.length)h+=`<div class="lbSeat">👀 <span>Zuschauer: ${sl.map(esc).join(', ')}</span></div>`;}
+  if(NET.host){for(const[id,z]of Object.entries(NET.specs))h+=T(`<div class="lbSeat">👀 <span>{0} (schaut zu)</span><button class="kick" style="margin-left:auto !important" onclick="netKick('spec','{1}')">✕ entfernen</button></div>`,[esc(z.name),id]);}
+  else{const sl=(NET.specList||[]).map(z=>z.name);if(sl.length)h+=T(`<div class="lbSeat">👀 <span>Zuschauer: {0}</span></div>`,[sl.map(esc).join(', ')]);}
   box.innerHTML=h;
   {const kinds=TURN_ORDER.map(p=>NET.host?(NET.seats[p]||{}).kind:p===NET.seat?'me':((NET.lobby||{})[p]||{}).kind);
    const here=kinds.filter(k=>k==='me'||k==='peer'||k==='away').length;
-   const lc=document.getElementById('lbCount');if(lc)lc.textContent=NET.spec?'':`(${here}/3 da)`;}
+   const lc=document.getElementById('lbCount');if(lc)lc.textContent=NET.spec?'':T(`({0}/3 da)`,[here]);}
   const ap=document.getElementById('avPlayers');
-  if(ap)ap.innerHTML=NET.on&&NET.host&&NET.started?'<hr><div class="sub" style="margin:0 0 4px">Mitspieler (nur du als Gastgeber kannst jemanden entfernen):</div>'+h:'';
+  if(ap)ap.innerHTML=NET.on&&NET.host&&NET.started?T('<hr><div class="sub" style="margin:0 0 4px">Mitspieler (nur du als Gastgeber kannst jemanden entfernen):</div>')+h:'';
   const open=NET.host&&TURN_ORDER.some(p=>NET.seats[p]&&NET.seats[p].kind==='open');
-  const b=document.getElementById('lbStart');if(b){b.disabled=!NET.peer;b.textContent=open?'▶ Spiel starten (freie Plätze: Computer)':'▶ Spiel starten';}
+  const b=document.getElementById('lbStart');if(b){b.disabled=!NET.peer;b.textContent=open?T('▶ Spiel starten (freie Plätze: Computer)'):T('▶ Spiel starten');}
   const mb=document.getElementById('lbMic'),cb=document.getElementById('lbCam');
-  if(mb){mb.textContent=micLive()?'🎤 Mikrofon an':'🔇 Mikrofon aus';mb.classList.toggle('off',!micLive());}
-  if(cb){cb.textContent=camStream?'📷 Kamera an':'🚫 Kamera aus';cb.classList.toggle('off',!camStream);}
+  if(mb){mb.textContent=micLive()?T('🎤 Mikrofon an'):T('🔇 Mikrofon aus');mb.classList.toggle('off',!micLive());}
+  if(cb){cb.textContent=camStream?T('📷 Kamera an'):T('🚫 Kamera aus');cb.classList.toggle('off',!camStream);}
 }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 const INVITE_TXT='Spiel mit mir Drei-Personen-Schach! ♟️ Tippe auf den Link, um mitzuspielen:';
@@ -1354,9 +1426,9 @@ function renderInvite(){
   const link=netLink();
   document.getElementById('lbLink').value=link;
   document.getElementById('lbShare').style.display=navigator.share?'':'none';
-  document.getElementById('lbWa').href='https://wa.me/?text='+encodeURIComponent(INVITE_TXT+' '+link);
-  document.getElementById('lbSms').href='sms:?&body='+encodeURIComponent(INVITE_TXT+' '+link);
-  document.getElementById('lbMail').href='mailto:?subject='+encodeURIComponent('Einladung: Drei-Personen-Schach')+'&body='+encodeURIComponent(INVITE_TXT+'\n'+link+'\n\nTipp: Im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann hast du das Spiel wie eine App.');
+  document.getElementById('lbWa').href='https://wa.me/?text='+encodeURIComponent(T(INVITE_TXT)+' '+link);
+  document.getElementById('lbSms').href='sms:?&body='+encodeURIComponent(T(INVITE_TXT)+' '+link);
+  document.getElementById('lbMail').href='mailto:?subject='+encodeURIComponent(T('Einladung: Drei-Personen-Schach'))+'&body='+encodeURIComponent(T(INVITE_TXT)+'\n'+link+T('\n\nTipp: Im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann hast du das Spiel wie eine App.'));
   document.getElementById('lbFb').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(link);
   makeQR(link);
 }
@@ -1365,11 +1437,11 @@ async function makeQR(link){
   if(!window.qrcode){try{await loadScript('lib/qrcode.js');}catch(e){return;}}
   try{const q=qrcode(0,'M');q.addData(link);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2});}catch(e){}
 }
-function shareInvite(){navigator.share({title:'Drei-Personen-Schach',text:INVITE_TXT,url:netLink()}).catch(()=>{});}
+function shareInvite(){navigator.share({title:T('Drei-Personen-Schach'),text:T(INVITE_TXT),url:netLink()}).catch(()=>{});}
 function copyInvite(){
   const l=netLink();
-  (navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(()=>toast('Link kopiert ✓',1800))
-    .catch(()=>{const i=document.getElementById('lbLink');i.select();try{document.execCommand('copy');toast('Link kopiert ✓',1800);}catch(e){}});
+  (navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(()=>toast(T('Link kopiert ✓'),1800))
+    .catch(()=>{const i=document.getElementById('lbLink');i.select();try{document.execCommand('copy');toast(T('Link kopiert ✓'),1800);}catch(e){}});
 }
 // ---------- „App installieren“ ----------
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;document.querySelectorAll('.installBtn').forEach(b=>b.style.display='');});
@@ -1413,12 +1485,12 @@ function toggleFullscreen(){
   if(document.fullscreenElement){document.exitFullscreen();return;}
   const el=document.documentElement;
   const req=el.requestFullscreen||el.webkitRequestFullscreen;
-  if(!req){alert('Dein Browser unterstützt hier kein Vollbild. Tipp: Füge das Spiel über das Browsermenü zum Startbildschirm hinzu – dann startet es ohne Adressleiste.');return;}
+  if(!req){alert(T('Dein Browser unterstützt hier kein Vollbild. Tipp: Füge das Spiel über das Browsermenü zum Startbildschirm hinzu – dann startet es ohne Adressleiste.'));return;}
   try{const r=req.call(el,{navigationUI:'hide'});if(r&&r.catch)r.catch(()=>{});}catch(e){}
 }
 document.addEventListener('fullscreenchange',()=>{
   const fs=!!document.fullscreenElement;
-  document.getElementById('fullscreenBtn').textContent=fs?'✕ Vollbild beenden':'⛶ Vollbild';
+  document.getElementById('fullscreenBtn').textContent=fs?T('✕ Vollbild beenden'):T('⛶ Vollbild');
   document.getElementById('panel').classList.toggle('hidden',fs);
   document.body.style.padding=fs?'0':'8px';
   setTimeout(resizeCanvas,60);
@@ -1779,7 +1851,7 @@ function setSym(on){symOn=on;try{localStorage.setItem('dreiSchach.sym',on?'1':'0
   const c=document.getElementById('chkSym');if(c)c.checked=on;renderClocks();draw();if(window.V3&&V3.on&&V3.sync)V3.sync();}
 const A_ROW=['R','N','B','Q','K','B','N','R'];
 const TURN_ORDER=['B','G','R'];
-const PNAMES={B:'Blau',R:'Rot',G:'Grün'};
+const PNAMES={B:T('Blau'),R:T('Rot'),G:T('Grün')};
 
 let gameState={},movedPieces=new Set(),epTarget=null,promoPending=null,castleMap={};
 let turnIdx=0,selected=null,validMoves=new Set(),capturedBy={B:[],R:[],G:[]},eliminated=new Set();
@@ -1832,8 +1904,8 @@ function advanceTurn(newEP=null){
   // 3. Wer nicht ziehen kann, wird übersprungen
   for(let s=0;s<3;s++){
     if(playerHasValidMove(cur(),epTarget))break;
-    turnNote+=flagged.has(cur())?`${PNAMES[cur()]} hat keine Zeit mehr. `:`${PNAMES[cur()]} kann nicht ziehen. `;
-    if(s===2){turnNote+='Niemand kann ziehen.';gameOver=true;break;}
+    turnNote+=flagged.has(cur())?T(`{0} hat keine Zeit mehr. `,[PNAMES[cur()]]):T(`{0} kann nicht ziehen. `,[PNAMES[cur()]]);
+    if(s===2){turnNote+=T('Niemand kann ziehen.');gameOver=true;break;}
     turnIdx=(turnIdx+1)%3;
   }
   startTurnClock();
@@ -1846,7 +1918,7 @@ function notifyTurn(){
   try{if(navigator.vibrate)navigator.vibrate([90,60,90]);}catch(e){}
   snd('turn');
   if(document.hidden&&!titleFlash){const t0=document.title;let on=false;
-    titleFlash=setInterval(()=>{document.title=(on=!on)?'♟ Du bist dran!':t0;},900);
+    titleFlash=setInterval(()=>{document.title=(on=!on)?T('♟ Du bist dran!'):t0;},900);
     const stop=()=>{if(!document.hidden){clearInterval(titleFlash);titleFlash=null;document.title=t0;document.removeEventListener('visibilitychange',stop);}};
     document.addEventListener('visibilitychange',stop);}
 }
@@ -1874,7 +1946,7 @@ function setHelpDuty(helper,ep){
   helpDuty={helper,victim,mater,mated};
   if(playerHasValidMove(helper,ep))return null;
   helpDuty=null;
-  if(mated)return{winner:mateWinner(victim,mater,gameState),victim,note:`${PNAMES[helper]} kann ${PNAMES[victim]} nicht helfen. `};
+  if(mated)return{winner:mateWinner(victim,mater,gameState),victim,note:T(`{0} kann {1} nicht helfen. `,[PNAMES[helper],PNAMES[victim]])};
   return null;   // jeder mögliche Zug führt zum Matt (oder kein Zug möglich) → keine Einschränkung
 }
 // Nach Laden, Rücknahme oder Online-Abgleich: Hilfspflicht neu prüfen, statt einen alten Stand zu übernehmen.
@@ -1889,15 +1961,15 @@ function endGame(winner,loser){
   gameOver=true;
   for(const p of TURN_ORDER)setEmo(p,p===winner?'cheer':'cry',0,true);setTimeout(()=>snd('mate'),250);
   const el=document.getElementById('status');
-  el.textContent=`${turnNote}SCHACHMATT gegen ${PNAMES[loser]} – ${PNAMES[winner]} gewinnt!`;
+  el.textContent=T(`{0}SCHACHMATT gegen {1} – {2} gewinnt!`,[turnNote,PNAMES[loser],PNAMES[winner]]);
   el.style.color=PCOLOR[winner];
   updateCaptured();renderClocks();draw();
-  gameEndPrompt(`♚ Schachmatt gegen ${PNAMES[loser]} – ${PNAMES[winner]} gewinnt!`);
+  gameEndPrompt(T(`♚ Schachmatt gegen {0} – {1} gewinnt!`,[PNAMES[loser],PNAMES[winner]]));
 }
 // Spielende: Meldung in der Leiste (kein Fenster), dazu „Revanche“ bzw. „Noch eine Partie“
 function gameEndPrompt(text){
-  if(NET.on&&!NET.host){ask('end',text,[{label:'OK',fn:()=>{}}]);if(!NET.spec)setTimeout(()=>toast('Der Gastgeber kann eine Revanche starten.',5000),1500);return;}
-  ask('end',text,[{label:NET.on?'🔄 Revanche':'🔄 Noch eine Partie',fn:rematch},{label:'Schließen',bg:'#555',fn:()=>{}}]);
+  if(NET.on&&!NET.host){ask('end',text,[{label:'OK',fn:()=>{}}]);if(!NET.spec)setTimeout(()=>toast(T('Der Gastgeber kann eine Revanche starten.'),5000),1500);return;}
+  ask('end',text,[{label:NET.on?T('🔄 Revanche'):T('🔄 Noch eine Partie'),fn:rematch},{label:T('Schließen'),bg:'#555',fn:()=>{}}]);
 }
 function rematch(){
   unask('end');
@@ -1905,23 +1977,23 @@ function rematch(){
     if(!NET.host)return;
     const ai={};for(const p of TURN_ORDER){const k=NET.seats[p].kind;ai[p]=k==='ai'||k==='dropped'?NET.cfg.lvl:null;}
     const cfg={tc:NET.cfg.tc,ai};netBroadcast({t:'start',cfg});netBeginGame(cfg);
-    netBroadcast({t:'note',txt:'🔄 Revanche! Neue Partie mit denselben Spielern.'});
+    netBroadcast({t:'note',txt:T('🔄 Revanche! Neue Partie mit denselben Spielern.')});
     return;
   }
   startFromSetup();startPlay();
 }
 function updateStatus(){
   if(gameOver)return;
-  if(NET.on&&!NET.started){const el=document.getElementById('status');el.textContent=NET.spec?'Warteraum – du schaust zu':'Warteraum – sobald alle da sind, geht es los';el.style.color='#c9b8ff';return;}
-  if(waitingStart){const el=document.getElementById('status');el.textContent='Bereit – drücke ▶ Start';el.style.color='#fff';return;}
+  if(NET.on&&!NET.started){const el=document.getElementById('status');el.textContent=NET.spec?T('Warteraum – du schaust zu'):T('Warteraum – sobald alle da sind, geht es los');el.style.color='#c9b8ff';return;}
+  if(waitingStart){const el=document.getElementById('status');el.textContent=T('Bereit – drücke ▶ Start');el.style.color='#fff';return;}
   const p=cur(),el=document.getElementById('status');
   let txt=turnNote;
-  if(gameOver)txt+=' Remis!';
+  if(gameOver)txt+=T(' Remis!');
   else{
-    txt+=aiPlayers[p]?`${PNAMES[p]} (Computer) überlegt …`:(NET.on&&p===NET.seat)?`Du bist am Zug (${PNAMES[p]})`:`${PNAMES[p]}${netName(p)?' ('+netName(p)+')':''} am Zug`;
+    txt+=aiPlayers[p]?T(`{0} (Computer) überlegt …`,[PNAMES[p]]):(NET.on&&p===NET.seat)?T(`Du bist am Zug ({0})`,[PNAMES[p]]):T(`{0}{1} am Zug`,[PNAMES[p],netName(p)?' ('+netName(p)+')':'']);
     const chk=TURN_ORDER.filter(x=>isInCheck(x,gameState));
-    if(chk.length)txt+=' — SCHACH: '+chk.map(x=>PNAMES[x]).join(' & ')+'!';
-    if(helpDuty&&helpDuty.helper===p)txt+=helpDuty.mated?` — HILFSPFLICHT: ${PNAMES[helpDuty.victim]} ist matt – du musst ihn befreien!`:` — HILFSPFLICHT: Manche deiner Züge würden ${PNAMES[helpDuty.victim]} mattsetzen – die sind gesperrt.`;
+    if(chk.length)txt+=T(' — SCHACH: ')+chk.map(x=>PNAMES[x]).join(' & ')+'!';
+    if(helpDuty&&helpDuty.helper===p)txt+=helpDuty.mated?T(` — HILFSPFLICHT: {0} ist matt – du musst ihn befreien!`,[PNAMES[helpDuty.victim]]):T(` — HILFSPFLICHT: Manche deiner Züge würden {0} mattsetzen – die sind gesperrt.`,[PNAMES[helpDuty.victim]]);
   }
   el.textContent=txt;el.style.color=PCOLOR[p];
 }
@@ -1960,13 +2032,13 @@ function undoMove(){
 function netUndoButton(){
   if(NET.spec||!NET.started)return;
   if(NET.host){
-    if(promoPending||moveAnim||!history.length){toast('Gerade kann nichts zurückgenommen werden.',2500);return;}
-    if(!confirm('Letzten Zug zurücknehmen? (Als Gastgeber darfst du das direkt.)'))return;
-    hostDoUndo(1,`↶ Der Gastgeber hat den letzten Zug zurückgenommen.`,true);
+    if(promoPending||moveAnim||!history.length){toast(T('Gerade kann nichts zurückgenommen werden.'),2500);return;}
+    if(!confirm(T('Letzten Zug zurücknehmen? (Als Gastgeber darfst du das direkt.)')))return;
+    hostDoUndo(1,T(`↶ Der Gastgeber hat den letzten Zug zurückgenommen.`),true);
   } else {
     const mine=moveLog.some(e=>e.player===NET.seat&&!e.timeout);
-    if(!mine){toast('Du hast noch keinen Zug gemacht.',2500);return;}
-    netToHost({t:'undoReq'});toast('Frage die anderen, ob du deinen letzten Zug zurücknehmen darfst …',3500);
+    if(!mine){toast(T('Du hast noch keinen Zug gemacht.'),2500);return;}
+    netToHost({t:'undoReq'});toast(T('Frage die anderen, ob du deinen letzten Zug zurücknehmen darfst …'),3500);
   }
 }
 function hostDoUndo(n,txt,skipAI){
@@ -1982,12 +2054,12 @@ function hostDoUndo(n,txt,skipAI){
 }
 let UNDO=null;   // laufende Anfrage beim Gastgeber
 function hostUndoRequest(p){
-  if(UNDO){netSend(NET.seats[p].conn,{t:'note',txt:'Es läuft schon eine Anfrage – bitte kurz warten.'});return;}
+  if(UNDO){netSend(NET.seats[p].conn,{t:'note',txt:T('Es läuft schon eine Anfrage – bitte kurz warten.')});return;}
   let idx=-1;for(let i=moveLog.length-1;i>=0;i--)if(moveLog[i].player===p&&!moveLog[i].timeout){idx=i;break;}
   if(idx<0)return;
   const n=moveLog.length-idx,id=String(Date.now());
   const voters=TURN_ORDER.filter(q=>q!==p&&!aiPlayers[q]&&(NET.seats[q].kind==='me'||NET.seats[q].kind==='peer'));
-  UNDO={id,p,n,need:new Set(voters),timer:setTimeout(()=>undoFinish(false,'keine Antwort'),40000)};
+  UNDO={id,p,n,need:new Set(voters),timer:setTimeout(()=>undoFinish(false,T('keine Antwort')),40000)};
   if(!voters.length){undoFinish(true);return;}   // nur Computer-Gegner: die sagen immer Ja
   for(const q of voters){
     if(NET.seats[q].kind==='me')undoAskLocal(id,p,n,ok=>undoAnswer(q,id,ok));
@@ -1996,20 +2068,20 @@ function hostUndoRequest(p){
 }
 function undoAskLocal(id,p,n,reply){
   const who=netName(p)||PNAMES[p];
-  ask('undo'+id,`↶ ${who} (${PNAMES[p]}) möchte ${n>1?'die letzten '+n+' Züge':'den letzten Zug'} zurücknehmen. Einverstanden?`,[
-    {label:'👍 Ja',fn:()=>reply(true)},{label:'👎 Nein',bg:'#a33',fn:()=>reply(false)}]);
+  ask('undo'+id,T(`↶ {0} ({1}) möchte {2} zurücknehmen. Einverstanden?`,[who,PNAMES[p],n>1?T('die letzten {0} Züge',[n]):T('den letzten Zug')]),[
+    {label:T('👍 Ja'),fn:()=>reply(true)},{label:T('👎 Nein'),bg:'#a33',fn:()=>reply(false)}]);
 }
 function undoAnswer(q,id,ok){
   if(!UNDO||UNDO.id!==id)return;
-  if(!ok){undoFinish(false,`${netName(q)||PNAMES[q]} hat abgelehnt`);return;}
+  if(!ok){undoFinish(false,T(`{0} hat abgelehnt`,[netName(q)||PNAMES[q]]));return;}
   UNDO.need.delete(q);if(!UNDO.need.size)undoFinish(true);
 }
 function undoFinish(ok,why){
   if(!UNDO)return;const u=UNDO;UNDO=null;clearTimeout(u.timer);
   unask('undo'+u.id);netBroadcast({t:'undoDone',id:u.id,txt:''});
   const who=netName(u.p)||PNAMES[u.p];
-  if(!ok){const txt=`↶ Zurücknehmen für ${who} abgelehnt (${why}).`;toast(txt,4000);netBroadcast({t:'note',txt});return;}
-  const go=()=>{if(moveAnim||promoPending){setTimeout(go,300);return;}hostDoUndo(u.n,`↶ ${who} darf den Zug zurücknehmen – alle waren einverstanden.`);};go();
+  if(!ok){const txt=T(`↶ Zurücknehmen für {0} abgelehnt ({1}).`,[who,why]);toast(txt,4000);netBroadcast({t:'note',txt});return;}
+  const go=()=>{if(moveAnim||promoPending){setTimeout(go,300);return;}hostDoUndo(u.n,T(`↶ {0} darf den Zug zurücknehmen – alle waren einverstanden.`,[who]));};go();
 }
 function undoOnce(){
   const h=history.pop();
@@ -2024,7 +2096,7 @@ function undoOnce(){
 }
 function moveText(e){
   let t;
-  if(e.timeout)return `<i style="color:#bbb">${e.timeout==='move'?'Zugzeit abgelaufen':'Partiezeit verbraucht'}</i>`;
+  if(e.timeout)return `<i style="color:#bbb">${e.timeout==='move'?T('Zugzeit abgelaufen'):T('Partiezeit verbraucht')}</i>`;
   if(e.castle)t=e.castle;
   else{
     t=`<span class="pc">${PIECES[e.piece]}</span> ${e.from}${e.cap?'×':'–'}${e.to}`;
@@ -2040,7 +2112,7 @@ function renderLog(){
   ol.innerHTML=moveLog.map((e,i)=>`<li><span class="num">${i+1}.</span><span style="color:${PCOLOR[e.player]}">●</span> ${moveText(e)}</li>`).join('');
   ol.scrollTop=ol.scrollHeight;
   const b=document.getElementById('btnUndo');if(b){b.disabled=NET.on?(NET.spec||!NET.started||(!NET.host&&!moveLog.some(e=>e.player===NET.seat))):!history.length;
-    b.textContent=NET.on&&!NET.host?'↶ Bitten':'↶ Zurück';b.title=NET.on&&!NET.host?'Die anderen fragen, ob du deinen letzten Zug zurücknehmen darfst':'Letzten Zug zurücknehmen (Strg+Z)';}
+    b.textContent=NET.on&&!NET.host?T('↶ Bitten'):T('↶ Zurück');b.title=NET.on&&!NET.host?T('Die anderen fragen, ob du deinen letzten Zug zurücknehmen darfst'):T('Letzten Zug zurücknehmen (Strg+Z)');}
 }
 // ================= Mitspieler-Avatare (eigene Monster, Gefühle) =================
 // Jeder Spieler hat einen Avatar, gezeichnet auf ein eigenes Canvas (320×240).
@@ -2069,7 +2141,7 @@ function setEmo(p,emo,dur=3600,force=false){
   const a=AV[p];const now=performance.now();
   if(!force&&(a.emo==='cheer'||a.emo==='cry'))return;           // Spielende bleibt stehen
   const lines=(isAIPlayer(p)?MONSTERS[p].lines:HUMAN_LINES)[emo]||[''];
-  a.emo=emo;a.since=now;a.until=dur?now+dur:Infinity;a.line=emo==='neutral'?'':lines[Math.floor(Math.random()*lines.length)];
+  a.emo=emo;a.since=now;a.until=dur?now+dur:Infinity;a.line=emo==='neutral'?'':T(lines[Math.floor(Math.random()*lines.length)]||'');
 }
 function resetEmos(){for(const p of ['B','G','R'])setEmo(p,'neutral',0,true);}
 function isAIPlayer(p){return typeof aiPlayers!=='undefined'&&!!aiPlayers[p];}
@@ -2126,7 +2198,7 @@ function drawAvatar0(p,t){
 }
 function drawNameTag(x,p,ai){
   const freeSeat=NET.on&&!NET.started&&p!==NET.seat&&((NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind)==='open');
-  const name=freeSeat?'Platz frei …':ai?MONSTERS[p].name:(netName(p)||('Spieler '+PNAMES[p]))+(NET.on&&NET.avs[p]&&NET.avs[p].mic===false&&p!==NET.seat?'  🔇':'')+(NET.on&&p===NET.seat&&!micLive()?'  🔇':'');
+  const name=freeSeat?T('Platz frei …'):ai?MONSTERS[p].name:(netName(p)||(T('Spieler ')+PNAMES[p]))+(NET.on&&NET.avs[p]&&NET.avs[p].mic===false&&p!==NET.seat?'  🔇':'')+(NET.on&&p===NET.seat&&!micLive()?'  🔇':'');
   x.font='bold 15px sans-serif';const w=x.measureText(name).width+16;
   x.fillStyle='rgba(0,0,0,.55)';roundRect(x,8,AV_H-28,w,21,6);x.fill();
   x.fillStyle=AVCOL[p];x.fillText(name,16,AV_H-12);
@@ -2325,16 +2397,16 @@ function toggleAvatars(){
 function syncAvUI(){
   document.getElementById('avBtn').style.opacity=avatarsOn?'':'0.45';
   document.getElementById('chkAvOn').checked=avatarsOn;document.getElementById('chkMon').checked=avatarsOn;
-  document.getElementById('camToggle').textContent=camStream?'📷 Kamera ausschalten':'📷 Kamera einschalten';
+  document.getElementById('camToggle').textContent=camStream?T('📷 Kamera ausschalten'):T('📷 Kamera einschalten');
   document.getElementById('camToggle').style.background=camStream?'#a33':'#2a6';
   if(typeof NET!=='undefined'){const ml=micLive(),mb=document.getElementById('micBtn'),mt=document.getElementById('micToggle');
     mb.style.display=NET.on&&!NET.spec?'':'none';mt.style.display=NET.on&&!NET.spec?'':'none';
     document.getElementById('repairBtn').style.display=NET.on?'':'none';
     document.getElementById('avSpecRow').style.display=NET.on&&NET.host?'':'none';document.getElementById('avSpec').value=NET.specMode;
     mb.textContent=ml?'🎤':'🔇';mb.classList.toggle('off',NET.on&&!ml);
-    mt.textContent=!micStream?'🎤 Mikrofon einschalten':ml?'🔇 Stumm schalten':'🎤 Stummschaltung aufheben';mt.style.background=ml?'#2a6':'#a33';
+    mt.textContent=!micStream?T('🎤 Mikrofon einschalten'):ml?T('🔇 Stumm schalten'):T('🎤 Stummschaltung aufheben');mt.style.background=ml?'#2a6':'#a33';
     if(NET.on)renderLobby();}
-  const me=meP();if(typeof NET!=='undefined'&&NET.on)camFix();document.getElementById('camInfo').textContent=`Dein Bild erscheint im Fenster von ${PNAMES[me]}.`+(camStream?' Kamera läuft.':'');
+  const me=meP();if(typeof NET!=='undefined'&&NET.on)camFix();document.getElementById('camInfo').textContent=T(`Dein Bild erscheint im Fenster von {0}.`,[PNAMES[me]])+(camStream?T(' Kamera läuft.'):'');
 }
 function setBarBottom(on){
   document.body.classList.toggle('barBottom',on);try{localStorage.setItem('dreiSchach.barBottom',on?'1':'0');}catch(e){}
@@ -2350,15 +2422,15 @@ function meP(){if(NET.on&&NET.seat)return NET.seat;return TURN_ORDER.find(p=>!ai
 function setCamOffMode(v){camOffMode=v;try{localStorage.setItem('dreiSchach.camOffMode',v);}catch(e){}}
 async function camOn(){
   const err=m=>{document.getElementById('camErr').textContent=m;};
-  err('Kamera wird gestartet … bitte Zugriff erlauben.');
-  if(!window.isSecureContext){err('Kamera geht nur über eine sichere https-Adresse (z. B. die GitHub-Seite).');return;}
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){err('Dieser Browser erlaubt hier keinen Kamerazugriff. Tipp: Öffne die Seite direkt in Chrome (nicht in der Vorschau einer App).');return;}
+  err(T('Kamera wird gestartet … bitte Zugriff erlauben.'));
+  if(!window.isSecureContext){err(T('Kamera geht nur über eine sichere https-Adresse (z. B. die GitHub-Seite).'));return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){err(T('Dieser Browser erlaubt hier keinen Kamerazugriff. Tipp: Öffne die Seite direkt in Chrome (nicht in der Vorschau einer App).'));return;}
   try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});}
   catch(e){
     try{camStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});}   // zweiter Versuch ohne Wünsche
     catch(e2){const n=e2.name||e.name;
-      err('Kamera startet nicht: '+(n==='NotAllowedError'?permHelp('Kamera'):
-        n==='NotFoundError'?'Es wurde keine Kamera gefunden.':n==='NotReadableError'?'Die Kamera wird gerade von einer anderen App benutzt.':(n+': '+(e2.message||''))));
+      err(T('Kamera startet nicht: ')+(n==='NotAllowedError'?permHelp(T('Kamera')):
+        n==='NotFoundError'?T('Es wurde keine Kamera gefunden.'):n==='NotReadableError'?T('Die Kamera wird gerade von einer anderen App benutzt.'):(n+': '+(e2.message||''))));
       return;}
   }
   err('');
@@ -2515,17 +2587,17 @@ function showDemo(i){
   demo.sel=d.sel;
   document.querySelectorAll('#demoBtns button').forEach((b,k)=>b.classList.toggle('on',k===i));
   document.querySelectorAll('#demoPlace button').forEach(b=>b.classList.remove('on'));
-  document.getElementById('demoExpl').innerHTML=d.txt;
+  document.getElementById('demoExpl').innerHTML=T(d.txt);
   renderDemo();
 }
 function openRules(){
   const box=document.getElementById('demoBtns');
   if(!box.children.length){
-    DEMOS.forEach((d,i)=>{const b=document.createElement('button');b.textContent=d.name;b.onclick=()=>showDemo(i);box.appendChild(b);});
+    DEMOS.forEach((d,i)=>{const b=document.createElement('button');b.textContent=T(d.name);b.onclick=()=>showDemo(i);box.appendChild(b);});
     document.querySelectorAll('#demoPlace button').forEach(b=>b.onclick=()=>{
       demo.place=b.dataset.p;document.querySelectorAll('#demoPlace button').forEach(x=>x.classList.toggle('on',x===b));
       document.querySelectorAll('#demoBtns button').forEach(x=>x.classList.remove('on'));
-      document.getElementById('demoExpl').innerHTML='Klicke ein Feld an, um die Figur dorthin zu stellen. Alle Felder, die sie von dort erreicht, leuchten auf.';
+      document.getElementById('demoExpl').innerHTML=T('Klicke ein Feld an, um die Figur dorthin zu stellen. Alle Felder, die sie von dort erreicht, leuchten auf.');
     });
     document.getElementById('demoColor').onchange=e=>{demo.color=e.target.value;
       if(demo.sel&&demo.state[demo.sel])demo.state[demo.sel].player=demo.color;renderDemo();};
@@ -2536,7 +2608,7 @@ function openRules(){
       if(!fid)return;const coord=COORD_LABELS[fid];
       if(demo.place){demo.state={};demo.state[coord]={piece:demo.place,player:demo.color};demo.sel=coord;
         const n=withDemo(()=>validMoves.size);
-        document.getElementById('demoExpl').innerHTML=`<b><span class="pc">${PIECES[demo.place]}</span> auf ${coord}</b>: ${n} mögliche Zielfelder. Felder in anderen Sektionen zeigen die Züge über die Mitte.`;}
+        document.getElementById('demoExpl').innerHTML=T(`<b><span class="pc">{0}</span> auf {1}</b>: {2} mögliche Zielfelder. Felder in anderen Sektionen zeigen die Züge über die Mitte.`,[PIECES[demo.place],coord,n]);}
       else if(demo.state[coord])demo.sel=coord;
       renderDemo();
     });
@@ -2575,13 +2647,13 @@ function applyGameData(d){
   // pausiert mit Startknopf („Fortsetzen“)
   if(recheckHelpDuty())return;   // Spielstand aus älterer Version: Hilfspflicht neu bewerten
   waitingStart=true;paused=true;
-  const sb=document.getElementById('startBtn');sb.textContent='▶ Fortsetzen';sb.classList.add('show');
+  const sb=document.getElementById('startBtn');sb.textContent=T('▶ Fortsetzen');sb.classList.add('show');
   updateStatus();renderClocks();resizeCanvas();
 }
 function autosave(){if(NET.on){hostSave();return;}try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
 function resumeAutosave(){
   try{const t=localStorage.getItem(SAVE_KEY);if(t)applyGameData(deser(t));}
-  catch(e){alert('Die letzte Partie konnte nicht geladen werden.');}
+  catch(e){alert(T('Die letzte Partie konnte nicht geladen werden.'));}
 }
 function saveGameFile(){
   const d=new Date(),pad=n=>String(n).padStart(2,'0');
@@ -2594,7 +2666,7 @@ function loadGameFile(inp){
   const f=inp.files&&inp.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=()=>{try{const d=deser(r.result);if(!d.gameState||!d.capturedBy)throw 0;applyGameData(d);}
-    catch(e){alert('Diese Datei ist keine gültige Drei-Personen-Schach-Partie.');}
+    catch(e){alert(T('Diese Datei ist keine gültige Drei-Personen-Schach-Partie.'));}
     inp.value='';};
   r.readAsText(f);
 }
@@ -2625,15 +2697,15 @@ function endByPoints(){
   const tbl=r.map(x=>`${PNAMES[x.p]} ${x.pts} P. (${fmtTime(x.t)})`).join(' · ');
   const el=document.getElementById('status');
   let msg;
-  if(top.length>1)msg=`Remis zwischen ${top.map(x=>PNAMES[x.p]).join(' & ')}`;
+  if(top.length>1)msg=T(`Remis zwischen {0}`,[top.map(x=>PNAMES[x.p]).join(' & ')]);
   else{
-    msg=`${PNAMES[r[0].p]} gewinnt nach Punkten`;
-    if(r[1].pts===r[0].pts)msg+=' (weniger Zeit verbraucht)';
+    msg=T(`{0} gewinnt nach Punkten`,[PNAMES[r[0].p]]);
+    if(r[1].pts===r[0].pts)msg+=T(' (weniger Zeit verbraucht)');
   }
-  el.textContent=`Niemand kann mehr ziehen – ${msg}! ${tbl}`;
+  el.textContent=T(`Niemand kann mehr ziehen – {0}! {1}`,[msg,tbl]);
   el.style.color=top.length>1?'#fff':PCOLOR[r[0].p];
   renderClocks();
-  gameEndPrompt(`🏁 Niemand kann mehr ziehen – ${msg}!`);
+  gameEndPrompt(T(`🏁 Niemand kann mehr ziehen – {0}!`,[msg]));
 }
 function fmtTime(ms){
   const t=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(t/60),s=t%60;
@@ -2646,7 +2718,7 @@ function renderClocks(){
   for(const p of TURN_ORDER){
     const el=document.getElementById('clk'+p);
     const act=p===cur()&&!gameOver;
-    let t=`${symOn?PSYM[p]+' ':''}${aiPlayers[p]?'🤖 ':''}${PNAMES[p]} ${score(p)} P.`;
+    let t=`${symOn?PSYM[p]+' ':''}${aiPlayers[p]?'🤖 ':''}${PNAMES[p]} ${score(p)} ${T('P.')}`;
     t+=tc.game?' · '+fmtTime(clock[p]):' · ⌛'+fmtTime(timeUsed[p]);
     if(tc.move&&act)t+=` ⏱${fmtTime(moveLeft)}`;
     el.textContent=t;
@@ -2656,7 +2728,7 @@ function renderClocks(){
   }
   document.getElementById('clkPause').textContent=paused?'▶':'⏸';
 }
-function togglePause(){if(NET.on&&!NET.host){toast('Nur der Gastgeber kann die Uhr anhalten.',2500);return;}if(waitingStart){startPlay();return;}paused=!paused;lastTick=performance.now();renderClocks();if(paused)cancelAI();else maybeAI();if(NET.on)netBroadcast({t:'pause',on:paused});}
+function togglePause(){if(NET.on&&!NET.host){toast(T('Nur der Gastgeber kann die Uhr anhalten.'),2500);return;}if(waitingStart){startPlay();return;}paused=!paused;lastTick=performance.now();renderClocks();if(paused)cancelAI();else maybeAI();if(NET.on)netBroadcast({t:'pause',on:paused});}
 function timeOut(p,kind){
   if(NET.on&&NET.host&&!netApplying)netBroadcast({t:'to',p,kind,clock,timeUsed});
   snd('beep');
@@ -2664,9 +2736,9 @@ function timeOut(p,kind){
   history.push(snapshot());
   moveLog.push({player:p,timeout:kind,mark:''});
   if(kind==='game')flagged.add(p);
-  pendingNote=kind==='move'?`${PNAMES[p]}: Zugzeit abgelaufen. `:`${PNAMES[p]}: Partiezeit verbraucht. `;
+  pendingNote=kind==='move'?T(`{0}: Zugzeit abgelaufen. `,[PNAMES[p]]):T(`{0}: Partiezeit verbraucht. `,[PNAMES[p]]);
   if(helpDuty&&helpDuty.helper===p&&isMated(helpDuty.victim,gameState,epTarget)){   // Helfer hat nicht geholfen → Matt bleibt
-    turnNote=pendingNote+`${PNAMES[p]} hat ${PNAMES[helpDuty.victim]} nicht geholfen. `;pendingNote='';
+    turnNote=pendingNote+T(`{0} hat {1} nicht geholfen. `,[PNAMES[p],PNAMES[helpDuty.victim]]);pendingNote='';
     const h=helpDuty;helpDuty=null;endGame(mateWinner(h.victim,h.mater,gameState),h.victim);
   } else advanceTurn(null);
   markLastMove();
@@ -2696,7 +2768,7 @@ function startFromSetup(){
   document.getElementById('setupModal').classList.remove('show');setupOpen=false;
   waitingStart=true;
   initGame();paused=true;cancelAI();
-  document.getElementById('startBtn').textContent='▶ Start';
+  document.getElementById('startBtn').textContent=T('▶ Start');
   document.getElementById('startBtn').classList.add('show');
   updateStatus();renderClocks();resizeCanvas();
 }
@@ -2903,8 +2975,8 @@ function doMove(fromCoord,toCoord){
         updateStatus();updateCaptured();draw();
         const remaining=TURN_ORDER.filter(p=>!eliminated.has(p));
         setTimeout(()=>{
-          if(remaining.length===1)alert(`🏆 ${PNAMES[remaining[0]]} gewinnt!`);
-          else alert(`${PNAMES[player]} hat den König von ${PNAMES[target.player]} geschlagen!\n${PNAMES[target.player]} scheidet aus.`);
+          if(remaining.length===1)alert(T(`🏆 {0} gewinnt!`,[PNAMES[remaining[0]]]));
+          else alert(T(`{0} hat den König von {1} geschlagen!\n{2} scheidet aus.`,[PNAMES[player],PNAMES[target.player],PNAMES[target.player]]));
           advanceTurn(null);
         },80);
         return;
@@ -2928,7 +3000,7 @@ function doMove(fromCoord,toCoord){
   if(pd.piece==='P'&&isPromoRow(toCoord,player)){
     promoPending={to:toCoord,player,ep:newEP};
     if(netApplying||(NET.on&&NET.host&&aiPlayers[player])){draw();return;}   // Mitspieler/Computer wählt selbst
-    document.getElementById('promoTitle').textContent=`${PNAMES[player]}: Bauernumwandlung`;
+    document.getElementById('promoTitle').textContent=T(`{0}: Bauernumwandlung`,[PNAMES[player]]);
     document.getElementById('promoModal').classList.add('show');
     draw();return;
   }
@@ -3244,15 +3316,15 @@ function blockReason(from,to,player){
   const pd=gameState[from];if(!pd)return'';
   const raw=[...rawMoves(from,pd.piece,player,gameState,epTarget,false)].map(x=>COORD_LABELS[x]||x);
   if(!raw.includes(to)){
-    if(pd.piece==='K'&&getCastles(from,player,gameState,movedPieces).some(c=>c.toCoord===to))return'Rochade ist gerade nicht erlaubt (König steht im Schach oder würde durch ein angegriffenes Feld ziehen).';
+    if(pd.piece==='K'&&getCastles(from,player,gameState,movedPieces).some(c=>c.toCoord===to))returnT('Rochade ist gerade nicht erlaubt (König steht im Schach oder würde durch ein angegriffenes Feld ziehen).');
     return'';
   }
   const ns=applyMove(gameState,from,to,epTarget);
-  if(isInCheck(player,ns))return isInCheck(player,gameState)?'Du stehst im Schach – erlaubt sind nur Züge, die das Schach aufheben.':
-    (pd.piece==='K'?'Dort würde dein König im Schach stehen.':'Diese Figur ist gefesselt – der Zug würde deinen König ins Schach stellen.');
+  if(isInCheck(player,ns))return isInCheck(player,gameState)?T('Du stehst im Schach – erlaubt sind nur Züge, die das Schach aufheben.'):
+    (pd.piece==='K'?T('Dort würde dein König im Schach stehen.'):T('Diese Figur ist gefesselt – der Zug würde deinen König ins Schach stellen.'));
   if(helpDuty&&helpDuty.helper===player){
-    if(helpDuty.mated)return`Hilfspflicht: ${PNAMES[helpDuty.victim]} ist matt – du musst einen Zug machen, der ihn befreit.`;
-    if(isMated(helpDuty.victim,ns,epTarget))return`Hilfspflicht: Dieser Zug würde ${PNAMES[helpDuty.victim]} mattsetzen.`;
+    if(helpDuty.mated)returnT(`Hilfspflicht: {0} ist matt – du musst einen Zug machen, der ihn befreit.`,[PNAMES[helpDuty.victim]]);
+    if(isMated(helpDuty.victim,ns,epTarget))returnT(`Hilfspflicht: Dieser Zug würde {0} mattsetzen.`,[PNAMES[helpDuty.victim]]);
   }
   return'';
 }
@@ -3355,7 +3427,10 @@ initGame();
 resizeCanvas();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
-if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else openSetup();
+translateDom(document.body);
+function startFlow(){if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else openSetup();}
+function afterLang(){startFlow();}
+if(!LANG_SET)openLang();else startFlow();
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
 try{if(localStorage.getItem('dreiSchach.barBottom')==='1')setBarBottom(true);}catch(e){}
 document.querySelectorAll('.verTxt').forEach(e=>e.textContent=verLabel());
@@ -3463,10 +3538,10 @@ window.V3={on:false};
   // ---------- Szene aufbauen ----------
   function init(){
     if(R)return true;
-    if(!window.THREE){alert('Die 3D-Ansicht braucht eine Internetverbindung (three.js wird geladen). Bitte online öffnen und erneut versuchen.');return false;}
+    if(!window.THREE){alert(T('Die 3D-Ansicht braucht eine Internetverbindung (three.js wird geladen). Bitte online öffnen und erneut versuchen.'));return false;}
     const cv=document.getElementById('c3');
     try{R=new THREE.WebGLRenderer({canvas:cv,antialias:true});}
-    catch(e){alert('Dein Browser unterstützt kein WebGL – 3D ist hier leider nicht möglich.');R=null;return false;}
+    catch(e){alert(T('Dein Browser unterstützt kein WebGL – 3D ist hier leider nicht möglich.'));R=null;return false;}
     R.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
     R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
     scene=new THREE.Scene();scene.background=new THREE.Color('#1e1e1e');
