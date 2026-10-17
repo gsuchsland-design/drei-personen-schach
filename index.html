@@ -234,7 +234,7 @@ body.barBottom #selfView { bottom:50px; }
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <div id="avPlayers"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 20:55 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 21:15 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -478,7 +478,7 @@ async function iceServers(){
   // eigener Metered-Zugang (feste Zugangsdaten aus dem Dashboard) – auch über TCP/TLS-Port 443, damit es in Hotel-WLANs klappt
   const own={urls:['stun:stun.relay.metered.ca:80','turn:global.relay.metered.ca:80','turn:global.relay.metered.ca:80?transport=tcp',
       'turn:global.relay.metered.ca:443','turns:global.relay.metered.ca:443?transport=tcp'],
-    username:'a081cebfb8a457773cb7deb1',credential:'Hdqs-rZWrpI1ecJfgGzCt91ABHfHhVPJQxvpTTIrgByeZByl'};
+    username:'a081cebfb8a457773cb7deb1',credential:'KbgIRRmA7tNVdgRp'};
   OWN_TURN.add(own);list.push(own);
   list.push(...await meteredServers());
   try{   // Open Relay (Metered): kostenloser TURN-Dienst mit zeitlich begrenzten Zugangsdaten (TURN-REST-Verfahren)
