@@ -159,6 +159,10 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #toast.show { opacity:1; }
 #netBanner { display:none; position:fixed; left:0; right:0; top:0; z-index:420; background:#7a4b00; color:#fff; padding:8px 12px; font-size:14px; text-align:center; }
 #netBanner.show { display:block; }
+#testBox { display:none; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:450; background:#222; border:2px solid #8a6fd0; border-radius:12px;
+  padding:16px 18px; color:#ddd; width:min(380px,92vw); font-size:15px; line-height:1.6; box-shadow:0 8px 40px rgba(0,0,0,.7); }
+#testBox.show { display:block; }
+#testBox button { margin-top:10px; width:100%; padding:8px; border:none; border-radius:6px; background:#555; color:#fff; font-size:14px; cursor:pointer; }
 #specReq { display:none; position:fixed; left:50%; bottom:64px; transform:translateX(-50%); z-index:410; background:rgba(40,30,70,.97); color:#fff;
   border:2px solid #8a6fd0; border-radius:10px; padding:10px 12px; font-size:15px; max-width:94vw; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
 #specReq.show { display:flex; }
@@ -230,7 +234,7 @@ body.barBottom #selfView { bottom:50px; }
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <div id="avPlayers"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 20:15 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 20:30 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -401,8 +405,10 @@ body.barBottom #selfView { bottom:50px; }
   </div>
   <div id="lbGuest"><div class="lbHint">Das Spiel startet automatisch, sobald alle drei da sind – oder früher, wenn der Gastgeber freie Plätze dem Computer gibt. Die Uhr läuft erst ab dem ersten Zug.</div></div>
   <div class="lbMedia"><button id="lbCam" onclick="camStream?camOff():camOn()">📷</button><button id="lbMic" onclick="toggleMic()">🎤</button></div>
+  <button class="lbLeave" onclick="netTest()" style="background:#3a3a55">🔧 Verbindung testen</button>
   <button class="lbLeave" onclick="netLeave()">Abbrechen</button>
 </div></div>
+<div id="testBox"><b>🔧 Verbindungstest</b><div id="testRes" style="margin-top:8px"></div><button onclick="document.getElementById('testBox').classList.remove('show')">Schließen</button></div>
 <div id="specReq"><span id="specReqTxt"></span><button onclick="specAnswer(true)">Ja</button><button onclick="specAnswer(false)" style="background:#a33">Nein</button></div>
 <div id="joinModal" class="netModal"><div class="netBox">
   <h3>♟️ Einladung zum Drei-Personen-Schach</h3>
@@ -413,6 +419,7 @@ body.barBottom #selfView { bottom:50px; }
   <button onclick="netJoin()">Mitspielen</button>
   <button class="installBtn" style="display:none;background:#555" onclick="doInstall()">📲 Als App installieren</button>
   <div class="lbHint">Tipp: Im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann hast du das Spiel wie eine App.</div>
+  <button class="lbLeave" onclick="netTest()" style="background:#3a3a55">🔧 Verbindung testen</button>
   <button class="lbLeave" onclick="location.href=location.pathname">Nein danke, lieber allein spielen</button>
   <div class="lbHint" style="text-align:center">Bild und Ton gehen nur an deine Mitspieler und werden nicht gespeichert. Mehr unter <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a>.<br>© 2026 Guido Suchsland</div>
 </div></div>
@@ -461,6 +468,35 @@ async function iceServers(){
   }catch(e){}
   list.push({urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'});
   return ICE=list;
+}
+// ---------- Verbindungstest: Welche Wege funktionieren auf diesem Gerät/Netz? ----------
+async function netTest(){
+  const box=document.getElementById('testBox'),res=document.getElementById('testRes');
+  box.classList.add('show');res.innerHTML='Teste … (dauert bis zu 10 Sekunden)';
+  const ice=await iceServers();
+  const grp=k=>ice.filter(x=>[].concat(x.urls).some(u=>u.includes(k)));
+  const gather=servers=>new Promise(done=>{
+    let pc;const types=new Set();let fin=false;
+    const end=()=>{if(fin)return;fin=true;try{pc.close();}catch(e){}done(types);};
+    try{pc=new RTCPeerConnection({iceServers:servers});}catch(e){types.add('fehler');return end();}
+    pc.createDataChannel('t');
+    pc.onicecandidate=e=>{if(!e.candidate){end();return;}const m=/ typ (\w+)/.exec(e.candidate.candidate);if(m)types.add(m[1]);};
+    pc.createOffer().then(o=>pc.setLocalDescription(o)).catch(()=>end());
+    setTimeout(end,9000);
+  });
+  const sigP=(async()=>{try{if(!window.Peer&&!await needPeerJS())return'✗ Baustein nicht geladen';const p=await makePeer(null);p.destroy();return'✓';}catch(e){return'✗ ('+(e.type||'Fehler')+')';}})();
+  const [sig,stun,orl,pjs]=await Promise.all([sigP,gather(grp('stun:')),gather(grp('openrelay')),gather(grp('peerjs.com'))]);
+  const ok=b=>b?'✅ geht':'❌ blockiert';
+  const ua=navigator.userAgent,br=/CriOS|Chrome/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/EdgiOS|Edg\//.test(ua)?'Edge':/Safari/.test(ua)?'Safari':'anderer Browser';
+  res.innerHTML=`<div>Vermittlungsdienst: <b>${sig}</b></div>
+    <div>Direkte Verbindung (STUN): <b>${ok(stun.has('srflx'))}</b></div>
+    <div>Weiterleitung Open Relay: <b>${ok(orl.has('relay'))}</b></div>
+    <div>Weiterleitung PeerJS: <b>${ok(pjs.has('relay'))}</b></div>
+    <div style="color:#999;font-size:12px;margin-top:6px">${br} · ${IS_IOS?'iPhone/iPad':/Android/.test(ua)?'Android':'Computer'} · ${new Date().toLocaleTimeString('de-DE')}</div>
+    <div style="margin-top:8px">${sig!=='✓'?'Der Vermittlungsdienst ist von hier aus nicht erreichbar – vielleicht blockiert ein Werbe-/Tracking-Blocker oder das Netz ihn.':
+      (!stun.has('srflx')&&!orl.has('relay')&&!pjs.has('relay'))?'Dieses Netz oder dieser Browser blockiert Echtzeit-Verbindungen (WebRTC) komplett. Bitte einen anderen Browser (Safari oder Chrome) bzw. ein anderes Netz probieren.':
+      (!orl.has('relay')&&!pjs.has('relay'))?'Direkte Verbindungen gehen, aber keine Weiterleitung. In Netzen mit Sperren (Hotel, Mobilfunk) klappt es dann oft nicht.':
+      'Von hier aus sieht alles gut aus.'}<br>Bitte mach einen Screenshot davon.</div>`;
 }
 function peerOpts(ice){   // für Tests: eigener Vermittlungs-Server über ?peerhost=…
   const h=QS.get('peerhost'),cfg={config:{iceServers:ice},debug:0};
