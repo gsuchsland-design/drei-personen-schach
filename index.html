@@ -1552,30 +1552,9 @@ function advanceTurn(newEP=null){
   if(newEP)epList.push(newEP);
   // 1. Nächster Spieler matt → Spiel vorbei; Sieger ist, wer Schach gibt
   if(isMated(nxt,gameState,epList))return endGame(mateWinner(nxt,mover,gameState),nxt);
-  // 2. Übernächster Spieler im Schach → der Spieler dazwischen hat Hilfspflicht:
-  //    er darf keinen Zug machen, nach dem der Bedrohte matt ist (ist er schon matt: er muss ihn befreien)
-  if(isInCheck(thd,gameState)){
-    const mated=isMated(thd,gameState,epList);
-    helpDuty={helper:nxt,victim:thd,mater:mover,mated};
-    // Kann sich der Bedrohte ohnehin selbst helfen, egal was der Helfer zieht, gibt es keine Pflicht:
-    // Sie greift nur, wenn mindestens ein Zug des Helfers den Bedrohten mattsetzen würde.
-    if(!mated){
-      let binds=false;
-      outer: for(const[coord,pd]of Object.entries(gameState)){
-        if(!pd||pd.player!==nxt)continue;
-        for(const to of legalTargets(coord,gameState,epList))
-          if(isMated(thd,applyMove(gameState,coord,to,epList),epList)){binds=true;break outer;}
-      }
-      if(!binds)helpDuty=null;
-    }
-    if(helpDuty&&!playerHasValidMove(nxt,epList)){
-      if(mated){
-        turnNote=`${PNAMES[nxt]} kann ${PNAMES[thd]} nicht helfen. `;
-        helpDuty=null;return endGame(mateWinner(thd,mover,gameState),thd);
-      }
-      helpDuty=null;   // jeder mögliche Zug führt zum Matt (oder kein Zug möglich) → keine Einschränkung
-    }
-  }
+  // 2. Übernächster Spieler im Schach → der Spieler dazwischen hat Hilfspflicht
+  const dutyEnd=setHelpDuty(nxt,epList);
+  if(dutyEnd){turnNote=dutyEnd.note;return endGame(dutyEnd.winner,dutyEnd.victim);}
   turnIdx=(turnIdx+1)%3;epTarget=epList;
   // 3. Wer nicht ziehen kann, wird übersprungen
   for(let s=0;s<3;s++){
@@ -1588,6 +1567,41 @@ function advanceTurn(newEP=null){
   updateStatus();updateCaptured();draw();
   if(gameOver)endByPoints();
   else maybeAI();
+}
+// Hilfspflicht für den Spieler `helper` (als Nächster am Zug) bestimmen und in helpDuty setzen.
+// Bedrohter ist der Spieler nach ihm, Schachgebender der davor. Er darf keinen Zug machen, nach dem
+// der Bedrohte matt ist; ist der Bedrohte schon matt, muss er ihn befreien – mit einem Zug, der auch
+// sein eigenes Schach auflöst. Gibt es so einen Zug nicht, bleibt es beim Matt:
+// Rückgabe {winner,victim,note} → Spiel ist vorbei. Sonst null.
+function setHelpDuty(helper,ep){
+  helpDuty=null;
+  const i=TURN_ORDER.indexOf(helper),victim=TURN_ORDER[(i+1)%3],mater=TURN_ORDER[(i+2)%3];
+  if(!isInCheck(victim,gameState))return null;
+  const mated=isMated(victim,gameState,ep);
+  if(!mated){
+    // Kann sich der Bedrohte ohnehin selbst helfen, egal was der Helfer zieht, gibt es keine Pflicht:
+    // Sie greift nur, wenn mindestens ein Zug des Helfers den Bedrohten mattsetzen würde.
+    let binds=false;
+    outer: for(const[coord,pd]of Object.entries(gameState)){
+      if(!pd||pd.player!==helper)continue;
+      for(const to of legalTargets(coord,gameState,ep))
+        if(isMated(victim,applyMove(gameState,coord,to,ep),ep)){binds=true;break outer;}
+    }
+    if(!binds)return null;
+  }
+  helpDuty={helper,victim,mater,mated};
+  if(playerHasValidMove(helper,ep))return null;
+  helpDuty=null;
+  if(mated)return{winner:mateWinner(victim,mater,gameState),victim,note:`${PNAMES[helper]} kann ${PNAMES[victim]} nicht helfen. `};
+  return null;   // jeder mögliche Zug führt zum Matt (oder kein Zug möglich) → keine Einschränkung
+}
+// Nach Laden, Rücknahme oder Online-Abgleich: Hilfspflicht neu prüfen, statt einen alten Stand zu übernehmen.
+// Verhindert, dass der Spieler am Zug festhängt, weil ihm die Pflicht alle Züge sperrt.
+function recheckHelpDuty(){
+  if(gameOver||promoPending)return false;
+  const end=setHelpDuty(cur(),epTarget);
+  if(end){turnNote=end.note;endGame(end.winner,end.victim);return true;}
+  updateStatus();draw();return false;
 }
 function endGame(winner,loser){
   gameOver=true;
@@ -1640,6 +1654,7 @@ function undoMove(){
   // gegen den Computer: so weit zurück, bis wieder ein Mensch am Zug ist
   if(TURN_ORDER.some(p=>!aiPlayers[p]))while(history.length&&aiPlayers[cur()])undoOnce();
   if(!TURN_ORDER.some(p=>!aiPlayers[p]))paused=true;   // nur Computer: anhalten, sonst zieht er sofort weiter
+  recheckHelpDuty();
   renderClocks();  autosave();
 }
 function undoOnce(){
@@ -2178,6 +2193,7 @@ function applyGameData(d){
   renderLog();updateCaptured();
   if(gameOver){const el=document.getElementById('status');el.textContent=d.status;el.style.color=d.statusColor;renderClocks();draw();return;}
   // pausiert mit Startknopf („Fortsetzen“)
+  if(recheckHelpDuty())return;   // Spielstand aus älterer Version: Hilfspflicht neu bewerten
   waitingStart=true;paused=true;
   const sb=document.getElementById('startBtn');sb.textContent='▶ Fortsetzen';sb.classList.add('show');
   updateStatus();renderClocks();resizeCanvas();
@@ -2834,6 +2850,8 @@ document.getElementById('c').addEventListener('click',e=>{
 function onFieldClick(fid){
   if(promoPending||gameOver||setupOpen||paused||moveAnim||aiPlayers[cur()]||netBlocks(cur()))return;
   const coord=COORD_LABELS[fid],pd=gameState[coord],player=cur();
+  // Sicherheitsnetz: Sperrt die Hilfspflicht alle Züge, Pflicht neu prüfen (Matt bleibt bzw. Pflicht entfällt)
+  if(helpDuty&&helpDuty.helper===player&&!playerHasValidMove(player,epTarget)){recheckHelpDuty();if(gameOver)return;}
   if(selected){
     if(validMoves.has(fid)){const from=COORD_LABELS[selected];netOrigin({t:'mv',p:player,from,to:coord});startMoveAnim(from,coord,()=>doMove(from,coord));}
     else if(pd&&pd.player===player&&fid!==selected){
