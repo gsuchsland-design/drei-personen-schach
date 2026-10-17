@@ -443,7 +443,7 @@ const NET_CODE_URL=(QS.get('spiel')||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 function netName(p){const s=NET.on&&NET.lobby[p];return s&&s.name?s.name:'';}
 function netBlocks(p){return NET.on&&p!==NET.seat;}
 function randCode(){const a='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<6;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
-function netLink(){return location.origin+location.pathname+'?spiel='+NET.code;}
+function netLink(){const t=QS.get('turnapp')&&QS.get('turnkey')?'&turnapp='+encodeURIComponent(QS.get('turnapp'))+'&turnkey='+encodeURIComponent(QS.get('turnkey')):'';return location.origin+location.pathname+'?spiel='+NET.code+t;}
 function toast(msg,ms=4200){
   let t=document.getElementById('toast');
   if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
@@ -455,10 +455,27 @@ async function needPeerJS(){
   try{await loadScript('lib/peerjs.min.js');return !!window.Peer;}catch(e){return false;}
 }
 // Verbindungswege: direkt (STUN) und – wenn ein Netz das blockiert, z. B. im Mobilfunk – über Weiterleitungsserver (TURN)
-let ICE=null;
+// Eigener Weiterleitungsserver bei Metered.ca (kostenloses Konto): App-Name und API-Schlüssel hier eintragen.
+// Zum Ausprobieren ohne Code-Änderung geht auch: ?turnapp=APPNAME&turnkey=SCHLUESSEL an den Link hängen.
+const METERED_APP='';   // z. B. 'dreischach' (aus dreischach.metered.live)
+const METERED_KEY='';   // API-Schlüssel aus dem Metered-Dashboard
+let ICE=null;const OWN_TURN=new WeakSet();
+async function meteredServers(){
+  const app=QS.get('turnapp')||METERED_APP,key=QS.get('turnkey')||METERED_KEY;
+  if(!app||!key)return [];
+  try{
+    const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),5000);
+    const r=await fetch(`https://${encodeURIComponent(app)}.metered.live/api/v1/turn/credentials?apiKey=${encodeURIComponent(key)}`,{signal:ctl.signal});
+    clearTimeout(t);
+    if(!r.ok)return [];
+    const arr=await r.json();
+    const own=Array.isArray(arr)?arr.filter(x=>x&&x.username&&x.credential):[];own.forEach(x=>OWN_TURN.add(x));return own;
+  }catch(e){return [];}
+}
 async function iceServers(){
   if(ICE)return ICE;
   const list=[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']}];
+  list.push(...await meteredServers());
   try{   // Open Relay (Metered): kostenloser TURN-Dienst mit zeitlich begrenzten Zugangsdaten (TURN-REST-Verfahren)
     const user=(Math.floor(Date.now()/1000)+24*3600)+':dreischach';
     const key=await crypto.subtle.importKey('raw',new TextEncoder().encode('openrelayprojectsecret'),{name:'HMAC',hash:'SHA-1'},false,['sign']);
@@ -485,18 +502,22 @@ async function netTest(){
     setTimeout(end,9000);
   });
   const sigP=(async()=>{try{if(!window.Peer&&!await needPeerJS())return'✗ Baustein nicht geladen';const p=await makePeer(null);p.destroy();return'✓';}catch(e){return'✗ ('+(e.type||'Fehler')+')';}})();
-  const [sig,stun,orl,pjs]=await Promise.all([sigP,gather(grp('stun:')),gather(grp('openrelay')),gather(grp('peerjs.com'))]);
-  const ok=b=>b?'✅ geht':'❌ blockiert';
+  const own=ice.filter(x=>OWN_TURN.has(x)),hasOwn=own.length>0;
+  const [sig,stun,eig,orl,pjs]=await Promise.all([sigP,gather(grp('stun:')),hasOwn?gather(own):Promise.resolve(new Set()),gather(grp('openrelay')),gather(grp('peerjs.com'))]);
+  const ok=b=>b?'✅ geht':'❌ keine Antwort';
+  const anyRelay=eig.has('relay')||orl.has('relay')||pjs.has('relay');
   const ua=navigator.userAgent,br=/CriOS|Chrome/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/EdgiOS|Edg\//.test(ua)?'Edge':/Safari/.test(ua)?'Safari':'anderer Browser';
   res.innerHTML=`<div>Vermittlungsdienst: <b>${sig}</b></div>
-    <div>Direkte Verbindung (STUN): <b>${ok(stun.has('srflx'))}</b></div>
+    <div>Direkte Verbindung (STUN): <b>${stun.has('srflx')?'✅ geht':'❌ blockiert'}</b></div>
+    <div>Eigene Weiterleitung (Metered): <b>${hasOwn?ok(eig.has('relay')):'⚪ nicht eingerichtet'}</b></div>
     <div>Weiterleitung Open Relay: <b>${ok(orl.has('relay'))}</b></div>
     <div>Weiterleitung PeerJS: <b>${ok(pjs.has('relay'))}</b></div>
     <div style="color:#999;font-size:12px;margin-top:6px">${br} · ${IS_IOS?'iPhone/iPad':/Android/.test(ua)?'Android':'Computer'} · ${new Date().toLocaleTimeString('de-DE')}</div>
     <div style="margin-top:8px">${sig!=='✓'?'Der Vermittlungsdienst ist von hier aus nicht erreichbar – vielleicht blockiert ein Werbe-/Tracking-Blocker oder das Netz ihn.':
-      (!stun.has('srflx')&&!orl.has('relay')&&!pjs.has('relay'))?'Dieses Netz oder dieser Browser blockiert Echtzeit-Verbindungen (WebRTC) komplett. Bitte einen anderen Browser (Safari oder Chrome) bzw. ein anderes Netz probieren.':
-      (!orl.has('relay')&&!pjs.has('relay'))?'Direkte Verbindungen gehen, aber keine Weiterleitung. In Netzen mit Sperren (Hotel, Mobilfunk) klappt es dann oft nicht.':
-      'Von hier aus sieht alles gut aus.'}<br>Bitte mach einen Screenshot davon.</div>`;
+      (!stun.has('srflx')&&!anyRelay)?'Dieses Netz oder dieser Browser blockiert Echtzeit-Verbindungen (WebRTC) komplett. Bitte einen anderen Browser (Safari oder Chrome) bzw. ein anderes Netz probieren.':
+      (!anyRelay&&!hasOwn)?'Direkte Verbindungen gehen. Die kostenlosen Weiterleitungsserver antworten aber nicht – das liegt an den Servern, nicht an deinem Netz. Im Mobilfunk kann die Verbindung deshalb scheitern, bis ein eigener Weiterleitungsserver eingerichtet ist.':
+      (!anyRelay)?'Direkte Verbindungen gehen, aber kein Weiterleitungsserver antwortet. Antwortet die eigene Weiterleitung auch in einem anderen Netz nicht, stimmen vermutlich App-Name oder Schlüssel nicht.':
+      'Von hier aus sieht alles gut aus – auch im Mobilfunk sollte es klappen.'}<br>Bitte mach einen Screenshot davon.</div>`;
 }
 function peerOpts(ice){   // für Tests: eigener Vermittlungs-Server über ?peerhost=…
   const h=QS.get('peerhost'),cfg={config:{iceServers:ice},debug:0};
