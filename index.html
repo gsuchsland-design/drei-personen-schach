@@ -143,6 +143,17 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #lbQR { text-align:center; margin-top:8px; } #lbQR svg { background:#fff; border-radius:6px; width:150px; height:150px; }
 .lbMedia { display:flex; gap:6px; } .lbMedia button { flex:1; background:#2a6; } .lbMedia button.off { background:#a33; }
 .netBox .lbLeave { background:#444; font-size:13px; padding:7px; }
+#lobbyModal { background:none; pointer-events:none; align-items:flex-start; justify-content:flex-end; padding:48px 8px 8px; }
+#lobbyModal .netBox { pointer-events:auto; width:min(370px,94vw); max-height:calc(100vh - 60px); box-shadow:0 6px 30px rgba(0,0,0,.6); background:rgba(30,30,34,.96); }
+#lobbyModal h3 { display:flex; align-items:center; gap:6px; }
+#lobbyModal h3 .lbMin { margin:0 0 0 auto !important; width:auto !important; padding:2px 10px !important; font-size:15px !important; background:#444 !important; }
+#lobbyModal.mini .netBox > *:not(h3) { display:none !important; }
+#lobbyModal.mini .netBox { padding:8px 14px; }
+#lobbyModal.mini h3 { margin:0; }
+@media (max-width:700px) {
+  #lobbyModal { align-items:flex-end; justify-content:center; padding:0 0 6px; }
+  #lobbyModal .netBox { max-height:56vh; }
+}
 #toast { position:fixed; left:50%; top:54px; transform:translateX(-50%); z-index:400; background:rgba(40,30,70,.95); color:#fff; border:1px solid #8a6fd0;
   border-radius:8px; padding:8px 14px; font-size:14px; max-width:92vw; opacity:0; pointer-events:none; transition:opacity .3s; text-align:center; }
 #toast.show { opacity:1; }
@@ -219,7 +230,7 @@ body.barBottom #selfView { bottom:50px; }
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <div id="avPlayers"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 00:30 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 20:15 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -371,7 +382,7 @@ body.barBottom #selfView { bottom:50px; }
   </div>
 </div>
 <div id="lobbyModal" class="netModal"><div class="netBox">
-  <h3>🌐 Online-Spiel</h3>
+  <h3>🌐 Warteraum <span id="lbCount" style="font-weight:normal;color:#bbb"></span><button class="lbMin" onclick="toggleLobbyMini()" title="Warteraum verkleinern/vergrößern">–</button></h3>
   <div id="lbStatus" class="lbStat"></div>
   <div id="lbSeats"></div>
   <div id="lbHost">
@@ -388,7 +399,7 @@ body.barBottom #selfView { bottom:50px; }
       <option value="ask">darf zuschauen – ich werde vorher gefragt</option><option value="always">darf immer zuschauen</option><option value="never">darf nicht zuschauen</option></select>
     <button id="lbStart" onclick="netStart()" disabled>▶ Spiel starten</button>
   </div>
-  <div id="lbGuest"><div class="lbHint">Der Gastgeber startet das Spiel, sobald alle da sind.</div></div>
+  <div id="lbGuest"><div class="lbHint">Das Spiel startet automatisch, sobald alle drei da sind – oder früher, wenn der Gastgeber freie Plätze dem Computer gibt. Die Uhr läuft erst ab dem ersten Zug.</div></div>
   <div class="lbMedia"><button id="lbCam" onclick="camStream?camOff():camOn()">📷</button><button id="lbMic" onclick="toggleMic()">🎤</button></div>
   <button class="lbLeave" onclick="netLeave()">Abbrechen</button>
 </div></div>
@@ -576,6 +587,7 @@ async function netCreate(){
   const lvl=document.getElementById('olAI').value||'medium';
   NET.cfg={tc:{move:mOn?ms*1000:0,game:gOn?gm*60000:0},lvl};
   NET.on=true;NET.host=true;NET.seat=me;NET.started=false;
+  rotation=TURN_ORDER.indexOf(me);setTimeout(()=>{layoutStrip();resizeCanvas();fitBoard();draw();if(window.V3&&V3.on)V3.view(me);},50);
   for(const p of TURN_ORDER)NET.seats[p]=p===me?{kind:'me',name}:{kind:'open'};
   document.getElementById('setupModal').classList.remove('show');
   showLobby();lbStatus('Verbinde mit dem Vermittlungsdienst …');
@@ -641,6 +653,10 @@ function hostRecv(conn,m){
     }
     hostLobby();
     setTimeout(()=>netCall(conn.peer),300);
+    if(!NET.started&&!TURN_ORDER.some(q=>NET.seats[q].kind==='open')){
+      lbStatus('Alle drei sind da – gleich geht es los!');netBroadcast({t:'note',txt:'Alle drei sind da – gleich geht es los!'});
+      clearTimeout(NET.autoStart);NET.autoStart=setTimeout(()=>{if(!NET.started&&!TURN_ORDER.some(q=>NET.seats[q].kind==='open'||NET.seats[q].kind==='away'))netStart();},2500);
+    }
     return;
   }
   if(NET.specs[conn.peer]){   // Zuschauer
@@ -902,7 +918,8 @@ function hostGone(){
 }
 function joinRecv(m){
   if(m.t==='welcome'){clearTimeout(NET.joinTimer);NET.seat=m.seat;rotation=TURN_ORDER.indexOf(m.seat);
-    lbStatus(`Du spielst ${PNAMES[m.seat]}. Warte, bis der Gastgeber das Spiel startet …`);
+    lbStatus(`Du spielst ${PNAMES[m.seat]}. Sobald alle da sind, geht's los – bis dahin könnt ihr euch schon sehen und hören.`);
+    layoutStrip();resizeCanvas();fitBoard();draw();if(window.V3&&V3.on)V3.view(m.seat);
     for(const p of TURN_ORDER)if(p!==NET.seat)AV[p].still=null;
     camFix();syncAvUI();updateSelfView();netAV();renderLobby();return;}
   if(m.t==='ping')return;
@@ -965,7 +982,7 @@ function netBeginGame(cfg){
   startPlay();
   resizeCanvas();netViewMine();netWake();
   if(NET.spec)toast('Die Partie beginnt – du schaust zu. Mit ↻ drehst du das Brett.',3500);
-  else toast(`Los geht’s! Du spielst ${PNAMES[NET.seat]}.`+(TURN_ORDER[0]===NET.seat?' Du beginnst.':''),3500);
+  else toast(`Los geht’s! Du spielst ${PNAMES[NET.seat]}.`+(TURN_ORDER[0]===NET.seat?' Du beginnst – die Uhr läuft ab deinem ersten Zug.':` ${PNAMES[TURN_ORDER[0]]} beginnt.`),4500);
 }
 function netViewMine(){
   if(NET.spec){fitBoard();draw();return;}
@@ -1048,8 +1065,10 @@ function showLobby(){
   document.getElementById('lbHost').style.display=NET.host?'':'none';
   document.getElementById('lbGuest').style.display=NET.host?'none':'';
   document.getElementById('lobbyModal').classList.add('show');
-  renderLobby();
+  renderLobby();updateStatus();
 }
+function toggleLobbyMini(){const m=document.getElementById('lobbyModal');m.classList.toggle('mini');
+  document.querySelector('#lobbyModal .lbMin').textContent=m.classList.contains('mini')?'+':'–';}
 function lbStatus(t){document.getElementById('lbStatus').textContent=t;}
 function renderLobby(){
   const box=document.getElementById('lbSeats');if(!box)return;
@@ -1071,6 +1090,9 @@ function renderLobby(){
   if(NET.host){for(const[id,z]of Object.entries(NET.specs))h+=`<div class="lbSeat">👀 <span>${esc(z.name)} (schaut zu)</span><button class="kick" style="margin-left:auto !important" onclick="netKick('spec','${id}')">✕ entfernen</button></div>`;}
   else{const sl=(NET.specList||[]).map(z=>z.name);if(sl.length)h+=`<div class="lbSeat">👀 <span>Zuschauer: ${sl.map(esc).join(', ')}</span></div>`;}
   box.innerHTML=h;
+  {const kinds=TURN_ORDER.map(p=>NET.host?(NET.seats[p]||{}).kind:p===NET.seat?'me':((NET.lobby||{})[p]||{}).kind);
+   const here=kinds.filter(k=>k==='me'||k==='peer'||k==='away').length;
+   const lc=document.getElementById('lbCount');if(lc)lc.textContent=NET.spec?'':`(${here}/3 da)`;}
   const ap=document.getElementById('avPlayers');
   if(ap)ap.innerHTML=NET.on&&NET.host&&NET.started?'<hr><div class="sub" style="margin:0 0 4px">Mitspieler (nur du als Gastgeber kannst jemanden entfernen):</div>'+h:'';
   const open=NET.host&&TURN_ORDER.some(p=>NET.seats[p]&&NET.seats[p].kind==='open');
@@ -1614,6 +1636,7 @@ function endGame(winner,loser){
 }
 function updateStatus(){
   if(gameOver)return;
+  if(NET.on&&!NET.started){const el=document.getElementById('status');el.textContent=NET.spec?'Warteraum – du schaust zu':'Warteraum – sobald alle da sind, geht es los';el.style.color='#c9b8ff';return;}
   if(waitingStart){const el=document.getElementById('status');el.textContent='Bereit – drücke ▶ Start';el.style.color='#fff';return;}
   const p=cur(),el=document.getElementById('status');
   let txt=turnNote;
@@ -1769,7 +1792,8 @@ function drawAvatar(p,t){
   drawNameTag(x,p,ai);
 }
 function drawNameTag(x,p,ai){
-  const name=ai?MONSTERS[p].name:(netName(p)||('Spieler '+PNAMES[p]))+(NET.on&&NET.avs[p]&&NET.avs[p].mic===false&&p!==NET.seat?'  🔇':'')+(NET.on&&p===NET.seat&&!micLive()?'  🔇':'');
+  const freeSeat=NET.on&&!NET.started&&p!==NET.seat&&((NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind)==='open');
+  const name=freeSeat?'Platz frei …':ai?MONSTERS[p].name:(netName(p)||('Spieler '+PNAMES[p]))+(NET.on&&NET.avs[p]&&NET.avs[p].mic===false&&p!==NET.seat?'  🔇':'')+(NET.on&&p===NET.seat&&!micLive()?'  🔇':'');
   x.font='bold 15px sans-serif';const w=x.measureText(name).width+16;
   x.fillStyle='rgba(0,0,0,.55)';roundRect(x,8,AV_H-28,w,21,6);x.fill();
   x.fillStyle=AVCOL[p];x.fillText(name,16,AV_H-12);
@@ -2295,6 +2319,7 @@ setInterval(()=>{
   const now=performance.now(),dt=Math.min(now-lastTick,1000);lastTick=now;   // eingefrorene Seite (Hintergrund) kostet keine Bedenkzeit
   if(gameOver||paused||setupOpen)return;
   const p=cur();
+  if(NET.on&&!moveLog.length){renderClocks();return;}   // Online: Die Uhr startet mit dem ersten Zug
   if(!flagged.has(p))timeUsed[p]+=dt;
   if(moveAnim)return;   // während der Zuganimation keinen Zeitablauf auslösen
   if(!(tc.move||tc.game)){renderClocks();return;}
