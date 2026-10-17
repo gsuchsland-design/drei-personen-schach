@@ -519,7 +519,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-18 03:10';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-18 03:20';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -611,7 +611,10 @@ async function iceServers(){
     try{
       const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),4000);
       const r=await fetch(base+'/turn',{signal:ctl.signal,cache:'no-store'});clearTimeout(t);
-      if(r.ok){const j=await r.json();const cf=(j.iceServers||[]).filter(x=>x&&x.urls);cf.forEach(x=>{if(x.username)OWN_TURN.add(x);});list.push(...cf);}
+      if(r.ok){const j=await r.json();
+        // Server ohne eigenen Vermittlungsteil (nur TURN) → Vermittlung weiter über PeerJS
+        if(!QS.get('peerhost')&&QS.get('srv')!=='pj')SRV=j.signal===true?'own':'pj';
+        const cf=(j.iceServers||[]).filter(x=>x&&x.urls);cf.forEach(x=>{if(x.username)OWN_TURN.add(x);});list.push(...cf);}
     }catch(e){}
   }
   // eigener Metered-Zugang (feste Zugangsdaten aus dem Dashboard) – auch über TCP/TLS-Port 443, damit es in Hotel-WLANs klappt

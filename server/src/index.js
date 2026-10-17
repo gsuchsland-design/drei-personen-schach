@@ -44,8 +44,8 @@ export default {
     if (url.pathname === '/peerjs/id') return new Response(randomId(), { headers: { 'Content-Type': 'text/plain', ...CORS } });
     if (url.pathname === '/peerjs/peers') return json([], 401);
     if (url.pathname === '/turn') {
-      try { return json({ iceServers: await turnServers(env) }, 200, { 'Cache-Control': 'no-store' }); }
-      catch (e) { return json({ iceServers: [], error: String(e.message || e) }, 502); }
+      try { return json({ iceServers: await turnServers(env), signal: true }, 200, { 'Cache-Control': 'no-store' }); }
+      catch (e) { return json({ iceServers: [], signal: true, error: String(e.message || e) }, 502); }
     }
     if (url.pathname === '/' || url.pathname === '/peerjs/') {
       return json({ name: 'Drei-Personen-Schach-Server', ok: true, turn: !!(env.TURN_KEY_ID && env.TURN_KEY_TOKEN) });
