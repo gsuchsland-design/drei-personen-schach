@@ -29,9 +29,27 @@ body.fullscreen #info { display:none; }
 body.fullscreen #captured { margin:2px 0; }
 #info { color:#aaa; font-size:11px; margin:2px 0; }
 #status { color:#fff; font-size:14px; font-weight:bold; margin:4px 0; min-height:20px; text-align:center; }
+#msgRow { display:none; align-items:center; justify-content:center; gap:8px; max-width:96vw; margin:-2px auto 4px; }
+body.online #msgRow { display:flex; }
+#chatBtn { display:none; position:relative; padding:1px 8px; font-size:14px; background:#333; color:#eee; border:1px solid #666; border-radius:12px; cursor:pointer; flex:none; }
+body.netgame #chatBtn { display:block; }
+#chatBadge { position:absolute; top:-6px; right:-6px; background:#e33; color:#fff; border-radius:9px; font-size:10px; padding:0 5px; display:none; }
+#chatBox { display:none; position:fixed; right:8px; bottom:8px; width:min(340px,94vw); max-height:50vh; z-index:300; background:rgba(28,28,34,.97);
+  border:1px solid #6a4fb0; border-radius:10px; flex-direction:column; color:#ddd; font-size:14px; box-shadow:0 6px 24px rgba(0,0,0,.6); }
+#chatBox.show { display:flex; }
+#chatHead { display:flex; justify-content:space-between; align-items:center; padding:6px 10px; border-bottom:1px solid #444; }
+#chatHead button { background:none; border:none; color:#aaa; font-size:16px; cursor:pointer; }
+#chatList { flex:1; overflow:auto; padding:6px 10px; min-height:60px; }
+#chatList .cm { margin:3px 0; line-height:1.35; word-wrap:break-word; }
+#chatList .cm .orig { color:#888; font-size:12px; display:block; }
+#chatEmo { display:flex; gap:4px; padding:4px 8px; flex-wrap:wrap; border-top:1px solid #333; }
+#chatEmo button { font-size:20px; background:#333; border:none; border-radius:6px; padding:2px 6px; cursor:pointer; }
+#chatForm { display:flex; gap:6px; padding:6px 8px; border-top:1px solid #333; }
+#chatForm input { flex:1; padding:6px 8px; font-size:15px; background:#333; color:#fff; border:1px solid #666; border-radius:6px; min-width:0; }
+#chatForm button { padding:6px 10px; background:#2a6; color:#fff; border:none; border-radius:6px; font-size:14px; cursor:pointer; }
 #msgLine { display:none; color:#d9ccff; font-size:13px; margin:-2px 0 4px; min-height:17px; line-height:17px; text-align:center; max-width:96vw;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:opacity .4s; }
-body.online #msgLine { display:block; }
+body.online #msgLine { display:block; flex:0 1 auto; min-width:0; }
 #msgLine.warn { color:#ffcf6b; }
 #tooltip { position:fixed; background:rgba(0,0,0,.85); color:#fff; padding:3px 8px;
            border-radius:3px; font-size:11px; pointer-events:none; display:none; z-index:99; }
@@ -268,7 +286,7 @@ body.barBottom #selfView { bottom:50px; }
 <div id="info">Klick auf Figur → Züge · Zweiter Klick → Ziehen · Rad = Zoom · Ziehen = Bewegen · Doppelklick = Einpassen</div>
 </div>
 <div id="status">Blau am Zug</div>
-<div id="msgLine"></div>
+<div id="msgRow"><div id="msgLine"></div><button id="chatBtn" onclick="toggleChat()" title="Chat und Reaktionen">💬<span id="chatBadge"></span></button></div>
 <div id="askBar"><span id="askTxt"></span><span id="askBtns"></span></div>
 <div id="specReq"><span id="specReqTxt"></span><button onclick="specAnswer(true)">Ja</button><button onclick="specAnswer(false)" style="background:#a33">Nein</button></div>
 <div id="avStrip"></div>
@@ -422,6 +440,12 @@ body.barBottom #selfView { bottom:50px; }
   <button class="lbLeave" onclick="netTest()" style="background:#3a3a55">🔧 Verbindung testen</button>
   <button class="lbLeave" onclick="netLeave()">Abbrechen</button>
 </div></div>
+<div id="chatBox">
+  <div id="chatHead"><b>💬 Chat</b><button onclick="toggleChat()" title="Schließen">✕</button></div>
+  <div id="chatList"></div>
+  <div id="chatEmo"></div>
+  <form id="chatForm" onsubmit="event.preventDefault();sendChat();"><input id="chatIn" maxlength="200" placeholder="Nachricht …" autocomplete="off"><button>Senden</button></form>
+</div>
 <div id="testBox"><b>🔧 Verbindungstest</b><div id="testRes" style="margin-top:8px"></div><button onclick="document.getElementById('testBox').classList.remove('show')">Schließen</button></div>
 
 <div id="joinModal" class="netModal"><div class="netBox">
@@ -448,7 +472,7 @@ body.barBottom #selfView { bottom:50px; }
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-18 02:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-18 02:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return `Version ${dd}.${m}. ${t}`;}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -685,6 +709,44 @@ function netRepair(){   // „Verbindung erneuern“: Bild/Ton und Datenverbindu
   if(NET.host){setTimeout(()=>{for(const p of TURN_ORDER){const x=NET.seats[p];if(x&&x.kind==='peer')netCall(x.id);}for(const id of Object.keys(NET.specs))netCall(id);hostLobby();},800);}
   else if(NET.hostConn){const c=NET.hostConn;NET.hostConn=null;try{c.close();}catch(e){}guestLost();}
 }
+// ---------- Chat und Emoji-Reaktionen ----------
+const EMOJIS=['👍','👏','😂','😮','😱','😡','🤝','🔥','♟️','❤️'];
+NET.chat=[];let chatUnread=0;
+function myLang(){return (window.LANG||'de');}
+function chatName(m){return m.p?(netName(m.p)||PNAMES[m.p]):(m.name||'Zuschauer');}
+function toggleChat(){const b=document.getElementById('chatBox');b.classList.toggle('show');
+  if(b.classList.contains('show')){chatUnread=0;renderChat();setTimeout(()=>document.getElementById('chatIn').focus(),50);}updBadge();}
+function updBadge(){const e=document.getElementById('chatBadge');if(!e)return;e.textContent=chatUnread;e.style.display=chatUnread?'block':'none';}
+function sendChat(){
+  const i=document.getElementById('chatIn'),text=(i.value||'').trim().slice(0,200);if(!text)return;i.value='';
+  netChatOut({t:'chat',text,lang:myLang()});
+}
+function sendReact(e){netChatOut({t:'react',e});}
+function netChatOut(m){
+  if(!NET.on)return;m.p=NET.seat||null;m.name=NET.myName||(NET.host?NET.seats[NET.seat]&&NET.seats[NET.seat].name:'')||'';m.id=Date.now()+Math.random().toString(36).slice(2,6);
+  if(NET.host){netBroadcast(m);chatIn(m);}else{netToHost(m);chatIn(m);}
+}
+function chatIn(m){   // eingehende (oder eigene) Chat-Nachricht / Reaktion anzeigen
+  if(NET.chat.some(x=>x.id===m.id))return;
+  const now=performance.now();
+  if(m.t==='react'){if(m.p){AV[m.p].react={e:m.e,since:now,until:now+3200};}toast(`${chatName(m)}: ${m.e}`,2500);return;}
+  NET.chat.push(m);if(NET.chat.length>100)NET.chat.shift();
+  const show=(txt,tr)=>{
+    m.shown=txt;m.tr=tr;
+    if(m.p)AV[m.p].chat={text:txt,until:performance.now()+Math.min(12000,4000+txt.length*90),tr};
+    const mine=m.p&&m.p===NET.seat;
+    if(!mine){toast(`💬 ${chatName(m)}: ${txt}`,6000);if(!document.getElementById('chatBox').classList.contains('show')){chatUnread++;updBadge();}snd('land');}
+    renderChat();
+  };
+  if(window.translateIn&&m.lang&&m.lang!==myLang()&&!(m.p&&m.p===NET.seat))translateIn(m.text,m.lang,myLang()).then(t=>show(t||m.text,!!t)).catch(()=>show(m.text,false));
+  else show(m.text,false);
+}
+function renderChat(){
+  const l=document.getElementById('chatList');if(!l)return;
+  l.innerHTML=NET.chat.map(m=>{const col=m.p?PCOLOR[m.p]:'#bbb';
+    return `<div class="cm"><b style="color:${col}">${esc(chatName(m))}:</b> ${esc(m.shown||m.text)}${m.tr?`<span class="orig">🌐 ${esc(m.text)}</span>`:''}</div>`;}).join('')||'<div style="color:#888">Noch keine Nachrichten. Schreib etwas oder schick eine Reaktion 👇</div>';
+  l.scrollTop=l.scrollHeight;
+}
 function netAttach(){   // Videos den Spielerfenstern zuordnen
   if(!NET.on)return;
   for(const p of TURN_ORDER){
@@ -719,6 +781,7 @@ async function netCreate(){
   const lvl=document.getElementById('olAI').value||'medium';
   NET.cfg={tc:{move:mOn?ms*1000:0,game:gOn?gm*60000:0},lvl};
   document.body.classList.add('online');setTimeout(resizeCanvas,0);
+  document.body.classList.add('netgame');
   NET.on=true;NET.host=true;NET.seat=me;NET.started=false;
   rotation=TURN_ORDER.indexOf(me);setTimeout(()=>{layoutStrip();resizeCanvas();fitBoard();draw();if(window.V3&&V3.on)V3.view(me);},50);
   for(const p of TURN_ORDER)NET.seats[p]=p===me?{kind:'me',name}:{kind:'open'};
@@ -802,6 +865,7 @@ function hostRecv(conn,m){
     return;
   }
   if(NET.specs[conn.peer]){   // Zuschauer
+    if(m.t==='chat'||m.t==='react'){m.p=null;m.name=NET.specs[conn.peer].name;netBroadcast(m,conn);chatIn(m);return;}
     if(m.t==='bye'){hostDropSpec(conn);try{conn.close();}catch(e){}}
     else if(m.t==='resync')netSend(conn,{t:'sync',data:netSyncData()});
     return;
@@ -810,6 +874,7 @@ function hostRecv(conn,m){
   NET.seats[p].seen=performance.now();
   if(m.t==='ping')return;
   if(m.t==='awayAI'){hostAwayAI(m.p);return;}
+  if(m.t==='chat'||m.t==='react'){m.p=p;netBroadcast(m,conn);chatIn(m);return;}
   if(m.t==='undoReq'){hostUndoRequest(p);return;}
   if(m.t==='undoAns'){undoAnswer(p,m.id,m.ok);return;}
   if(m.t==='bye'){hostDrop(conn,true);try{conn.close();}catch(e){}return;}
@@ -916,6 +981,7 @@ function hostSaved(){
 }
 async function netResumeHost(d){
   document.body.classList.add('online');setTimeout(resizeCanvas,0);
+  document.body.classList.add('netgame');
   NET.on=true;NET.host=true;NET.seat=d.seat;NET.code=d.code;NET.cfg=d.cfg;NET.specMode=d.specMode||'ask';
   NET.specTokens=d.specTokens||new Set();NET.banned=d.banned||new Set();
   for(const p of TURN_ORDER){const x=d.seats[p]||{kind:'open'};NET.seats[p]={kind:x.kind,name:x.name,token:x.token};if(x.kind==='away')startAway(p,NET.seats[p]);}
@@ -985,6 +1051,7 @@ async function netJoin(){
   if(!token){token=randCode()+randCode();try{localStorage.setItem('dreiSchach.tok.'+NET_CODE_URL,token);}catch(e){}}
   document.getElementById('joinModal').classList.remove('show');
   document.body.classList.add('online');setTimeout(resizeCanvas,0);
+  document.body.classList.add('netgame');
   NET.on=true;NET.host=false;NET.code=NET_CODE_URL;
   showLobby();lbStatus('Verbinde …');
   ac();dummyTracks();
@@ -1100,6 +1167,7 @@ function joinRecv(m){
   if(m.t==='bye'){NET.retries=99;hostGone();return;}
   if(m.t==='note'){toast(m.txt);return;}
   if(m.t==='awayAsk'){awayAsk(m.p,m.name);return;}
+  if(m.t==='chat'||m.t==='react'){chatIn(m);return;}
   if(m.t==='awayDone'){unask('away'+m.p);return;}
   if(m.t==='undoAsk'){undoAskLocal(m.id,m.p,m.n,ok=>netToHost({t:'undoAns',id:m.id,ok}));return;}
   if(m.t==='undoDone'){unask('undo'+m.id);toast(m.txt,4000);return;}
@@ -2011,7 +2079,8 @@ function curEmo(p){const a=AV[p];if(performance.now()>a.until&&a.emo!=='neutral'
 function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;
   const m=f<0?0:255,k=Math.abs(f);r=Math.round(r+(m-r)*k);g=Math.round(g+(m-g)*k);b=Math.round(b+(m-b)*k);return`rgb(${r},${g},${b})`;}
 const AVCOL={B:'#4f8dff',G:'#3fcf2a',R:'#ff5533'};
-function drawAvatar(p,t){
+function drawAvatar(p,t){drawAvatar0(p,t);drawOverlays(p,t);}
+function drawAvatar0(p,t){
   const c=avCanvas(p),x=c.getContext('2d'),a=AV[p],emo=curEmo(p),ai=isAIPlayer(p);
   const M=MONSTERS[p],col=AVCOL[p];
   // Kamerabild (Multiplayer) hat Vorrang
@@ -2064,6 +2133,27 @@ function drawNameTag(x,p,ai){
   if(ai){x.font='11px sans-serif';x.fillStyle='rgba(255,255,255,.7)';x.fillText('🤖',w+12,AV_H-12);}
 }
 function roundRect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
+function drawOverlays(p,t){
+  const a=AV[p],x=avCanvas(p).getContext('2d'),now=performance.now();
+  if(a.chat&&now<a.chat.until){   // Chat-Nachricht als Sprechblase unten im Fenster (bis 3 Zeilen)
+    x.save();x.font='bold 15px sans-serif';
+    const words=a.chat.text.split(/\s+/),lines=[];let cur='';
+    for(const w of words){const tst=cur?cur+' '+w:w;if(x.measureText(tst).width>AV_W-44&&cur){lines.push(cur);cur=w;}else cur=tst;}
+    if(cur)lines.push(cur);if(lines.length>3){lines.length=3;lines[2]=lines[2].slice(0,-1)+'…';}
+    const lh=19,h=lines.length*lh+12,w=Math.min(AV_W-16,Math.max(...lines.map(l=>x.measureText(l).width))+22),bx=8,by=AV_H-36-h;
+    const fade=Math.min(1,(a.chat.until-now)/600);x.globalAlpha=fade;
+    x.fillStyle='rgba(255,255,255,.95)';roundRect(x,bx,by,w,h,10);x.fill();
+    x.beginPath();x.moveTo(bx+20,by+h);x.lineTo(bx+14,by+h+10);x.lineTo(bx+34,by+h);x.fill();
+    x.fillStyle='#111';x.textBaseline='top';lines.forEach((l,i)=>x.fillText(l,bx+11,by+7+i*lh));
+    if(a.chat.tr){x.font='10px sans-serif';x.fillStyle='#777';x.fillText('🌐',bx+w-15,by+3);}
+    x.restore();
+  }
+  if(a.react&&now<a.react.until){   // Emoji-Reaktion groß in der Mitte
+    const age=(now-a.react.since)/1000,sc=Math.min(1,age*5)*(1+0.08*Math.sin(age*9));
+    x.save();x.globalAlpha=Math.min(1,(a.react.until-now)/500);x.font=`${Math.round(110*sc)}px serif`;x.textAlign='center';x.textBaseline='middle';
+    x.fillText(a.react.e,AV_W/2,AV_H/2-4-age*6);x.restore();
+  }
+}
 function drawBubble(x,txt,col,age){
   if(age>3.2&&!/!$/.test(txt)&&age>6)return;
   x.font='bold 17px sans-serif';const w=Math.min(AV_W-20,x.measureText(txt).width+22),h=30;
@@ -3269,6 +3359,7 @@ if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}e
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
 try{if(localStorage.getItem('dreiSchach.barBottom')==='1')setBarBottom(true);}catch(e){}
 document.querySelectorAll('.verTxt').forEach(e=>e.textContent=verLabel());
+document.getElementById('chatEmo').innerHTML=EMOJIS.map(e=>`<button type="button" onclick="sendReact('${e}')">${e}</button>`).join('');
 if(symOn)document.getElementById('chkSym').checked=true;
 syncAvUI();
 document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=true;
