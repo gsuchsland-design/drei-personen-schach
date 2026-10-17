@@ -29,6 +29,10 @@ body.fullscreen #info { display:none; }
 body.fullscreen #captured { margin:2px 0; }
 #info { color:#aaa; font-size:11px; margin:2px 0; }
 #status { color:#fff; font-size:14px; font-weight:bold; margin:4px 0; min-height:20px; text-align:center; }
+#msgLine { display:none; color:#d9ccff; font-size:13px; margin:-2px 0 4px; min-height:17px; line-height:17px; text-align:center; max-width:96vw;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:opacity .4s; }
+body.online #msgLine { display:block; }
+#msgLine.warn { color:#ffcf6b; }
 #tooltip { position:fixed; background:rgba(0,0,0,.85); color:#fff; padding:3px 8px;
            border-radius:3px; font-size:11px; pointer-events:none; display:none; z-index:99; }
 #captured { display:flex; gap:16px; justify-content:center; margin:4px 0; }
@@ -163,10 +167,14 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
   padding:16px 18px; color:#ddd; width:min(380px,92vw); font-size:15px; line-height:1.6; box-shadow:0 8px 40px rgba(0,0,0,.7); }
 #testBox.show { display:block; }
 #testBox button { margin-top:10px; width:100%; padding:8px; border:none; border-radius:6px; background:#555; color:#fff; font-size:14px; cursor:pointer; }
-#specReq { display:none; position:fixed; left:50%; bottom:64px; transform:translateX(-50%); z-index:410; background:rgba(40,30,70,.97); color:#fff;
-  border:2px solid #8a6fd0; border-radius:10px; padding:10px 12px; font-size:15px; max-width:94vw; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
+#askBar { display:none; background:rgba(40,30,70,.97); color:#fff; border:1px solid #d4a72c; border-radius:8px; padding:4px 8px; font-size:13px;
+  max-width:96vw; margin:0 auto 4px; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center; }
+#askBar.show { display:flex; }
+#askBar button { padding:4px 10px; font-size:13px; border:none; border-radius:6px; background:#2a6; color:#fff; cursor:pointer; }
+#specReq { display:none; background:rgba(40,30,70,.97); color:#fff; margin:0 auto 4px;
+  border:1px solid #8a6fd0; border-radius:8px; padding:4px 8px; font-size:13px; max-width:94vw; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
 #specReq.show { display:flex; }
-#specReq button { padding:7px 16px; font-size:15px; border:none; border-radius:6px; background:#2a6; color:#fff; cursor:pointer; }
+#specReq button { padding:4px 12px; font-size:13px; border:none; border-radius:6px; background:#2a6; color:#fff; cursor:pointer; }
 #avStrip.three .avCv { max-width:31vw; }
 #setupBox h3 { margin-bottom:14px; font-size:16px; color:#eee; }
 #setupBox .row { margin:10px 0; font-size:14px; display:flex; align-items:center; gap:8px; }
@@ -225,6 +233,7 @@ body.barBottom #selfView { bottom:50px; }
   <hr>
   <button id="camToggle" onclick="camStream?camOff():camOn()">📷 Kamera einschalten</button>
   <button id="micToggle" onclick="toggleMic()" style="margin-top:6px;display:none">🎤 Mikrofon</button>
+  <button id="repairBtn" onclick="netRepair()" style="margin-top:6px;display:none;background:#3a5a8a">🔄 Verbindung erneuern (Bild, Ton oder Züge hängen)</button>
   <div id="avSpecRow" style="display:none;margin-top:8px">Zuschauer: <select id="avSpec" onchange="setSpecMode(this.value)" style="background:#333;color:#fff;border:1px solid #666;border-radius:4px;padding:2px">
     <option value="ask">nachfragen</option><option value="always">immer erlauben</option><option value="never">nicht erlauben</option></select></div>
   <div class="sub">Bei ausgeschalteter Kamera zeigen:</div>
@@ -234,7 +243,7 @@ body.barBottom #selfView { bottom:50px; }
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <div id="avPlayers"></div>
-  <div class="sub" style="text-align:right;opacity:.6">Version 17.10. 21:15 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
+  <div class="sub" style="text-align:right;opacity:.6">Version 18.10. 00:45 · © 2026 Guido Suchsland · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
@@ -258,6 +267,9 @@ body.barBottom #selfView { bottom:50px; }
 <div id="info">Klick auf Figur → Züge · Zweiter Klick → Ziehen · Rad = Zoom · Ziehen = Bewegen · Doppelklick = Einpassen</div>
 </div>
 <div id="status">Blau am Zug</div>
+<div id="msgLine"></div>
+<div id="askBar"><span id="askTxt"></span><span id="askBtns"></span></div>
+<div id="specReq"><span id="specReqTxt"></span><button onclick="specAnswer(true)">Ja</button><button onclick="specAnswer(false)" style="background:#a33">Nein</button></div>
 <div id="avStrip"></div>
 <div id="clocks">
   <div class="clk" id="clkB" style="color:#5599ff"></div>
@@ -277,7 +289,8 @@ body.barBottom #selfView { bottom:50px; }
   <label><input type="checkbox" id="chkFollow" checked> folgt Spieler am Zug</label>
   <label><input type="checkbox" id="chkMon" onchange="toggleAvatars()"> Monitore</label>
   <label title="Größe der Mitspieler-Monitore">🖥️ <input type="range" id="monSize" min="50" max="180" step="5" value="100" style="width:90px;vertical-align:middle" oninput="V3.setMonScale(this.value/100)"></label>
-  <span class="hint">Ziehen = drehen · Rechtsklick/Shift = verschieben · Rad = Zoom</span>
+  <button onclick="V3.resetMon()" title="Monitore wieder an ihren Platz stellen (verschieben: Monitor mit dem Finger/der Maus ziehen)">↺ Monitore</button>
+  <span class="hint">Ziehen = drehen · Rechtsklick/Shift = verschieben · Rad = Zoom · Monitor ziehen = Monitor verschieben</span>
  </span>
  <button id="vbToggle" onclick="toggleViewBar()" title="Leiste ein-/ausklappen">▾</button>
 </div>
@@ -409,7 +422,7 @@ body.barBottom #selfView { bottom:50px; }
   <button class="lbLeave" onclick="netLeave()">Abbrechen</button>
 </div></div>
 <div id="testBox"><b>🔧 Verbindungstest</b><div id="testRes" style="margin-top:8px"></div><button onclick="document.getElementById('testBox').classList.remove('show')">Schließen</button></div>
-<div id="specReq"><span id="specReqTxt"></span><button onclick="specAnswer(true)">Ja</button><button onclick="specAnswer(false)" style="background:#a33">Nein</button></div>
+
 <div id="joinModal" class="netModal"><div class="netBox">
   <h3>♟️ Einladung zum Drei-Personen-Schach</h3>
   <p>Du wurdest zu einer Partie eingeladen. Wie heißt du?</p>
@@ -444,10 +457,30 @@ function netName(p){const s=NET.on&&NET.lobby[p];return s&&s.name?s.name:'';}
 function netBlocks(p){return NET.on&&p!==NET.seat;}
 function randCode(){const a='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<6;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
 function netLink(){const t=QS.get('turnapp')&&QS.get('turnkey')?'&turnapp='+encodeURIComponent(QS.get('turnapp'))+'&turnkey='+encodeURIComponent(QS.get('turnkey')):'';return location.origin+location.pathname+'?spiel='+NET.code+t;}
+// Frage an den Nutzer mit Knöpfen; mehrere Fragen werden nacheinander gezeigt. key ersetzt eine ältere Frage gleichen Inhalts.
+const ASKQ=[];
+function ask(key,text,buttons){   // buttons: [{label,cls?,fn}]
+  for(let i=ASKQ.length-1;i>=0;i--)if(ASKQ[i].key===key)ASKQ.splice(i,1);
+  ASKQ.push({key,text,buttons});showAsk();
+}
+function unask(key){for(let i=ASKQ.length-1;i>=0;i--)if(ASKQ[i].key===key)ASKQ.splice(i,1);showAsk();}
+function showAsk(){
+  const bar=document.getElementById('askBar'),q=ASKQ[0];if(!bar)return;
+  const was=bar.classList.contains('show');
+  if(!q){bar.classList.remove('show');if(was)resizeCanvas();return;}
+  document.getElementById('askTxt').textContent=q.text;
+  const bx=document.getElementById('askBtns');bx.innerHTML='';
+  for(const b of q.buttons){const el=document.createElement('button');el.textContent=b.label;if(b.bg)el.style.background=b.bg;
+    el.onclick=()=>{unask(q.key);try{b.fn();}catch(e){}};bx.appendChild(el);}
+  bar.classList.add('show');if(!was)resizeCanvas();
+}
+// Meldungen erscheinen in einer schmalen Zeile unter dem Status – sie verdecken weder Brett noch Menü
+let MSG_STICKY='';
 function toast(msg,ms=4200){
-  let t=document.getElementById('toast');
-  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
-  t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms);
+  const t=document.getElementById('msgLine');if(!t)return;
+  document.body.classList.add('online');
+  t.textContent=msg;t.title=msg;t.classList.remove('warn');t.style.opacity=1;clearTimeout(t._h);
+  t._h=setTimeout(()=>{t.textContent=MSG_STICKY;t.title=MSG_STICKY;t.classList.toggle('warn',!!MSG_STICKY);},ms);
 }
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function needPeerJS(){
@@ -604,16 +637,32 @@ function vidFor(id){
   }
   return NET.vids[id];
 }
-function hookCall(call){
+function hookCall(call,mine){
   const old=NET.calls[call.peer];if(old&&old!==call){try{old.close();}catch(e){}}
-  NET.calls[call.peer]=call;
+  NET.calls[call.peer]=call;call._mine=!!mine;
+  // Bricht nur Bild/Ton ab (Datenverbindung steht noch), baut die Seite, die angerufen hat, den Anruf neu auf
+  const watch=()=>{const pc=call.peerConnection;if(!pc){setTimeout(watch,500);return;}
+    pc.addEventListener('iceconnectionstatechange',()=>{
+      const st=pc.iceConnectionState;
+      if((st==='failed'||st==='disconnected')&&call._mine){clearTimeout(call._rt);call._rt=setTimeout(()=>{
+        const s2=pc.iceConnectionState;if(NET.calls[call.peer]!==call||s2==='connected'||s2==='completed')return;
+        try{call.close();}catch(e){}delete NET.calls[call.peer];netCall(call.peer);},st==='failed'?500:6000);}
+    });};watch();
   call.on('stream',s=>{const v=vidFor(call.peer);if(v.srcObject!==s){v.srcObject=s;v.play().catch(()=>{});}netAttach();});
   call.on('close',()=>{if(NET.calls[call.peer]===call)delete NET.calls[call.peer];netAttach();});
   call.on('error',()=>{});
 }
 function netCall(id){
   if(!NET.peer||!id||id===NET.peer.id||NET.calls[id])return;
-  try{const c=NET.peer.call(id,outStream());if(c)hookCall(c);}catch(e){}
+  try{const c=NET.peer.call(id,outStream());if(c)hookCall(c,true);}catch(e){}
+}
+function netRepair(){   // „Verbindung erneuern“: Bild/Ton und Datenverbindung neu aufbauen
+  if(!NET.on)return;
+  toast('🔄 Verbindung wird erneuert …',2500);
+  for(const[id,c]of Object.entries(NET.calls)){try{c.close();}catch(e){}delete NET.calls[id];}
+  netRevive();
+  if(NET.host){setTimeout(()=>{for(const p of TURN_ORDER){const x=NET.seats[p];if(x&&x.kind==='peer')netCall(x.id);}for(const id of Object.keys(NET.specs))netCall(id);hostLobby();},800);}
+  else if(NET.hostConn){const c=NET.hostConn;NET.hostConn=null;try{c.close();}catch(e){}guestLost();}
 }
 function netAttach(){   // Videos den Spielerfenstern zuordnen
   if(!NET.on)return;
@@ -648,6 +697,7 @@ async function netCreate(){
   const ms=Math.max(5,+document.getElementById('tcMoveSec').value||60),gm=Math.max(1,+document.getElementById('tcGameMin').value||15);
   const lvl=document.getElementById('olAI').value||'medium';
   NET.cfg={tc:{move:mOn?ms*1000:0,game:gOn?gm*60000:0},lvl};
+  document.body.classList.add('online');setTimeout(resizeCanvas,0);
   NET.on=true;NET.host=true;NET.seat=me;NET.started=false;
   rotation=TURN_ORDER.indexOf(me);setTimeout(()=>{layoutStrip();resizeCanvas();fitBoard();draw();if(window.V3&&V3.on)V3.view(me);},50);
   for(const p of TURN_ORDER)NET.seats[p]=p===me?{kind:'me',name}:{kind:'open'};
@@ -708,12 +758,14 @@ function hostRecv(conn,m){
     NET.avs[p]=m.av||null;
     netSend(conn,{t:'welcome',seat:p});
     toast(m.re?`${name} ist wieder da.`:`${name} spielt ${PNAMES[p]} mit.`);snd('move');
+    unask('away'+p);netBroadcast({t:'awayDone',p},conn);
     if(NET.started){
       aiPlayers[p]=null;cancelAI();
       const send=()=>{if(moveAnim){setTimeout(send,200);return;}netSend(conn,{t:'sync',data:netSyncData()});netBroadcast({t:'seat',p,ai:null},conn);maybeAI();};
       send();
     }
     hostLobby();
+    if(NET.calls[conn.peer]){try{NET.calls[conn.peer].close();}catch(e){}delete NET.calls[conn.peer];}
     setTimeout(()=>netCall(conn.peer),300);
     if(!NET.started&&!TURN_ORDER.some(q=>NET.seats[q].kind==='open')){
       lbStatus('Alle drei sind da – gleich geht es los!');netBroadcast({t:'note',txt:'Alle drei sind da – gleich geht es los!'});
@@ -729,6 +781,9 @@ function hostRecv(conn,m){
   const p=seatOfConn(conn);if(!p)return;
   NET.seats[p].seen=performance.now();
   if(m.t==='ping')return;
+  if(m.t==='awayAI'){hostAwayAI(m.p);return;}
+  if(m.t==='undoReq'){hostUndoRequest(p);return;}
+  if(m.t==='undoAns'){undoAnswer(p,m.id,m.ok);return;}
   if(m.t==='bye'){hostDrop(conn,true);try{conn.close();}catch(e){}return;}
   if(m.t==='av'){NET.avs[p]={cam:m.cam,mic:m.mic};netBroadcast({t:'av',p,cam:m.cam,mic:m.mic},conn);hostLobby();return;}
   if(m.t==='mv'||m.t==='promo'){m.p=p;m.fromConn=conn;NET.q.push(m);netPump();return;}
@@ -755,9 +810,10 @@ function specAsk(conn,m){
 }
 function showSpecReq(){
   const box=document.getElementById('specReq'),r=NET.specReqs[0];
-  if(!r){box.classList.remove('show');return;}
+  const was=box.classList.contains('show');
+  if(!r){box.classList.remove('show');if(was)resizeCanvas();return;}
   document.getElementById('specReqTxt').textContent=`👀 ${String(r.m.name||'Jemand').slice(0,18)} möchte zuschauen. Erlauben?`;
-  box.classList.add('show');
+  box.classList.add('show');if(!was)resizeCanvas();
 }
 function specAnswer(ok){
   const r=NET.specReqs.shift();showSpecReq();if(!r)return;
@@ -793,12 +849,30 @@ function netKick(kind,key){
 }
 const AWAY_MS=90000;
 function startAway(p,a){
+  if(NET.started){   // Partie läuft: kein automatischer Wechsel – die verbliebenen Spieler entscheiden
+    a.timer=setTimeout(()=>{if(NET.seats[p]!==a)return;netBroadcast({t:'awayAsk',p,name:a.name});awayAsk(p,a.name);},10000);return;
+  }
   a.timer=setTimeout(()=>{if(NET.seats[p]!==a)return;
     const name=a.name;
     if(NET.started){NET.seats[p]={kind:'dropped',token:a.token,name};aiPlayers[p]=NET.cfg.lvl;netBroadcast({t:'seat',p,ai:aiPlayers[p]});
       toast(`${name} ist nicht zurückgekommen – der Computer spielt ${PNAMES[p]} weiter. Mit dem Link kann ${name} jederzeit zurück.`,6500);maybeAI();}
     else NET.seats[p]={kind:'open'};
     AV[p].video=null;hostLobby();},AWAY_MS);
+}
+function awayAsk(p,name){   // bei allen verbliebenen Spielern: Computer übernehmen lassen oder weiter warten
+  if(NET.spec)return;
+  ask('away'+p,`📡 ${name} (${PNAMES[p]}) ist nicht mehr verbunden.`,[
+    {label:'🤖 Computer übernimmt',fn:()=>{if(NET.host)hostAwayAI(p);else netToHost({t:'awayAI',p});}},
+    {label:'⏳ Weiter warten',bg:'#555',fn:()=>{setTimeout(()=>{if(awayStill(p))awayAsk(p,name);},120000);}}]);
+}
+function awayStill(p){const k=NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind;return k==='away';}
+function hostAwayAI(p){
+  const a=NET.seats[p];if(!a||a.kind!=='away')return;
+  NET.seats[p]={kind:'dropped',token:a.token,name:a.name};aiPlayers[p]=NET.cfg.lvl;
+  netBroadcast({t:'seat',p,ai:aiPlayers[p]});netBroadcast({t:'awayDone',p});unask('away'+p);
+  const txt=`🤖 Der Computer spielt jetzt für ${a.name} (${PNAMES[p]}). Mit dem Link kann ${a.name} jederzeit zurück.`;
+  toast(txt,6000);netBroadcast({t:'note',txt});
+  AV[p].video=null;hostLobby();maybeAI();
 }
 // ---------- Gastgeber-Spiel sichern, damit es ein Schließen des Tabs überlebt ----------
 const HOST_KEY='dreiSchach.host';
@@ -813,6 +887,7 @@ function hostSaved(){
   return null;
 }
 async function netResumeHost(d){
+  document.body.classList.add('online');setTimeout(resizeCanvas,0);
   NET.on=true;NET.host=true;NET.seat=d.seat;NET.code=d.code;NET.cfg=d.cfg;NET.specMode=d.specMode||'ask';
   NET.specTokens=d.specTokens||new Set();NET.banned=d.banned||new Set();
   for(const p of TURN_ORDER){const x=d.seats[p]||{kind:'open'};NET.seats[p]={kind:x.kind,name:x.name,token:x.token};if(x.kind==='away')startAway(p,NET.seats[p]);}
@@ -839,8 +914,8 @@ function hostDrop(conn,hard){
   if(!hard){   // Verbindung weg, aber nicht abgemeldet → kurz warten
     const a={kind:'away',name,token:s.token,since:Date.now()};NET.seats[p]=a;
     if(s.id&&NET.calls[s.id]){try{NET.calls[s.id].close();}catch(e){}delete NET.calls[s.id];}
-    toast(`${name} ist kurz weg – wir warten bis zu ${AWAY_MS/1000} Sekunden.`,4500);
-    netBroadcast({t:'note',txt:`${name} ist kurz weg – wir warten einen Moment.`});
+    if(!NET.started){toast(`${name} ist kurz weg – wir warten bis zu ${AWAY_MS/1000} Sekunden.`,4500);
+      netBroadcast({t:'note',txt:`${name} ist kurz weg – wir warten einen Moment.`});}
     startAway(p,a);hostLobby();return;
   }
   if(NET.started){
@@ -881,6 +956,7 @@ async function netJoin(){
   let token='';try{token=localStorage.getItem('dreiSchach.tok.'+NET_CODE_URL)||'';}catch(e){}
   if(!token){token=randCode()+randCode();try{localStorage.setItem('dreiSchach.tok.'+NET_CODE_URL,token);}catch(e){}}
   document.getElementById('joinModal').classList.remove('show');
+  document.body.classList.add('online');setTimeout(resizeCanvas,0);
   NET.on=true;NET.host=false;NET.code=NET_CODE_URL;
   showLobby();lbStatus('Verbinde …');
   ac();dummyTracks();
@@ -926,8 +1002,9 @@ async function netRevive(){   // Verbindung zum Vermittlungsdienst wiederherstel
     }
   } finally {reviving=false;if(NET.host&&NET.peer&&NET.peer.open)hideBanner();}
 }
-function showBanner(t){let b=document.getElementById('netBanner');if(!b){b=document.createElement('div');b.id='netBanner';document.body.appendChild(b);}b.textContent=t;b.classList.add('show');}
-function hideBanner(){const b=document.getElementById('netBanner');if(b)b.classList.remove('show');}
+function showBanner(t){MSG_STICKY=t;const m=document.getElementById('msgLine');if(!m)return;document.body.classList.add('online');
+  clearTimeout(m._h);m.textContent=t;m.title=t;m.classList.add('warn');}
+function hideBanner(){if(!MSG_STICKY)return;MSG_STICKY='';const m=document.getElementById('msgLine');if(m&&m.classList.contains('warn')){m.textContent='';m.classList.remove('warn');}}
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState!=='visible'||!NET.on)return;
   const now=performance.now();
@@ -987,6 +1064,10 @@ function joinRecv(m){
   if(m.t==='ping')return;
   if(m.t==='bye'){NET.retries=99;hostGone();return;}
   if(m.t==='note'){toast(m.txt);return;}
+  if(m.t==='awayAsk'){awayAsk(m.p,m.name);return;}
+  if(m.t==='awayDone'){unask('away'+m.p);return;}
+  if(m.t==='undoAsk'){undoAskLocal(m.id,m.p,m.n,ok=>netToHost({t:'undoAns',id:m.id,ok}));return;}
+  if(m.t==='undoDone'){unask('undo'+m.id);toast(m.txt,4000);return;}
   if(m.t==='kicked'){clearTimeout(NET.joinTimer);NET.leaving=true;NET.on=false;cancelAI();
     for(const p of TURN_ORDER)if(p!==NET.seat)AV[p].video=null;
     lbStatus('Der Gastgeber hat dich aus diesem Spiel genommen.');
@@ -1146,7 +1227,8 @@ function renderLobby(){
     }
     if(p===NET.seat)av={cam:!!camStream,mic:micLive()};
     const icons=name&&!name.startsWith('Computer')?` <span class="lbIc">${av.cam?'📷':'🚫📷'} ${av.mic?'🎤':'🔇'}</span>`:'';
-    const kick=NET.host&&NET.seats[p]&&NET.seats[p].kind==='peer'?`<button class="kick" onclick="netKick('seat','${p}')" title="Aus dem Spiel nehmen">✕ entfernen</button>`:'';
+    const kick=NET.host&&NET.seats[p]&&NET.seats[p].kind==='peer'?`<button class="kick" onclick="netKick('seat','${p}')" title="Aus dem Spiel nehmen">✕ entfernen</button>`:
+      NET.started&&!NET.spec&&(NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind)==='away'?`<button class="kick" style="background:#556 !important" onclick="${NET.host?`hostAwayAI('${p}')`:`netToHost({t:'awayAI',p:'${p}'})`}">🤖 Computer übernimmt</button>`:'';
     h+=`<div class="lbSeat"><span class="lbDot" style="background:${PCOLOR[p]}"></span><b style="color:${PCOLOR[p]}">${PNAMES[p]}</b> <span>${esc(name)||'<i>'+st+'</i>'}</span>${icons}${kick}</div>`;
   }
   if(NET.host){for(const[id,z]of Object.entries(NET.specs))h+=`<div class="lbSeat">👀 <span>${esc(z.name)} (schaut zu)</span><button class="kick" style="margin-left:auto !important" onclick="netKick('spec','${id}')">✕ entfernen</button></div>`;}
@@ -1731,7 +1813,7 @@ function snapshot(){
     clock:Object.assign({},clock),flagged:new Set(flagged),moveLeft,timeUsed:Object.assign({},timeUsed)};
 }
 function undoMove(){
-  if(NET.on){toast('Im Online-Spiel kann man keine Züge zurücknehmen.',2500);return;}
+  if(NET.on){netUndoButton();return;}
   if(promoPending||moveAnim||!history.length)return;
   cancelAI();
   undoOnce();
@@ -1741,6 +1823,61 @@ function undoMove(){
   if(!TURN_ORDER.some(p=>!aiPlayers[p]))paused=true;   // nur Computer: anhalten, sonst zieht er sofort weiter
   recheckHelpDuty();
   renderClocks();  autosave();
+}
+// ---- Online: Gastgeber nimmt direkt zurück, Mitspieler fragen die anderen (der Computer sagt immer Ja) ----
+function netUndoButton(){
+  if(NET.spec||!NET.started)return;
+  if(NET.host){
+    if(promoPending||moveAnim||!history.length){toast('Gerade kann nichts zurückgenommen werden.',2500);return;}
+    if(!confirm('Letzten Zug zurücknehmen? (Als Gastgeber darfst du das direkt.)'))return;
+    hostDoUndo(1,`↶ Der Gastgeber hat den letzten Zug zurückgenommen.`,true);
+  } else {
+    const mine=moveLog.some(e=>e.player===NET.seat&&!e.timeout);
+    if(!mine){toast('Du hast noch keinen Zug gemacht.',2500);return;}
+    netToHost({t:'undoReq'});toast('Frage die anderen, ob du deinen letzten Zug zurücknehmen darfst …',3500);
+  }
+}
+function hostDoUndo(n,txt,skipAI){
+  cancelAI();moveAnim=null;kicks=[];NET.q=[];
+  for(let i=0;i<n&&history.length;i++)undoOnce();
+  if(skipAI&&TURN_ORDER.some(p=>!aiPlayers[p]))while(history.length&&aiPlayers[cur()])undoOnce();   // bis wieder ein Mensch am Zug ist
+  resetEmos();
+  if(!TURN_ORDER.some(p=>!aiPlayers[p]))paused=true;
+  recheckHelpDuty();renderClocks();hostSave();
+  netBroadcast({t:'sync',data:netSyncData()});
+  toast(txt,4000);netBroadcast({t:'note',txt});
+  maybeAI();
+}
+let UNDO=null;   // laufende Anfrage beim Gastgeber
+function hostUndoRequest(p){
+  if(UNDO){netSend(NET.seats[p].conn,{t:'note',txt:'Es läuft schon eine Anfrage – bitte kurz warten.'});return;}
+  let idx=-1;for(let i=moveLog.length-1;i>=0;i--)if(moveLog[i].player===p&&!moveLog[i].timeout){idx=i;break;}
+  if(idx<0)return;
+  const n=moveLog.length-idx,id=String(Date.now());
+  const voters=TURN_ORDER.filter(q=>q!==p&&!aiPlayers[q]&&(NET.seats[q].kind==='me'||NET.seats[q].kind==='peer'));
+  UNDO={id,p,n,need:new Set(voters),timer:setTimeout(()=>undoFinish(false,'keine Antwort'),40000)};
+  if(!voters.length){undoFinish(true);return;}   // nur Computer-Gegner: die sagen immer Ja
+  for(const q of voters){
+    if(NET.seats[q].kind==='me')undoAskLocal(id,p,n,ok=>undoAnswer(q,id,ok));
+    else netSend(NET.seats[q].conn,{t:'undoAsk',id,p,n});
+  }
+}
+function undoAskLocal(id,p,n,reply){
+  const who=netName(p)||PNAMES[p];
+  ask('undo'+id,`↶ ${who} (${PNAMES[p]}) möchte ${n>1?'die letzten '+n+' Züge':'den letzten Zug'} zurücknehmen. Einverstanden?`,[
+    {label:'👍 Ja',fn:()=>reply(true)},{label:'👎 Nein',bg:'#a33',fn:()=>reply(false)}]);
+}
+function undoAnswer(q,id,ok){
+  if(!UNDO||UNDO.id!==id)return;
+  if(!ok){undoFinish(false,`${netName(q)||PNAMES[q]} hat abgelehnt`);return;}
+  UNDO.need.delete(q);if(!UNDO.need.size)undoFinish(true);
+}
+function undoFinish(ok,why){
+  if(!UNDO)return;const u=UNDO;UNDO=null;clearTimeout(u.timer);
+  unask('undo'+u.id);netBroadcast({t:'undoDone',id:u.id,txt:''});
+  const who=netName(u.p)||PNAMES[u.p];
+  if(!ok){const txt=`↶ Zurücknehmen für ${who} abgelehnt (${why}).`;toast(txt,4000);netBroadcast({t:'note',txt});return;}
+  const go=()=>{if(moveAnim||promoPending){setTimeout(go,300);return;}hostDoUndo(u.n,`↶ ${who} darf den Zug zurücknehmen – alle waren einverstanden.`);};go();
 }
 function undoOnce(){
   const h=history.pop();
@@ -1770,7 +1907,8 @@ function renderLog(){
   const ol=document.getElementById('logList');if(!ol)return;
   ol.innerHTML=moveLog.map((e,i)=>`<li><span class="num">${i+1}.</span><span style="color:${PCOLOR[e.player]}">●</span> ${moveText(e)}</li>`).join('');
   ol.scrollTop=ol.scrollHeight;
-  const b=document.getElementById('btnUndo');if(b)b.disabled=!history.length;
+  const b=document.getElementById('btnUndo');if(b){b.disabled=NET.on?(NET.spec||!NET.started||(!NET.host&&!moveLog.some(e=>e.player===NET.seat))):!history.length;
+    b.textContent=NET.on&&!NET.host?'↶ Bitten':'↶ Zurück';b.title=NET.on&&!NET.host?'Die anderen fragen, ob du deinen letzten Zug zurücknehmen darfst':'Letzten Zug zurücknehmen (Strg+Z)';}
 }
 // ================= Mitspieler-Avatare (eigene Monster, Gefühle) =================
 // Jeder Spieler hat einen Avatar, gezeichnet auf ein eigenes Canvas (320×240).
@@ -2037,6 +2175,7 @@ function syncAvUI(){
   document.getElementById('camToggle').style.background=camStream?'#a33':'#2a6';
   if(typeof NET!=='undefined'){const ml=micLive(),mb=document.getElementById('micBtn'),mt=document.getElementById('micToggle');
     mb.style.display=NET.on&&!NET.spec?'':'none';mt.style.display=NET.on&&!NET.spec?'':'none';
+    document.getElementById('repairBtn').style.display=NET.on?'':'none';
     document.getElementById('avSpecRow').style.display=NET.on&&NET.host?'':'none';document.getElementById('avSpec').value=NET.specMode;
     mb.textContent=ml?'🎤':'🔇';mb.classList.toggle('off',NET.on&&!ml);
     mt.textContent=!micStream?'🎤 Mikrofon einschalten':ml?'🔇 Stumm schalten':'🎤 Stummschaltung aufheben';mt.style.background=ml?'#2a6':'#a33';
@@ -2764,6 +2903,8 @@ function drawCaptured(ctx){
 }
 
 
+// Schlagbare Figur: rot markiert – auf roten Feldern orange, damit man es dort auch sieht
+function capCol(fid){return COLORED_FIDS.has(fid)&&COORD_LABELS[fid][0]==='R'?'#ff9900':'#ff3300';}
 function fieldFill(fid){
   const s=COORD_LABELS[fid][0],col=COLORED_FIDS.has(fid);
   if(showSection)return col?(s==='R'?'#bb2200':s==='B'?'#1144bb':'#117700'):(s==='R'?'#330000':s==='B'?'#000a20':'#001500');
@@ -2872,7 +3013,7 @@ function draw(){
     for(let i=1;i<4;i++)ctx.lineTo(d.pts[i][0],d.pts[i][1]);ctx.closePath();
     if(isSel){ctx.fillStyle='#ffdd00';ctx.shadowColor='#ffaa00';ctx.shadowBlur=12;}
     else if(isCastle){ctx.fillStyle='rgba(80,200,255,0.6)';ctx.shadowColor='#88ddff';ctx.shadowBlur=8;}
-    else if(isEnemy){ctx.fillStyle='#ff3300';ctx.shadowColor='#ff0000';ctx.shadowBlur=8;}
+    else if(isEnemy){ctx.fillStyle=capCol(fid);ctx.shadowColor=capCol(fid);ctx.shadowBlur=8;}
     else if(isV){ctx.fillStyle='rgba(255,220,50,0.55)';ctx.shadowColor='#ffcc00';ctx.shadowBlur=6;}
     else{ctx.fillStyle=fieldFill(fid);ctx.shadowBlur=0;}
     ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#444';ctx.lineWidth=0.5;ctx.stroke();
@@ -3093,6 +3234,21 @@ window.V3={on:false};
     return matCache[k]=m;
   }
   let GOLD=null,crossList=[],knightList=[],monGroup=null;const monitors={};
+  let monMinR=8,monMaxR=24,monDrag=null;
+  function placeMon(p,x,z){   // Monitor auf dem Boden verschieben (Abstand zum Brett begrenzt), Bildschirm schaut zur Mitte
+    const m=monitors[p];if(!m)return;let r=Math.hypot(x,z)||1;const k=Math.max(monMinR,Math.min(monMaxR,r))/r;
+    m.g.position.set(x*k,0,z*k);m.g.lookAt(0,0,0);
+  }
+  function saveMon(){try{const o={};for(const p of TURN_ORDER)if(monitors[p])o[p]=[monitors[p].g.position.x,monitors[p].g.position.z];localStorage.setItem('dreiSchach.monPos',JSON.stringify(o));}catch(e){}}
+  function pickMon(e){
+    if(!monGroup||!monGroup.visible)return null;
+    const r=document.getElementById('c3').getBoundingClientRect();
+    ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
+    const hits=ray.intersectObjects(monGroup.children,true);
+    for(const h of hits){let o=h.object;while(o&&o.parent!==monGroup)o=o.parent;
+      const p=TURN_ORDER.find(q=>monitors[q].g===o);if(p&&o.visible)return{p,y:h.point.y,dx:h.point.x-o.position.x,dz:h.point.z-o.position.z};}
+    return null;
+  }
   let monScale=1;try{monScale=parseFloat(localStorage.getItem('dreiSchach.monScale'))||1;}catch(e){}
   function goldMat(){return GOLD||(GOLD=new THREE.MeshStandardMaterial({color:'#ffd23f',metalness:0.3,roughness:0.3,emissive:'#c89400',emissiveIntensity:0.6}));}
   function makePiece(t,player,hl){
@@ -3172,8 +3328,10 @@ window.V3={on:false};
       head.add(glow,bez,scr);
       g.add(head);   // ohne Fuß: der Monitor schwebt hinter der Sektion
       g.lookAt(0,0,0);   // Bildschirm zur Brettmitte
-      monGroup.add(g);monitors[p]={g,tex,head};head.scale.setScalar(monScale);
+      monGroup.add(g);monitors[p]={g,tex,head,home:[d[0]*D,d[1]*D]};head.scale.setScalar(monScale);
     }
+    monMinR=maxR+0.6;monMaxR=maxR+14;
+    try{const sv=JSON.parse(localStorage.getItem('dreiSchach.monPos')||'{}');for(const p of TURN_ORDER)if(sv[p])placeMon(p,sv[p][0],sv[p][1]);}catch(e){}
     setupInput(cv);
     preset(cur(),true);
     loop();
@@ -3194,7 +3352,7 @@ window.V3={on:false};
       let col=fieldFill(fid),em='#000000',ei=0;
       if(fid===selected){col=HL.sel;em=HL.sel;ei=0.35;}
       else if(isV&&castleMap[fid]){col=HL.castle;em=HL.castle;ei=0.3;}
-      else if(isV&&gameState[coord]&&gameState[coord].player!==cur()){col=HL.enemy;em=HL.enemy;ei=0.35;}
+      else if(isV&&gameState[coord]&&gameState[coord].player!==cur()){col=capCol(fid);em=col;ei=0.35;}
       else if(isV){col=HL.valid;em=HL.valid;ei=0.25;}
       if((fid===lm.from||fid===lm.to)&&ei===0){col=fid===lm.to?'#c9a227':'#7a6420';em='#ffc828';ei=fid===lm.to?0.25:0.1;}
       if(checked.has(fid)){em='#ff0000';ei=0.8;}
@@ -3372,11 +3530,18 @@ window.V3={on:false};
         document.getElementById('tooltip').style.display='none';return;
       }
       if(ptrs.size>2)return;
+      if(e.button===0&&!e.shiftKey){const mh=pickMon(e);if(mh){monDrag=mh;document.getElementById('tooltip').style.display='none';return;}}
       down={x:e.clientX,y:e.clientY,lx:e.clientX,ly:e.clientY,btn:e.button,shift:e.shiftKey,moved:0};
     });
     cv.addEventListener('pointermove',e=>{
       const tip=document.getElementById('tooltip');
       if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      if(monDrag){   // Monitor ziehen
+        const r=cv.getBoundingClientRect();ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
+        const pt=new THREE.Vector3();
+        if(ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-monDrag.y),pt))placeMon(monDrag.p,pt.x-monDrag.dx,pt.z-monDrag.dz);
+        return;
+      }
       if(pinch&&ptrs.size>=2){
         const t=twoInfo();
         goal.r=Math.max(6,Math.min(120,pinch.r*pinch.d/t.d));userZoomed=true;
@@ -3401,6 +3566,7 @@ window.V3={on:false};
     });
     const end=e=>{
       ptrs.delete(e.pointerId);
+      if(monDrag){monDrag=null;saveMon();return;}
       if(pinch){if(ptrs.size<2)pinch=null;down=null;return;}   // nach Zwei-Finger-Geste kein Antippen auslösen
       if(e.type==='pointerup'&&down&&down.moved<(e.pointerType==='touch'?10:5)&&down.btn===0){const fid=pick(cv,e);if(fid)onFieldClick(fid);}
       down=null;
@@ -3422,6 +3588,10 @@ window.V3={on:false};
     try{localStorage.setItem('dreiSchach.monScale',String(monScale));}catch(e){}
     for(const p of TURN_ORDER)if(monitors[p])monitors[p].head.scale.setScalar(monScale);refit(false);};
   V3.monScale=()=>monScale;
+  V3.monInfo=p=>{const m=monitors[p];if(!m)return null;applyCam();camera.updateMatrixWorld();m.g.updateMatrixWorld(true);
+    const v=m.head.localToWorld(new THREE.Vector3(0,MON_H/2+0.2,0.2)).project(camera),r=document.getElementById('c3').getBoundingClientRect();
+    return{x:r.left+(v.x+1)/2*r.width,y:r.top+(1-v.y)/2*r.height,vis:m.g.visible,pos:[m.g.position.x,m.g.position.z]};};
+  V3.resetMon=()=>{for(const p of TURN_ORDER)if(monitors[p]){const h=monitors[p].home;placeMon(p,h[0],h[1]);}try{localStorage.removeItem('dreiSchach.monPos');}catch(e){}refit(true);};
   V3.avatarTick=()=>{if(!monGroup||!monGroup.visible)return;for(const p of TURN_ORDER)if(monitors[p].g.visible)monitors[p].tex.needsUpdate=true;};
   V3.camInfo=()=>({r:goal.r,theta:goal.theta,phi:goal.phi,tx:goal.tx,tz:goal.tz});
   V3.screenPos=coord=>{const m=fieldMesh[C2F[coord]];if(!m)return null;applyCam();camera.updateMatrixWorld();
