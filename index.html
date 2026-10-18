@@ -570,7 +570,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 01:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 01:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -3193,8 +3193,14 @@ function drawCaptured(ctx){
 }
 
 
-// Schlagbare Figur: rot markiert – auf roten Feldern orange, damit man es dort auch sieht
-function capCol(fid){return COLORED_FIDS.has(fid)&&COORD_LABELS[fid][0]==='R'?'#ff9900':'#ff3300';}
+// Schlagbare Figur: rot markiert – auf roten Feldern pink, damit man es dort auch sieht
+function capCol(fid){return COLORED_FIDS.has(fid)&&COORD_LABELS[fid][0]==='R'?'#ff4fd8':'#ff3300';}
+// Vorheriger Zug: farbige Felder dunkler, schwarze Felder grau (Zielfeld etwas kräftiger als Startfeld)
+function lastMoveFill(fid,isTo){
+  if(!COLORED_FIDS.has(fid))return isTo?'#5c5c5c':'#3e3e3e';
+  const h=fieldFill(fid).replace('#',''),k=isTo?0.45:0.6;
+  return '#'+[0,2,4].map(i=>Math.round(parseInt(h.substr(i,2),16)*k).toString(16).padStart(2,'0')).join('');
+}
 function fieldFill(fid){
   const s=COORD_LABELS[fid][0],col=COLORED_FIDS.has(fid);
   if(showSection)return col?(s==='R'?'#bb2200':s==='B'?'#1144bb':'#117700'):(s==='R'?'#330000':s==='B'?'#000a20':'#001500');
@@ -3305,12 +3311,9 @@ function draw(){
     else if(isCastle){ctx.fillStyle='rgba(80,200,255,0.6)';ctx.shadowColor='#88ddff';ctx.shadowBlur=8;}
     else if(isEnemy){ctx.fillStyle=capCol(fid);ctx.shadowColor=capCol(fid);ctx.shadowBlur=8;}
     else if(isV){ctx.fillStyle='rgba(255,220,50,0.55)';ctx.shadowColor='#ffcc00';ctx.shadowBlur=6;}
+    else if(fid===lm.from||fid===lm.to){ctx.fillStyle=lastMoveFill(fid,fid===lm.to);ctx.shadowBlur=0;}
     else{ctx.fillStyle=fieldFill(fid);ctx.shadowBlur=0;}
     ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#444';ctx.lineWidth=0.5;ctx.stroke();
-    if((fid===lm.from||fid===lm.to)&&!isSel&&!isV){
-      ctx.save();ctx.fillStyle=fid===lm.to?'rgba(255,200,40,0.45)':'rgba(255,200,40,0.22)';ctx.fill();
-      ctx.strokeStyle='rgba(255,210,60,0.9)';ctx.lineWidth=Math.max(1.5,2.2*zoom);ctx.stroke();ctx.restore();
-    }
     if(checkedKings.has(fid)){ctx.save();ctx.strokeStyle='#ff1a1a';ctx.lineWidth=Math.max(2,3.5*zoom);
       ctx.shadowColor='#ff0000';ctx.shadowBlur=14;ctx.stroke();ctx.restore();}
     if(showPieces){
@@ -4026,7 +4029,7 @@ window.V3={on:false};
       else if(isV&&castleMap[fid]){col=HL.castle;em=HL.castle;ei=0.3;}
       else if(isV&&gameState[coord]&&gameState[coord].player!==cur()){col=capCol(fid);em=col;ei=0.35;}
       else if(isV){col=HL.valid;em=HL.valid;ei=0.25;}
-      if((fid===lm.from||fid===lm.to)&&ei===0){col=fid===lm.to?'#c9a227':'#7a6420';em='#ffc828';ei=fid===lm.to?0.25:0.1;}
+      if((fid===lm.from||fid===lm.to)&&ei===0){col=lastMoveFill(fid,fid===lm.to);}
       if(checked.has(fid)){em='#ff0000';ei=0.8;}
       m.material.color.set(col);m.material.emissive.set(em);m.material.emissiveIntensity=ei;
     }
