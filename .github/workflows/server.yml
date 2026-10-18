@@ -35,7 +35,14 @@ jobs:
       - name: Wrangler installieren
         run: npm ci || npm i
       - name: Veröffentlichen
-        run: npx wrangler deploy
+        run: |
+          set -o pipefail
+          if ! npx wrangler deploy 2>&1 | tee deploy.log; then
+            # Fehlermeldung als lesbaren Hinweis ausgeben (Farbcodes entfernen, auf eine Zeile kürzen)
+            MSG=$(sed 's/\x1b\[[0-9;]*m//g' deploy.log | grep -iE 'error|✘|code|authentication|subdomain|permission|account' | head -8 | tr '\n' ' ' | cut -c1-900)
+            echo "::error title=WRANGLER::$MSG"
+            exit 1
+          fi
       - name: TURN-Zugang hinterlegen
         if: env.TURN_KEY_ID != '' && env.TURN_KEY_TOKEN != ''
         run: |
