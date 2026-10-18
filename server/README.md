@@ -16,4 +16,4 @@ Lokal testen: `npm i && npx wrangler dev --local --port 8787`, dann das Spiel mi
 
 Fernpartien lokal testen: Spiel mit `?fernhost=127.0.0.1:8787` öffnen.
 
-Erste Veröffentlichung: 18.10.2026 (Subdomain g-suchsland); TURN seit 19.10.2026 (neuer Schlüssel)
+Erste Veröffentlichung: 18.10.2026 (Subdomain g-suchsland); TURN seit 19.10.2026 (TURN-Token erneuert)
