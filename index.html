@@ -570,7 +570,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-18 12:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 00:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -585,7 +585,7 @@ function netBlocks(p){return (NET.on&&p!==NET.seat)||(FERN.on&&p!==FERN.seat);}
 function randCode(){const a='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<6;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
 // Eigener Vermittlungs- und Weiterleitungsserver (Cloudflare Worker, Quelltext im Ordner server/).
 // Leer = öffentlicher PeerJS-Dienst. Ist der eigene Server nicht erreichbar, weicht das Spiel automatisch dorthin aus.
-const OWN_SERVER='';
+const OWN_SERVER='dreischach.g-suchsland.workers.dev';
 let SRV=(QS.get('srv')==='pj'||!OWN_SERVER)?'pj':'own';
 function srvParam(){return SRV==='pj'&&OWN_SERVER?'&srv=pj':'';}
 function netLink(){const t=QS.get('turnapp')&&QS.get('turnkey')?'&turnapp='+encodeURIComponent(QS.get('turnapp'))+'&turnkey='+encodeURIComponent(QS.get('turnkey')):'';return location.origin+location.pathname+'?spiel='+NET.code+srvParam()+t;}
