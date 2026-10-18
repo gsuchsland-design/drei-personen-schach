@@ -570,7 +570,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 00:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 01:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -713,7 +713,7 @@ async function netTest(){
     <div>Weiterleitung Open Relay: <b>{3}</b></div>
     <div>Weiterleitung PeerJS: <b>{4}</b></div>
     <div style="color:#999;font-size:12px;margin-top:6px">{5} · {6} · {7}</div>
-    <div style="margin-top:8px">{8}<br>Bitte mach einen Screenshot davon.</div>`,[sig,stun.has('srflx')?T('✅ geht'):T('❌ blockiert'),hasOwn?ok(eig.has('relay')):T('⚪ nicht eingerichtet'),ok(orl.has('relay')),ok(pjs.has('relay')),br,IS_IOS?'iPhone/iPad':/Android/.test(ua)?'Android':T('Computer'),new Date().toLocaleTimeString(),T(sig!=='✓'?'Der Vermittlungsdienst ist von hier aus nicht erreichbar – vielleicht blockiert ein Werbe-/Tracking-Blocker oder das Netz ihn.':
+    <div style="margin-top:8px">{8}<br>Bitte mach einen Screenshot davon.</div>`,[sig,stun.has('srflx')?T('✅ geht'):T('❌ blockiert'),hasOwn?ok(eig.has('relay')):T('⚪ nicht eingerichtet'),ok(orl.has('relay')),ok(pjs.has('relay')),br,IS_IOS?'iPhone/iPad':/Android/.test(ua)?'Android':T('Computer'),new Date().toLocaleTimeString(),T(!String(sig).startsWith('✓')?'Der Vermittlungsdienst ist von hier aus nicht erreichbar – vielleicht blockiert ein Werbe-/Tracking-Blocker oder das Netz ihn.':
       (!stun.has('srflx')&&!anyRelay)?'Dieses Netz oder dieser Browser blockiert Echtzeit-Verbindungen (WebRTC) komplett. Bitte einen anderen Browser (Safari oder Chrome) bzw. ein anderes Netz probieren.':
       (!anyRelay&&!hasOwn)?'Direkte Verbindungen gehen. Die kostenlosen Weiterleitungsserver antworten aber nicht – das liegt an den Servern, nicht an deinem Netz. Im Mobilfunk kann die Verbindung deshalb scheitern, bis ein eigener Weiterleitungsserver eingerichtet ist.':
       (!anyRelay)?'Direkte Verbindungen gehen, aber kein Weiterleitungsserver antwortet. Antwortet die eigene Weiterleitung auch in einem anderen Netz nicht, stimmen vermutlich App-Name oder Schlüssel nicht.':
