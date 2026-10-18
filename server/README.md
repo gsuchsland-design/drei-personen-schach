@@ -15,3 +15,5 @@ Nach dem Veröffentlichen schreibt der Workflow die Adresse des Servers in `serv
 Lokal testen: `npm i && npx wrangler dev --local --port 8787`, dann das Spiel mit `?peerhost=127.0.0.1&peerport=8787` öffnen.
 
 Fernpartien lokal testen: Spiel mit `?fernhost=127.0.0.1:8787` öffnen.
+
+Erste Veröffentlichung: 18.10.2026
