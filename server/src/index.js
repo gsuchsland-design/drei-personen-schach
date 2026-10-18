@@ -22,13 +22,15 @@ function randomId() {
 }
 
 async function turnServers(env) {
-  if (!env.TURN_KEY_ID || !env.TURN_KEY_TOKEN) return [];
-  const r = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${env.TURN_KEY_ID}/credentials/generate-ice-servers`, {
+  // Leerzeichen/Zeilenumbrüche, die beim Einfügen mitrutschen, entfernen
+  const id = String(env.TURN_KEY_ID || '').trim(), tok = String(env.TURN_KEY_TOKEN || '').trim();
+  if (!id || !tok) return [];
+  const r = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${encodeURIComponent(id)}/credentials/generate-ice-servers`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${env.TURN_KEY_TOKEN}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ ttl: 86400 }),
   });
-  if (!r.ok) throw new Error('TURN ' + r.status);
+  if (!r.ok) throw new Error(`TURN ${r.status} (ID ${id.length} Zeichen, Token ${tok.length} Zeichen)`);
   const data = await r.json();
   // Port 53 läuft im Browser nur in Zeitüberschreitungen – herausfiltern
   return (data.iceServers || []).map(s => ({ ...s, urls: [].concat(s.urls).filter(u => !/:53(\?|$)/.test(u)) }))
