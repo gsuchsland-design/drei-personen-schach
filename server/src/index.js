@@ -2,11 +2,15 @@
 // 1. Vermittlungsdienst (kompatibel mit dem PeerJS-Protokoll): Die Geräte finden sich hierüber und
 //    tauschen die Verbindungsdaten aus. Spielzüge, Bild und Ton laufen danach direkt zwischen den Geräten.
 // 2. /turn: kurzlebige Zugangsdaten für die Cloudflare-TURN-Weiterleitung (für Netze, die direkte Verbindungen blockieren).
+// 3. /fern/…: Fernpartien – Spielstand liegt auf dem Server, Benachrichtigung per Web-Push (siehe fern.js).
 // © 2026 Guido Suchsland
+
+import { fernRoute, Fern } from './fern.js';
+export { Fern };
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 const json = (obj, status = 200, extra = {}) =>
@@ -41,6 +45,7 @@ export default {
       const hub = env.HUB.get(env.HUB.idFromName('hub'));
       return hub.fetch(req);
     }
+    if (url.pathname.startsWith('/fern/')) return fernRoute(req, env, url);
     if (url.pathname === '/peerjs/id') return new Response(randomId(), { headers: { 'Content-Type': 'text/plain', ...CORS } });
     if (url.pathname === '/peerjs/peers') return json([], 401);
     if (url.pathname === '/turn') {
@@ -48,7 +53,7 @@ export default {
       catch (e) { return json({ iceServers: [], signal: true, error: String(e.message || e) }, 502); }
     }
     if (url.pathname === '/' || url.pathname === '/peerjs/') {
-      return json({ name: 'Drei-Personen-Schach-Server', ok: true, turn: !!(env.TURN_KEY_ID && env.TURN_KEY_TOKEN) });
+      return json({ name: 'Drei-Personen-Schach-Server', ok: true, turn: !!(env.TURN_KEY_ID && env.TURN_KEY_TOKEN), fern: !!env.FERN });
     }
     return json({ error: 'not found' }, 404);
   },

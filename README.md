@@ -10,6 +10,7 @@ Schach für drei Spieler auf einem sternförmigen Brett – direkt im Browser.
 - Computergegner in vier Stufen (leicht, mittel, stark, Meister)
 - Sonderregeln für drei Spieler: Hilfspflicht, Matt-Sieger, Aussetzen, Punktewertung
 - Zeitkontrolle pro Zug und/oder pro Partie
+- **Fernpartie**: Spielstand liegt auf dem eigenen Server, jeder zieht, wann er Zeit hat – mit Benachrichtigung aufs Handy, wenn man dran ist
 - Zugprotokoll mit Zurücknehmen, Speichern und Laden
 - Animierte Züge, geschlagene Figuren fliegen an den Rand, Geräusche
 - Spielanleitung mit interaktivem Übungsbrett

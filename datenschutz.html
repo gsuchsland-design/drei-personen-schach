@@ -24,7 +24,7 @@
 <h1>Datenschutzerklärung</h1>
 <p class="small">Drei-Personen-Schach · Stand: Oktober 2026</p>
 
-<p>Kurz gesagt: Dieses Spiel hat keine Werbung, keine Cookies, kein Tracking und keine Benutzerkonten. Wer allein spielt, schickt keine Spieldaten ins Internet. Im Online-Spiel laufen Züge, Bild und Ton verschlüsselt direkt zwischen den Geräten der Spieler und werden nirgends gespeichert.</p>
+<p>Kurz gesagt: Dieses Spiel hat keine Werbung, keine Cookies, kein Tracking und keine Benutzerkonten. Wer allein spielt, schickt keine Spieldaten ins Internet. Im Online-Spiel laufen Züge, Bild und Ton verschlüsselt direkt zwischen den Geräten der Spieler und werden nirgends gespeichert. Nur bei einer <b>Fernpartie</b> (jeder zieht, wann er Zeit hat) werden Name und Spielstand auf meinem Spielserver gespeichert – siehe Abschnitt 5.</p>
 
 <h2>1. Verantwortlicher</h2>
 <p>Guido Suchsland<br>
@@ -44,14 +44,20 @@ E-Mail: <span id="mail">g.suchsland (at) gmail.com</span></p>
 <p><b>Rechtsgrundlage:</b> Für das Online-Spiel selbst Art. 6 Abs. 1 lit. b DSGVO (Bereitstellung der von Ihnen gewünschten Funktion), für Kamera und Mikrofon Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die Sie durch Einschalten und die Freigabe im Browser erteilen. Sie können sie jederzeit widerrufen, indem Sie Kamera oder Mikrofon ausschalten (🎤-Knopf bzw. Menü 👥).</p>
 <p><b>Bitte beachten:</b> Ihre Mitspieler und vom Gastgeber zugelassene Zuschauer sehen und hören Sie, solange Kamera und Mikrofon eingeschaltet sind. Ich kann nicht verhindern, dass andere Teilnehmer ihren Bildschirm aufnehmen. Spielen Sie mit Kamera deshalb nur mit Menschen, denen Sie vertrauen. Der Gastgeber kann Mitspieler und Zuschauer jederzeit aus dem Spiel nehmen.</p>
 
-<h2>5. Kinder</h2>
+<h2>5. Fernpartien</h2>
+<p><b>Was gespeichert wird:</b> Bei einer Fernpartie liegt der Spielstand auf meinem Spielserver (Cloudflare Worker mit „Durable Objects“, Cloudflare, Inc., USA), damit die Partie weiterläuft, auch wenn gerade niemand online ist. Gespeichert werden: der Partie-Code, die von Ihnen eingegebenen Namen, die Spielzüge und der Spielstand, die Bedenkzeit je Spieler, ein zufälliger geheimer Schlüssel je Platz (damit nur Sie für Ihre Farbe ziehen können) sowie – nur wenn Sie Benachrichtigungen einschalten – die Push-Adresse Ihres Browsers. Dabei verarbeitet Cloudflare technisch auch Ihre IP-Adresse; ich speichere sie nicht.</p>
+<p><b>Benachrichtigungen:</b> Schalten Sie „🔔 Benachrichtigen“ ein, speichert der Server die Push-Adresse, die Ihr Browser dafür erzeugt. Die Nachricht („Du bist dran“) wird Ende-zu-Ende verschlüsselt über den Push-Dienst Ihres Browserherstellers zugestellt (z. B. Google bei Chrome, Mozilla bei Firefox, Apple bei Safari). Sie können die Benachrichtigungen jederzeit in den Website-Einstellungen Ihres Browsers abschalten.</p>
+<p><b>Wer sieht was:</b> Wer den Einladungslink einer Partie kennt, kann die Namen und den Spielverlauf sehen (zuschauen) und – solange ein Platz frei ist – mitspielen. Ihr persönlicher Link enthält den Schlüssel zu Ihrem Platz; geben Sie ihn nicht weiter. Auf Ihrem Gerät werden der Schlüssel und die Liste Ihrer Fernpartien im Browser-Speicher (localStorage) abgelegt.</p>
+<p><b>Speicherdauer:</b> Eine Fernpartie wird automatisch gelöscht, wenn sie 120 Tage lang nicht mehr gespielt wurde. Auf Wunsch lösche ich eine Partie auch früher – schreiben Sie mir dazu den Partie-Code.</p>
+<p><b>Rechtsgrundlage:</b> Art. 6 Abs. 1 lit. b DSGVO (Bereitstellung der von Ihnen gewünschten Funktion), für Benachrichtigungen Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die Sie durch Einschalten und die Freigabe im Browser erteilen. Cloudflare ist nach dem EU-U.S. Data Privacy Framework zertifiziert (Art. 45 DSGVO).</p>
+<h2>6. Kinder</h2>
 <p>Kinder unter 16 Jahren sollten Kamera und Mikrofon im Online-Spiel nur mit Einverständnis ihrer Eltern einschalten.</p>
 
-<h2>6. Ihre Rechte</h2>
-<p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer Daten, auf Datenübertragbarkeit sowie auf Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 15–21 DSGVO). Da ich selbst keine Daten über Sie speichere, wenden Sie sich für Daten bei GitHub, Cloudflare, Metered oder PeerJS bitte auch an diese Anbieter. Erteilte Einwilligungen können Sie jederzeit für die Zukunft widerrufen.</p>
+<h2>7. Ihre Rechte</h2>
+<p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer Daten, auf Datenübertragbarkeit sowie auf Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 15–21 DSGVO). Außer bei Fernpartien (Abschnitt 5) speichere ich selbst keine Daten über Sie; wenden Sie sich für Daten bei GitHub, Cloudflare, Metered oder PeerJS bitte auch an diese Anbieter. Erteilte Einwilligungen können Sie jederzeit für die Zukunft widerrufen.</p>
 <p>Außerdem können Sie sich bei einer Datenschutz-Aufsichtsbehörde beschweren, zum Beispiel bei der für mich zuständigen <a href="https://www.ldi.nrw.de" target="_blank" rel="noopener">Landesbeauftragten für Datenschutz und Informationsfreiheit Nordrhein-Westfalen</a>.</p>
 
-<h2>7. Änderungen</h2>
+<h2>8. Änderungen</h2>
 <p>Wenn sich das Spiel ändert, passe ich diese Erklärung an. Es gilt die jeweils hier veröffentlichte Fassung.</p>
 
 <p class="small" style="margin-top:36px">© 2026 Guido Suchsland</p>

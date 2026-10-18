@@ -172,8 +172,24 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #lobbyModal.mini .netBox > *:not(h3) { display:none !important; }
 #lobbyModal.mini .netBox { padding:8px 14px; }
 #lobbyModal.mini h3 { margin:0; }
+#fernModal { background:none; pointer-events:none; align-items:flex-start; justify-content:flex-end; padding:48px 8px 8px; z-index:225; }
+#fernModal .netBox { pointer-events:auto; width:min(370px,94vw); max-height:calc(100vh - 60px); box-shadow:0 6px 30px rgba(0,0,0,.6); background:rgba(30,30,34,.96); border-color:#b06a1f; }
+#fernModal h3 { display:flex; align-items:center; gap:6px; }
+#fernModal h3 .lbMin { margin:0 0 0 auto !important; width:auto !important; padding:2px 10px !important; font-size:15px !important; background:#444 !important; }
+#fernModal.mini .netBox > *:not(h3) { display:none !important; }
+#fernModal.mini .netBox { padding:8px 14px; }
+#fernModal.mini h3 { margin:0; }
+#fernModal .fnTurn { color:#ffd27a; font-weight:bold; }
+#fernJoin .netBox { border-color:#b06a1f; }
+#fnList .fnItem { display:flex; gap:6px; align-items:stretch; margin:6px 0; }
+#fnList .fnItem button { margin:0; text-align:left; font-size:14px; padding:7px 9px; background:#3a3a44; }
+#fnList .fnItem button.fnGo { flex:1; }
+#fnList .fnItem button.fnX { width:auto; background:#444; color:#bbb; }
+#fnList .fnItem b { color:#ffd27a; }
 @media (max-width:700px) {
   #lobbyModal { align-items:flex-end; justify-content:center; padding:0 0 6px; }
+  #fernModal { align-items:flex-end; justify-content:center; padding:0 0 6px; }
+  #fernModal .netBox { max-height:56vh; }
   #lobbyModal .netBox { max-height:56vh; }
 }
 #toast { position:fixed; left:50%; top:54px; transform:translateX(-50%); z-index:400; background:rgba(40,30,70,.95); color:#fff; border:1px solid #8a6fd0;
@@ -396,6 +412,7 @@ body.barBottom #selfView { bottom:50px; }
 <button id="startBtn" onclick="startPlay()">▶ Start</button>
 <div id="setupModal">
   <div id="setupBox">
+    <div id="fnList"></div>
     <h3>Neues Spiel</h3>
     <div class="row" style="font-weight:bold;margin-bottom:2px">Spieler</div>
     <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
@@ -417,6 +434,12 @@ body.barBottom #selfView { bottom:50px; }
     <div class="row"><label><input type="checkbox" id="olCam" checked> Kamera</label><label style="margin-left:14px"><input type="checkbox" id="olMic" checked> Mikrofon</label></div>
     <div class="hint" style="margin-left:0">Die Zeitkontrolle von oben gilt auch online.</div>
     <button onclick="netCreate()" style="background:#7a3fc4">🌐 Online-Spiel erstellen &amp; einladen</button>
+    <div class="row" style="font-weight:bold;margin:18px 0 2px;border-top:1px solid #444;padding-top:12px">✉️ Fernpartie – jeder zieht, wann er Zeit hat</div>
+    <div class="hint" style="margin-left:0">Der Spielstand wird auf dem Server gespeichert. Ihr müsst nicht gleichzeitig online sein: Wer dran ist, bekommt eine Benachrichtigung.</div>
+    <div class="row"><span style="width:86px">Dein Name</span><input type="text" id="fnName" maxlength="18" placeholder="Name"></div>
+    <div class="row"><span style="width:86px">Deine Farbe</span><select id="fnColor" onchange="fernSeatRows()"><option value="B">Blau (beginnt)</option><option value="G">Grün</option><option value="R">Rot</option></select></div>
+    <div id="fnSeats"></div>
+    <button id="fnCreateBtn" onclick="fernCreate()" style="background:#b06a1f">✉️ Fernpartie erstellen &amp; einladen</button>
     <button class="installBtn" onclick="doInstall()" style="display:none;background:#555">📲 Als App installieren</button>
     <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
     <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie aus Datei laden</button>
@@ -446,6 +469,34 @@ body.barBottom #selfView { bottom:50px; }
   <div class="lbMedia"><button id="lbCam" onclick="camStream?camOff():camOn()">📷</button><button id="lbMic" onclick="toggleMic()">🎤</button></div>
   <button class="lbLeave" onclick="netTest()" style="background:#3a3a55">🔧 Verbindung testen</button>
   <button class="lbLeave" onclick="netLeave()">Abbrechen</button>
+</div></div>
+<div id="fernModal" class="netModal"><div class="netBox">
+  <h3>✉️ Fernpartie <span id="fnCode" style="font-weight:normal;color:#bbb;font-size:13px"></span><button class="lbMin" onclick="fernMini()" title="Verkleinern/vergrößern">–</button></h3>
+  <div id="fnStatus" class="lbStat"></div>
+  <div id="fnSeatList"></div>
+  <div id="fnInvite">
+    <div class="lbLbl">Einladungslink für freie Plätze</div>
+    <div class="lbLinkRow"><input id="fnLink" readonly onclick="this.select()"><button onclick="fernCopy('fnLink')" title="Link kopieren">📋</button></div>
+    <div class="lbShareRow"><button id="fnShare" onclick="fernShare()">📤 Einladen über …</button><a id="fnWa" target="_blank" rel="noopener">WhatsApp</a><a id="fnSms">SMS</a><a id="fnMail">E-Mail</a></div>
+  </div>
+  <div id="fnMe">
+    <button id="fnNotify" onclick="fernNotify(true)" style="background:#b06a1f">🔔 Benachrichtigen, wenn ich dran bin</button>
+    <div id="fnNotifyHint" class="lbHint"></div>
+    <div class="lbLbl">Auf einem anderen Gerät weiterspielen</div>
+    <div class="lbLinkRow"><input id="fnMine" readonly onclick="this.select()"><button onclick="fernCopy('fnMine')" title="Link kopieren">📋</button></div>
+    <div class="lbHint">Das ist dein persönlicher Link – er ist der Schlüssel zu deinem Platz. Nur für deine eigenen Geräte, bitte nicht weitergeben.</div>
+  </div>
+  <button class="lbLeave" onclick="fernPoll(true)">🔄 Aktualisieren</button>
+  <button class="lbLeave" onclick="fernHome()">⌂ Zur Startseite (die Partie bleibt gespeichert)</button>
+</div></div>
+<div id="fernJoin" class="netModal"><div class="netBox">
+  <h3>✉️ Einladung zur Fernpartie</h3>
+  <p id="fnJoinTxt"></p>
+  <input type="text" id="fnJoinName" maxlength="18" placeholder="Dein Name" onkeydown="if(event.key==='Enter')fernJoin()">
+  <button onclick="fernJoin()">Mitspielen</button>
+  <button class="lbLeave" onclick="fernWatch()">👀 Nur zuschauen</button>
+  <button class="lbLeave" onclick="location.href=location.pathname">Nein danke</button>
+  <div class="lbHint" style="text-align:center">Name und Züge werden für diese Partie auf dem Spielserver gespeichert. Mehr unter <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a>.</div>
 </div></div>
 <div id="chatBox">
   <div id="chatHead"><b>💬 Chat</b><button onclick="toggleChat()" title="Schließen">✕</button></div>
@@ -487,7 +538,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101803"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101812"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -519,16 +570,18 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-18 03:20';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-18 12:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
 try{NET.specMode=localStorage.getItem('dreiSchach.specMode')||'ask';}catch(e){}
+// Fernpartie (asynchron): Spielstand auf dem Server, jeder zieht, wann er Zeit hat – Code weiter unten
+const FERN={on:false,code:null,token:null,seat:null,v:-1,seats:{},next:null,over:false,used:null,age:0,loadedAt:0,local:false,pending:0,epoch:0,q:Promise.resolve()};
 let netApplying=false,micStream=null,installEvt=null;
 const QS=new URLSearchParams(location.search);
 const NET_CODE_URL=(QS.get('spiel')||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-function netName(p){const s=NET.on&&NET.lobby[p];return s&&s.name?s.name:'';}
-function netBlocks(p){return NET.on&&p!==NET.seat;}
+function netName(p){if(FERN.on){const f=FERN.seats[p];return f&&f.kind==='human'?f.name||'':'';}const s=NET.on&&NET.lobby[p];return s&&s.name?s.name:'';}
+function netBlocks(p){return (NET.on&&p!==NET.seat)||(FERN.on&&p!==FERN.seat);}
 function randCode(){const a='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<6;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
 // Eigener Vermittlungs- und Weiterleitungsserver (Cloudflare Worker, Quelltext im Ordner server/).
 // Leer = öffentlicher PeerJS-Dienst. Ist der eigene Server nicht erreichbar, weicht das Spiel automatisch dorthin aus.
@@ -1971,6 +2024,7 @@ function endGame(winner,loser){
 }
 // Spielende: Meldung in der Leiste (kein Fenster), dazu „Revanche“ bzw. „Noch eine Partie“
 function gameEndPrompt(text){
+  if(FERN.on){FERN.endShown=true;ask('end',text,[{label:'OK',fn:()=>{}}]);return;}
   if(NET.on&&!NET.host){ask('end',text,[{label:'OK',fn:()=>{}}]);if(!NET.spec)setTimeout(()=>toast(T('Der Gastgeber kann eine Revanche starten.'),5000),1500);return;}
   ask('end',text,[{label:NET.on?T('🔄 Revanche'):T('🔄 Noch eine Partie'),fn:rematch},{label:T('Schließen'),bg:'#555',fn:()=>{}}]);
 }
@@ -1993,7 +2047,7 @@ function updateStatus(){
   let txt=turnNote;
   if(gameOver)txt+=T(' Remis!');
   else{
-    txt+=aiPlayers[p]?T(`{0} (Computer) überlegt …`,[PNAMES[p]]):(NET.on&&p===NET.seat)?T(`Du bist am Zug ({0})`,[PNAMES[p]]):T(`{0}{1} am Zug`,[PNAMES[p],netName(p)?' ('+netName(p)+')':'']);
+    txt+=aiPlayers[p]?T(`{0} (Computer) überlegt …`,[PNAMES[p]]):(FERN.on&&FERN.seats[p]&&FERN.seats[p].kind==='open')?T(`{0}: Platz noch frei – wartet auf einen Mitspieler`,[PNAMES[p]]):((NET.on&&p===NET.seat)||(FERN.on&&p===FERN.seat))?T(`Du bist am Zug ({0})`,[PNAMES[p]]):T(`{0}{1} am Zug`,[PNAMES[p],netName(p)?' ('+netName(p)+')':'']);
     const chk=TURN_ORDER.filter(x=>isInCheck(x,gameState));
     if(chk.length)txt+=T(' — SCHACH: ')+chk.map(x=>PNAMES[x]).join(' & ')+'!';
     if(helpDuty&&helpDuty.helper===p)txt+=helpDuty.mated?T(` — HILFSPFLICHT: {0} ist matt – du musst ihn befreien!`,[PNAMES[helpDuty.victim]]):T(` — HILFSPFLICHT: Manche deiner Züge würden {0} mattsetzen – die sind gesperrt.`,[PNAMES[helpDuty.victim]]);
@@ -2020,6 +2074,7 @@ function snapshot(){
     clock:Object.assign({},clock),flagged:new Set(flagged),moveLeft,timeUsed:Object.assign({},timeUsed)};
 }
 function undoMove(){
+  if(FERN.on){toast(T('In Fernpartien können Züge nicht zurückgenommen werden.'),3000);return;}
   if(NET.on){netUndoButton();return;}
   if(promoPending||moveAnim||!history.length)return;
   cancelAI();
@@ -2114,7 +2169,7 @@ function renderLog(){
   const ol=document.getElementById('logList');if(!ol)return;
   ol.innerHTML=moveLog.map((e,i)=>`<li><span class="num">${i+1}.</span><span style="color:${PCOLOR[e.player]}">●</span> ${moveText(e)}</li>`).join('');
   ol.scrollTop=ol.scrollHeight;
-  const b=document.getElementById('btnUndo');if(b){b.disabled=NET.on?(NET.spec||!NET.started||(!NET.host&&!moveLog.some(e=>e.player===NET.seat))):!history.length;
+  const b=document.getElementById('btnUndo');if(b){b.disabled=FERN.on||NET.on?(NET.spec||!NET.started||(!NET.host&&!moveLog.some(e=>e.player===NET.seat))):!history.length;
     b.textContent=NET.on&&!NET.host?T('↶ Bitten'):T('↶ Zurück');b.title=NET.on&&!NET.host?T('Die anderen fragen, ob du deinen letzten Zug zurücknehmen darfst'):T('Letzten Zug zurücknehmen (Strg+Z)');}
 }
 // ================= Mitspieler-Avatare (eigene Monster, Gefühle) =================
@@ -2200,7 +2255,7 @@ function drawAvatar0(p,t){
   drawNameTag(x,p,ai);
 }
 function drawNameTag(x,p,ai){
-  const freeSeat=NET.on&&!NET.started&&p!==NET.seat&&((NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind)==='open');
+  const freeSeat=(FERN.on&&FERN.seats[p]&&FERN.seats[p].kind==='open')||NET.on&&!NET.started&&p!==NET.seat&&((NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind)==='open');
   const name=freeSeat?T('Platz frei …'):ai?MONSTERS[p].name:(netName(p)||(T('Spieler ')+PNAMES[p]))+(NET.on&&NET.avs[p]&&NET.avs[p].mic===false&&p!==NET.seat?'  🔇':'')+(NET.on&&p===NET.seat&&!micLive()?'  🔇':'');
   x.font='bold 15px sans-serif';const w=x.measureText(name).width+16;
   x.fillStyle='rgba(0,0,0,.55)';roundRect(x,8,AV_H-28,w,21,6);x.fill();
@@ -2421,7 +2476,7 @@ document.addEventListener('pointerdown',e=>{const m=document.getElementById('avM
 // ---------- eigene Kamera (Probelauf; im Multiplayer geht dasselbe Bild an die Mitspieler) ----------
 let camStream=null,camOffMode='still',showSelf=true;
 try{camOffMode=localStorage.getItem('dreiSchach.camOffMode')||'still';}catch(e){}
-function meP(){if(NET.on&&NET.seat)return NET.seat;return TURN_ORDER.find(p=>!aiPlayers[p])||'B';}
+function meP(){if(FERN.on&&FERN.seat)return FERN.seat;if(NET.on&&NET.seat)return NET.seat;return TURN_ORDER.find(p=>!aiPlayers[p])||'B';}
 function setCamOffMode(v){camOffMode=v;try{localStorage.setItem('dreiSchach.camOffMode',v);}catch(e){}}
 async function camOn(){
   const err=m=>{document.getElementById('camErr').textContent=m;};
@@ -2653,7 +2708,7 @@ function applyGameData(d){
   const sb=document.getElementById('startBtn');sb.textContent=T('▶ Fortsetzen');sb.classList.add('show');
   updateStatus();renderClocks();resizeCanvas();
 }
-function autosave(){if(NET.on){hostSave();return;}try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
+function autosave(){if(FERN.on){fernAfterMove();return;}if(NET.on){hostSave();return;}try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
 function resumeAutosave(){
   try{const t=localStorage.getItem(SAVE_KEY);if(t)applyGameData(deser(t));}
   catch(e){alert(T('Die letzte Partie konnte nicht geladen werden.'));}
@@ -2712,6 +2767,8 @@ function endByPoints(){
 }
 function fmtTime(ms){
   const t=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(t/60),s=t%60;
+  if(t>=86400)return `${Math.floor(t/86400)}d ${Math.floor(t%86400/3600)}h`;   // Fernpartie: lange Bedenkzeiten
+  if(t>=3600)return `${Math.floor(t/3600)}:${String(m%60).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   return `${m}:${String(s).padStart(2,'0')}`;
 }
 function startTurnClock(){moveLeft=tc.move;lastTick=performance.now();renderClocks();}
@@ -2731,7 +2788,7 @@ function renderClocks(){
   }
   document.getElementById('clkPause').textContent=paused?'▶':'⏸';
 }
-function togglePause(){if(NET.on&&!NET.host){toast(T('Nur der Gastgeber kann die Uhr anhalten.'),2500);return;}if(waitingStart){startPlay();return;}paused=!paused;lastTick=performance.now();renderClocks();if(paused)cancelAI();else maybeAI();if(NET.on)netBroadcast({t:'pause',on:paused});}
+function togglePause(){if(FERN.on){toast(T('In Fernpartien läuft keine Uhr.'),2500);return;}if(NET.on&&!NET.host){toast(T('Nur der Gastgeber kann die Uhr anhalten.'),2500);return;}if(waitingStart){startPlay();return;}paused=!paused;lastTick=performance.now();renderClocks();if(paused)cancelAI();else maybeAI();if(NET.on)netBroadcast({t:'pause',on:paused});}
 function timeOut(p,kind){
   if(NET.on&&NET.host&&!netApplying)netBroadcast({t:'to',p,kind,clock,timeUsed});
   snd('beep');
@@ -2749,6 +2806,7 @@ function timeOut(p,kind){
 setInterval(()=>{
   const now=performance.now(),dt=Math.min(now-lastTick,1000);lastTick=now;   // eingefrorene Seite (Hintergrund) kostet keine Bedenkzeit
   if(gameOver||paused||setupOpen)return;
+  if(FERN.on)return;   // Fernpartie: Bedenkzeit zählt der Server
   const p=cur();
   if(NET.on&&!moveLog.length){renderClocks();return;}   // Online: Die Uhr startet mit dem ersten Zug
   if(!flagged.has(p))timeUsed[p]+=dt;
@@ -2762,7 +2820,8 @@ setInterval(()=>{
 function openSetup(){
   let has=false;try{has=!!localStorage.getItem(SAVE_KEY);}catch(e){}
   document.getElementById('btnResume').style.display=has?'':'none';
-  cancelAI();setupOpen=true;document.getElementById('startBtn').classList.remove('show');document.getElementById('setupModal').classList.add('show');}
+  cancelAI();setupOpen=true;document.getElementById('startBtn').classList.remove('show');document.getElementById('setupModal').classList.add('show');
+  fernSeatRows();renderFernList();}
 function startFromSetup(){
   const mOn=document.getElementById('tcMoveOn').checked,gOn=document.getElementById('tcGameOn').checked;
   const ms=Math.max(5,+document.getElementById('tcMoveSec').value||60),gm=Math.max(1,+document.getElementById('tcGameMin').value||15);
@@ -2792,6 +2851,7 @@ function maybeAI(){
   cancelAI();
   if(gameOver||paused||setupOpen||promoPending||!aiPlayers[cur()])return;
   if(NET.on&&!NET.host)return;   // Computerzüge rechnet nur der Gastgeber
+  if(FERN.on&&!fernMayAI())return;   // Fernpartie: nur ein Gerät rechnet
   // reiner Computer-Durchlauf: mindestens 5 Sekunden pro Zug, damit man zuschauen kann
   const onlyAI=TURN_ORDER.every(p=>aiPlayers[p]);
   aiTimer=setTimeout(()=>{aiTimer=null;aiMove();},onlyAI?2600:400+Math.random()*300);
@@ -3421,17 +3481,355 @@ function rotateBoard(){if(window.V3&&V3.on){V3.rotate();return;}rotation=(rotati
 document.getElementById('chkPieces').onchange=e=>{showPieces=e.target.checked;draw();};
 
 document.getElementById('chkHints').onchange=e=>{showHints=e.target.checked;draw();};
-document.getElementById('btnReset').onclick=()=>{if(NET.on){netLeave();return;}openSetup();};
+document.getElementById('btnReset').onclick=()=>{if(FERN.on){fernHome();return;}if(NET.on){netLeave();return;}openSetup();};
 window.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undoMove();}
 });
+// ================= Fernpartie (asynchron über den eigenen Server) =================
+// Der Spielstand liegt auf dem Server (Cloudflare, siehe server/src/fern.js). Jeder Platz hat einen geheimen Schlüssel,
+// der auf dem Gerät gespeichert wird – so bleibt die Zuordnung, auch wenn alle offline sind.
+// Nach jedem eigenen Zug (und den Computerzügen danach) schickt dieses Gerät den neuen Stand an den Server;
+// der weckt per Web-Push den Nächsten. Offene Seiten fragen zusätzlich alle 10 Sekunden nach.
+const FERN_LS='dreiSchach.fern';
+let FERN_SRV='';
+function fernBase(){
+  const h=QS.get('fernhost');if(h)return(/^https?:/.test(h)?h:'http://'+h).replace(/\/$/,'');
+  const s=OWN_SERVER||FERN_SRV;return s?'https://'+s:'';
+}
+async function fernSrvLoad(){   // Adresse des Servers: fest eingetragen oder aus server.json (schreibt die Veröffentlichung)
+  if(QS.get('fernhost')||OWN_SERVER||FERN_SRV)return true;
+  try{const r=await fetch('server.json?'+Date.now(),{cache:'no-store'});
+    if(r.ok){const j=await r.json();FERN_SRV=String(j.host||'').replace(/^https?:\/\//,'').replace(/\/+$/,'');}}catch(e){}
+  return !!FERN_SRV;
+}
+async function fernApi(path,body){
+  if(!await fernSrvLoad())throw{msg:T('Der Spielserver für Fernpartien ist noch nicht eingerichtet.')};
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),15000);
+  let r;
+  try{r=await fetch(fernBase()+'/fern/'+path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal}:{cache:'no-store',signal:ctl.signal});}
+  catch(e){throw{net:true,msg:T('Server nicht erreichbar – bitte Internetverbindung prüfen.')};}
+  finally{clearTimeout(to);}
+  const j=await r.json().catch(()=>({}));j._status=r.status;
+  if(r.status>=500)throw{net:true,msg:j.error||('HTTP '+r.status)};
+  return j;
+}
+function fernList(){try{return JSON.parse(localStorage.getItem(FERN_LS)||'{}')||{};}catch(e){return{};}}
+function fernStore(code,patch){const l=fernList();l[code]=Object.assign(l[code]||{},patch,{at:Date.now()});try{localStorage.setItem(FERN_LS,JSON.stringify(l));}catch(e){}}
+function fernForget(code){
+  if(!confirm(T('Diese Partie aus deiner Liste entfernen? (Mit dem persönlichen Link kommst du trotzdem wieder hinein.)')))return;
+  const l=fernList();delete l[code];try{localStorage.setItem(FERN_LS,JSON.stringify(l));}catch(e){}renderFernList();
+}
+function fernQS(){return QS.get('fernhost')?'&fernhost='+encodeURIComponent(QS.get('fernhost')):'';}
+function fernLink(code,tok){return location.origin+location.pathname+'?fern='+code+(tok?'&t='+tok:'')+fernQS();}
+function fernHome(){location.href=location.pathname+(QS.get('fernhost')?'?fernhost='+encodeURIComponent(QS.get('fernhost')):'');}
+function fernMini(){const m=document.getElementById('fernModal');m.classList.toggle('mini');
+  document.querySelector('#fernModal .lbMin').textContent=m.classList.contains('mini')?'+':'–';}
+function fernCopy(id){const i=document.getElementById(id);i.select();
+  (navigator.clipboard?navigator.clipboard.writeText(i.value):Promise.reject()).catch(()=>{try{document.execCommand('copy');}catch(e){}});toast(T('📋 Link kopiert'),1800);}
+const FERN_INVITE='Spiel mit mir eine Fernpartie Drei-Personen-Schach! ♟️ Jeder zieht, wann er Zeit hat – tippe auf den Link, um mitzumachen:';
+function fernShare(){const link=fernLink(FERN.code);navigator.share({title:T('Drei-Personen-Schach'),text:T(FERN_INVITE),url:link}).catch(()=>{});}
+
+// ---------- Startseite: neue Partie, eigene Partien ----------
+function fernSeatRows(){
+  const box=document.getElementById('fnSeats');if(!box)return;
+  const me=document.getElementById('fnColor').value,old={};
+  for(const p of TURN_ORDER){const e=document.getElementById('fnP'+p);if(e)old[p]=e.value;}
+  const lv=[['',T('Mitspieler (per Einladung)')],['easy',T('Computer – leicht')],['medium',T('Computer – mittel')],['hard',T('Computer – stark')],['master',T('Computer – Meister')]];
+  box.innerHTML=TURN_ORDER.filter(p=>p!==me).map(p=>`<div class="row"><span style="color:${PCOLOR[p]};width:86px">${PNAMES[p]}</span><select id="fnP${p}">${
+    lv.map(([v,t])=>`<option value="${v}"${(old[p]||'')===v?' selected':''}>${t}</option>`).join('')}</select></div>`).join('');
+  const n=document.getElementById('fnName');
+  if(n&&!n.value){try{n.value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}}
+}
+async function renderFernList(){
+  const box=document.getElementById('fnList');if(!box)return;
+  const l=fernList(),codes=Object.keys(l).filter(c=>l[c].t||l[c].watch).sort((a,b)=>(l[b].at||0)-(l[a].at||0)).slice(0,15);
+  if(!codes.length){box.innerHTML='';return;}
+  box.innerHTML=`<div class="row" style="font-weight:bold;margin:0 0 2px">${T('📬 Deine Fernpartien')}</div>`+codes.map(c=>{const e=l[c];
+    return `<div class="fnItem"><button class="fnGo" onclick="location.href='${fernLink(c)}'"><span style="color:${PCOLOR[e.seat]||'#bbb'}">●</span> <span id="fnN_${c}">${esc(c)}</span><br><small id="fnS_${c}" style="color:#aaa">…</small></button>`+
+      `<button class="fnX" onclick="fernForget('${c}')" title="${T('Aus der Liste entfernen')}">✕</button></div>`;}).join('')+
+    `<div style="border-bottom:1px solid #444;margin:12px 0 4px"></div>`;
+  if(!await fernSrvLoad()){for(const c of codes){const s=document.getElementById('fnS_'+c);if(s)s.textContent=T('Spielserver nicht eingerichtet');}return;}
+  for(const c of codes){
+    const e=l[c];
+    fernApi('g/'+c+(e.t?'?t='+e.t:'')).then(st=>{
+      const s=document.getElementById('fnS_'+c),n=document.getElementById('fnN_'+c);if(!s)return;
+      if(st._status===404){s.textContent=T('nicht mehr vorhanden');return;}
+      const others=TURN_ORDER.filter(p=>p!==st.seat).map(p=>st.seats[p].kind==='ai'?T('Computer'):st.seats[p].kind==='open'?T('frei'):st.seats[p].name);
+      if(n)n.textContent=(st.seat?PNAMES[st.seat]+' · ':'')+T('mit {0}',[others.join(T(' und '))]);
+      s.innerHTML=st.over?T('🏁 beendet'):st.next&&st.next===st.seat?`<b>${T('♟ Du bist dran!')}</b>`:
+        st.next&&st.seats[st.next].kind==='open'?T('wartet auf einen Mitspieler'):st.next?T('{0} ist dran',[PNAMES[st.next]]):'';
+    }).catch(()=>{const s=document.getElementById('fnS_'+c);if(s)s.textContent=T('Server nicht erreichbar');});
+  }
+}
+async function fernCreate(){
+  const btn=document.getElementById('fnCreateBtn');
+  const name=(document.getElementById('fnName').value||'').trim().slice(0,18)||T('Spieler');
+  try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
+  const seat=document.getElementById('fnColor').value,ai={};
+  for(const p of TURN_ORDER)if(p!==seat){const e=document.getElementById('fnP'+p);ai[p]=e&&e.value||null;}
+  btn.disabled=true;const old=btn.textContent;btn.textContent=T('Einen Moment …');
+  try{
+    const j=await fernApi('new',{name,seat,ai});
+    if(!j.code)throw{msg:j.error||'Fehler'};
+    fernStore(j.code,{t:j.token,seat:j.seat});
+    try{window.history.replaceState(null,'','?fern='+j.code+fernQS());}catch(e){}
+    fernEnter(j.state,j.token,true);
+    fernOfferNotify();
+  }catch(e){alert('⚠️ '+(e.msg||e));}
+  finally{btn.disabled=false;btn.textContent=old;}
+}
+
+// ---------- Partie öffnen, beitreten ----------
+let fernJoinState=null;
+async function fernOpen(code){
+  code=String(code).toLowerCase().replace(/[^a-z0-9]/g,'');
+  const tq=QS.get('t');
+  if(tq&&/^[0-9a-f]{16,40}$/.test(tq)){fernStore(code,{t:tq});
+    try{window.history.replaceState(null,'',location.pathname+'?fern='+code+fernQS());}catch(e){}}   // Schlüssel nicht in der Adresszeile stehen lassen
+  const me=fernList()[code]||{};
+  document.getElementById('setupModal').classList.remove('show');
+  showBanner(T('✉️ Fernpartie wird geladen …'));
+  let st;
+  for(let i=0;;i++){
+    try{st=await fernApi('g/'+code+(me.t?'?t='+me.t:''));break;}
+    catch(e){if(!e.net||i>=2){showBanner('⚠️ '+(e.msg||e));setTimeout(()=>{if(confirm(T('Die Fernpartie konnte nicht geladen werden. Nochmal versuchen?')))location.reload();else fernHome();},400);return;}
+      await sleep(2000);}
+  }
+  hideBanner();
+  if(st._status===404){alert(T('Diese Fernpartie gibt es nicht (mehr).'));fernHome();return;}
+  if(st.seat){fernEnter(st,me.t,false);return;}
+  const open=TURN_ORDER.filter(p=>st.seats[p].kind==='open');
+  if(open.length&&!st.over){
+    fernJoinState=st;
+    const who=TURN_ORDER.filter(p=>st.seats[p].kind==='human').map(p=>st.seats[p].name);
+    document.getElementById('fnJoinTxt').textContent=T('{0} lädt dich zu einer Fernpartie ein. Jeder zieht, wann er Zeit hat – du bekommst Bescheid, wenn du dran bist. Du spielst {1}. Wie heißt du?',[who.join(T(' und ')),PNAMES[open[0]]]);
+    let nm='';try{nm=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
+    document.getElementById('fnJoinName').value=nm;
+    setupOpen=true;document.getElementById('fernJoin').classList.add('show');
+    return;
+  }
+  fernStore(code,{watch:true});fernEnter(st,null,false);
+}
+async function fernJoin(){
+  const st=fernJoinState;if(!st)return;
+  const name=(document.getElementById('fnJoinName').value||'').trim().slice(0,18)||T('Gast');
+  try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
+  try{
+    const j=await fernApi('g/'+st.code+'/join',{name});
+    if(j._status===409){alert(j.error==='full'?T('Inzwischen sind alle Plätze vergeben – du kannst zuschauen.'):T('Diese Partie ist schon zu Ende.'));fernWatch();return;}
+    if(!j.seat)throw{msg:j.error||'Fehler'};
+    fernStore(st.code,{t:j.token,seat:j.seat});
+    fernEnter(j.state,j.token,false);
+    toast(T('Du spielst {0}. Viel Spaß!',[PNAMES[j.seat]]),4000);
+    fernOfferNotify();
+  }catch(e){alert('⚠️ '+(e.msg||e));}
+}
+function fernWatch(){const st=fernJoinState;if(!st)return;fernStore(st.code,{watch:true});fernEnter(st,null,false);}
+
+function fernEnter(st,token,fresh){
+  FERN.on=true;FERN.code=st.code;FERN.seat=st.seat||null;FERN.token=FERN.seat?token:null;FERN.v=-1;FERN.endShown=false;
+  document.getElementById('fernJoin').classList.remove('show');
+  hideNetModals();
+  document.body.classList.add('online');
+  rotation=FERN.seat?TURN_ORDER.indexOf(FERN.seat):0;
+  for(const id of['chkFollow','chkFollow2d']){const f=document.getElementById(id);if(f)f.checked=false;}
+  fernApply(st,false);
+  if(fresh){FERN.local=true;maybeAI();}
+  document.getElementById('fernModal').classList.add('show');
+  if(window.innerWidth<700&&!fresh)document.getElementById('fernModal').classList.add('mini');
+  renderFernPanel();
+  clearInterval(FERN.poll);FERN.poll=setInterval(()=>{if(document.visibilityState==='visible')fernPoll();},10000);
+  setTimeout(()=>{layoutStrip();resizeCanvas();fitBoard();draw();if(window.V3&&V3.on)V3.view(FERN.seat||'cur');},60);
+  // Benachrichtigungen schon erlaubt (z. B. aus einer anderen Partie)? Dann diese Partie gleich mit anmelden.
+  if(FERN.seat&&fernPushOK()&&Notification.permission==='granted'&&!(st.seats[FERN.seat]||{}).push)fernNotify(false);
+}
+
+// ---------- Stand vom Server übernehmen ----------
+function fernApply(st,anim){
+  FERN.seats=st.seats;FERN.next=st.next;FERN.over=st.over;FERN.used=st.used;FERN.age=st.age||0;FERN.loadedAt=Date.now();
+  renderFernPanel();
+  if(st.v===FERN.v){updateStatus();renderClocks();return;}
+  const prevV=FERN.v,wasMine=FERN.v>=0&&cur()===FERN.seat;FERN.v=st.v;FERN.local=false;
+  const go=()=>{
+    if(st.snap){fernLoadSnap(deser(st.snap),st);}
+    else{   // neue Partie, noch kein Zug
+      cancelAI();
+      for(const p of TURN_ORDER)aiPlayers[p]=st.seats[p].kind==='ai'?st.seats[p].lvl:null;
+      tc={move:0,game:0};setupOpen=false;waitingStart=false;
+      initGame();paused=false;timeUsed=Object.assign({B:0,G:0,R:0},st.used||{});
+      updateStatus();renderClocks();draw();
+    }
+    if(prevV>=0&&!gameOver&&FERN.seat&&cur()===FERN.seat&&!wasMine)notifyTurn();
+    if(gameOver&&prevV>=0&&!FERN.endShown){FERN.endShown=true;snd('end');ask('end',document.getElementById('status').textContent,[{label:'OK',fn:()=>{}}]);}
+    renderFernPanel();
+    maybeAI();
+  };
+  const L=st.last;
+  if(anim&&prevV>=0&&st.v===prevV+1&&L&&L.from&&L.to&&!moveAnim&&!promoPending&&cur()===L.p&&gameState[L.from]&&gameState[L.from].player===L.p){
+    const vm=getValidMoves(L.from,movedPieces,epTarget);
+    if(vm.moves.has(C2F[L.to])){cancelAI();castleMap=vm.castles;startMoveAnim(L.from,L.to,go);return;}
+  }
+  go();
+}
+function fernLoadSnap(d,st){
+  cancelAI();kicks=[];
+  gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
+  gameOver=d.gameOver;turnNote=d.turnNote||'';capturedBy=d.capturedBy;moveLog=d.moveLog||[];history=[];
+  tc={move:0,game:0};clock=d.clock||{B:0,G:0,R:0};flagged=d.flagged||new Set();moveLeft=0;
+  timeUsed=Object.assign({B:0,G:0,R:0},st.used||{});
+  aiPlayers=d.aiPlayers||{B:null,G:null,R:null};eliminated=d.eliminated||new Set();
+  selected=null;validMoves=new Set();castleMap={};promoPending=null;pendingNote='';
+  setupOpen=false;paused=false;waitingStart=false;lastTick=performance.now();
+  document.getElementById('startBtn').classList.remove('show');
+  renderLog();updateCaptured();
+  if(gameOver){const el=document.getElementById('status');el.textContent=d.status||'';el.style.color=d.statusColor||'#fff';}
+  else updateStatus();
+  renderClocks();resizeCanvas();draw();
+}
+function fernSnap(){
+  return ser({gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,clock,flagged,aiPlayers,eliminated,
+    status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color});
+}
+// Darf dieses Gerät den Computerzug rechnen? Ja, wenn der Zug davor hier gemacht wurde – sonst erst,
+// wenn 20 Sekunden lang kein anderes Gerät gerechnet hat (z. B. weil der Ziehende sofort zugemacht hat).
+function fernMayAI(){
+  if(!FERN.seat||FERN.over)return false;
+  const e=moveLog[moveLog.length-1];
+  if(FERN.local||(e&&e.player===FERN.seat))return true;
+  const age=FERN.age+(Date.now()-FERN.loadedAt);
+  if(age>20000)return true;
+  clearTimeout(FERN.aiWait);FERN.aiWait=setTimeout(()=>fernPoll(),Math.max(1000,20500-age));
+  return false;
+}
+
+// ---------- eigenen Zug speichern ----------
+function fernMoveText(e){
+  if(e.castle)return `${PNAMES[e.player]}: ${e.castle}`;
+  return `${PNAMES[e.player]}: ${PIECES[e.piece].replace('︎','')} ${e.from}${e.cap?'×':'–'}${e.to}${e.promo?'='+PIECES[e.promo].replace('︎',''):''}${e.mark||''}`;
+}
+function fernAfterMove(){
+  if(!FERN.on||!FERN.seat)return;
+  const e=moveLog[moveLog.length-1];if(!e)return;
+  const mover=e.player;
+  if(mover!==FERN.seat&&!aiPlayers[mover])return;
+  FERN.local=true;
+  const next=gameOver?null:cur();
+  let hint=null;   // erster Mensch nach dem/den Computer(n) – wird geweckt, falls der Computerzug ausbleibt
+  if(next&&aiPlayers[next])for(let i=1;i<3;i++){const q=TURN_ORDER[(TURN_ORDER.indexOf(next)+i)%3];if(!aiPlayers[q]){hint=q;break;}}
+  const body={t:FERN.token,mover,next,over:gameOver,hint,snap:fernSnap(),
+    last:{from:e.from,to:e.to,text:fernMoveText(e)},result:gameOver?document.getElementById('status').textContent.slice(0,120):''};
+  const epoch=FERN.epoch;
+  FERN.pending++;renderFernPanel();
+  FERN.q=FERN.q.then(async()=>{
+    try{
+      for(let i=0;;i++){
+        if(epoch!==FERN.epoch||!FERN.on)return;   // inzwischen neu geladen → verwerfen
+        body.v=FERN.v;
+        let j;
+        try{j=await fernApi('g/'+FERN.code+'/move',body);}
+        catch(err){if(i===1)showBanner(T('⚠️ Zug noch nicht gespeichert – keine Verbindung zum Server. Ich versuche es weiter …'));await sleep(Math.min(30000,2000*(i+1)));continue;}
+        hideBanner();
+        if(j.ok){FERN.v=j.v;FERN.used=j.used;FERN.next=next;FERN.over=gameOver;FERN.age=0;FERN.loadedAt=Date.now();return;}
+        FERN.epoch++;
+        if(j.state){toast(T('⚠️ Der Spielstand hatte sich inzwischen geändert – er wurde neu geladen.'),5000);FERN.v=-1;fernApply(j.state,false);}
+        else toast('⚠️ '+(j.error||'Fehler'),5000);
+        return;
+      }
+    } finally {FERN.pending--;renderFernPanel();}
+  });
+}
+
+// ---------- Abgleich ----------
+async function fernPoll(force){
+  if(!FERN.on||FERN.pending||FERN.polling||moveAnim||promoPending)return;
+  FERN.polling=true;
+  try{
+    const st=await fernApi('g/'+FERN.code+(FERN.token?'?t='+FERN.token:''));
+    if(st._status!==200||FERN.pending||!FERN.on)return;
+    if(st.v!==FERN.v)fernApply(st,true);
+    else{fernApply(st,false);if(!gameOver&&aiPlayers[cur()]&&!aiTimer&&!moveAnim)maybeAI();}
+    if(force)toast(T('✓ Auf dem neuesten Stand'),1500);
+  }catch(e){if(force)toast('⚠️ '+(e.msg||e),3000);}
+  finally{FERN.polling=false;}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&FERN.on)fernPoll();});
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.t==='fern'&&FERN.on&&(!e.data.code||e.data.code===FERN.code))fernPoll();});
+
+// ---------- Seitenleiste ----------
+function renderFernPanel(){
+  if(!FERN.on)return;
+  const S=FERN.seats||{},nx=FERN.next;
+  document.getElementById('fnCode').textContent=FERN.code||'';
+  let st;
+  if(FERN.over)st=T('🏁 Die Partie ist beendet.');
+  else if(FERN.pending)st=T('💾 Zug wird gespeichert …');
+  else if(!nx)st='';
+  else if(S[nx]&&S[nx].kind==='open')st=T('Es fehlt noch ein Mitspieler für {0} – schick ihm den Einladungslink.',[PNAMES[nx]]);
+  else if(nx===FERN.seat)st=`<span class="fnTurn">${T('♟ Du bist dran!')}</span>`;
+  else if(S[nx]&&S[nx].kind==='ai')st=T('{0} (Computer) ist dran …',[PNAMES[nx]]);
+  else st=FERN.seat?T('{0} ({1}) ist dran. Du kannst die Seite schließen – du bekommst Bescheid.',[S[nx]&&S[nx].name||'',PNAMES[nx]]):T('{0} ({1}) ist dran.',[S[nx]&&S[nx].name||'',PNAMES[nx]]);
+  if(!FERN.seat)st=T('👀 Du schaust zu.')+' '+st;
+  document.getElementById('fnStatus').innerHTML=st;
+  document.getElementById('fnSeatList').innerHTML=TURN_ORDER.map(p=>{const s=S[p]||{};
+    const nm=s.kind==='ai'?T('Computer ({0})',[MONSTERS[p].name]):s.kind==='open'?`<i>${T('Platz frei – wartet auf Einladung')}</i>`:esc(s.name||'')+(p===FERN.seat?' '+T('(du)'):'');
+    return `<div class="lbSeat"><span class="lbDot" style="background:${PCOLOR[p]}"></span><b style="color:${PCOLOR[p]}">${PNAMES[p]}</b> <span>${nm}</span>${s.push?' <span title="'+T('bekommt Benachrichtigungen')+'">🔔</span>':''}${p===nx&&!FERN.over?' ⬅':''}</div>`;}).join('');
+  const open=TURN_ORDER.some(p=>S[p]&&S[p].kind==='open')&&!FERN.over;
+  document.getElementById('fnInvite').style.display=open?'':'none';
+  if(open){const link=fernLink(FERN.code);document.getElementById('fnLink').value=link;
+    document.getElementById('fnShare').style.display=navigator.share?'':'none';
+    document.getElementById('fnWa').href='https://wa.me/?text='+encodeURIComponent(T(FERN_INVITE)+' '+link);
+    document.getElementById('fnSms').href='sms:?&body='+encodeURIComponent(T(FERN_INVITE)+' '+link);
+    document.getElementById('fnMail').href='mailto:?subject='+encodeURIComponent(T('Einladung: Fernpartie Drei-Personen-Schach'))+'&body='+encodeURIComponent(T(FERN_INVITE)+'\n'+link);}
+  document.getElementById('fnMe').style.display=FERN.seat?'':'none';
+  if(FERN.seat){document.getElementById('fnMine').value=fernLink(FERN.code,FERN.token);
+    const on=(fernList()[FERN.code]||{}).push&&fernPushOK()&&Notification.permission==='granted';
+    document.getElementById('fnNotify').textContent=on?T('🔔 Benachrichtigungen sind an – Probe senden'):T('🔔 Benachrichtigen, wenn ich dran bin');}
+}
+
+// ---------- Benachrichtigungen (Web-Push) ----------
+function fernPushOK(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;}
+function fernStandalone(){return !!navigator.standalone||matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;}
+function fernOfferNotify(){
+  if(!FERN.seat)return;
+  if(!fernPushOK()){if(IS_IOS)setTimeout(()=>fernNotify(true),600);return;}
+  if(Notification.permission!=='default')return;
+  ask('fnpush',T('🔔 Soll ich dir Bescheid geben, wenn du dran bist?'),[{label:T('🔔 Ja, bitte'),fn:()=>fernNotify(true)},{label:T('Später'),bg:'#555',fn:()=>{}}]);
+}
+async function fernNotify(test){
+  const hint=document.getElementById('fnNotifyHint'),say=t=>{hint.textContent=t;if(test){const m=document.getElementById('fernModal');m.classList.remove('mini');}};
+  if(!FERN.seat)return;
+  if(!fernPushOK()){
+    say(IS_IOS&&!fernStandalone()?T('iPhone/iPad: Benachrichtigungen gibt es nur, wenn das Spiel als App auf dem Home-Bildschirm liegt. In Safari auf „Teilen“ → „Zum Home-Bildschirm“ tippen, die App von dort öffnen – deine Partie steht dort unter „Deine Fernpartien“ – und dann hier noch einmal auf 🔔 tippen.')
+      :T('Dieser Browser kann leider keine Benachrichtigungen empfangen. Tipp: Chrome, Firefox, Edge oder Safari verwenden.'));return;}
+  try{
+    const reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready;
+    const perm=Notification.permission==='granted'?'granted':await Notification.requestPermission();
+    if(perm!=='granted'){say(T('Benachrichtigungen sind blockiert. Erlaube sie in den Website-Einstellungen deines Browsers und tippe dann noch einmal hier.'));return;}
+    const k=await fernApi('key');if(!k.key)throw{msg:k.error||'key'};
+    let sub=await reg.pushManager.getSubscription(),oldKey='';
+    try{oldKey=localStorage.getItem('dreiSchach.pushKey')||'';}catch(e){}
+    if(sub&&oldKey&&oldKey!==k.key){try{await sub.unsubscribe();}catch(e){}sub=null;}
+    if(!sub){const raw=Uint8Array.from(atob(k.key.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-k.key.length%4)%4)),c=>c.charCodeAt(0));
+      sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:raw});}
+    try{localStorage.setItem('dreiSchach.pushKey',k.key);}catch(e){}
+    const j=await fernApi('g/'+FERN.code+'/push',{t:FERN.token,sub:sub.toJSON(),url:fernLink(FERN.code),
+      msgs:{title:T('Drei-Personen-Schach'),turn:T('♟ Du bist dran! {0}'),over:T('🏁 Die Partie ist zu Ende. {0}'),join:T('👋 {0} spielt jetzt mit.')},
+      test:test?T('🔔 So sieht deine Benachrichtigung aus, wenn du dran bist.'):false});
+    if(!j.ok)throw{msg:j.error||'Fehler'};
+    fernStore(FERN.code,{push:true});
+    if(FERN.seats[FERN.seat])FERN.seats[FERN.seat].push=true;
+    renderFernPanel();
+    if(test)say(T('✓ Du bekommst eine Nachricht, wenn du dran bist.')+(j.test&&j.test!=='ok'?' '+T('(Die Probe-Nachricht konnte nicht zugestellt werden.)'):''));
+  }catch(e){say(T('Benachrichtigungen konnten nicht eingeschaltet werden: ')+(e.message||e.msg||e));}
+}
+
 resizeCanvas();
 initGame();
 resizeCanvas();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
 translateDom(document.body);
-function startFlow(){if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else openSetup();}
+function startFlow(){if(QS.get('fern')){fernOpen(QS.get('fern'));return;}if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else openSetup();}
 function afterLang(){startFlow();}
 if(!LANG_SET)openLang();else startFlow();
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
