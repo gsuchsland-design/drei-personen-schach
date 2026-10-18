@@ -60,6 +60,8 @@ jobs:
           echo "::notice title=SERVER::https://$HOST/"
           sleep 5
           echo "::notice title=STATUS::$(curl -s "https://$HOST/")"
+          T=$(curl -s "https://$HOST/turn")
+          echo "::notice title=TURNCHECK::$(echo "$T" | jq -c '{relays:[.iceServers[]?|select(.username)|.urls|length],error}' 2>/dev/null || echo "$T" | cut -c1-200)"
       - name: Adresse ins Spiel eintragen (server.json)
         if: env.HOST != '' && !contains(env.HOST, 'null')
         working-directory: .
