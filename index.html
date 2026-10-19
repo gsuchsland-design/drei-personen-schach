@@ -570,7 +570,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 02:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 03:15';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -4257,37 +4257,76 @@ window.V3={on:false};
 
   // ---------- Figuren-Geometrie ----------
   const GEO={};
-  const BASE=[[0,0],[0.3,0],[0.3,0.05],[0.26,0.09],[0.22,0.11]];
-  function lathe(pts){return new THREE.LatheGeometry(BASE.concat(pts).map(([r,h])=>new THREE.Vector2(r,h)),28);}
+  // Staunton-Sockel mit Zierringen
+  const BASE=[[0,0],[0.315,0],[0.315,0.03],[0.295,0.045],[0.305,0.065],[0.285,0.085],[0.24,0.105],[0.25,0.12],[0.21,0.135]];
+  const LSEG=40;
+  function lathe(pts,base=true){return new THREE.LatheGeometry((base?BASE.concat(pts):pts).map(([r,h])=>new THREE.Vector2(r,h)),LSEG);}
   function at(g,x,y,z){g.translate(x,y,z);return g;}
+  // Teile: [Geometrie, Materialart] – 'w' Holz, 'g' Gold, 'd' dunkles Holz (Kerben, Augen, Mähne), 'f' Filz
   function pieceGeos(t){
     if(GEO[t])return GEO[t];
-    const g=[];
-    if(t==='P'){g.push(lathe([[0.16,0.15],[0.1,0.3],[0.15,0.33],[0.08,0.36],[0,0.36]]));g.push(at(new THREE.SphereGeometry(0.12,20,14),0,0.45,0));}
-    if(t==='R'){g.push(lathe([[0.19,0.15],[0.16,0.46],[0.23,0.49],[0.23,0.62],[0.15,0.62],[0.15,0.57],[0,0.57]]));
-      for(let i=0;i<4;i++){const a=i*Math.PI/2;g.push(at(new THREE.BoxGeometry(0.1,0.08,0.1),Math.cos(a)*0.17,0.66,Math.sin(a)*0.17));}}
-    if(t==='B'){g.push(lathe([[0.16,0.15],[0.09,0.44],[0.16,0.47],[0.09,0.5],[0,0.5]]));
-      g.push(new THREE.LatheGeometry([[0,0.5],[0.13,0.54],[0.14,0.62],[0.1,0.7],[0,0.77]].map(([r,h])=>new THREE.Vector2(r,h)),28));
-      g.push(at(new THREE.SphereGeometry(0.045,12,10),0,0.8,0));}
-    if(t==='Q'){g.push(lathe([[0.18,0.15],[0.1,0.54],[0.19,0.58],[0.12,0.62],[0.21,0.74],[0,0.7]]));
-      for(let i=0;i<8;i++){const a=i*Math.PI/4;g.push(at(new THREE.SphereGeometry(0.04,10,8),Math.cos(a)*0.2,0.76,Math.sin(a)*0.2));}
-      g.push(at(new THREE.SphereGeometry(0.07,14,10),0,0.78,0));}
-    if(t==='K'){g.push(lathe([[0.19,0.15],[0.11,0.57],[0.2,0.61],[0.13,0.65],[0.18,0.77],[0,0.77]]));
-    }
-    if(t==='N'){g.push(lathe([[0.19,0.15],[0.17,0.23],[0,0.23]]));
-      const s=new THREE.Shape();
-      const P=[[-0.15,0.2],[0.12,0.2],[0.08,0.36],[0.2,0.46],[0.28,0.5],[0.26,0.6],[0.1,0.68],[0.04,0.78],[-0.04,0.68],[-0.15,0.52]];
-      s.moveTo(P[0][0],P[0][1]);for(const p of P.slice(1))s.lineTo(p[0],p[1]);s.closePath();
-      const e=new THREE.ExtrudeGeometry(s,{depth:0.15,bevelEnabled:true,bevelSize:0.02,bevelThickness:0.02,bevelSegments:2});
-      e.translate(0,0,-0.075);g.push(e);}
+    const g=[],W_=x=>g.push([x,'w']),G_=x=>g.push([x,'g']),D_=x=>g.push([x,'d']);
+    g.push([at(new THREE.CylinderGeometry(0.3,0.3,0.012,LSEG),0,0.004,0),'f']);
+    if(t==='P'){   // Bauer: klein, Kragen, Kugelkopf
+      W_(lathe([[0.17,0.15],[0.12,0.22],[0.095,0.29],[0.15,0.31],[0.155,0.33],[0.1,0.345],[0,0.345]]));
+      W_(at(new THREE.SphereGeometry(0.125,28,20),0,0.44,0));}
+    if(t==='R'){   // Turm: Schaft, Kranz, Zinnen
+      W_(lathe([[0.2,0.15],[0.175,0.22],[0.16,0.44],[0.2,0.47],[0.24,0.5],[0.24,0.64],[0.17,0.64],[0.17,0.58],[0,0.58]]));
+      for(let i=0;i<6;i++){const a=i*Math.PI/3+Math.PI/6,b=new THREE.BoxGeometry(0.075,0.09,0.06);b.rotateY(-a);W_(at(b,Math.cos(a)*0.205,0.685,Math.sin(a)*0.205));}
+      G_(at(new THREE.TorusGeometry(0.205,0.012,8,LSEG).rotateX(Math.PI/2),0,0.47,0));}
+    if(t==='B'){   // Läufer: hoch und schlank, Mitra mit Kerbe, goldene Spitze
+      W_(lathe([[0.17,0.15],[0.12,0.25],[0.085,0.42],[0.075,0.5],[0.15,0.52],[0.155,0.545],[0.1,0.56],[0,0.56]]));
+      W_(lathe([[0,0.56],[0.09,0.575],[0.135,0.63],[0.14,0.69],[0.115,0.76],[0.07,0.82],[0.02,0.85],[0,0.855]],false));
+      const k=new THREE.BoxGeometry(0.03,0.16,0.3);k.rotateX(0.0);k.rotateZ(-0.6);D_(at(k,0.035,0.73,0));
+      G_(at(new THREE.SphereGeometry(0.04,16,12),0,0.89,0));
+      G_(at(new THREE.TorusGeometry(0.15,0.012,8,LSEG).rotateX(Math.PI/2),0,0.535,0));}
+    if(t==='Q'){   // Dame: Krone mit goldenen Perlen
+      W_(lathe([[0.2,0.15],[0.13,0.26],[0.095,0.5],[0.18,0.54],[0.185,0.565],[0.11,0.59],[0.12,0.64],[0.22,0.76],[0.17,0.75],[0.12,0.73],[0,0.75]]));
+      for(let i=0;i<9;i++){const a=i*Math.PI*2/9;G_(at(new THREE.SphereGeometry(0.032,12,10),Math.cos(a)*0.205,0.785,Math.sin(a)*0.205));}
+      W_(lathe([[0,0.74],[0.08,0.76],[0.07,0.8],[0,0.83]],false));
+      G_(at(new THREE.SphereGeometry(0.055,16,12),0,0.86,0));
+      G_(at(new THREE.TorusGeometry(0.18,0.012,8,LSEG).rotateX(Math.PI/2),0,0.553,0));}
+    if(t==='K'){   // König: höchste Figur, Kragen, goldenes Kreuz
+      W_(lathe([[0.21,0.15],[0.14,0.27],[0.1,0.56],[0.2,0.6],[0.205,0.625],[0.12,0.65],[0.13,0.7],[0.2,0.8],[0.18,0.83],[0.08,0.84],[0.07,0.87],[0,0.87]]));
+      G_(at(new THREE.TorusGeometry(0.2,0.013,8,LSEG).rotateX(Math.PI/2),0,0.612,0));}
+    if(t==='N'){   // Springer: Pferdekopf mit Ohren, Mähne, Augen und Nüstern
+      W_(lathe([[0.2,0.15],[0.18,0.2],[0.16,0.24],[0,0.24]]));
+      const P=[[-0.16,0.22],[0.14,0.22],[0.1,0.3],[0.12,0.36],[0.22,0.42],[0.3,0.47],[0.315,0.52],[0.28,0.565],[0.2,0.58],[0.16,0.63],[0.1,0.71],[0.075,0.82],[0.035,0.73],[-0.01,0.84],[-0.06,0.72],[-0.13,0.62],[-0.18,0.46],[-0.18,0.3]];
+      const sh=new THREE.Shape();sh.moveTo(P[0][0],P[0][1]);for(const q of P.slice(1))sh.lineTo(q[0],q[1]);sh.closePath();
+      const e=new THREE.ExtrudeGeometry(sh,{depth:0.13,bevelEnabled:true,bevelSize:0.035,bevelThickness:0.035,bevelSegments:4,curveSegments:8});
+      e.translate(0,0,-0.065);W_(e);
+      for(let i=0;i<7;i++){const u=i/6,mx=-0.07-0.11*u,my=0.7-0.42*u;D_(at(new THREE.SphereGeometry(0.035,10,8),mx,my,0));}
+      for(const z of [-0.105,0.105]){D_(at(new THREE.SphereGeometry(0.022,10,8),0.15,0.56,z));D_(at(new THREE.SphereGeometry(0.016,8,6),0.29,0.5,z*0.6));}}
     return GEO[t]=g;
   }
-  function pmat(player,hl){
-    const k=player+(hl||'');
+  // Holzmaserung (hell, wird mit der Spielerfarbe eingefärbt = farbig lasiertes Holz)
+  let WOOD=null;
+  function woodTex(){
+    if(WOOD)return WOOD;
+    const c=document.createElement('canvas');c.width=256;c.height=512;const x=c.getContext('2d');
+    x.fillStyle='#efe6d6';x.fillRect(0,0,256,512);
+    for(let i=0;i<140;i++){   // Längsfasern mit leichter Welle
+      const x0=Math.random()*256,w=0.6+Math.random()*2.2,a=0.05+Math.random()*0.16,amp=2+Math.random()*6,fr=0.006+Math.random()*0.01;
+      x.strokeStyle=`rgba(60,32,14,${a*1.9})`;x.lineWidth=w;x.beginPath();
+      for(let y=0;y<=512;y+=8)x.lineTo(x0+Math.sin(y*fr+i)*amp,y);x.stroke();}
+    for(let i=0;i<6;i++){   // Jahresringe/Astflammen
+      const cx=Math.random()*256,cy=Math.random()*512;x.strokeStyle='rgba(70,38,16,.22)';
+      for(let r=6;r<60;r+=5){x.lineWidth=1+Math.random();x.beginPath();x.ellipse(cx,cy,r*0.35,r*1.6,0,0,Math.PI*2);x.stroke();}}
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,1);t.anisotropy=4;
+    return WOOD=t;
+  }
+  function pmat(player,hl,kind='w'){
+    const k=player+(hl||'')+kind;
     if(matCache[k])return matCache[k];
-    const c=new THREE.Color(PCOLOR[player]);
-    const m=new THREE.MeshStandardMaterial({color:c,roughness:0.35,metalness:0.15});
-    if(hl==='sel'){m.emissive=new THREE.Color('#ffffff');m.emissiveIntensity=0.35;}
+    let m;
+    if(kind==='g')m=new THREE.MeshStandardMaterial({color:'#ffd23f',metalness:0.35,roughness:0.28,emissive:new THREE.Color('#8a6400'),emissiveIntensity:0.45});
+    else if(kind==='f')m=new THREE.MeshStandardMaterial({color:'#1d3a1d',roughness:1});
+    else{
+      const WOODCOL={R:'#d8452a',B:'#3f78d8',G:'#45b52a'};const base=kind==='d'?shade(WOODCOL[player],-0.55):WOODCOL[player];
+      const o={color:new THREE.Color(base),map:woodTex(),roughness:kind==='d'?0.6:0.42,metalness:0};
+      m=THREE.MeshPhysicalMaterial?new THREE.MeshPhysicalMaterial(Object.assign(o,{clearcoat:kind==='d'?0.2:0.9,clearcoatRoughness:0.12})):new THREE.MeshStandardMaterial(o);
+    }
+    if(hl==='sel'&&kind!=='f'){m.emissive=new THREE.Color('#ffffff');m.emissiveIntensity=0.3;}
     return matCache[k]=m;
   }
   let GOLD=null,crossList=[],knightList=[],monGroup=null;const monitors={};
@@ -4318,10 +4357,10 @@ window.V3={on:false};
   function pieceTop(g,t){if(PTOP[t]==null){g.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(g);PTOP[t]=b.max.y-g.position.y;}return PTOP[t];}
   function makePiece(t,player,hl){
     const grp=new THREE.Group();
-    for(const g of pieceGeos(t)){const m=new THREE.Mesh(g,pmat(player,hl));m.castShadow=true;m.receiveShadow=true;grp.add(m);}
+    for(const[g,kind]of pieceGeos(t)){const m=new THREE.Mesh(g,pmat(player,hl,kind));m.castShadow=kind!=='f';m.receiveShadow=true;grp.add(m);}
     if(t==='K'){   // goldenes Kreuz – flach, wird im Bild immer frontal zur Kamera gedreht
       if(!GEO.cross)GEO.cross=[at(new THREE.BoxGeometry(0.085,0.36,0.05),0,0,0),at(new THREE.BoxGeometry(0.26,0.085,0.05),0,0.05,0)];
-      const cg=new THREE.Group();cg.position.set(0,0.95,0);
+      const cg=new THREE.Group();cg.position.set(0,1.03,0);
       for(const g of GEO.cross){const m=new THREE.Mesh(g,goldMat());m.castShadow=true;cg.add(m);}
       grp.add(cg);crossList.push(cg);
     }
