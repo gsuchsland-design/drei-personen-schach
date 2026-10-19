@@ -759,7 +759,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101924"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101925"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -791,7 +791,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 20:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 22:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -3941,7 +3941,16 @@ function allLegalMoves(p){
 }
 // Bewertung einer Stellung aus Sicht von p (nach dem eigenen Zug, bevor die Gegner ziehen)
 // Gewichte der Stellungsbewertung (durch Selbstspiel abgestimmt, siehe tools/tune-ai.md)
-var AIW={opp:0.5,lead:0,chk:0.3,l1:0.9,l2:0.45,pchk:0.4,p0:0.15,p1:0.6,castle:0.35,kmove:0.25,dev:0.15,pOwn:0.03,pX:0.12,pXr:0.04,earlyQ:0.15,N:3,B:3,R:4,Q:6};
+var AIW={see:2,opp:0.5,lead:0,chk:0.3,l1:0.9,l2:0.45,pchk:0.4,p0:0.15,p1:0.6,castle:0.35,kmove:0.25,dev:0.15,pOwn:0.03,pX:0.12,pXr:0.04,earlyQ:0.15,N:3,B:3,R:4,Q:6};
+// Abtauschfolge auf einem Feld zu Ende rechnen: Angreifer (Gegner) und Verteidiger schlagen abwechselnd, jeweils mit der billigsten Figur;
+// jede Seite darf aufhören, wenn weiterschlagen schadet. Ergebnis = was die Gegner an Material gewinnen (≥ 0).
+function seeLoss(v,A,D){
+  if(!A||!A.length)return 0;A=A.slice().sort((a,b)=>a-b);D=(D||[]).slice().sort((a,b)=>a-b);
+  const g=[v];let d=0,on=A[0],ai=1,di=0,side=1;
+  for(;;){const L=side?D:A,i=side?di:ai;if(i>=L.length)break;d++;g[d]=on-g[d-1];on=L[i];if(side)di++;else ai++;side^=1;}
+  while(d>0){g[d-1]=-Math.max(-g[d-1],g[d]);d--;}
+  return Math.max(0,g[0]);
+}
 function evV(pc){return pc==="P"?1:pc==="K"?0:AIW[pc];}
 function evMat(ns,q){const W=AIW;let v=0;for(const pd of Object.values(ns))if(pd.player===q)v+=pd.piece==='P'?1:pd.piece==='K'?0:W[pd.piece];return v;}
 function evOpp(ns,opp){   // Material der Gegner; mit lead>0 zählt der Stärkere mehr (den Führenden bremsen)
@@ -3954,17 +3963,17 @@ function evalAfter(p,ns,mv){
   if(isInCheck(nxt,ns)){e+=W.chk;if(!hasAnyMoveS(nxt,ns,null))return mateWinner(nxt,p,ns)===p?1e4:-1e4;}
   if(isInCheck(thd,ns)){e+=W.chk;if(!hasAnyMoveS(thd,ns,null))e+=mateWinner(thd,p,ns)===p?40:-40;}
   // Bedrohungen: Angriffs- und Deckungskarten
-  const att={},attO={},def=new Set(),opf=OPPF&&OPPF.p===p;
+  const att={},attO={},def=new Set(),attL={},defL={},opf=OPPF&&OPPF.p===p;
   for(const[c,pd]of Object.entries(ns)){
     const sq=rawMoves(c,pd.piece,pd.player,ns,null,true);
-    if(pd.player===p){for(const t of sq)def.add(t);}
-    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t]){att[t]=v;attO[t]=pd.player;}}
+    if(pd.player===p){for(const t of sq){def.add(t);if(W.see)(defL[t]=defL[t]||[]).push(evV(pd.piece)||10);}}
+    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t]){att[t]=v;attO[t]=pd.player;}if(W.see)(attL[t]=attL[t]||[]).push(v);}
   }
   const losses=[];
   for(const[c,pd]of Object.entries(ns)){
     if(pd.player!==p||pd.piece==='K'||att[c]===undefined)continue;
     const v=evV(pd.piece);
-    losses.push((def.has(c)?Math.max(0,v-att[c]):v)*(opf?oppFactor(attO[c]):1));
+    losses.push((W.see?seeLoss(v,attL[c],defL[c]):def.has(c)?Math.max(0,v-att[c]):v)*(opf?oppFactor(attO[c]):1));
   }
   losses.sort((a,b)=>b-a);
   e-=(losses[0]||0)*W.l1+(losses[1]||0)*W.l2;   // zwei Gegner können je einmal schlagen
@@ -3989,16 +3998,16 @@ function evalPos(p,ns){
   let e=evMat(ns,p)-evOpp(ns,opp);
   if(isInCheck(p,ns))e-=W.pchk;
   // eigene bedrohte Figuren (am Zug kann man nur eine retten)
-  const att={},attO={},def=new Set(),opf=OPPF&&OPPF.p===p;
+  const att={},attO={},def=new Set(),attL={},defL={},opf=OPPF&&OPPF.p===p;
   for(const[c,pd]of Object.entries(ns)){
     const sq=rawMoves(c,pd.piece,pd.player,ns,null,true);
-    if(pd.player===p){for(const t of sq)def.add(t);}
-    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t]){att[t]=v;attO[t]=pd.player;}}
+    if(pd.player===p){for(const t of sq){def.add(t);if(W.see)(defL[t]=defL[t]||[]).push(evV(pd.piece)||10);}}
+    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t]){att[t]=v;attO[t]=pd.player;}if(W.see)(attL[t]=attL[t]||[]).push(v);}
   }
   const losses=[];
   for(const[c,pd]of Object.entries(ns)){
     if(pd.player!==p||pd.piece==='K'||att[c]===undefined)continue;
-    losses.push((def.has(c)?Math.max(0,evV(pd.piece)-att[c]):evV(pd.piece))*(opf?oppFactor(attO[c]):1));
+    losses.push((W.see===1?seeLoss(evV(pd.piece),attL[c],defL[c]):def.has(c)?Math.max(0,evV(pd.piece)-att[c]):evV(pd.piece))*(opf?oppFactor(attO[c]):1));
   }
   losses.sort((a,b)=>b-a);
   return e-(losses[1]||0)*W.p1-(losses[0]||0)*W.p0;

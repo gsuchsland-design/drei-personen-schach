@@ -10,7 +10,7 @@ from playwright.async_api import async_playwright
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT=os.environ.get('TUNE_OUT',os.path.join(ROOT,'tools','tune-result.json'))
 CHROME=os.environ.get('CHROME','/opt/google/chrome/chrome')
-BASE={"opp":0.5,"lead":0,"chk":0.3,"l1":0.9,"l2":0.45,"pchk":0.4,"p0":0.15,"p1":0.6,"castle":0.35,"kmove":0.25,"dev":0.15,
+BASE={"see":2,"opp":0.5,"lead":0,"chk":0.3,"l1":0.9,"l2":0.45,"pchk":0.4,"p0":0.15,"p1":0.6,"castle":0.35,"kmove":0.25,"dev":0.15,
       "pOwn":0.03,"pX":0.12,"pXr":0.04,"earlyQ":0.15,"N":3,"B":3,"R":4,"Q":6}
 # abgestimmte Größen und ihre Schrittweite (Rest bleibt fest)
 STEP={"opp":0.08,"lead":0.08,"chk":0.12,"l1":0.12,"l2":0.1,"castle":0.12,"kmove":0.1,"dev":0.08,"pX":0.06,"pXr":0.03,"earlyQ":0.08,
