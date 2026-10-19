@@ -118,7 +118,7 @@ body.online #msgLine { display:block; flex:0 1 auto; min-width:0; }
 #btn3d { position:fixed; top:6px; left:52px; z-index:150; padding:4px 10px; font-size:14px; font-weight:bold; cursor:pointer;
   background:#333; color:#eee; border:1px solid #666; border-radius:5px; opacity:.85; }
 #btn3d:hover { opacity:1; }
-#viewBar { display:none; position:fixed; bottom:10px; left:50%; transform:translateX(-50%); z-index:150; gap:6px; align-items:center;
+#viewBar { display:none; position:fixed; bottom:calc(10px + var(--fernH,0px)); left:50%; transform:translateX(-50%); z-index:150; gap:6px; align-items:center;
   background:rgba(28,28,28,.92); border:1px solid #555; border-radius:8px; padding:6px 10px; color:#ddd; font-size:12px; flex-wrap:wrap; justify-content:center; }
 #viewBar.show { display:flex; }
 #viewBar.mini { padding:3px 6px; opacity:.8; }
@@ -190,6 +190,7 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
   #lobbyModal { align-items:flex-end; justify-content:center; padding:0 0 6px; }
   #fernModal { align-items:flex-end; justify-content:center; padding:0 0 6px; }
   #fernModal .netBox { max-height:56vh; }
+  #replayBar, #abBar { bottom:calc(6px + var(--fernH,0px)) !important; }
   #lobbyModal .netBox { max-height:56vh; }
 }
 #toast { position:fixed; left:50%; top:54px; transform:translateX(-50%); z-index:400; background:rgba(40,30,70,.95); color:#fff; border:1px solid #8a6fd0;
@@ -318,8 +319,16 @@ body.abEdit #c { outline:2px dashed #5b8fd0; outline-offset:-2px; }
 #rpBoard { font-size:13px !important; }
 @media (max-width:700px){ #abBar { width:98vw; padding:4px; } #abBar button, #abBar select { padding:4px 6px; font-size:12px; } .abHint { display:none; } #abBar .abTitle { display:none; } }
 #colRows .colRow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:8px 0; }
-#colRows input[type=color] { width:46px; height:34px; border:none; background:none; padding:0; cursor:pointer; }
-#colRows button { display:inline-block !important; width:auto !important; margin:0 !important; padding:4px 9px !important; font-size:12px !important; background:#444 !important; }
+#colRows .colPick { width:46px !important; height:34px; border:2px solid #fff8 !important; border-radius:8px; padding:0 !important; cursor:pointer; }
+#colRows .colPick.on { border-color:#fff !important; box-shadow:0 0 0 2px #c58bff; }
+#cwBox { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:4px 0 10px; }
+#cwDisc { width:min(220px,62vw); height:auto; touch-action:none; cursor:crosshair; }
+.cwSide { display:flex; flex-direction:column; gap:8px; min-width:110px; flex:1; }
+#cwPrev { height:40px; border-radius:8px; border:1px solid #fff6; }
+#colRows .cwSide button { background:#2a6 !important; margin:0 !important; padding:6px !important; }
+.cwSide label { display:flex; flex-direction:column; gap:2px; font-size:12px; margin:0 !important; }
+#cwHex { width:100% !important; font-family:monospace; padding:5px !important; margin:0 !important; font-size:14px !important; }
+#colRows button:not(.colPick) { display:inline-block !important; width:auto !important; margin:0 !important; padding:4px 9px !important; font-size:12px !important; background:#444 !important; }
 .colSw { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:middle; border:1px solid #fff8; }
 .colNote { font-size:12px; color:#aaa; } .colWarn { color:#ffcf6b; font-size:13px; }
 #recBadge { display:none; font-size:13px; padding:0 6px; border:1px solid #c33; border-radius:10px; background:rgba(160,30,30,.35); flex:none; }
@@ -636,6 +645,12 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="lbLinkRow"><input id="fnMine" readonly onclick="this.select()"><button onclick="fernCopy('fnMine')" title="Link kopieren">📋</button></div>
     <div class="lbHint">Das ist dein persönlicher Link – er ist der Schlüssel zu deinem Platz. Nur für deine eigenen Geräte, bitte nicht weitergeben.</div>
   </div>
+  <div id="fnAV" style="display:none">
+    <div class="lbLbl">🎥 Bild &amp; Ton</div>
+    <div id="fnAVState" class="lbHint" style="margin-top:0"></div>
+    <button id="fnAVBtn" onclick="fvToggle()">🎥 Bild &amp; Ton mit Anwesenden</button>
+    <div class="lbMedia"><button id="fnCam" onclick="camStream?camOff():camOn()" style="display:none">📷</button><button id="fnMic" onclick="toggleMic()" style="display:none">🎤</button></div>
+  </div>
   <button class="lbLeave" onclick="fernPoll(true)">🔄 Aktualisieren</button>
   <button class="lbLeave" onclick="fernHome()">⌂ Zur Startseite (die Partie bleibt gespeichert)</button>
 </div></div>
@@ -744,7 +759,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101923"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101924"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -776,7 +791,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 20:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 20:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -983,6 +998,7 @@ function toggleMic(){
   try{trTick();}catch(e){}
 }
 function netTracks(){   // aktuelle Kamera/Mikrofon an alle laufenden Verbindungen geben
+  if(typeof FV!=='undefined'&&FV.on)fvTracks();
   if(!NET.on)return;dummyTracks();
   const v=camStream?camStream.getVideoTracks()[0]:NET.dv,a=micStream?micStream.getAudioTracks()[0]:NET.da;
   for(const c of Object.values(NET.calls)){
@@ -2365,25 +2381,62 @@ function colorsApply(){
   try{renderClocks();renderLog();updateCaptured();updateStatus();draw();}catch(e){}
 }
 // ---------- Farbdialog ----------
-function colOpen(){colRender();document.getElementById('colModal').classList.add('show');}
+function colOpen(){CW.p=null;colRender();document.getElementById('colModal').classList.add('show');}
 function colClose(){document.getElementById('colModal').classList.remove('show');}
 function colRender(){
   const box=document.getElementById('colRows');let h='';
   for(const p of TURN_ORDER){
     const me=typeof NET!=='undefined'&&NET.on&&p===NET.seat,own=ownCol(p),nm=(typeof netName==='function'&&netName(p))||PNAMES[p];
-    h+=`<div class="colRow"><input type="color" value="${PCOLOR[p]}" oninput="colSet('${p}',this.value)" aria-label="${esc(nm)}"> <b style="color:${PCOLOR[p]}">${esc(nm)}</b>${me?' '+T('(du – die anderen sehen diese Farbe als Vorschlag)'):''}`;
+    h+=`<div class="colRow"><button class="colPick${CW.p===p?' on':''}" style="background:${PCOLOR[p]}" onclick="cwOpen('${p}')" aria-label="${esc(nm)}" title="${T('Farbe wählen')}"></button> <b style="color:${PCOLOR[p]}">${esc(nm)}</b>${me?' '+T('(du – die anderen sehen diese Farbe als Vorschlag)'):''}`;
     if(!me&&own&&own.toLowerCase()!==PCOLOR[p].toLowerCase())h+=` <button onclick="colTake('${p}')" title="${T('Wunschfarbe übernehmen')}"><span class="colSw" style="background:${own}"></span> ${T('Wunsch übernehmen')}</button>`;
     else if(!me&&own)h+=` <span class="colNote"><span class="colSw" style="background:${own}"></span> ${T('Wunschfarbe von {0}',[esc(nm)])}</span>`;
     h+=` <button onclick="colReset('${p}')">${T('Standard')}</button></div>`;
+    if(CW.p===p)h+=`<div id="cwBox"><canvas id="cwDisc" width="440" height="440"></canvas><div class="cwSide"><div id="cwPrev"></div>
+      <label>${T('Helligkeit')}<input type="range" id="cwVal" min="25" max="100" oninput="cwVal(this.value)"></label>
+      <input id="cwHex" maxlength="7" onchange="cwHex(this.value)"><button onclick="cwClose()">✓</button></div></div>`;
   }
   const cl=colClashes();
   if(cl.length)h+=`<p class="colWarn">⚠️ ${cl.map(([a,b])=>T('{0} und {1} sind schwer zu unterscheiden.',[PNAMES[a],PNAMES[b]])).join(' ')}</p>`;
   box.innerHTML=h;
   document.getElementById('colAuto').checked=COLS.auto;
 }
-function colSet(p,v){
+// ---------- eigenes Farbrad: Farbton rundherum, Sättigung nach außen, Helligkeit mit Regler ----------
+var CW={p:null,h:0,s:1,v:1};
+function hexHsv(hx){const[r,g,b]=hexRgb(hx).map(x=>x/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;
+  if(d){h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360;}return{h,s:mx?d/mx:0,v:mx};}
+function hsvHex(h,s,v){const f=n=>{const k=(n+h/60)%6;return v-v*s*Math.max(0,Math.min(k,4-k,1));};return rgbHex(f(5)*255,f(3)*255,f(1)*255);}
+function cwOpen(p){if(CW.p===p){cwClose();return;}CW.p=p;Object.assign(CW,hexHsv(PCOLOR[p]));colRender();cwDraw();cwBind();}
+function cwClose(){CW.p=null;colRender();}
+function cwDraw(){
+  const cv=document.getElementById('cwDisc');if(!cv)return;const x=cv.getContext('2d'),W=cv.width,R=W/2-6,cx=W/2;
+  const img=x.createImageData(W,W),d=img.data;
+  for(let j=0;j<W;j++)for(let i=0;i<W;i++){const dx=i-cx,dy=j-cx,r=Math.hypot(dx,dy),o=(j*W+i)*4;
+    if(r>R){d[o+3]=0;continue;}
+    const h=(Math.atan2(dy,dx)*180/Math.PI+360)%360,[rr,gg,bb]=hexRgb(hsvHex(h,r/R,CW.v));
+    d[o]=rr;d[o+1]=gg;d[o+2]=bb;d[o+3]=r>R-1.5?Math.round(255*(R-r+0.5)):255;}
+  x.putImageData(img,0,0);
+  const a=CW.h*Math.PI/180,mx=cx+Math.cos(a)*CW.s*R,my=cx+Math.sin(a)*CW.s*R;
+  x.lineWidth=4;x.strokeStyle='#000';x.beginPath();x.arc(mx,my,13,0,7);x.stroke();x.lineWidth=2.5;x.strokeStyle='#fff';x.beginPath();x.arc(mx,my,13,0,7);x.stroke();
+  const hx=hsvHex(CW.h,CW.s,CW.v);
+  document.getElementById('cwPrev').style.background=hx;document.getElementById('cwHex').value=hx;document.getElementById('cwVal').value=Math.round(CW.v*100);
+}
+function cwBind(){
+  const cv=document.getElementById('cwDisc');if(!cv)return;
+  const pick=e=>{const r=cv.getBoundingClientRect(),W=cv.width,R=W/2-6,sx=W/r.width;
+    const dx=(e.clientX-r.left)*sx-W/2,dy=(e.clientY-r.top)*sx-W/2;
+    CW.h=(Math.atan2(dy,dx)*180/Math.PI+360)%360;CW.s=Math.min(1,Math.hypot(dx,dy)/R);cwApply();};
+  let down=false;
+  cv.addEventListener('pointerdown',e=>{down=true;try{cv.setPointerCapture(e.pointerId);}catch(x){}pick(e);e.preventDefault();});
+  cv.addEventListener('pointermove',e=>{if(down)pick(e);});
+  cv.addEventListener('pointerup',()=>{down=false;colRender();cwDraw();cwBind();});
+}
+function cwApply(){const hx=hsvHex(CW.h,CW.s,CW.v);colSet(CW.p,hx,true);cwDraw();
+  const b=document.querySelector('.colPick.on');if(b)b.style.background=hx;}
+function cwVal(v){CW.v=v/100;cwApply();}
+function cwHex(v){v=String(v).trim();if(!/^#?[0-9a-f]{6}$/i.test(v))return;if(v[0]!=='#')v='#'+v;Object.assign(CW,hexHsv(v));cwApply();}
+function colSet(p,v,live){
   if(typeof NET!=='undefined'&&NET.on&&p===NET.seat){COLS.mine=v;netAV();}else COLS.over[p]=v;
-  colSave();colorsApply();clearTimeout(colSet.t);colSet.t=setTimeout(colRender,250);
+  colSave();colorsApply();if(!live){clearTimeout(colSet.t);colSet.t=setTimeout(colRender,250);}
 }
 function colTake(p){delete COLS.over[p];COLS.auto=true;colSave();colorsApply();colRender();}
 function colReset(p){
@@ -3472,6 +3525,7 @@ function syncAvUI(){
     mb.textContent=ml?'🎤':'🔇';mb.classList.toggle('off',NET.on&&!ml);
     mt.textContent=!micStream?T('🎤 Mikrofon einschalten'):ml?T('🔇 Stumm schalten'):T('🎤 Stummschaltung aufheben');mt.style.background=ml?'#2a6':'#a33';
     if(NET.on)renderLobby();}
+  if(typeof FV!=='undefined'&&FV.on){fvAVAll();fvUI();}
   const me=meP();if(typeof NET!=='undefined'&&NET.on)camFix();document.getElementById('camInfo').textContent=T(`Dein Bild erscheint im Fenster von {0}.`,[PNAMES[me]])+(camStream?T(' Kamera läuft.'):'');
 }
 function setBarBottom(on){
@@ -4568,9 +4622,15 @@ function fernForget(code){
 }
 function fernQS(){return QS.get('fernhost')?'&fernhost='+encodeURIComponent(QS.get('fernhost')):'';}
 function fernLink(code,tok){return location.origin+location.pathname+'?fern='+code+(tok?'&t='+tok:'')+fernQS();}
-function fernHome(){location.href=location.pathname+(QS.get('fernhost')?'?fernhost='+encodeURIComponent(QS.get('fernhost')):'');}
+function fernHome(){try{FV.on&&fvStop();}catch(e){}location.href=location.pathname+(QS.get('fernhost')?'?fernhost='+encodeURIComponent(QS.get('fernhost')):'');}
 function fernMini(){const m=document.getElementById('fernModal');m.classList.toggle('mini');
-  document.querySelector('#fernModal .lbMin').textContent=m.classList.contains('mini')?'+':'–';}
+  document.querySelector('#fernModal .lbMin').textContent=m.classList.contains('mini')?'+':'–';fernBarFix();}
+function fernBarFix(){   // Platz der verkleinerten Fernpartie-Leiste unten für die anderen Leisten freihalten
+  const m=document.getElementById('fernModal'),b=m&&m.querySelector('.netBox');
+  const h=m&&m.classList.contains('show')&&m.classList.contains('mini')&&innerWidth<700&&b?b.getBoundingClientRect().height+8:0;
+  document.documentElement.style.setProperty('--fernH',h+'px');
+}
+window.addEventListener('resize',()=>fernBarFix());
 function fernCopy(id){const i=document.getElementById(id);i.select();
   (navigator.clipboard?navigator.clipboard.writeText(i.value):Promise.reject()).catch(()=>{try{document.execCommand('copy');}catch(e){}});toast(T('📋 Link kopiert'),1800);}
 const FERN_INVITE='Spiel mit mir eine Fernpartie Drei-Personen-Schach! ♟️ Jeder zieht, wann er Zeit hat – tippe auf den Link, um mitzumachen:';
@@ -4592,7 +4652,7 @@ async function renderFernList(){
   const l=fernList(),codes=Object.keys(l).filter(c=>l[c].t||l[c].watch).sort((a,b)=>(l[b].at||0)-(l[a].at||0)).slice(0,15);
   if(!codes.length){box.innerHTML='';return;}
   box.innerHTML=`<div class="row" style="font-weight:bold;margin:0 0 2px">${T('📬 Deine Fernpartien')}</div>`+codes.map(c=>{const e=l[c];
-    return `<div class="fnItem"><button class="fnGo" onclick="location.href='${fernLink(c)}'"><span style="color:${PCOLOR[e.seat]||'#bbb'}">●</span> <span id="fnN_${c}">${esc(c)}</span><br><small id="fnS_${c}" style="color:#aaa">…</small></button>`+
+    return `<div class="fnItem"><button class="fnGo" onclick="location.href='${fernLink(c)}'"><span style="color:${PCOLOR[e.seat]||'#bbb'}">●</span> <span id="fnN_${c}">${esc(e.title||T('Fernpartie'))}</span><br><small id="fnS_${c}" style="color:#aaa">…</small></button>`+
       `<button class="fnX" onclick="fernForget('${c}')" title="${T('Aus der Liste entfernen')}">✕</button></div>`;}).join('')+
     `<div style="border-bottom:1px solid #444;margin:12px 0 4px"></div>`;
   if(!await fernSrvLoad()){for(const c of codes){const s=document.getElementById('fnS_'+c);if(s)s.textContent=T('Spielserver nicht eingerichtet');}return;}
@@ -4601,8 +4661,10 @@ async function renderFernList(){
     fernApi('g/'+c+(e.t?'?t='+e.t:'')).then(st=>{
       const s=document.getElementById('fnS_'+c),n=document.getElementById('fnN_'+c);if(!s)return;
       if(st._status===404){s.textContent=T('nicht mehr vorhanden');return;}
-      const others=TURN_ORDER.filter(p=>p!==st.seat).map(p=>st.seats[p].kind==='ai'?T('Computer'):st.seats[p].kind==='open'?T('frei'):st.seats[p].name);
-      if(n)n.textContent=(st.seat?PNAMES[st.seat]+' · ':'')+T('mit {0}',[others.join(T(' und '))]);
+      const others=TURN_ORDER.filter(p=>p!==st.seat).map(p=>st.seats[p].kind==='ai'?MONSTERS[p].name+' ('+T('Computer')+')':st.seats[p].kind==='open'?T('freier Platz'):st.seats[p].name);
+      const title=st.seat?T('mit {0}',[others.join(T(' und '))]):TURN_ORDER.map(p=>st.seats[p].kind==='ai'?MONSTERS[p].name:st.seats[p].name||T('frei')).join(' · ');
+      if(n)n.textContent=title;
+      if(l[c]&&l[c].title!==title){const L=fernList();if(L[c]){L[c].title=title;try{localStorage.setItem(FERN_LS,JSON.stringify(L));}catch(x){}}}
       s.innerHTML=st.over?T('🏁 beendet'):st.next&&st.next===st.seat?`<b>${T('♟ Du bist dran!')}</b>`:
         st.next&&st.seats[st.next].kind==='open'?T('wartet auf einen Mitspieler'):st.next?T('{0} ist dran',[PNAMES[st.next]]):'';
     }).catch(()=>{const s=document.getElementById('fnS_'+c);if(s)s.textContent=T('Server nicht erreichbar');});
@@ -4693,8 +4755,11 @@ function fernEnter(st,token,fresh){
 
 // ---------- Stand vom Server übernehmen ----------
 function fernApply(st,anim){
+  if(st.rtc)FERN.rtc=st.rtc;
   FERN.seats=st.seats;FERN.next=st.next;FERN.over=st.over;FERN.used=st.used;FERN.age=st.age||0;FERN.loadedAt=Date.now();
-  renderFernPanel();
+  renderFernPanel();setTimeout(fernBarFix,50);
+  if(FERN.rtc&&FERN.seat&&!FV.on&&fvWanted())fvStart();
+  fvUI();
   if(st.v===FERN.v){updateStatus();renderClocks();return;}
   replayExit();
   const prevV=FERN.v,wasMine=FERN.v>=0&&cur()===FERN.seat;FERN.v=st.v;FERN.local=false;
@@ -4808,7 +4873,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('messag
 function renderFernPanel(){
   if(!FERN.on)return;
   const S=FERN.seats||{},nx=FERN.next;
-  document.getElementById('fnCode').textContent=FERN.code||'';
+  document.getElementById('fnCode').textContent='';
   let st;
   if(FERN.over)st=T('🏁 Die Partie ist beendet.');
   else if(FERN.pending)st=T('💾 Zug wird gespeichert …');
@@ -4835,6 +4900,110 @@ function renderFernPanel(){
     document.getElementById('fnNotify').textContent=on?T('🔔 Benachrichtigungen sind an – Probe senden'):T('🔔 Benachrichtigen, wenn ich dran bin');}
 }
 
+
+// ================= Fernpartie: Bild & Ton mit Mitspielern, die gerade online sind =================
+// Jeder Mitspieler bekommt vom Server geheime Verbindungsnamen (FERN.rtc, Zuschauer nicht). Wer „Bild & Ton“ einschaltet,
+// meldet sich unter seinem Namen beim Vermittlungsdienst an und ruft regelmäßig die anderen an – wer gerade da ist, nimmt an.
+var FV={on:false,peer:null,calls:{},conns:{},vids:{},avs:{},live:new Set(),timer:null,starting:false};
+function fvKey(){return 'dreiSchach.fv.'+(FERN.code||'');}
+function fvWanted(){try{return localStorage.getItem(fvKey())==='1';}catch(e){return false;}}
+function fvSeatOf(id){if(!FERN.rtc)return null;return TURN_ORDER.find(p=>FERN.rtc[p]===id)||null;}
+async function fvStart(){
+  if(FV.on||FV.starting||!FERN.on||!FERN.seat||!FERN.rtc)return;
+  FV.starting=true;
+  try{
+    if(!window.Peer&&!await needPeerJS()){toast(T('Bild und Ton konnten nicht gestartet werden.'),3000);return;}
+    try{localStorage.setItem(fvKey(),'1');}catch(e){}
+    if(!camStream&&!micStream){await micOn();}
+    let pr;
+    try{pr=await makePeer(FERN.rtc[FERN.seat]);}
+    catch(e){toast(e&&e.type==='unavailable-id'?T('Bild und Ton laufen schon auf einem anderen Gerät mit deinem Platz.'):T('Bild und Ton konnten nicht gestartet werden.'),4000);return;}
+    FV.peer=pr;FV.on=true;
+    pr.on('call',c=>{if(!fvSeatOf(c.peer)){try{c.close();}catch(e){}return;}c.answer(outStream());fvHook(c);});
+    pr.on('connection',c=>{if(!fvSeatOf(c.peer)){try{c.close();}catch(e){}return;}fvConn(c);});
+    pr.on('disconnected',()=>{if(FV.peer===pr&&FV.on)try{pr.reconnect();}catch(e){}});
+    pr.on('error',e=>{   // Gegenüber (noch) nicht da: Versuch sofort verwerfen, der nächste Durchlauf probiert es wieder
+      if(e&&e.type==='peer-unavailable'){const m=/(dsf-[\w-]+)/.exec(e.message||'');if(m){const c=FV.conns[m[1]];if(c&&!c.open){try{c.close();}catch(x){}delete FV.conns[m[1]];}}}});
+    clearInterval(FV.timer);FV.timer=setInterval(fvTick,5000);fvTick();
+    if(!avatarsOn)toggleAvatars();
+  }finally{FV.starting=false;fvUI();}
+}
+function fvStop(){
+  try{localStorage.removeItem(fvKey());}catch(e){}
+  clearInterval(FV.timer);FV.timer=null;
+  for(const c of Object.values(FV.calls))try{c.close();}catch(e){}
+  for(const c of Object.values(FV.conns))try{c.close();}catch(e){}
+  try{FV.peer&&FV.peer.destroy();}catch(e){}
+  FV.peer=null;FV.on=false;FV.calls={};FV.conns={};FV.live=new Set();
+  for(const p of TURN_ORDER)if(p!==FERN.seat){AV[p].video=null;}
+  fvUI();
+}
+function fvTick(){   // wer da ist, wird angerufen (die Seite mit dem „kleineren“ Platz ruft an, damit nicht beide gleichzeitig)
+  if(!FV.on||!FV.peer||FV.peer.destroyed)return;
+  if(FV.peer.disconnected){try{FV.peer.reconnect();}catch(e){}return;}
+  for(const p of TURN_ORDER){
+    if(p===FERN.seat||!FERN.seats[p]||FERN.seats[p].kind!=='human')continue;
+    const id=FERN.rtc[p],cn=FV.conns[id],now=Date.now();
+    if(cn&&!cn.open&&now-(cn._t||0)>6000){try{cn.close();}catch(e){}delete FV.conns[id];}   // niemand da: Versuch verwerfen
+    const ca=FV.calls[id];if(ca&&!ca._got&&now-(ca._t||0)>15000){try{ca.close();}catch(e){}delete FV.calls[id];}
+    if(!FV.conns[id]&&FERN.seat<p){try{const c=FV.peer.connect(id,{reliable:true});if(c){c._t=now;fvConn(c);}}catch(e){}}
+    else if(FV.conns[id]&&FV.conns[id].open&&!FV.calls[id]&&FERN.seat<p){try{const c=FV.peer.call(id,outStream());if(c){c._t=now;fvHook(c);}}catch(e){}}
+  }
+}
+function fvConn(c){
+  const old=FV.conns[c.peer];if(old&&old!==c&&old.open){try{c.close();}catch(e){}return;}
+  if(old&&old!==c){try{old.close();}catch(e){}}
+  FV.conns[c.peer]=c;
+  c.on('open',()=>{FV.live.add(fvSeatOf(c.peer));fvSendAV(c);fvUI();
+    if(!FV.calls[c.peer]&&FERN.seat<fvSeatOf(c.peer)){try{const k=FV.peer.call(c.peer,outStream());if(k){k._t=Date.now();fvHook(k);}}catch(e){}}});
+  c.on('data',d=>{let m;try{m=typeof d==='string'?JSON.parse(d):d;}catch(e){return;}
+    const p=fvSeatOf(c.peer);if(!p||!m||m.t!=='av')return;FV.avs[p]={cam:!!m.cam,mic:!!m.mic};fvAttach();fvUI();});
+  c.on('close',()=>{if(FV.conns[c.peer]===c){delete FV.conns[c.peer];FV.live.delete(fvSeatOf(c.peer));fvAttach();fvUI();}});
+  c.on('error',()=>{});
+}
+function fvSendAV(c){try{if(c&&c.open)c.send(JSON.stringify({t:'av',cam:!!camStream,mic:micLive()}));}catch(e){}}
+function fvAVAll(){if(FV.on)for(const c of Object.values(FV.conns))fvSendAV(c);}
+function fvHook(call){
+  const old=FV.calls[call.peer];if(old&&old!==call){try{old.close();}catch(e){}}
+  FV.calls[call.peer]=call;
+  call._t=call._t||Date.now();
+  call.on('stream',s=>{call._got=true;let v=FV.vids[call.peer];
+    if(!v){v=document.createElement('video');v.autoplay=true;v.playsInline=true;v.setAttribute('playsinline','');
+      let box=document.getElementById('netVids');if(!box){box=document.createElement('div');box.id='netVids';box.style.cssText='position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:0;pointer-events:none;overflow:hidden';document.body.appendChild(box);}
+      box.appendChild(v);FV.vids[call.peer]=v;}
+    if(v.srcObject!==s){v.srcObject=s;v.play().catch(()=>{});}
+    FV.live.add(fvSeatOf(call.peer));fvAttach();fvUI();});
+  call.on('close',()=>{if(FV.calls[call.peer]===call)delete FV.calls[call.peer];fvAttach();fvUI();});
+  call.on('error',()=>{});
+}
+function fvTracks(){   // eigene Kamera/Mikrofon in laufende Anrufe geben
+  if(!FV.on)return;dummyTracks();
+  const v=camStream?camStream.getVideoTracks()[0]:NET.dv,a=micStream?micStream.getAudioTracks()[0]:NET.da;
+  for(const c of Object.values(FV.calls)){const pc=c&&c.peerConnection;if(!pc)continue;
+    for(const tr of pc.getTransceivers()){const k=tr.receiver&&tr.receiver.track&&tr.receiver.track.kind,want=k==='video'?v:k==='audio'?a:null;
+      if(want&&tr.sender&&tr.sender.track!==want)tr.sender.replaceTrack(want).catch(()=>{});}}
+  fvAVAll();
+}
+function fvAttach(){
+  for(const p of TURN_ORDER){if(p===FERN.seat||!FERN.rtc)continue;
+    const id=FERN.rtc[p],v=FV.calls[id]?FV.vids[id]:null,av=FV.avs[p]||{},a=AV[p];
+    if(v&&av.cam!==false){a.video=v;a.mirror=false;a.videoOff=false;a.camWasOn=true;}
+    else if(v){if(!a.videoOff&&a.camWasOn)grabStill(p);a.video=v;a.videoOff=true;a.camWasOn=false;}
+    else{a.video=null;a.videoOff=!!a.still;}
+  }
+}
+function fvUI(){
+  const box=document.getElementById('fnAV');if(!box)return;
+  box.style.display=FERN.on&&FERN.seat&&FERN.rtc?'':'none';
+  const b=document.getElementById('fnAVBtn');if(b){b.textContent=FV.on?T('🎥 Bild & Ton beenden'):T('🎥 Bild & Ton mit Anwesenden');b.style.background=FV.on?'#a33':'#2a6';}
+  const live=[...FV.live].filter(Boolean).map(p=>(FERN.seats[p]&&FERN.seats[p].name)||PNAMES[p]);
+  const st=document.getElementById('fnAVState');
+  if(st)st.textContent=!FV.on?T('Wer gleichzeitig online ist und Bild & Ton einschaltet, kann sich sehen und hören.'):live.length?T('🟢 Gerade da: {0}',[live.join(', ')]):T('Noch niemand sonst da – sobald jemand kommt, verbindet es sich von selbst.');
+  const cb=document.getElementById('fnCam'),mb=document.getElementById('fnMic');
+  if(cb){cb.style.display=FV.on?'':'none';cb.textContent=camStream?T('📷 Kamera an'):T('🚫 Kamera aus');cb.classList.toggle('off',!camStream);}
+  if(mb){mb.style.display=FV.on?'':'none';mb.textContent=micLive()?T('🎤 Mikrofon an'):T('🔇 Mikrofon aus');mb.classList.toggle('off',!micLive());}
+}
+function fvToggle(){if(FV.on)fvStop();else fvStart();}
 // ---------- Benachrichtigungen (Web-Push) ----------
 function fernPushOK(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;}
 function fernStandalone(){return !!navigator.standalone||matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;}

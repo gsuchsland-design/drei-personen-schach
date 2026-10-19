@@ -150,8 +150,15 @@ export class Fern {
   async view(g, t) {
     const seats = {};
     for (const p of ORDER) { const s = g.seats[p]; seats[p] = { kind: s.kind, name: s.name || '', lvl: s.lvl || null, push: !!(s.subs && s.subs.length) }; }
+    const me = this.seatOf(g, t);
+    // Bild & Ton zwischen Mitspielern, die gerade online sind: geheime Verbindungsnamen nur für Mitspieler (nicht für Zuschauer)
+    let rtc = null;
+    if (me) {
+      if (!g.rtc) { g.rtc = randStr(12, '0123456789abcdef'); await this.state.storage.put('g', g); }
+      rtc = {}; for (const p of ORDER) rtc[p] = `dsf-${g.code}-${p}-${g.rtc}`;
+    }
     return { code: g.code, v: g.v, snap: g.snap, next: g.next, over: g.over, last: g.last, used: g.used,
-      created: g.created, updated: g.updated, age: Date.now() - g.updated, seats, seat: this.seatOf(g, t) };
+      created: g.created, updated: g.updated, age: Date.now() - g.updated, seats, seat: me, rtc };
   }
 
   async save(g) {
