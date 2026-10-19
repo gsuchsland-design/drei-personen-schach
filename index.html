@@ -387,6 +387,9 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <div class="sub">🤖 Computergegner:</div>
   <label><input type="checkbox" id="avDiplo" onchange="setDiplo(this.checked)"> 🤝 verhandeln, verbünden sich und bluffen</label>
   <label><input type="checkbox" id="avAIVoice" onchange="setAIVoice(this.checked)"> 🗣️ sprechen laut</label>
+  <label><input type="checkbox" id="avOpp" onchange="setOppOn(this.checked)"> 🧠 lernen die Spielweise der Mitspieler (nur auf diesem Gerät)</label>
+  <div class="sub" id="oppState"></div>
+  <button onclick="oppForget()" style="margin-top:4px;background:#555">🧠 Gelerntes vergessen</button>
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <button class="langBtn notr" onclick="openLang()" style="margin-top:6px">🌐 Sprache · Language</button>
@@ -530,6 +533,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="row"><span style="color:#ff5533;width:46px">Rot</span><select id="plR" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
     <div class="row"><label><input type="checkbox" id="chkDiplo" checked onchange="setDiplo(this.checked)"> 🤝 Computergegner verhandeln, verbünden sich und bluffen</label></div>
     <div class="row"><label><input type="checkbox" id="chkAIVoice" checked onchange="setAIVoice(this.checked)"> 🗣️ Computergegner sprechen laut</label></div>
+    <div class="row"><label><input type="checkbox" id="chkOpp" checked onchange="setOppOn(this.checked)"> 🧠 Computergegner lernen eure Spielweise</label></div>
     <div class="row" style="font-weight:bold;margin:14px 0 2px">Zeitkontrolle</div>
     <div class="row"><input type="checkbox" id="tcMoveOn"><label for="tcMoveOn">Zeit pro Zug:</label>
       <input type="number" id="tcMoveSec" value="60" min="5" step="5"> Sekunden</div>
@@ -2223,6 +2227,7 @@ function initGame(){
   replayExit();
   TALK=[];
   if(typeof diploReset==='function')diploReset();
+  if(typeof oppGameReset==='function')oppGameReset();
   gameState={};capturedBy={B:[],R:[],G:[]};movedPieces=new Set(); // reset
   epTarget=[];promoPending=null;castleMap={};eliminated=new Set();
   turnIdx=0;selected=null;validMoves=new Set();gameOver=false;helpDuty=null;turnNote='';history=[];moveLog=[];renderLog();
@@ -2324,6 +2329,7 @@ function endGame(winner,loser){
 }
 // Spielende: Meldung in der Leiste (kein Fenster), dazu „Revanche“ bzw. „Noch eine Partie“
 function gameEndPrompt(text){
+  if(typeof oppSave==='function')oppSave();
   if(REPLAY){toast(text,4000);return;}   // Ende in einer Variante: nur Hinweis, keine Revanche
   const an={label:T('🔬 Analysieren'),bg:'#7a6420',fn:()=>setTimeout(analyseGame,50)};
   if(FERN.on){FERN.endShown=true;ask('end',text,[an,{label:'OK',fn:()=>{}}]);return;}
@@ -3553,6 +3559,7 @@ function markLastMove(){
   autosave();
   emoAfterMove(e);
   diploAfterMove(e);
+  try{oppLearn(e);}catch(x){}
 }
 function score(p){
   let v=0;
@@ -3701,17 +3708,17 @@ function evalAfter(p,ns,mv){
   if(isInCheck(nxt,ns)){e+=W.chk;if(!hasAnyMoveS(nxt,ns,null))return mateWinner(nxt,p,ns)===p?1e4:-1e4;}
   if(isInCheck(thd,ns)){e+=W.chk;if(!hasAnyMoveS(thd,ns,null))e+=mateWinner(thd,p,ns)===p?40:-40;}
   // Bedrohungen: Angriffs- und Deckungskarten
-  const att={},def=new Set();
+  const att={},attO={},def=new Set(),opf=OPPF&&OPPF.p===p;
   for(const[c,pd]of Object.entries(ns)){
     const sq=rawMoves(c,pd.piece,pd.player,ns,null,true);
     if(pd.player===p){for(const t of sq)def.add(t);}
-    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t])att[t]=v;}
+    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t]){att[t]=v;attO[t]=pd.player;}}
   }
   const losses=[];
   for(const[c,pd]of Object.entries(ns)){
     if(pd.player!==p||pd.piece==='K'||att[c]===undefined)continue;
     const v=evV(pd.piece);
-    losses.push(def.has(c)?Math.max(0,v-att[c]):v);
+    losses.push((def.has(c)?Math.max(0,v-att[c]):v)*(opf?oppFactor(attO[c]):1));
   }
   losses.sort((a,b)=>b-a);
   e-=(losses[0]||0)*W.l1+(losses[1]||0)*W.l2;   // zwei Gegner können je einmal schlagen
@@ -3736,16 +3743,16 @@ function evalPos(p,ns){
   let e=evMat(ns,p)-evOpp(ns,opp);
   if(isInCheck(p,ns))e-=W.pchk;
   // eigene bedrohte Figuren (am Zug kann man nur eine retten)
-  const att={},def=new Set();
+  const att={},attO={},def=new Set(),opf=OPPF&&OPPF.p===p;
   for(const[c,pd]of Object.entries(ns)){
     const sq=rawMoves(c,pd.piece,pd.player,ns,null,true);
     if(pd.player===p){for(const t of sq)def.add(t);}
-    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t])att[t]=v;}
+    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t]){att[t]=v;attO[t]=pd.player;}}
   }
   const losses=[];
   for(const[c,pd]of Object.entries(ns)){
     if(pd.player!==p||pd.piece==='K'||att[c]===undefined)continue;
-    losses.push(def.has(c)?Math.max(0,evV(pd.piece)-att[c]):evV(pd.piece));
+    losses.push((def.has(c)?Math.max(0,evV(pd.piece)-att[c]):evV(pd.piece))*(opf?oppFactor(attO[c]):1));
   }
   losses.sort((a,b)=>b-a);
   return e-(losses[1]||0)*W.p1-(losses[0]||0)*W.p0;
@@ -3756,7 +3763,8 @@ function bestReply(q,state){
   for(const[c,pd]of Object.entries(state)){
     if(pd.player!==q)continue;
     for(const to of legalTargets(c,state,null)){
-      const ns=applyMove(state,c,to,null),v=evalAfter(q,ns,null);
+      const vic=state[to],pt=OPPF&&OPPF.pt&&OPPF.pt[q];
+      const ns=applyMove(state,c,to,null),v=evalAfter(q,ns,null)+(pt&&vic&&vic.player!==q&&pt[vic.player]!=null?(pt[vic.player]-0.5)*VALUE[vic.piece]:0);
       if(v>bv){bv=v;best=ns;}
     }
   }
@@ -3781,7 +3789,8 @@ function aiMove(){
   const best=aiChoose(p,lvl);if(!best)return;
   aiPlay(p,best);
 }
-function aiChoose(p,lvl){   // bester Zug für p in der aktuellen Stellung (ohne ihn auszuführen)
+function aiChoose(p,lvl){oppPrepare(p);try{return aiChoose0(p,lvl);}finally{OPPF=null;}}
+function aiChoose0(p,lvl){   // bester Zug für p in der aktuellen Stellung (ohne ihn auszuführen)
   const moves=allLegalMoves(p);if(!moves.length)return null;
   let best=null;
   if(lvl==='easy'){
@@ -3790,7 +3799,7 @@ function aiChoose(p,lvl){   // bester Zug für p in der aktuellen Stellung (ohne
   } else {
     const scored=moves.map(m=>{
       const ns=m.castle?applyCastle(gameState,m.from,m.castle):applyMove(gameState,m.from,m.to,epTarget);
-      const b=diploBias(p,m,ns);   // Bündnis, Verrat, Rache
+      const b=diploBias(p,m,ns)+oppBias(p,m,ns);   // Bündnis, Verrat, Rache, wackelnde Gegner
       return{m,ns,b,v:evalAfter(p,ns,m)+b+Math.random()*(lvl==='medium'?0.12:0.04)};
     }).sort((a,b)=>b.v-a.v);
     best=scored[0].m;
@@ -5140,6 +5149,10 @@ function anaRender(){
     h+=`<div class="anaCard" style="border-color:${PCOLOR[p]}"><b style="color:${PCOLOR[p]}">${esc(anaName(p))}</b>${isAIPlayer(p)?' 🤖':''}<ul>${lines.map(l=>`<li>${l}</li>`).join('')}</ul></div>`;
   }
   h+='</div>';
+  {const seen=new Set(),rows=[];
+    for(const p of TURN_ORDER){if(isAIPlayer(p))continue;const k=oppKey(p);if(seen.has(k))continue;seen.add(k);
+      const d=oppDescribe(k);if(d)rows.push(`<li><b style="color:${PCOLOR[p]}">${esc(k)}</b>: ${d.map(esc).join(' · ')}</li>`);}
+    if(rows.length)h+=`<h4>${T('🧠 Was die Computergegner über eure Spielweise gelernt haben')}</h4><ul class="anaList">${rows.join('')}</ul>`;}
   // stille Bündnisse
   const sil=anaSilent(st);
   for(const x of sil)h+=`<p class="anaNote">🤝 ${T('Stilles Bündnis? {0} und {1} haben sich weitgehend geschont ({2}× geschlagen) und gemeinsam {3} angegriffen ({4}×).',[esc(anaName(x.a)),esc(anaName(x.b)),x.mutual,esc(anaName(x.c)),x.third])}</p>`;
@@ -5173,6 +5186,113 @@ function anaDiploText(d){
   if(d.k==='expire')return T('Bündnis {0} + {1} endet',[n(d.a),n(d.b)]);
   if(d.k==='decline')return T('{0} lehnt das Bündnis mit {1} ab',[n(d.a),n(d.b)]);
   return '';
+}
+
+// ================= Computergegner lernen die Spielweise der Menschen =================
+// Nur auf dem Gerät, das die Computerzüge rechnet (allein: dieses Gerät; online: der Gastgeber), nur im Browser gespeichert.
+// Gelernt wird aus echten Wahlmöglichkeiten: Konnte ein Mensch bei zwei Gegnern schlagen – wen hat er genommen?
+// (den Führenden? den Computer? den, der ihn zuletzt geschlagen hat?) und: Patzt er nach eigenen Verlusten öfter?
+// Genutzt wird das in der Bewertung: Drohungen von Menschen zählen je nach erwartetem Ziel mehr oder weniger,
+// und wer gerade „wackelt“, wird gezielter unter Druck gesetzt.
+const OPP_KEY='dreiSchach.opp';
+var OPP={on:true,prof:{}},OPPG=null,OPPF=null;
+try{OPP.on=localStorage.getItem('dreiSchach.oppOn')!=='0';OPP.prof=JSON.parse(localStorage.getItem(OPP_KEY)||'{}')||{};}catch(e){OPP.prof={};}
+function oppSave(){try{localStorage.setItem(OPP_KEY,JSON.stringify(OPP.prof));}catch(e){}}
+function setOppOn(on){OPP.on=!!on;try{localStorage.setItem('dreiSchach.oppOn',on?'1':'0');}catch(e){}oppUI();}
+function oppForget(){OPP.prof={};oppSave();toast(T('🧠 Das Gelernte über die Spielweise wurde gelöscht.'),3000);oppUI();}
+function oppUI(){for(const id of['avOpp','chkOpp']){const c=document.getElementById(id);if(c)c.checked=OPP.on;}
+  const n=Object.keys(OPP.prof).length,e=document.getElementById('oppState');if(e)e.textContent=n?T('Bekannte Spieler: {0}',[Object.keys(OPP.prof).join(', ')]):'';}
+function oppActive(){return OPP.on&&!FERN.on&&!REPLAY&&(!NET.on||NET.host);}
+function oppHumans(){return TURN_ORDER.filter(q=>!aiPlayers[q]&&!eliminated.has(q)&&(!NET.on||(NET.seats&&NET.seats[q]&&['me','peer','away'].includes(NET.seats[q].kind))));}
+function oppKey(q){
+  if(NET.on)return (netName(q)||PNAMES[q]).trim().slice(0,18);
+  const hs=TURN_ORDER.filter(x=>!aiPlayers[x]);
+  if(hs.length===1){let nm='';try{nm=localStorage.getItem('dreiSchach.name')||'';}catch(e){}return nm.trim()||T('Du');}
+  return PNAMES[q];   // mehrere Menschen an einem Gerät: je Farbe
+}
+function oppNew(){return{games:0,moves:0,ldC:0,ldA:0,aiC:0,aiA:0,rvC:0,rvA:0,capC:0,capA:0,tH:0,tN:0,bH:0,bN:0,last:0};}
+function oppProf(q){const k=oppKey(q);return OPP.prof[k]||(OPP.prof[k]=oppNew());}
+function oppGameReset(){OPPG={hurt:{},caps:{B:{B:0,G:0,R:0},G:{B:0,G:0,R:0},R:{B:0,G:0,R:0}},lost:{B:-9,G:-9,R:-9},seen:new Set()};}
+function scoreIn(st,q){let v=0;for(const pd of Object.values(st))if(pd.player===q)v+=VALUE[pd.piece];return v;}
+// Stellt eine eigene Figur (ab Springer) ungedeckt und angegriffen hin?
+function hangsPiece(q,st){
+  const att=new Set(),def=new Set();
+  for(const[c,pd]of Object.entries(st)){const sq=rawMoves(c,pd.piece,pd.player,st,null,true);for(const t of sq)(pd.player===q?def:att).add(t);}
+  for(const[c,pd]of Object.entries(st))if(pd.player===q&&VALUE[pd.piece]>=3&&att.has(c)&&!def.has(c))return true;
+  return false;
+}
+function oppLearn(e){
+  if(!OPP.on||!oppActive()||!e||e.timeout||!e.from)return;
+  if(!OPPG)oppGameReset();
+  const q=e.player,i=moveLog.length-1;
+  if(e.cap&&e.capFrom){OPPG.caps[q][e.capFrom]++;OPPG.hurt[e.capFrom]=q;if(VALUE[e.cap]>=3)OPPG.lost[e.capFrom]=i;}
+  if(aiPlayers[q]||!oppHumans().includes(q))return;
+  const h=history[history.length-1];if(!h||h.logLen!==i)return;
+  const S=h.gameState,P=oppProf(q);
+  if(!OPPG.seen.has(q)){OPPG.seen.add(q);P.games++;}
+  P.moves++;P.last=Date.now();
+  // welche Gegner hätte er schlagen können?
+  const opts={};
+  for(const[c,pd]of Object.entries(S)){if(pd.player!==q)continue;
+    for(const to of legalTargets(c,S,h.epTarget||null)){const v=S[to];if(v&&v.player!==q)opts[v.player]=true;}}
+  const others=TURN_ORDER.filter(x=>x!==q&&!eliminated.has(x)),both=others.length===2&&others.every(x=>opts[x]);
+  if(Object.keys(opts).length){P.capA++;if(e.cap)P.capC++;}
+  if(both&&e.cap&&e.capFrom){
+    const [a,b]=others,sa=scoreIn(S,a)+0,sb=scoreIn(S,b);
+    if(sa!==sb){P.ldA++;if(e.capFrom===(sa>sb?a:b))P.ldC++;}
+    if(!!aiPlayers[a]!==!!aiPlayers[b]){P.aiA++;if(aiPlayers[e.capFrom])P.aiC++;}
+    const hr=OPPG.hurt[q];if(hr&&others.includes(hr)){P.rvA++;if(e.capFrom===hr)P.rvC++;}
+  }
+  // Patzer nach eigenem Verlust (in den zwei Zügen danach) im Vergleich zu sonst
+  const hang=hangsPiece(q,gameState),tilt=i-OPPG.lost[q]<=6;
+  if(tilt){P.tN++;if(hang)P.tH++;}else{P.bN++;if(hang)P.bH++;}
+  if(P.moves%3===0)oppSave();
+}
+function rate(c,a){return (c+1)/(a+2);}
+function odds(r){return r/(1-r);}
+// Wahrscheinlichkeit, dass Mensch q als Nächstes eher x als den anderen Gegner angreift (0,5 = keine Vorliebe)
+function oppTargetP(q,x,st){
+  const P=OPP.prof[oppKey(q)];if(!P)return .5;
+  const others=TURN_ORDER.filter(y=>y!==q&&!eliminated.has(y));if(others.length<2)return 1;
+  const s=y=>{let v=1;const z=others.find(w=>w!==y);
+    const sy=scoreIn(st,y),sz=scoreIn(st,z);
+    if(sy>sz)v*=Math.pow(odds(rate(P.ldC,P.ldA)),1);else if(sy<sz)v/=odds(rate(P.ldC,P.ldA));
+    if(!!aiPlayers[y]!==!!aiPlayers[z])v*=aiPlayers[y]?odds(rate(P.aiC,P.aiA)):1/odds(rate(P.aiC,P.aiA));
+    if(OPPG&&OPPG.hurt[q]===y)v*=odds(rate(P.rvC,P.rvA));else if(OPPG&&OPPG.hurt[q]===z)v/=odds(rate(P.rvC,P.rvA));
+    if(OPPG)v*=1+0.25*OPPG.caps[q][y];
+    return v;};
+  const a=s(x),b=s(others.find(w=>w!==x));return a/(a+b);
+}
+// Vor einem Computerzug: Faktoren „wie gefährlich sind die Drohungen von Mensch q für p“ und „wackelt q gerade?“
+function oppPrepare(p){
+  OPPF=null;if(!OPP.on||!oppActive())return;
+  const hs=oppHumans().filter(q=>q!==p&&OPP.prof[oppKey(q)]);if(!hs.length)return;
+  OPPF={p,f:{},tilt:{}};
+  for(const q of hs){const P=OPP.prof[oppKey(q)];
+    const pr=oppTargetP(q,p,gameState);OPPF.f[q]=0.6+0.8*pr;   // 0,6 … 1,4
+    const recent=OPPG&&moveLog.length-1-OPPG.lost[q]<=6,tr=rate(P.tH,P.tN),br=rate(P.bH,P.bN);
+    OPPF.tilt[q]=recent&&P.tN>=4&&tr>br*1.5?Math.min(1,(tr-br)*3):0;
+    OPPF.pt=OPPF.pt||{};OPPF.pt[q]={};for(const x of TURN_ORDER)if(x!==q&&!eliminated.has(x))OPPF.pt[q][x]=oppTargetP(q,x,gameState);}
+}
+function oppFactor(owner){return OPPF&&OPPF.f[owner]!=null?OPPF.f[owner]:1;}
+function oppBias(p,m,ns){   // wackelnde Menschen gezielt unter Druck setzen
+  if(!OPPF||OPPF.p!==p)return 0;let b=0;
+  const v=gameState[m.to];if(v&&OPPF.tilt[v.player])b+=0.3*VALUE[v.piece]*OPPF.tilt[v.player];
+  for(const q in OPPF.tilt)if(OPPF.tilt[q]&&isInCheck(q,ns))b+=0.4*OPPF.tilt[q];
+  return b;
+}
+// Für die Analyse: was der Computer über einen Menschen weiß
+function oppDescribe(key){
+  const P=OPP.prof[key];if(!P||P.moves<10)return null;
+  const out=[],pct=(c,a)=>Math.round(100*rate(c,a));
+  out.push(T('Beobachtet: {0} Züge in {1} Partien',[P.moves,P.games]));
+  if(P.ldA>=3)out.push(T('Wählt bei zwei möglichen Opfern den Führenden in {0} % der Fälle',[pct(P.ldC,P.ldA)]));
+  if(P.aiA>=3)out.push(T('Schlägt bei der Wahl Computer oder Mensch zu {0} % den Computer',[pct(P.aiC,P.aiA)]));
+  if(P.rvA>=3)out.push(T('Rache: schlägt in {0} % der Fälle den zurück, der ihn zuletzt geschlagen hat',[pct(P.rvC,P.rvA)]));
+  if(P.capA>=5)out.push(T('Schlägt zu, wenn möglich: {0} %',[pct(P.capC,P.capA)]));
+  if(P.tN>=4&&P.bN>=10){const tr=rate(P.tH,P.tN),br=rate(P.bH,P.bN);
+    out.push(tr>br*1.5?T('Stellt nach eigenen Verlusten öfter Figuren ungedeckt hin ({0} % statt {1} %) – die Computer nutzen das',[Math.round(tr*100),Math.round(br*100)]):T('Bleibt nach Verlusten stabil'));}
+  return out;
 }
 // Zugliste als lesbarer Text (zum Teilen, Ausdrucken, Archivieren)
 function movesText(){
@@ -5297,7 +5417,7 @@ if(isLand()){document.body.classList.add('landSeen');document.getElementById('pa
 resizeCanvas();
 initGame();
 resizeCanvas();
-recUI();diploUI();
+recUI();diploUI();oppUI();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
 translateDom(document.body);
