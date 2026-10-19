@@ -67,6 +67,31 @@ async function aiReport(req, env) {
   }
 }
 
+// ---------- Computergegner im Gespräch ----------
+// Ein Monster antwortet in seinem Charakter auf eine Nachricht eines Menschen und entscheidet, ob es ein Bündnis eingeht.
+async function aiMonster(req, env) {
+  if (!env.AI) return json({ error: 'KI ist auf diesem Server nicht eingerichtet' }, 501);
+  let b; try { b = await req.json(); } catch (e) { return json({ error: 'bad json' }, 400); }
+  const lang = LANGNAME[b.lang] ? b.lang : 'de', cut = (x, n) => String(x || '').slice(0, n);
+  const system = `Du bist ${cut(b.monster, 20)}, ein Monster-Computergegner im Spiel Drei-Personen-Schach. Charakter: ${cut(b.persona, 300)}. ` +
+    `Antworte immer in dieser Sprache: ${LANGNAME[lang]}. Antworte kurz (höchstens 2 Sätze), witzig und im Charakter, ohne Beleidigungen und ohne Gewalt. ` +
+    'Du darfst bluffen und verhandeln. Wenn dir jemand ein Bündnis gegen einen anderen Spieler vorschlägt, entscheide nach deinem Charakter und der Spielsituation (gegen den Führenden lohnt es sich eher). ' +
+    'Gib NUR ein JSON-Objekt zurück, ohne weiteren Text: {"reply":"…","deal":"accept"|"decline"|"none","target":"<Name des Spielers, gegen den sich das Bündnis richtet, oder leer>"}. ' +
+    '"deal" ist "none", wenn kein Bündnis vorgeschlagen wurde.';
+  const user = `Spielsituation:\n${cut(b.situation, 1200)}\n\nBisheriges Gespräch:\n${(Array.isArray(b.history) ? b.history : []).slice(-8).map((h) => cut(h.name, 20) + ': ' + cut(h.text, 200)).join('\n')}\n\nNeue Nachricht von ${cut(b.from, 20)}: ${cut(b.text, 300)}`;
+  try {
+    const r = await env.AI.run(AI_MODEL, { messages: [{ role: 'system', content: system }, { role: 'user', content: user }], max_tokens: 200, temperature: 0.8 });
+    const raw = String((r && (r.response || r.result && r.result.response)) || '');
+    const m = raw.match(/\{[\s\S]*\}/);
+    let o = null; try { o = m ? JSON.parse(m[0]) : null; } catch (e) {}
+    if (!o || !o.reply) o = { reply: raw.replace(/[{}"]/g, '').slice(0, 240), deal: 'none', target: '' };
+    return json({ reply: cut(o.reply, 300), deal: ['accept', 'decline'].includes(o.deal) ? o.deal : 'none', target: cut(o.target, 30) }, 200, { 'Cache-Control': 'no-store' });
+  } catch (e) {
+    const q = /limit|quota|neuron|429/i.test(String(e && e.message || e));
+    return json({ error: q ? 'quota' : String(e && e.message || e) }, q ? 429 : 502);
+  }
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -79,6 +104,7 @@ export default {
     }
     if (url.pathname.startsWith('/fern/')) return fernRoute(req, env, url);
     if (url.pathname === '/ai/bericht' && req.method === 'POST') return aiReport(req, env);
+    if (url.pathname === '/ai/monster' && req.method === 'POST') return aiMonster(req, env);
     if (url.pathname === '/peerjs/id') return new Response(randomId(), { headers: { 'Content-Type': 'text/plain', ...CORS } });
     if (url.pathname === '/peerjs/peers') return json([], 401);
     if (url.pathname === '/turn') {

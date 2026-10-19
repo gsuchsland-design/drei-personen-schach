@@ -32,7 +32,8 @@ body.fullscreen #captured { margin:2px 0; }
 #msgRow { display:none; align-items:center; justify-content:center; gap:8px; max-width:96vw; margin:-2px auto 4px; }
 body.online #msgRow { display:flex; }
 #chatBtn { display:none; position:relative; padding:1px 8px; font-size:14px; background:#333; color:#eee; border:1px solid #666; border-radius:12px; cursor:pointer; flex:none; }
-body.netgame #chatBtn { display:block; }
+body.netgame #chatBtn, body.aichat #chatBtn { display:block; }
+body.aichat #msgRow { display:flex; }
 #chatBadge { position:absolute; top:-6px; right:-6px; background:#e33; color:#fff; border-radius:9px; font-size:10px; padding:0 5px; display:none; }
 #chatBox { display:none; position:fixed; right:8px; bottom:8px; width:min(340px,94vw); max-height:50vh; z-index:300; background:rgba(28,28,34,.97);
   border:1px solid #6a4fb0; border-radius:10px; flex-direction:column; color:#ddd; font-size:14px; box-shadow:0 6px 24px rgba(0,0,0,.6); }
@@ -761,7 +762,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101927"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101928"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -793,7 +794,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 23:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-20 00:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -1075,8 +1076,12 @@ function sendChat(){
   netChatOut({t:'chat',text,lang:myLang()});
 }
 function sendReact(e){netChatOut({t:'react',e});}
+function aiChatUI(){   // allein gegen Computergegner: Chat, um mit den Monstern zu reden
+  const on=!NET.on&&!FERN.on&&!AB&&DIPLO.on&&TURN_ORDER.some(p=>aiPlayers[p])&&TURN_ORDER.some(p=>!aiPlayers[p]);
+  document.body.classList.toggle('aichat',on);
+}
 function netChatOut(m){
-  if(!NET.on)return;m.p=NET.seat||null;m.name=NET.myName||(NET.host?NET.seats[NET.seat]&&NET.seats[NET.seat].name:'')||'';m.id=Date.now()+Math.random().toString(36).slice(2,6);
+  if(!NET.on){if(document.body.classList.contains('aichat')&&(m.t==='chat'||m.t==='say')){m.p=meP();m.name=seatName(m.p);m.id=Date.now()+Math.random().toString(36).slice(2,6);chatIn(m);}return;}m.p=NET.seat||null;m.name=NET.myName||(NET.host?NET.seats[NET.seat]&&NET.seats[NET.seat].name:'')||'';m.id=Date.now()+Math.random().toString(36).slice(2,6);
   if(NET.host){netBroadcast(m);chatIn(m);}else{netToHost(m);chatIn(m);}
 }
 function chatIn(m){   // eingehende (oder eigene) Chat-Nachricht / Reaktion anzeigen
@@ -1086,7 +1091,7 @@ function chatIn(m){   // eingehende (oder eigene) Chat-Nachricht / Reaktion anze
     if(m.offer)setTimeout(()=>diploOfferUI(m),60);
   }
   if(m.t==='say'||m.t==='chat')talkAdd(m);
-  if((m.t==='say'||m.t==='chat')&&!m.ai&&m.p&&typeof diploHear==='function'&&(!NET.on||NET.host))diploHear(m);
+  if((m.t==='say'||m.t==='chat')&&!m.ai&&!m.mon&&m.p&&typeof diploHear==='function'&&(!NET.on||NET.host))diploHear(m);
   const lk=m.p||('s:'+(m.name||''));
   if(m.t==='lang'){const neu=NET.langs[lk]!==m.lang;NET.langs[lk]=m.lang;
     if(m.p!==NET.seat&&neu&&performance.now()-(NET.langSent||0)>5000){NET.langSent=performance.now();netChatOut({t:'lang',lang:myLang()});}
@@ -1099,6 +1104,7 @@ function chatIn(m){   // eingehende (oder eigene) Chat-Nachricht / Reaktion anze
   NET.chat.push(m);if(NET.chat.length>100)NET.chat.shift();
   const show=(txt,tr)=>{
     m.shown=txt;m.tr=tr;
+    if(m.mon&&m.p)speakMonster(m.p,txt);
     if(m.p)AV[m.p].chat={text:txt,until:performance.now()+Math.min(12000,4000+txt.length*90),tr};
     const mine=m.p&&m.p===NET.seat;
     if(!mine){toast(`💬 ${chatName(m)}: ${txt}`,6000);if(!document.getElementById('chatBox').classList.contains('show')){chatUnread++;updBadge();}snd('land');}
@@ -3910,7 +3916,7 @@ function startFromSetup(){
   updateStatus();renderClocks();resizeCanvas();
 }
 function startPlay(){
-  replayExit();
+  replayExit();aiChatUI();
   // Handy/Tablet: beim Start automatisch ins Vollbild (Adressleiste verschwindet)
   if(matchMedia('(pointer:coarse)').matches&&!document.fullscreenElement&&!navigator.standalone&&!matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches){
     const el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen;
@@ -5235,7 +5241,7 @@ const DLINES={   // Textbausteine: {0},{1} = Spielernamen
 const DIPLO={on:true,pacts:[],offers:[],grudge:{B:{},G:{},R:{}},betray:{},lastTalk:-9,said:0,log:[]};
 try{DIPLO.on=localStorage.getItem('dreiSchach.diplo')!=='0';}catch(e){}
 let AIVOICE=true;try{AIVOICE=localStorage.getItem('dreiSchach.aivoice')!=='0';}catch(e){}
-function setDiplo(on){DIPLO.on=!!on;try{localStorage.setItem('dreiSchach.diplo',on?'1':'0');}catch(e){}diploUI();}
+function setDiplo(on){DIPLO.on=!!on;try{localStorage.setItem('dreiSchach.diplo',on?'1':'0');}catch(e){}diploUI();aiChatUI();}
 function setAIVoice(on){AIVOICE=!!on;try{localStorage.setItem('dreiSchach.aivoice',on?'1':'0');}catch(e){}if(!on&&window.speechSynthesis)try{speechSynthesis.cancel();}catch(e){}diploUI();}
 function diploUI(){for(const id of['chkDiplo','avDiplo']){const c=document.getElementById(id);if(c)c.checked=DIPLO.on;}
   for(const id of['chkAIVoice','avAIVoice']){const c=document.getElementById(id);if(c)c.checked=AIVOICE;}}
@@ -5352,23 +5358,69 @@ function diploHear(m){
     const ok=m.ans?m.ans.ok:(DW.yes.test(text)?true:DW.no.test(text)?false:null);
     if(ok!==null){DIPLO.offers=DIPLO.offers.filter(x=>x!==o);
       setTimeout(()=>{if(ok){makePact(o.from,from,o.target);aiSay(o.from,'accept',[from,o.target]);}else{DIPLO.log.push({n:nMoves(),k:'decline',a:from,b:o.from});aiSay(o.from,'humanNo',[from]);}},700);
-      return;}
+      return true;}
   }
-  // 2. eigener Vorschlag eines Menschen
-  if(!DW.attack.test(text))return;
+  // 2. eigener Vorschlag eines Menschen (einfache Sätze) – alles andere beantwortet die KI im Charakter des Monsters
+  if(!DW.attack.test(text)){monsterChat(m);return false;}
   const named=seatsIn(text).filter(q=>q!==from);
   const ais=TURN_ORDER.filter(q=>isAIPlayer(q)&&q!==from&&!eliminated.has(q));
-  if(!ais.length)return;
+  if(!ais.length)return false;
+  if(named.length&&!named.some(q=>isAIPlayer(q))&&named.length<2){monsterChat(m);return false;}
   let partner=named.find(q=>isAIPlayer(q)&&named.length>1&&named.indexOf(q)===0)||null;   // zuerst Angesprochener = Partner
   let target=named.find(q=>q!==partner)||null;
   if(!partner)partner=ais.find(q=>q!==target)||null;
-  if(!partner||!target)return;
-  if(partner===target){setTimeout(()=>aiSay(partner,'noAlly',[]),600);return;}
+  if(!partner||!target){monsterChat(m);return false;}
+  if(partner===target){setTimeout(()=>aiSay(partner,'noAlly',[]),600);return true;}
   setTimeout(()=>{if(gameOver||!diploBoss())return;
     const lead=leaderSeat(),sensible=target===lead||score(target)>=score(partner);
     const yes=!pactOf(partner)&&(DIPLO.grudge[partner][from]||0)<3&&Math.random()<DPERS[partner].accept*(sensible?1:0.45);
     if(yes){makePact(partner,from,target);aiSay(partner,'accept',[from,target]);}else{DIPLO.log.push({n:nMoves(),k:'decline',a:partner,b:from});aiSay(partner,'decline',[from]);}
   },900);
+}
+// ---------- Freies Gespräch mit den Monstern (KI über den eigenen Server) ----------
+const MPERS={B:'gutmütig, überschwänglich, kindlich verspielt, bietet gern Bündnisse an und verrät sie auch mal mit einem Engelsgesicht',
+  G:'mürrisch, wortkarg, ehrlich und stur, hält Abmachungen, vergisst aber nie ein Unrecht',
+  R:'hitzköpfig, zappelig, angeberisch, rachsüchtig, blufft gern'};
+var MCH={last:{},n:0,busy:false};
+function monsterAddressed(text){   // welches Monster ist gemeint? (Name oder Farbe; bei nur einem Monster auch ohne Namen)
+  const ais=TURN_ORDER.filter(q=>isAIPlayer(q)&&!eliminated.has(q));if(!ais.length)return null;
+  const t=text.toLowerCase();
+  const byName=ais.find(q=>t.includes(MONSTERS[q].name.toLowerCase()));if(byName)return byName;
+  const w={B:['blau','blue'],G:['grün','gruen','green'],R:['rot','red']};
+  const byCol=ais.filter(q=>w[q].some(x=>new RegExp('(^|\\W)'+x+'(\\W|$)').test(t)));
+  if(byCol.length===1&&/[?!]|\b(du|dir|dich|you)\b/i.test(t))return byCol[0];
+  if(ais.length===1&&/\?|\b(du|dir|dich|you|hey|hallo|hi)\b/i.test(t))return ais[0];
+  return null;
+}
+function monsterSituation(q){
+  const sc=TURN_ORDER.filter(x=>!eliminated.has(x)).map(x=>`${seatName(x)} (${PNAMES[x]}): ${score(x)} ${T('Punkte')}`).join(', ');
+  const L=leaderSeat(),pact=pactOf(q),ally=allyOf(q);
+  return `${T('Punkte')}: ${sc}. ${L?T('Es führt: {0}.',[seatName(L)]):''} ${pact?T('Du bist verbündet mit {0} gegen {1}.',[seatName(ally),seatName(pact.target)]):T('Du hast gerade kein Bündnis.')} ${T('Am Zug: {0}.',[seatName(cur())])}`;
+}
+async function monsterChat(m){
+  if(!diploBoss()||!AIVOICE&&!DIPLO.on)return;
+  const q=monsterAddressed(String(m.text||''));if(!q||q===m.p)return;
+  const now=Date.now();if(MCH.busy||now-(MCH.last[q]||0)<12000||MCH.n>=60)return;
+  MCH.busy=true;MCH.last[q]=now;MCH.n++;
+  try{
+    if(!await fernSrvLoad())return;
+    const hist=NET.chat.slice(-8).map(x=>({name:chatName(x),text:x.shown||x.text}));
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),20000);
+    const r=await fetch(fernBase()+'/ai/monster',{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,
+      body:JSON.stringify({lang:myLang(),monster:MONSTERS[q].name,persona:MPERS[q],situation:monsterSituation(q),history:hist,from:seatName(m.p),text:m.text})});
+    clearTimeout(to);
+    const j=await r.json().catch(()=>null);if(!r.ok||!j||!j.reply)return;
+    if(gameOver||!diploBoss())return;
+    // Bündnis aus dem Gespräch umsetzen
+    if(j.deal==='accept'&&j.target){
+      const tl=j.target.toLowerCase(),t=TURN_ORDER.find(x=>x!==q&&x!==m.p&&(seatName(x).toLowerCase().includes(tl)||tl.includes(seatName(x).toLowerCase())||tl.includes(PNAMES[x].toLowerCase())));
+      if(t&&!pactOf(q)&&!pactOf(m.p))makePact(q,m.p,t);
+    }else if(j.deal==='decline')DIPLO.log.push({n:nMoves(),k:'decline',a:q,b:m.p});
+    const msg={t:'chat',p:q,name:MONSTERS[q].name,text:j.reply,lang:myLang(),id:'mc'+now+Math.random().toString(36).slice(2,5),mon:true};
+    DIPLO.lastTalk=nMoves();
+    if(NET.on&&NET.host)netBroadcast(msg);
+    chatIn(msg);
+  }catch(e){}finally{MCH.busy=false;}
 }
 // Angebot an einen Menschen: Knöpfe auf seinem Gerät (allein am Gerät: hier)
 function diploOfferUI(m){
@@ -5715,7 +5767,7 @@ function aboardOpen(fromCode){
   document.getElementById('setupModal').classList.remove('show');setupOpen=false;
   tc={move:0,game:0};initGame();for(const p of TURN_ORDER)aiPlayers[p]=null;
   waitingStart=false;paused=false;document.getElementById('startBtn').classList.remove('show');
-  AB={edit:false,pc:{piece:'Q',player:'B'},start:null};
+  AB={edit:false,pc:{piece:'Q',player:'B'},start:null};document.body.classList.remove('aichat');
   document.body.classList.add('aboard');
   abMarkStart();
   if(fromCode&&!abLoad(fromCode))toast(T('Der Stellungscode ist ungültig.'),3500);
