@@ -255,8 +255,72 @@ body.barBottom #selfView { bottom:50px; }
   #clocks { gap:5px; }
   #viewBar .hint { display:none; }
   #viewBar { gap:4px; padding:5px 6px; font-size:11px; } #viewBar button { padding:3px 7px; }
-  #rulesBox { margin:6px; padding:12px; } #rulesText { font-size:13px; }
+  #rulesBox { margin:6px; padding:44px 12px 12px; } #rulesText { font-size:13px; }
+  body.replay #replayBar { display:grid; grid-template-columns:repeat(6,1fr); width:96vw; bottom:6px; padding:5px 6px; gap:4px; }
+  #replayBar button { padding:5px 2px; min-width:0; } #rpTitle { display:none; }
+  #rpPos { grid-column:span 2; grid-row:2; font-size:12px; } #rpExport { grid-column:span 2; grid-row:2; font-size:12px !important; } #rpExit { grid-column:span 2; grid-row:2; font-size:12px !important; }
+  #rpFirst { grid-column:1 / span 1; } #rpLast { grid-column:span 2; }
   #setupBox { min-width:0; width:92vw; padding:14px; }
+}
+
+/* ---------- Nachspielen ---------- */
+#replayBar { display:none; position:fixed; left:50%; bottom:10px; transform:translateX(-50%); z-index:190; background:rgba(30,26,46,.96); border:1px solid #d4a72c;
+  border-radius:10px; padding:6px 10px; color:#eee; font-size:13px; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center; max-width:96vw; box-shadow:0 4px 20px rgba(0,0,0,.6); }
+body.replay #replayBar { display:flex; }
+body.replay #viewBar { display:none !important; }
+#replayBar button { padding:4px 10px; font-size:15px; background:#3a3a3a; color:#eee; border:1px solid #666; border-radius:6px; cursor:pointer; min-width:38px; }
+#replayBar button:disabled { opacity:.35; cursor:default; }
+#rpTitle { color:#ffd27a; font-weight:bold; }
+#rpPos { min-width:92px; text-align:center; font-variant-numeric:tabular-nums; }
+#rpExport { font-size:13px !important; }
+#rpExit { background:#2a6 !important; border-color:#3c8 !important; font-size:13px !important; }
+#logList li { cursor:pointer; }
+#logList li:hover { background:rgba(255,210,63,.12); }
+#logList li.rpCur { background:#5a4a14 !important; color:#fff; }
+#logList li.rpAfter { opacity:.35; }
+body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
+/* ---------- Einführung ---------- */
+#tour { display:none; position:fixed; inset:0; z-index:600; }
+#tour.show { display:block; }
+#tourHole { position:fixed; border-radius:10px; box-shadow:0 0 0 9999px rgba(0,0,0,.68); outline:2px solid #ffd23f; transition:all .3s; pointer-events:none; }
+#tourCard { position:fixed; width:min(360px,92vw); background:#222; border:2px solid #ffd23f; border-radius:12px; padding:14px 16px; color:#ddd;
+  font-size:14.5px; line-height:1.45; box-shadow:0 8px 30px rgba(0,0,0,.7); transition:left .3s,top .3s; }
+#tourN { float:right; color:#888; font-size:12px; }
+#tourCard h3 { color:#ffd23f; font-size:17px; margin-bottom:6px; }
+.tourBtns { display:flex; gap:8px; margin-top:12px; }
+.tourBtns button { flex:1; padding:8px; font-size:14px; border:none; border-radius:7px; cursor:pointer; background:#444; color:#eee; }
+#tourNext { background:#2a6; color:#fff; font-weight:bold; }
+#tourSkip { background:none; color:#999; flex:0 0 auto; text-decoration:underline; }
+#tourBtnRules { position:absolute; top:10px; right:48px; padding:4px 12px; font-size:13px; background:#7a6420; color:#fff; border:1px solid #ffd23f; border-radius:6px; cursor:pointer; }
+/* ---------- Handy im Querformat: Infos links, Brett rechts ---------- */
+@media (orientation:landscape) and (max-height:520px){
+  body { display:grid !important; grid-template-columns:min(34vw,300px) minmax(0,1fr); grid-auto-rows:min-content; align-content:start; align-items:start;
+    column-gap:6px; padding:40px 4px 4px !important; }
+  body.barBottom { padding:4px 4px 44px !important; }
+  body > * { grid-column:1; }
+  #c, #c3 { grid-column:2; grid-row:1 / span 40; margin-top:-36px; }
+  body.barBottom #c, body.barBottom #c3 { margin-top:0; }
+  #panel { margin-top:0; max-height:62vh; overflow:auto; }
+  #panel h2, #info { display:none; }
+  #controls { gap:6px 10px; justify-content:flex-start; }
+  #status { font-size:13px; text-align:left; margin:2px 0; }
+  #msgRow, #askBar, #specReq { max-width:100%; margin-left:0; margin-right:0; justify-content:flex-start; }
+  #msgLine { white-space:normal; text-align:left; }
+  #avStrip { flex-wrap:wrap; gap:4px; justify-content:flex-start; }
+  #avStrip .avCv, #avStrip.three .avCv { height:auto !important; width:calc(50% - 2px); max-width:none !important; }
+  #clocks { justify-content:flex-start; gap:4px; }
+  .clk { font-size:12px; min-width:0; padding:2px 6px; }
+  #logBox { max-width:30vw; width:auto; min-width:128px; font-size:11px; }
+  #logList { max-height:58vh; }
+  #rulesBox { margin:6px; padding:12px; }
+  #replayBar, body.replay #replayBar { display:none; left:auto; right:6px; transform:none; width:auto; max-width:62vw; padding:4px 6px; gap:4px; }
+  body.replay #replayBar { display:flex; }
+  #rpPos, #rpExport, #rpExit { font-size:12px !important; }
+  #replayBar button { padding:3px 7px; min-width:30px; }
+  #rpTitle { display:none; }
+  #setupBox { max-height:96vh; }
+  .netBox { max-height:96vh; }
+  #lobbyModal .netBox, #fernModal .netBox { max-height:calc(100vh - 50px); }
 }
 </style>
 </head><body>
@@ -300,6 +364,7 @@ body.barBottom #selfView { bottom:50px; }
   <button id="btnReset" style="padding:3px 10px;font-size:12px;cursor:pointer;">Neu</button>
   <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="saveGameFile()" title="Partie als Datei speichern">💾 Speichern</button>
   <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="document.getElementById('loadFile').click()" title="Gespeicherte Partie laden">📂 Laden</button>
+  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="exportMoves()" title="Zugliste teilen oder speichern">📄 Zugliste</button>
   <input type="file" id="loadFile" accept=".json,application/json" style="display:none" onchange="loadGameFile(this)">
   <button id="fullscreenBtn" onclick="toggleFullscreen()" title="Vollbild (Esc beendet)">⛶ Vollbild</button>
   <button id="btnFit" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="if(window.V3&&V3.on)V3.view('cur');else{fitBoard();draw();}">⤢ Einpassen</button>
@@ -353,6 +418,7 @@ body.barBottom #selfView { bottom:50px; }
 <div id="rulesModal" onclick="if(event.target===this)closeRules()">
  <div id="rulesBox">
   <button id="rulesClose" onclick="closeRules()" title="Schließen">✕</button>
+  <button id="tourBtnRules" onclick="tourStart()" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
   <div id="rulesText">
    <h2>Drei-Personen-Schach – Spielanleitung</h2>
    <h3>Spieler und Brett</h3>
@@ -449,6 +515,7 @@ body.barBottom #selfView { bottom:50px; }
     <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
     <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie aus Datei laden</button>
     <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
+    <button onclick="tourFromSetup()" style="background:#7a6420" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
     <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · Alle Rechte vorbehalten · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
   </div>
 </div>
@@ -529,8 +596,23 @@ body.barBottom #selfView { bottom:50px; }
   <button class="lbLeave" onclick="location.href=location.pathname">Nein danke, lieber allein spielen</button>
   <div class="lbHint" style="text-align:center">Bild und Ton gehen nur an deine Mitspieler und werden nicht gespeichert. Mehr unter <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a>.<br>© 2026 Guido Suchsland</div>
 </div></div>
+<div id="replayBar">
+  <span id="rpTitle">📼 Nachspielen</span>
+  <button id="rpFirst" onclick="replayStop();replayGo(0)" title="Zum Anfang">⏮</button>
+  <button id="rpBack" onclick="replayStep(-1)" title="Einen Zug zurück">◀</button>
+  <button id="rpPlay" onclick="replayPlay()" title="Automatisch abspielen">▶</button>
+  <button id="rpNext" onclick="replayStep(1)" title="Einen Zug vor">▶❘</button>
+  <button id="rpLast" onclick="replayStop();replayGo(REPLAY.n)" title="Zum Ende">⏭</button>
+  <span id="rpPos"></span>
+  <button id="rpExport" onclick="exportMoves()" title="Zugliste teilen oder speichern">📄 Zugliste</button>
+  <button id="rpExit" onclick="replayExit()">✕ Zurück zum Spiel</button>
+</div>
+<div id="tour"><div id="tourHole"></div><div id="tourCard"><span id="tourN"></span><h3 id="tourT"></h3><p id="tourX"></p>
+  <div class="tourBtns"><button id="tourSkip" onclick="tourEnd()">Überspringen</button><button id="tourBack" onclick="tourGo(-1)">Zurück</button><button id="tourNext" onclick="tourGo(1)">Weiter</button></div>
+</div></div>
 <div id="logBox" class="collapsed">
   <div id="logHead"><span>Züge</span>
+    <button id="btnReplay" onclick="replayOpen()" title="Partie Zug für Zug nachspielen">📼</button>
     <button id="btnUndo" onclick="undoMove()" title="Letzten Zug zurücknehmen (Strg+Z)" disabled>↶ Zurück</button>
     <button id="btnLogToggle" onclick="toggleLog()" title="Protokoll ein-/ausklappen">+</button>
   </div>
@@ -543,7 +625,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101913"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101914"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -575,7 +657,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 05:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 13:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -1265,6 +1347,7 @@ function netStart(){
   netBeginGame(cfg);
 }
 function netSyncData(){
+  replayExit();
   return{gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,tc,clock,timeUsed,flagged,
     moveLeft,aiPlayers,eliminated,status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
@@ -1434,6 +1517,7 @@ function camFix(){   // eigenes Kamerabild gehört zum eigenen Platz
   for(const p of TURN_ORDER){const a=AV[p];if(p!==NET.seat&&a.mirror&&a.video&&camStream&&a.video.srcObject===camStream){AV[NET.seat].video=a.video;AV[NET.seat].mirror=true;AV[NET.seat].videoOff=false;a.video=null;a.mirror=false;}}
 }
 function netApplySync(d){
+  replayExit();
   cancelAI();moveAnim=null;kicks=[];NET.q=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
   gameOver=d.gameOver;turnNote=d.turnNote||'';capturedBy=d.capturedBy;moveLog=d.moveLog||[];history=[];
@@ -1474,6 +1558,7 @@ async function netWake(){
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&NET.on&&NET.started)netWake();});
 function netPump(){
+  if(REPLAY&&NET.q.length)replayExit();
   while(NET.q.length){
     const m=NET.q[0];
     if(moveAnim)return;
@@ -1616,13 +1701,24 @@ function resizeCanvas(){
   const cv=document.getElementById('c');
   const panel=document.getElementById('panel');
   const fs=!!document.fullscreenElement;
+  if(isLand()){   // Handy quer: Infospalte links, Brett füllt den Rest
+    const side=document.getElementById('status').getBoundingClientRect().width||Math.min(innerWidth*.34,300);
+    const bb=document.body.classList.contains('barBottom');
+    cv.width=Math.max(240,Math.floor(innerWidth-side-6-8));cv.height=Math.max(200,Math.floor(innerHeight-(bb?48:8)));
+    if(window.V3&&V3.resize)V3.resize(cv.width,cv.height);
+    fitBoard();draw();return;
+  }
   const avw=window.innerWidth-(fs?0:16);
-  const avh=window.innerHeight
+  let avh=window.innerHeight
     -document.getElementById('status').offsetHeight
     -document.getElementById('clocks').offsetHeight
     -document.getElementById('avStrip').offsetHeight
     -(panel.classList.contains('hidden')?0:panel.offsetHeight)
     -(fs?4:24);
+  // genauer: Platz von der Oberkante der Zeichenfläche bis zum unteren Rand (zählt Abstände, Chatzeile usw. mit)
+  const c3=document.getElementById('c3'),ref=cv.offsetParent!==null?cv:(c3&&c3.offsetParent!==null?c3:null);
+  if(ref){const top=ref.getBoundingClientRect().top,pb=parseFloat(getComputedStyle(document.body).paddingBottom)||0;
+    if(top>0&&top<window.innerHeight-150)avh=Math.floor(window.innerHeight-top-pb-2);}
   cv.width=Math.max(300,avw);cv.height=Math.max(250,avh);
   if(window.V3&&V3.resize)V3.resize(cv.width,cv.height);
   fitBoard();draw();
@@ -2027,6 +2123,7 @@ let rotation=0; // Index in TURN_ORDER: dieser Spieler sitzt unten (-1 = ungedre
 let showCoordRing=true;
 
 function initGame(){
+  replayExit();
   gameState={};capturedBy={B:[],R:[],G:[]};movedPieces=new Set(); // reset
   epTarget=[];promoPending=null;castleMap={};eliminated=new Set();
   turnIdx=0;selected=null;validMoves=new Set();gameOver=false;helpDuty=null;turnNote='';history=[];moveLog=[];renderLog();
@@ -2178,6 +2275,7 @@ function snapshot(){
     clock:Object.assign({},clock),flagged:new Set(flagged),moveLeft,timeUsed:Object.assign({},timeUsed)};
 }
 function undoMove(){
+  replayExit();
   if(FERN.on){toast(T('In Fernpartien können Züge nicht zurückgenommen werden.'),3000);return;}
   if(NET.on){netUndoButton();return;}
   if(promoPending||moveAnim||!history.length)return;
@@ -2271,8 +2369,9 @@ function moveText(e){
 }
 function renderLog(){
   const ol=document.getElementById('logList');if(!ol)return;
-  ol.innerHTML=moveLog.map((e,i)=>`<li><span class="num">${i+1}.</span><span style="color:${PCOLOR[e.player]}">●</span> ${moveText(e)}</li>`).join('');
-  ol.scrollTop=ol.scrollHeight;
+  const L=REPLAY?REPLAY.real.moveLog:moveLog,ri=REPLAY?REPLAY.i:-1;
+  ol.innerHTML=L.map((e,i)=>`<li${REPLAY?(i===ri-1?' class="rpCur"':i>=ri?' class="rpAfter"':''):''}><span class="num">${i+1}.</span><span style="color:${PCOLOR[e.player]}">●</span> ${moveText(e)}</li>`).join('');
+  if(REPLAY){const c=ol.querySelector('.rpCur');if(c)c.scrollIntoView({block:'nearest'});else ol.scrollTop=0;}else ol.scrollTop=ol.scrollHeight;
   const b=document.getElementById('btnUndo');if(b){b.disabled=FERN.on||NET.on?(NET.spec||!NET.started||(!NET.host&&!moveLog.some(e=>e.player===NET.seat))):!history.length;
     b.textContent=NET.on&&!NET.host?T('↶ Bitten'):T('↶ Zurück');b.title=NET.on&&!NET.host?T('Die anderen fragen, ob du deinen letzten Zug zurücknehmen darfst'):T('Letzten Zug zurücknehmen (Strg+Z)');}
 }
@@ -3287,11 +3386,13 @@ const SAVE_KEY='dreiSchach.autosave';
 function ser(v){return JSON.stringify(v,(k,x)=>x instanceof Set?{__set:[...x]}:x);}
 function deser(t){return JSON.parse(t,(k,x)=>x&&typeof x==='object'&&Array.isArray(x.__set)?new Set(x.__set):x);}
 function gameData(){
+  replayExit();
   return{v:1,saved:new Date().toISOString(),gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
     capturedBy,moveLog,history,tc,clock,timeUsed,flagged,moveLeft,aiPlayers,rotation,
     status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
 function applyGameData(d){
+  replayExit();
   resetEmos();
   cancelAI();moveAnim=null;kicks=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
@@ -3389,8 +3490,9 @@ function renderClocks(){
   }
   document.getElementById('clkPause').textContent=paused?'▶':'⏸';
 }
-function togglePause(){if(FERN.on){toast(T('In Fernpartien läuft keine Uhr.'),2500);return;}if(NET.on&&!NET.host){toast(T('Nur der Gastgeber kann die Uhr anhalten.'),2500);return;}if(waitingStart){startPlay();return;}paused=!paused;lastTick=performance.now();renderClocks();if(paused)cancelAI();else maybeAI();if(NET.on)netBroadcast({t:'pause',on:paused});}
+function togglePause(){if(REPLAY){replayExit();return;}if(FERN.on){toast(T('In Fernpartien läuft keine Uhr.'),2500);return;}if(NET.on&&!NET.host){toast(T('Nur der Gastgeber kann die Uhr anhalten.'),2500);return;}if(waitingStart){startPlay();return;}paused=!paused;lastTick=performance.now();renderClocks();if(paused)cancelAI();else maybeAI();if(NET.on)netBroadcast({t:'pause',on:paused});}
 function timeOut(p,kind){
+  replayExit();
   if(NET.on&&NET.host&&!netApplying)netBroadcast({t:'to',p,kind,clock,timeUsed});
   snd('beep');
   if(promoPending){finishPromotion('Q');return;}   // Zug ist schon gemacht – Dame wählen
@@ -3419,6 +3521,7 @@ setInterval(()=>{
   renderClocks();
 },200);
 function openSetup(){
+  replayExit();
   let has=false;try{has=!!localStorage.getItem(SAVE_KEY);}catch(e){}
   document.getElementById('btnResume').style.display=has?'':'none';
   cancelAI();setupOpen=true;document.getElementById('startBtn').classList.remove('show');document.getElementById('setupModal').classList.add('show');
@@ -3436,6 +3539,7 @@ function startFromSetup(){
   updateStatus();renderClocks();resizeCanvas();
 }
 function startPlay(){
+  replayExit();
   // Handy/Tablet: beim Start automatisch ins Vollbild (Adressleiste verschwindet)
   if(matchMedia('(pointer:coarse)').matches&&!document.fullscreenElement&&!navigator.standalone&&!matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches){
     const el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen;
@@ -3550,6 +3654,7 @@ function bestOwnFollow(p,state){
   return any?bv:evalPos(p,state);
 }
 function aiMove(){
+  replayExit();
   if(gameOver||paused||setupOpen||promoPending||moveAnim)return;
   const p=cur(),lvl=aiPlayers[p];if(!lvl)return;
   const moves=allLegalMoves(p);if(!moves.length)return;
@@ -3998,6 +4103,7 @@ function blockReason(from,to,player){
   return'';
 }
 function onFieldClick(fid){
+  if(REPLAY){toast(T('Du spielst gerade nach – „✕ Zurück zum Spiel“ beendet das Nachspielen.'),2800);return;}
   if(promoPending||gameOver||setupOpen||paused||moveAnim||aiPlayers[cur()]||netBlocks(cur()))return;
   const coord=COORD_LABELS[fid],pd=gameState[coord],player=cur();
   // Sicherheitsnetz: Sperrt die Hilfspflicht alle Züge, Pflicht neu prüfen (Matt bleibt bzw. Pflicht entfällt)
@@ -4255,6 +4361,7 @@ function fernApply(st,anim){
   FERN.seats=st.seats;FERN.next=st.next;FERN.over=st.over;FERN.used=st.used;FERN.age=st.age||0;FERN.loadedAt=Date.now();
   renderFernPanel();
   if(st.v===FERN.v){updateStatus();renderClocks();return;}
+  replayExit();
   const prevV=FERN.v,wasMine=FERN.v>=0&&cur()===FERN.seat;FERN.v=st.v;FERN.local=false;
   const go=()=>{
     if(st.snap){fernLoadSnap(deser(st.snap),st);}
@@ -4293,6 +4400,7 @@ function fernLoadSnap(d,st){
   renderClocks();resizeCanvas();draw();
 }
 function fernSnap(){
+  replayExit();
   return ser({gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,clock,flagged,aiPlayers,eliminated,
     status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color});
 }
@@ -4429,13 +4537,208 @@ async function fernNotify(test){
   }catch(e){say(T('Benachrichtigungen konnten nicht eingeschaltet werden: ')+(e.message||e.msg||e));}
 }
 
+function isLand(){return matchMedia('(orientation:landscape) and (max-height:520px)').matches;}
+// ================= Nachspielen (Replay) und Export der Zugliste =================
+// Die Stellungen werden aus dem Zugprotokoll neu aufgebaut (Startaufstellung + Züge). So geht das Nachspielen
+// auch bei Gästen, Fernpartien und geladenen Dateien. Das echte Spiel bleibt unangetastet und wird beim Beenden
+// wiederhergestellt; kommt währenddessen ein Zug von außen (online, Fernpartie, Computer), endet das Nachspielen von selbst.
+var REPLAY=null;
+function replayBoards(log){
+  const st={},cap={B:[],G:[],R:[]};
+  for(const p of['R','B','G'])for(let i=1;i<=8;i++){st[`${p}A${i}`]={piece:A_ROW[i-1],player:p};st[`${p}B${i}`]={piece:'P',player:p};}
+  const copy=()=>({gs:Object.assign({},st),cap:{B:cap.B.slice(),G:cap.G.slice(),R:cap.R.slice()}});
+  const out=[copy()];
+  for(const e of log){
+    if(!e.timeout&&e.from&&e.to&&st[e.from]){
+      const pd=st[e.from];
+      if(e.castle){
+        const p=pd.player,k=e.castle==='0-0',rf=`${p}A${k?8:1}`,rt=`${p}A${k?6:4}`;
+        delete st[e.from];st[e.to]=pd;if(st[rf]){st[rt]=st[rf];delete st[rf];}
+      }else{
+        const cs=e.capSq||(e.cap?e.to:null);
+        if(cs&&st[cs]&&cs!==e.from){
+          const v=st[cs];cap[e.player].push({piece:v.piece,from:v.player});
+          if(v.piece==='K')for(const c of Object.keys(st))if(st[c].player===v.player)delete st[c];
+          delete st[cs];
+        }
+        delete st[e.from];st[e.to]=e.promo?{piece:e.promo,player:pd.player}:pd;
+      }
+    }
+    out.push(copy());
+  }
+  return out;
+}
+function replayOpen(i){
+  if(!REPLAY){
+    if(!moveLog.length){toast(T('Noch keine Züge zum Nachspielen.'),2500);return;}
+    if(promoPending||moveAnim)return;
+    const local=!NET.on&&!FERN.on;
+    REPLAY={real:{gameState,moveLog,capturedBy,paused},boards:replayBoards(moveLog),n:moveLog.length,i:moveLog.length,timer:null,local};
+    if(local){paused=true;cancelAI();}
+    selected=null;validMoves=new Set();castleMap={};
+    document.body.classList.add('replay');
+    const lb=document.getElementById('logBox');if(lb.classList.contains('collapsed'))toggleLog();
+  }
+  replayGo(i==null?REPLAY.n:i);
+}
+function replayGo(i){
+  const R=REPLAY;if(!R)return;
+  i=Math.max(0,Math.min(R.n,i));R.i=i;
+  const b=R.boards[i];
+  gameState=i===R.n?R.real.gameState:b.gs;capturedBy=i===R.n?R.real.capturedBy:b.cap;
+  moveLog=R.real.moveLog.slice(0,i);
+  updateCaptured();draw();renderLog();replayUI();
+}
+function replayStep(d){replayStop();replayGo(REPLAY.i+d);}
+function replayPlay(){
+  const R=REPLAY;if(!R)return;
+  if(R.timer){replayStop();return;}
+  if(R.i>=R.n)replayGo(0);
+  R.timer=setInterval(()=>{if(!REPLAY){return;}if(REPLAY.i>=REPLAY.n){replayStop();return;}replayGo(REPLAY.i+1);},1300);
+  replayUI();
+}
+function replayStop(){const R=REPLAY;if(R&&R.timer){clearInterval(R.timer);R.timer=null;replayUI();}}
+function replayUI(){
+  const R=REPLAY;if(!R)return;
+  document.getElementById('rpPos').textContent=T('Zug {0} von {1}',[R.i,R.n]);
+  const pb=document.getElementById('rpPlay');pb.textContent=R.timer?'⏸':'▶';pb.title=R.timer?T('Anhalten'):T('Automatisch abspielen');
+  document.getElementById('rpBack').disabled=document.getElementById('rpFirst').disabled=R.i<=0;
+  document.getElementById('rpNext').disabled=document.getElementById('rpLast').disabled=R.i>=R.n;
+}
+function replayExit(){
+  const R=REPLAY;if(!R)return;
+  if(R.timer)clearInterval(R.timer);
+  REPLAY=null;
+  gameState=R.real.gameState;moveLog=R.real.moveLog;capturedBy=R.real.capturedBy;
+  if(R.local){paused=R.real.paused;lastTick=performance.now();}
+  document.body.classList.remove('replay');
+  updateCaptured();renderLog();draw();
+  if(R.local&&!paused)maybeAI();
+}
+// Zugliste als lesbarer Text (zum Teilen, Ausdrucken, Archivieren)
+function movesText(){
+  const log=REPLAY?REPLAY.real.moveLog:moveLog;
+  const d=new Date(),pad=n=>String(n).padStart(2,'0');
+  const names={};
+  for(const p of TURN_ORDER)names[p]=netName(p)||(aiPlayers[p]?MONSTERS[p].name+' ('+T('Computer')+')':'');
+  const div=document.createElement('div');
+  const lines=[T('Drei-Personen-Schach')+' – '+T('Partie vom {0}',[`${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`])];
+  lines.push(TURN_ORDER.map(p=>PNAMES[p]+(names[p]?': '+names[p]:'')).join(' · '));
+  lines.push('');
+  log.forEach((e,i)=>{div.innerHTML=moveText(e);lines.push(`${i+1}. ${PNAMES[e.player]}: ${div.textContent.replace(/︎/g,'').replace(/\s+/g,' ').trim()}`);});
+  if(gameOver){lines.push('');lines.push((REPLAY?'':document.getElementById('status').textContent)||'');}
+  lines.push('');lines.push('https://gsuchsland-design.github.io/drei-personen-schach/');
+  return lines.join('\n');
+}
+async function exportMoves(){
+  const log=REPLAY?REPLAY.real.moveLog:moveLog;
+  if(!log.length){toast(T('Noch keine Züge zum Nachspielen.'),2500);return;}
+  const txt=movesText();
+  if(navigator.share&&matchMedia('(pointer:coarse)').matches){
+    try{await navigator.share({title:T('Drei-Personen-Schach'),text:txt});return;}catch(e){if(e&&e.name==='AbortError')return;}
+  }
+  const d=new Date(),pad=n=>String(n).padStart(2,'0');
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`drei-schach-zuege_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}.txt`;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+  try{await navigator.clipboard.writeText(txt);toast(T('📋 Zugliste gespeichert und in die Zwischenablage kopiert.'),3000);}catch(e){}
+}
+document.getElementById('logList').addEventListener('click',e=>{
+  const li=e.target.closest('li');if(!li)return;
+  const i=[...li.parentNode.children].indexOf(li);if(i<0)return;
+  replayOpen(i+1);replayStop();
+});
+window.addEventListener('keydown',e=>{
+  if(!REPLAY||e.target.closest('input,textarea,select'))return;
+  if(e.key==='ArrowLeft'){e.preventDefault();replayStep(-1);}
+  else if(e.key==='ArrowRight'){e.preventDefault();replayStep(1);}
+  else if(e.key==='Home'){e.preventDefault();replayStop();replayGo(0);}
+  else if(e.key==='End'){e.preventDefault();replayStop();replayGo(REPLAY.n);}
+  else if(e.key===' '){e.preventDefault();replayPlay();}
+  else if(e.key==='Escape'){e.preventDefault();replayExit();}
+});
+
+// ================= Einführung für Neulinge =================
+const TOUR=[
+  {t:'👋 Willkommen!',x:'In einer Minute zeige ich dir das Wichtigste. Du kannst jederzeit überspringen.'},
+  {el:'#c',t:'Das Brett',x:'Drei Spieler – Blau, Grün und Rot – ziehen reihum. Jeder hat eine eigene Sektion; in der Mitte des Sterns treffen sich alle drei.'},
+  {el:'#c',t:'Ziehen',x:'Tippe eine eigene Figur an: Die erlaubten Felder leuchten auf. Dann tippst du auf das Zielfeld. Mit zwei Fingern (oder dem Mausrad) zoomst du, durch Ziehen verschiebst du das Brett.'},
+  {el:'#rulesBtn',t:'Über die Mitte',x:'Das Besondere: Figuren ziehen über die Mitte in die Nachbarsektionen. Unter 📖 Regeln steht alles genau – und du kannst jede Figur dort ausprobieren.'},
+  {el:'#menuBtn',t:'Die Knopfleiste',x:'☰ Einstellungen · 3D-Ansicht · 🔊 Ton · ⛶ Vollbild · 👥 Mitspieler, Kamera und Übersetzung.'},
+  {el:'#logBox',t:'Die Züge',x:'Hier stehen alle Züge. ↶ nimmt einen Zug zurück. Mit 📼 spielst du die Partie Zug für Zug nach und kannst die Zugliste teilen.'},
+  {t:'Los geht’s!',x:'Gleich wählst du: allein gegen den Computer, online mit Freunden (live, mit Bild und Ton) oder als Fernpartie, bei der jeder zieht, wann er Zeit hat. Die Einführung findest du jederzeit unter 📖 Regeln.'},
+];
+let tourI=0,tourDone=null;
+function tourSeen(){try{return localStorage.getItem('dreiSchach.tour')==='1';}catch(e){return false;}}
+function tourStart(then){
+  if(document.getElementById('rulesModal').classList.contains('show'))closeRules();
+  tourDone=then||null;tourI=0;
+  if(then){paused=true;cancelAI();}   // erster Start: die Uhr läuft noch nicht
+  document.getElementById('tour').classList.add('show');tourShow();
+}
+function tourEnd(){
+  try{localStorage.setItem('dreiSchach.tour','1');}catch(e){}
+  document.getElementById('tour').classList.remove('show');
+  const f=tourDone;tourDone=null;if(f)f();
+}
+function tourGo(d){tourI+=d;if(tourI>=TOUR.length){tourEnd();return;}if(tourI<0)tourI=0;tourShow();}
+function tourShow(){
+  const s=TOUR[tourI],hole=document.getElementById('tourHole'),card=document.getElementById('tourCard');
+  document.getElementById('tourT').textContent=T(s.t);
+  document.getElementById('tourX').textContent=T(s.x);
+  document.getElementById('tourN').textContent=`${tourI+1} / ${TOUR.length}`;
+  document.getElementById('tourBack').style.visibility=tourI?'visible':'hidden';
+  document.getElementById('tourNext').textContent=tourI===TOUR.length-1?T('Los geht’s'):T('Weiter');
+  document.getElementById('tourSkip').style.visibility=tourI===TOUR.length-1?'hidden':'visible';
+  const el=s.el&&document.querySelector(s.el);
+  const r=el&&el.getClientRects().length?el.getBoundingClientRect():null;   // (offsetParent taugt nicht: feste Knöpfe haben keinen)
+  const W=innerWidth,H=innerHeight;
+  card.style.left=card.style.top='';card.style.transform='';
+  if(!r||!r.width){
+    hole.style.cssText=`left:${W/2}px;top:${H/2}px;width:0;height:0;`;
+    card.style.left=Math.max(8,(W-card.offsetWidth)/2)+'px';card.style.top=Math.max(8,(H-card.offsetHeight)/2)+'px';
+    return;
+  }
+  const pad=6,x=Math.max(2,r.left-pad),y=Math.max(2,r.top-pad),w=Math.min(W-4,r.right+pad)-x,h=Math.min(H-4,r.bottom+pad)-y;
+  hole.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+  const cw=card.offsetWidth,ch=card.offsetHeight;
+  let cx=Math.min(W-cw-8,Math.max(8,x+w/2-cw/2)),cy;
+  if(y+h+ch+12<=H)cy=y+h+10;            // unter dem Ziel
+  else if(y-ch-12>=0)cy=y-ch-10;         // über dem Ziel
+  else{                                  // großes Ziel (Brett): Karte in die Ecke mit dem meisten Platz
+    cy=H-ch-10;
+    if(W>=H*1.25){cx=W-cw-10;cy=Math.max(10,H-ch-10);}
+  }
+  card.style.left=cx+'px';card.style.top=cy+'px';
+}
+window.addEventListener('resize',()=>{if(document.getElementById('tour').classList.contains('show'))tourShow();});
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('tour').classList.contains('show'))return;
+  if(e.key==='ArrowRight'||e.key==='Enter'){e.preventDefault();tourGo(1);}
+  else if(e.key==='ArrowLeft'){e.preventDefault();tourGo(-1);}
+  else if(e.key==='Escape'){e.preventDefault();tourEnd();}
+},true);
+
+// ================= Querformat am Handy =================
+// Niedrige Bildschirme im Querformat: Status, Uhren und Mitspieler-Fenster stehen links, das Brett rechts daneben.
+const LAND_MQ=matchMedia('(orientation:landscape) and (max-height:520px)');
+
+function onLandChange(){
+  if(isLand()&&!document.body.classList.contains('landSeen')){document.body.classList.add('landSeen');document.getElementById('panel').classList.add('hidden');}
+  setTimeout(()=>{layoutStrip();resizeCanvas();},60);
+}
+if(LAND_MQ.addEventListener)LAND_MQ.addEventListener('change',onLandChange);else if(LAND_MQ.addListener)LAND_MQ.addListener(onLandChange);
+if(isLand()){document.body.classList.add('landSeen');document.getElementById('panel').classList.add('hidden');}
+
 resizeCanvas();
 initGame();
 resizeCanvas();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
 translateDom(document.body);
-function startFlow(){if(QS.get('fern')){fernOpen(QS.get('fern'));return;}if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else openSetup();}
+function startFlow(){if(QS.get('fern')){fernOpen(QS.get('fern'));return;}if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else if(tourSeen())openSetup();else tourStart(openSetup);}
+function tourFromSetup(){document.getElementById('setupModal').classList.remove('show');setupOpen=false;tourStart(openSetup);}
 function afterLang(){startFlow();}
 if(!LANG_SET)openLang();else startFlow();
 document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
@@ -4509,7 +4812,10 @@ window.V3={on:false};
       const e=new THREE.ExtrudeGeometry(sh,{depth:0.13,bevelEnabled:true,bevelSize:0.035,bevelThickness:0.035,bevelSegments:4,curveSegments:8});
       e.translate(0,0,-0.065);W_(e);
       for(let i=0;i<7;i++){const u=i/6,mx=-0.07-0.11*u,my=0.7-0.42*u;D_(at(new THREE.SphereGeometry(0.035,10,8),mx,my,0));}
-      for(const z of [-0.105,0.105]){D_(at(new THREE.SphereGeometry(0.022,10,8),0.15,0.56,z));D_(at(new THREE.SphereGeometry(0.016,8,6),0.29,0.5,z*0.6));}}
+      for(const z of [-0.105,0.105]){D_(at(new THREE.SphereGeometry(0.022,10,8),0.15,0.56,z));D_(at(new THREE.SphereGeometry(0.016,8,6),0.29,0.5,z*0.6));}
+      // goldener Halsring wie bei den anderen Figuren: ein Band, das dem ovalen Hals folgt
+      const ring=[];for(let i=0;i<48;i++){const a=i/48*Math.PI*2;ring.push(new THREE.Vector3(-0.035+Math.cos(a)*0.188,0.305,Math.sin(a)*0.112));}
+      G_(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ring,true),64,0.014,8,true));}
     return GEO[t]=g;
   }
   // Holzmaserung (hell, wird mit der Spielerfarbe eingefärbt = farbig lasiertes Holz)
