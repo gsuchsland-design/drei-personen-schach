@@ -363,6 +363,9 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <div class="sub" id="trState"></div>
   <label><input type="checkbox" id="avRec" onchange="recSet(this.checked)"> 📝 Mitschrift für die Spielanalyse erlauben</label>
   <div class="sub" id="avRecState"></div>
+  <div class="sub">🤖 Computergegner:</div>
+  <label><input type="checkbox" id="avDiplo" onchange="setDiplo(this.checked)"> 🤝 verhandeln, verbünden sich und bluffen</label>
+  <label><input type="checkbox" id="avAIVoice" onchange="setAIVoice(this.checked)"> 🗣️ sprechen laut</label>
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <button class="langBtn notr" onclick="openLang()" style="margin-top:6px">🌐 Sprache · Language</button>
@@ -504,6 +507,8 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
     <div class="row"><span style="color:#44ee22;width:46px">Grün</span><select id="plG" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
     <div class="row"><span style="color:#ff5533;width:46px">Rot</span><select id="plR" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
+    <div class="row"><label><input type="checkbox" id="chkDiplo" checked onchange="setDiplo(this.checked)"> 🤝 Computergegner verhandeln, verbünden sich und bluffen</label></div>
+    <div class="row"><label><input type="checkbox" id="chkAIVoice" checked onchange="setAIVoice(this.checked)"> 🗣️ Computergegner sprechen laut</label></div>
     <div class="row" style="font-weight:bold;margin:14px 0 2px">Zeitkontrolle</div>
     <div class="row"><input type="checkbox" id="tcMoveOn"><label for="tcMoveOn">Zeit pro Zug:</label>
       <input type="number" id="tcMoveSec" value="60" min="5" step="5"> Sekunden</div>
@@ -648,7 +653,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101916"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101917"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -680,7 +685,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 15:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 16:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -952,7 +957,7 @@ function netRepair(){   // „Verbindung erneuern“: Bild/Ton und Datenverbindu
 const EMOJIS=['👍','👏','😂','😮','😱','😡','🤝','🔥','♟️','❤️'];
 NET.chat=[];let chatUnread=0;
 function myLang(){return (window.LANG||'de');}
-function chatName(m){return m.p?(netName(m.p)||PNAMES[m.p]):(m.name||T('Zuschauer'));}
+function chatName(m){return m.ai?m.name:m.p?(netName(m.p)||PNAMES[m.p]):(m.name||T('Zuschauer'));}
 function toggleChat(){const b=document.getElementById('chatBox');b.classList.toggle('show');
   if(b.classList.contains('show')){chatUnread=0;renderChat();setTimeout(()=>document.getElementById('chatIn').focus(),50);}updBadge();}
 function updBadge(){const e=document.getElementById('chatBadge');if(!e)return;e.textContent=chatUnread;e.style.display=chatUnread?'block':'none';}
@@ -966,7 +971,13 @@ function netChatOut(m){
   if(NET.host){netBroadcast(m);chatIn(m);}else{netToHost(m);chatIn(m);}
 }
 function chatIn(m){   // eingehende (oder eigene) Chat-Nachricht / Reaktion anzeigen
+  if(m.ai&&typeof diploText==='function'){   // Computergegner spricht: Baustein in der eigenen Sprache, ggf. laut vorlesen
+    if(NET.chat.some(x=>x.id===m.id))return;
+    const t=diploText(m.ai.k,m.p,m.ai.a);if(t)m.text=t;m.lang=myLang();speakMonster(m.p,m.text);
+    if(m.offer)setTimeout(()=>diploOfferUI(m),60);
+  }
   if(m.t==='say'||m.t==='chat')talkAdd(m);
+  if((m.t==='say'||m.t==='chat')&&!m.ai&&m.p&&typeof diploHear==='function'&&(!NET.on||NET.host))diploHear(m);
   const lk=m.p||('s:'+(m.name||''));
   if(m.t==='lang'){const neu=NET.langs[lk]!==m.lang;NET.langs[lk]=m.lang;
     if(m.p!==NET.seat&&neu&&performance.now()-(NET.langSent||0)>5000){NET.langSent=performance.now();netChatOut({t:'lang',lang:myLang()});}
@@ -2184,6 +2195,7 @@ let showCoordRing=true;
 function initGame(){
   replayExit();
   TALK=[];
+  if(typeof diploReset==='function')diploReset();
   gameState={};capturedBy={B:[],R:[],G:[]};movedPieces=new Set(); // reset
   epTarget=[];promoPending=null;castleMap={};eliminated=new Set();
   turnIdx=0;selected=null;validMoves=new Set();gameOver=false;helpDuty=null;turnNote='';history=[];moveLog=[];renderLog();
@@ -3512,6 +3524,7 @@ function markLastMove(){
   renderLog();
   autosave();
   emoAfterMove(e);
+  diploAfterMove(e);
 }
 function score(p){
   let v=0;
@@ -3732,6 +3745,7 @@ function aiMove(){
   replayExit();
   if(gameOver||paused||setupOpen||promoPending||moveAnim)return;
   const p=cur(),lvl=aiPlayers[p];if(!lvl)return;
+  diploTurn(p);
   const best=aiChoose(p,lvl);if(!best)return;
   aiPlay(p,best);
 }
@@ -3744,7 +3758,8 @@ function aiChoose(p,lvl){   // bester Zug für p in der aktuellen Stellung (ohne
   } else {
     const scored=moves.map(m=>{
       const ns=m.castle?applyCastle(gameState,m.from,m.castle):applyMove(gameState,m.from,m.to,epTarget);
-      return{m,ns,v:evalAfter(p,ns,m)+Math.random()*(lvl==='medium'?0.12:0.04)};
+      const b=diploBias(p,m,ns);   // Bündnis, Verrat, Rache
+      return{m,ns,b,v:evalAfter(p,ns,m)+b+Math.random()*(lvl==='medium'?0.12:0.04)};
     }).sort((a,b)=>b.v-a.v);
     best=scored[0].m;
     if(lvl==='master'&&scored[0].v<1e3){
@@ -3753,7 +3768,7 @@ function aiChoose(p,lvl){   // bester Zug für p in der aktuellen Stellung (ohne
       let bv=-1e9;
       for(const c of scored.slice(0,14)){
         const ns3=bestReply(q2,bestReply(q1,c.ns));
-        const v=bestOwnFollow(p,ns3)+0.3*c.v;
+        const v=bestOwnFollow(p,ns3)+0.3*c.v+0.7*c.b;
         if(v>bv){bv=v;best=c.m;}
       }
     }
@@ -3763,7 +3778,7 @@ function aiChoose(p,lvl){   // bester Zug für p in der aktuellen Stellung (ohne
       let bv=-1e9;
       for(const c of scored.slice(0,10)){
         const ns3=bestReply(q2,bestReply(q1,c.ns));
-        const v=evalPos(p,ns3)+0.3*c.v;
+        const v=evalPos(p,ns3)+0.3*c.v+0.7*c.b;
         if(v>bv){bv=v;best=c.m;}
       }
     }
@@ -4779,6 +4794,179 @@ function varAI(){
   setTimeout(()=>{if(!REPLAY||!REPLAY.var||cur()!==p)return;
     startMoveAnim(best.from,best.to,()=>{if(!REPLAY||!REPLAY.var)return;doMove(best.from,best.to);if(promoPending)finishPromotion('Q');});},450);
 }
+
+// ================= Diplomatie der Computergegner: Bündnisse, Verrat, Bluffs, Rache – mit Sprachausgabe =================
+// Rechnet nur das Gerät, das auch die Computerzüge rechnet (allein: dieses Gerät; online: der Gastgeber).
+// Gesprochen wird über Chat-Nachrichten mit Textbaustein (ai:{k,a}); jedes Gerät setzt sie in seiner Sprache zusammen.
+const DPERS={   // Charaktere: wie oft sie Bündnisse anbieten / annehmen / verraten, wie nachtragend sie sind
+  B:{propose:.22,accept:.9,betray:.2,grudge:.6,bluff:.05,voice:{pitch:1.55,rate:1.08}},
+  G:{propose:.09,accept:.75,betray:0,grudge:1.2,bluff:.02,voice:{pitch:.55,rate:.86}},
+  R:{propose:.15,accept:.6,betray:.1,grudge:1.6,bluff:.07,voice:{pitch:1.15,rate:1.28}},
+};
+const DLINES={   // Textbausteine: {0},{1} = Spielernamen
+  propose:{B:'{0}, lass uns zusammen {1} ärgern – der ist viel zu stark! Deal? 🤝',G:'{0}. Wir zwei gegen {1}. Einverstanden?',R:'{0}! {1} wird zu heiß – wir löschen ihn gemeinsam, ja?'},
+  accept:{B:'Au ja, {0}! Zusammen gegen {1}! 🤝',G:'Hmpf. Einverstanden, {0}. Gegen {1}.',R:'Abgemacht, {0}! {1} wird brennen! 🔥'},
+  decline:{B:'Lieber nicht, {0} – ich spiele heute allein.',G:'Nein, {0}. Grumbo kämpft allein.',R:'Pah, {0}! Ich brauche keine Hilfe!'},
+  humanNo:{B:'Schade, {0}… dann eben nicht.',G:'Hmpf. Wie du willst, {0}.',R:'Dann eben allein! 🔥'},
+  betray:{B:'Ups… Geschäft ist Geschäft, {0}! 😇',G:'Grumbo hat genug, {0}.',R:'Tut mir nicht leid, {0}! 🔥'},
+  betrayed:{B:'Buhuu, {0}, du Verräter!',G:'VERRAT! Grumbo vergisst nicht, {0}!',R:'Das wirst du bereuen, {0}! 🔥'},
+  pactEnd:{B:'Unser Bündnis ist vorbei, {0}. Ab jetzt jeder für sich! 😇',G:'Bündnis vorbei, {0}. Jetzt wieder jeder für sich.',R:'Schluss mit Teamwork, {0}! Ab jetzt jeder für sich!'},
+  revenge:{B:'Gemein, {0}! Das gibt Ärger!',G:'Das merke ich mir, {0}.',R:'Rache, {0}! 🔥'},
+  bluff:{B:'Keine Sorge, {0}, ich tu dir nichts… versprochen! 😇',G:'{0}. Grumbo hat einen Plan für dich.',R:'{0}, deine Dame sieht sehr lecker aus… 🔥'},
+  noAlly:{B:'Mit mir selbst? Hihi, nein!',G:'Grumbo greift sich nicht selbst an.',R:'Gegen mich selbst? Sicher nicht!'},
+};
+// damit die Übersetzungsdateien die Bausteine finden (T() bekommt genau diese Texte)
+const DIPLO={on:true,pacts:[],offers:[],grudge:{B:{},G:{},R:{}},betray:{},lastTalk:-9,said:0};
+try{DIPLO.on=localStorage.getItem('dreiSchach.diplo')!=='0';}catch(e){}
+let AIVOICE=true;try{AIVOICE=localStorage.getItem('dreiSchach.aivoice')!=='0';}catch(e){}
+function setDiplo(on){DIPLO.on=!!on;try{localStorage.setItem('dreiSchach.diplo',on?'1':'0');}catch(e){}diploUI();}
+function setAIVoice(on){AIVOICE=!!on;try{localStorage.setItem('dreiSchach.aivoice',on?'1':'0');}catch(e){}if(!on&&window.speechSynthesis)try{speechSynthesis.cancel();}catch(e){}diploUI();}
+function diploUI(){for(const id of['chkDiplo','avDiplo']){const c=document.getElementById(id);if(c)c.checked=DIPLO.on;}
+  for(const id of['chkAIVoice','avAIVoice']){const c=document.getElementById(id);if(c)c.checked=AIVOICE;}}
+function diploReset(){DIPLO.pacts=[];DIPLO.offers=[];DIPLO.grudge={B:{},G:{},R:{}};DIPLO.betray={};DIPLO.lastTalk=-9;DIPLO.said=0;}
+function diploBoss(){return DIPLO.on&&!FERN.on&&!REPLAY&&(!NET.on||NET.host)&&TURN_ORDER.some(p=>aiPlayers[p]);}
+function nMoves(){return moveLog.length;}
+function seatName(p){return isAIPlayer(p)?MONSTERS[p].name:(netName(p)||PNAMES[p]);}
+function diploText(k,p,a){const tpl=(DLINES[k]||{})[p];return tpl?T(tpl,(a||[]).map(seatName)):'';}
+// Ein Computergegner sagt etwas: Sprechblase, Hinweis, Chat (online an alle) und – falls an – Sprachausgabe
+function aiSay(p,k,args,extra){
+  const text=diploText(k,p,args);if(!text)return;
+  DIPLO.lastTalk=nMoves();DIPLO.said++;
+  const m=Object.assign({t:'chat',p,name:MONSTERS[p].name,text,lang:myLang(),id:'ai'+Date.now()+Math.random().toString(36).slice(2,5),ai:{k,a:args||[]}},extra||{});
+  if(NET.on&&NET.host)netBroadcast(m);
+  chatIn(m);
+}
+function speakMonster(p,text){
+  if(!AIVOICE||!window.speechSynthesis||!text)return;
+  try{const lang=myLang(),u=new SpeechSynthesisUtterance(text.replace(/[\u{1F300}-\u{1FAFF}☀-➿]/gu,''));u.lang=BCP[lang]||lang;
+    const vc=DPERS[p]?DPERS[p].voice:{pitch:1,rate:1};u.pitch=vc.pitch;u.rate=vc.rate;
+    const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith(lang));if(v)u.voice=v;
+    u.onstart=()=>{ttsBusy=true;if(typeof srStop==='function')srStop();};u.onend=u.onerror=()=>{ttsBusy=false;setTimeout(()=>{if(typeof trTick==='function')trTick();},300);};
+    speechSynthesis.speak(u);}catch(e){}
+}
+function pactOf(p){return DIPLO.pacts.find(x=>x.a===p||x.b===p)||null;}
+function allyOf(p){const x=pactOf(p);return x?(x.a===p?x.b:x.a):null;}
+function leaderSeat(){   // wer deutlich führt (Material + Geschlagenes)
+  const r=TURN_ORDER.filter(q=>!eliminated.has(q)).map(q=>({q,s:score(q)})).sort((a,b)=>b.s-a.s);
+  return r.length>=2&&r[0].s-r[1].s>=3?r[0].q:null;
+}
+function makePact(a,b,target){
+  DIPLO.pacts=DIPLO.pacts.filter(x=>x.a!==a&&x.b!==a&&x.a!==b&&x.b!==b);
+  DIPLO.pacts.push({a,b,target,since:nMoves(),until:nMoves()+9+Math.floor(Math.random()*4)});
+}
+function breakPact(x){DIPLO.pacts=DIPLO.pacts.filter(y=>y!==x);}
+// Bewertungszuschlag für einen Computerzug (in Materialeinheiten)
+function diploBias(p,m,ns){
+  if(!diploBoss())return 0;
+  let b=0;const victim=gameState[m.to];const pact=pactOf(p),ally=allyOf(p);
+  if(victim&&victim.player!==p){
+    const val=VALUE[victim.piece]||0,q=victim.player;
+    if(pact&&pact.target===q)b+=0.5*val+0.3;
+    if(ally===q)b+=DIPLO.betray[p]?0.3*val:-(1.2*val+1);
+    b+=Math.min(4,DIPLO.grudge[p][q]||0)*0.12*val*DPERS[p].grudge;
+  }
+  if(pact&&isInCheck(pact.target,ns))b+=0.4;
+  if(ally&&!DIPLO.betray[p]&&isInCheck(ally,ns))b-=0.6;
+  return b;
+}
+// Vor einem Computerzug: anbieten, bluffen, Bündnis auflösen
+function diploTurn(p){
+  if(!diploBoss()||gameOver)return;
+  const n=nMoves(),P=DPERS[p];
+  DIPLO.betray[p]=false;
+  // abgelaufene Bündnisse
+  for(const x of DIPLO.pacts.slice())if(n>=x.until){breakPact(x);const sp=x.a===p||!isAIPlayer(x.b)?x.a:x.b;aiSay(sp,'pactEnd',[sp===x.a?x.b:x.a]);}
+  DIPLO.offers=DIPLO.offers.filter(o=>n-o.at<=4);
+  const pact=pactOf(p);
+  if(pact){if(Math.random()<P.betray)DIPLO.betray[p]=true;return;}
+  if(n-DIPLO.lastTalk<2||n<3)return;   // nicht dauernd reden, nicht gleich am Anfang
+  const L=leaderSeat();
+  if(L&&L!==p&&Math.random()<P.propose){
+    const partner=TURN_ORDER.find(q=>q!==p&&q!==L&&!eliminated.has(q));
+    if(!partner||pactOf(partner))return;
+    const id='o'+n+p;
+    if(isAIPlayer(partner)){
+      aiSay(p,'propose',[partner,L]);
+      setTimeout(()=>{if(gameOver||!diploBoss())return;
+        const yes=Math.random()<DPERS[partner].accept&&(DIPLO.grudge[partner][p]||0)<3;
+        if(yes){makePact(p,partner,L);aiSay(partner,'accept',[p,L]);}else aiSay(partner,'decline',[p]);},1600);
+    }else{
+      DIPLO.offers.push({id,from:p,to:partner,target:L,at:n});
+      aiSay(p,'propose',[partner,L],{offer:{id,to:partner}});
+    }
+    return;
+  }
+  if(Math.random()<P.bluff){const opp=TURN_ORDER.filter(q=>q!==p&&!eliminated.has(q));const q=opp[Math.floor(Math.random()*opp.length)];if(q)aiSay(p,'bluff',[q]);}
+}
+// Nach jedem Zug: Verrat erkennen, Rache merken
+function diploAfterMove(e){
+  if(!diploBoss()||!e||e.timeout||!e.cap)return;
+  const victim=e.capFrom,mover=e.player,val=VALUE[e.cap]||0;
+  DIPLO.grudge[victim][mover]=(DIPLO.grudge[victim][mover]||0)+val/3;
+  const x=pactOf(mover);
+  if(x&&allyOf(mover)===victim){   // Bündnispartner geschlagen = Verrat
+    breakPact(x);
+    if(isAIPlayer(mover)&&DIPLO.betray[mover])aiSay(mover,'betray',[victim]);
+    if(isAIPlayer(victim)){DIPLO.grudge[victim][mover]+=3;setTimeout(()=>aiSay(victim,'betrayed',[mover]),isAIPlayer(mover)?1500:300);}
+    return;
+  }
+  if(isAIPlayer(victim)&&val>=3&&nMoves()-DIPLO.lastTalk>=2&&Math.random()<0.3*DPERS[victim].grudge)setTimeout(()=>aiSay(victim,'revenge',[mover]),500);
+}
+// Menschen reden mit: Antwort auf ein Angebot (Knopf oder „ja/nein“) oder eigener Vorschlag („Grumbo, greif Rot an“)
+const DW={
+  yes:/\b(ja|jo|jep|ok|okay|einverstanden|deal|abgemacht|gerne|gern|klar|machen wir|yes|sure)\b/i,
+  no:/\b(nein|nö|ne|niemals|vergiss es|kein bock|no|nope|never)\b/i,
+  attack:/(angreif|greif|gegen|stopp|vorknöpf|nehmen uns|fertig ?mach|jag|schlag|bündnis|zusammen|team|attack|against|ally)/i,
+};
+function seatsIn(text){
+  const t=text.toLowerCase(),out=[];
+  const words={B:['blau','blue','blubbo'],G:['grün','gruen','green','grumbo'],R:['rot','red','flammo']};
+  for(const p of TURN_ORDER){const nm=(netName(p)||'').toLowerCase();
+    const idx=Math.min(...words[p].concat(nm&&nm.length>2?[nm]:[]).map(w=>{const i=t.indexOf(w);return i<0?1e9:i;}));
+    if(idx<1e9)out.push({p,idx});}
+  return out.sort((a,b)=>a.idx-b.idx).map(x=>x.p);
+}
+function diploHear(m){
+  if(!diploBoss()||!m||!m.p||m.ai||isAIPlayer(m.p))return;
+  const from=m.p,text=String(m.text||'');
+  // 1. Antwort auf ein offenes Angebot
+  const o=(m.ans&&DIPLO.offers.find(x=>x.id===m.ans.id))||DIPLO.offers.slice().reverse().find(x=>x.to===from);
+  if(o&&o.to===from){
+    const ok=m.ans?m.ans.ok:(DW.yes.test(text)?true:DW.no.test(text)?false:null);
+    if(ok!==null){DIPLO.offers=DIPLO.offers.filter(x=>x!==o);
+      setTimeout(()=>{if(ok){makePact(o.from,from,o.target);aiSay(o.from,'accept',[from,o.target]);}else aiSay(o.from,'humanNo',[from]);},700);
+      return;}
+  }
+  // 2. eigener Vorschlag eines Menschen
+  if(!DW.attack.test(text))return;
+  const named=seatsIn(text).filter(q=>q!==from);
+  const ais=TURN_ORDER.filter(q=>isAIPlayer(q)&&q!==from&&!eliminated.has(q));
+  if(!ais.length)return;
+  let partner=named.find(q=>isAIPlayer(q)&&named.length>1&&named.indexOf(q)===0)||null;   // zuerst Angesprochener = Partner
+  let target=named.find(q=>q!==partner)||null;
+  if(!partner)partner=ais.find(q=>q!==target)||null;
+  if(!partner||!target)return;
+  if(partner===target){setTimeout(()=>aiSay(partner,'noAlly',[]),600);return;}
+  setTimeout(()=>{if(gameOver||!diploBoss())return;
+    const lead=leaderSeat(),sensible=target===lead||score(target)>=score(partner);
+    const yes=!pactOf(partner)&&(DIPLO.grudge[partner][from]||0)<3&&Math.random()<DPERS[partner].accept*(sensible?1:0.45);
+    if(yes){makePact(partner,from,target);aiSay(partner,'accept',[from,target]);}else aiSay(partner,'decline',[from]);
+  },900);
+}
+// Angebot an einen Menschen: Knöpfe auf seinem Gerät (allein am Gerät: hier)
+function diploOfferUI(m){
+  const o=m.offer;if(!o)return;
+  const mine=NET.on?NET.seat===o.to:!isAIPlayer(o.to);
+  if(!mine)return;
+  ask('offer'+o.id,`🤝 ${seatName(m.p)}: ${m.text}`,[
+    {label:T('🤝 Einverstanden'),fn:()=>diploAnswer(o,true)},
+    {label:T('✋ Nein'),bg:'#a33',fn:()=>diploAnswer(o,false)}]);
+}
+function diploAnswer(o,ok){
+  const text=ok?T('🤝 Einverstanden!'):T('✋ Nein danke.');
+  if(NET.on)netChatOut({t:'chat',text,lang:myLang(),ans:{id:o.id,ok}});
+  else{toast(`${PNAMES[o.to]}: ${text}`,2500);diploHear({p:o.to,text:'',ans:{id:o.id,ok}});}
+}
 // Zugliste als lesbarer Text (zum Teilen, Ausdrucken, Archivieren)
 function movesText(){
   const log=REPLAY?REPLAY.real.moveLog:moveLog;
@@ -4902,7 +5090,7 @@ if(isLand()){document.body.classList.add('landSeen');document.getElementById('pa
 resizeCanvas();
 initGame();
 resizeCanvas();
-recUI();
+recUI();diploUI();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
 translateDom(document.body);
