@@ -3,7 +3,7 @@
   "short_name": "3er-Schach",
   "description": "Schach für drei Spieler auf einem sternförmigen Brett",
   "lang": "de",
-  "start_url": "./",
+  "start_url": "spiel.html",
   "scope": "./",
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone"],

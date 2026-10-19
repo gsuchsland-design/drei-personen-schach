@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spielregeln – Drei-Personen-Schach</title>
+<meta name="description" content="Die vollständigen Regeln des Drei-Personen-Schach: Brett, Züge über die Mitte, Bauern, Rochade, Hilfspflicht, Schachmatt, Zeitkontrolle und Punktewertung.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:title" content="Spielregeln – Drei-Personen-Schach">
+<meta property="og:description" content="Die vollständigen Regeln des Drei-Personen-Schach: Brett, Züge über die Mitte, Bauern, Rochade, Hilfspflicht, Schachmatt, Zeitkontrolle und Punktewertung.">
+<meta property="og:image" content="img/brett-3d.webp">
+<link rel="stylesheet" href="site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="index.html#start"><img src="icon-192.png" alt="">Drei-Personen-Schach</a>
+<nav class="main"><a href="index.html#start">Start</a><a href="regeln.html" class=on>Regeln</a><a href="strategie.html">Strategie</a><a href="ueber.html">Über das Spiel</a></nav>
+<a class="play" href="spiel.html">▶ Jetzt spielen</a>
+</div></header>
+<main>
+<article>
+<h1>Spielregeln</h1>
+<p class="lead">Wer normales Schach kennt, kann nach fünf Minuten loslegen. Hier stehen alle Regeln vollständig – vom Brett über die Züge durch die Mitte bis zur Hilfspflicht, die das Spiel zu dritt erst fair macht.</p>
+<figure><img src="img/brett-2d.webp" width="382" height="354" alt="Das sternförmige Brett von oben" style="max-width:420px;display:block;margin:0 auto"><figcaption>Das Brett: drei Sektionen mit je 4 × 8 Feldern, Reihen A bis D, Spalten 1 bis 8.</figcaption></figure>
+
+   
+   <h2>Spieler und Brett</h2>
+   <ul>
+    <li>Drei Spieler: <b style="color:#5599ff">Blau</b>, <b style="color:#44ee22">Grün</b>, <b style="color:#ff5533">Rot</b>. Gezogen wird reihum: Blau → Grün → Rot.</li>
+    <li>Das Brett ist ein Davidstern aus drei Sektionen mit je 4 × 8 Feldern: Reihen <b>A–D</b>, Spalten <b>1–8</b>. Reihe A ist die eigene Grundreihe, Reihe D liegt an der Brettmitte.</li>
+    <li>Jeder Spieler hat 16 Figuren wie im normalen Schach. Der König steht auf A5, die Dame auf A4.</li>
+   </ul>
+   <h2>Züge über die Mitte</h2>
+   <ul>
+    <li>Wer über die eigene Reihe D hinauszieht, betritt eine <b>Nachbarsektion</b> – auf deren Reihe D – und zieht dort weiter in Richtung ihrer Reihe A.</li>
+    <li>Die Spalte wird dabei gespiegelt: aus Spalte c wird Spalte <b>9 − c</b>.</li>
+    <li><b>Turm und Dame (gerade):</b> Aus den Spalten 1–3 geht es in die eine, aus 6–8 in die andere Nachbarsektion. Aus den mittleren Spalten 4 und 5 sind <b>beide</b> Sektionen erreichbar.</li>
+    <li><b>Läufer und Dame (schräg):</b> Ein Läufer kreuzt ebenfalls in eine Nachbarsektion, an der Spitze der Mitte in beide.</li>
+    <li><b>Springer:</b> zwei Schritte vor/zurück und einer seitlich (oder umgekehrt), auch über die Mitte. Einige Übergänge an den Grenzen sind ausgeschlossen.</li>
+    <li><b>König:</b> ein Feld in jede Richtung, auch hinüber in die Nachbarsektionen.</li>
+    <li>Im Spiel kannst du unter „📖 Regeln“ jede Figur auf einem Übungsbrett ausprobieren.</li>
+   </ul>
+   <h2>Bauern</h2>
+   <ul>
+    <li>In der eigenen Sektion ziehen Bauern Richtung Mitte (A → D), aus Reihe B auch zwei Felder.</li>
+    <li>Über die Mitte gelangen sie in eine Nachbarsektion und ziehen dort weiter Richtung deren Reihe A. Geschlagen wird schräg nach vorn, auch über die Mitte.</li>
+    <li><b>Umwandlung:</b> auf der Reihe A einer fremden Sektion.</li>
+    <li><b>En passant:</b> Nach einem Doppelschritt dürfen <b>beide</b> Gegner en passant schlagen, bis der Spieler mit dem Doppelschritt wieder zieht.</li>
+   </ul>
+   <h2>Rochade</h2>
+   <ul><li>König (A5) und Turm unbewegt, Felder dazwischen frei und nicht bedroht. Kurz: König nach A7, Turm A8 → A6. Lang: König nach A3, Turm A1 → A4.</li></ul>
+   <h2 id="hilfspflicht">Schach, Hilfspflicht und Matt</h2>
+   <ul>
+    <li>Wer im Schach steht, muss es aufheben. Kein Zug darf den eigenen König im Schach lassen.</li>
+    <li><b>Hilfspflicht:</b> Steht ein Spieler im Schach und kommt der dritte Spieler <i>vor</i> ihm an die Reihe, darf dieser keinen Zug machen, nach dem der Bedrohte matt wäre. Ist der Bedrohte bereits matt, muss der dritte Spieler ihn befreien – kann er das nicht, bleibt es beim Matt. Kann sich der Bedrohte ohnehin selbst retten, egal was der dritte Spieler zieht, gibt es keine Einschränkung.</li>
+    <li><b>Schachmatt beendet das Spiel.</b> Es gewinnt, <b>wer dem König Schach gibt</b> – nicht, wer nur Fluchtfelder nimmt. Die beiden anderen verlieren.</li>
+   </ul>
+   <h2>Kein Zug möglich</h2>
+   <ul><li>Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Kann niemand mehr ziehen, entscheidet die Punktewertung.</li></ul>
+   <h2>Zeit und Punkte</h2>
+   <ul>
+    <li>Wahlweise Zeit pro Zug (abgelaufen → Zug verfällt) und/oder pro Partie (verbraucht → keine Züge mehr, Figuren bleiben schlagbar).</li>
+    <li>Punkte: eigene Figuren auf dem Brett + geschlagene gegnerische Figuren. Bauer 1, Springer und Läufer 3, Turm 4, Dame 6. Bei Gleichstand gewinnt, wer weniger Zeit verbraucht hat.</li>
+   </ul>
+   <h2>Bedienung</h2>
+   <ul>
+    <li>Figur anklicken → mögliche Züge leuchten → Zielfeld anklicken. „↶ Zurück“ bzw. Strg+Z nimmt Züge zurück.</li>
+    <li>☰ Menü · 3D-Ansicht · 💾 Speichern / 📂 Laden · ⏸ Pause · 🔊 Ton · ⛶ Vollbild · 👥 Mitspieler-Fenster ein/aus.</li>
+    <li><b>Die Computergegner</b> haben eigene Charaktere: <b style="color:#5599ff">Blubbo</b> (gutmütig, überschwänglich), <b style="color:#44ee22">Grumbo</b> (mürrisch, kräftig) und <b style="color:#ff5533">Flammo</b> (hitzköpfig, zappelig). Sie freuen sich, ärgern sich, bekommen Angst, jubeln und weinen – je nach Spielverlauf.</li>
+   </ul>
+  
+<h2>Die Notation</h2>
+<p>Jedes Feld hat einen Namen aus drei Zeichen: Sektion (B, G oder R für Blau, Grün, Rot), Reihe (A bis D) und Spalte (1 bis 8). <b>BA5</b> ist also das Feld A5 in der blauen Sektion – dort steht zu Beginn der blaue König. Ein Zug wird als Start- und Zielfeld notiert, zum Beispiel <b>BB4–BD4</b> für den Doppelschritt eines Bauern; ein Schlagzug mit „×“, etwa <b>GC3×RD6</b>.</p>
+<p class="note">Tipp: Im Spiel lassen sich die Koordinaten im Menü ☰ einblenden. Die Zugliste oben rechts zeigt jeden Zug in dieser Schreibweise, und mit 📼 kannst du jede Partie Zug für Zug nachspielen.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="spiel.html">▶ Regeln gleich ausprobieren</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="ueber.html#kontakt">Kontakt</a><a href="regeln.html">Spielregeln</a><a href="strategie.html">Strategie</a>
+</div></footer>
+</body></html>

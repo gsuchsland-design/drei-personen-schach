@@ -1,0 +1,224 @@
+"""Erzeugt die Inhaltsseiten (Startseite, Regeln, Strategie, Über, Impressum) mit gemeinsamem Kopf und Fuß.
+Aufruf: python3 tools/build_site.py   – danach die erzeugten .html-Dateien veröffentlichen.
+"""
+import os, re
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SITE = 'Drei-Personen-Schach'
+NAV = [('index.html#start', 'Start'), ('regeln.html', 'Regeln'), ('strategie.html', 'Strategie'), ('ueber.html', 'Über das Spiel')]
+
+def page(fn, title, desc, body, redirect=False):
+    nav = ''.join(f'<a href="{h}"{" class=on" if h.split("#")[0] == fn else ""}>{t}</a>' for h, t in NAV)
+    rd = ''
+    if redirect:   # Einladungs-, Fernpartie- und Stellungslinks sowie wiederkehrende Spieler direkt ins Spiel
+        rd = """<script>(function(){var q=location.search,h=location.hash;
+  if(/[?&](spiel|fern|pos|t|fernhost|peerhost|srv|turnapp)=/.test(q)){location.replace('spiel.html'+q+h);return;}
+  try{if(h!=='#start'&&localStorage.getItem('dreiSchach.lang'))location.replace('spiel.html');}catch(e){}})();</script>"""
+    html = f"""<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="{desc}">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:image" content="img/brett-3d.webp">
+<link rel="stylesheet" href="site.css">
+{rd}
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="index.html#start"><img src="icon-192.png" alt="">{SITE}</a>
+<nav class="main">{nav}</nav>
+<a class="play" href="spiel.html">▶ Jetzt spielen</a>
+</div></header>
+<main>
+{body}
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="ueber.html#kontakt">Kontakt</a><a href="regeln.html">Spielregeln</a><a href="strategie.html">Strategie</a>
+</div></footer>
+</body></html>
+"""
+    open(os.path.join(ROOT, fn), 'w', encoding='utf-8').write(html)
+
+# ---------- Startseite ----------
+page('index.html', 'Drei-Personen-Schach – Schach zu dritt, kostenlos im Browser',
+ 'Schach für drei Spieler auf einem sternförmigen Brett: gegen Computergegner mit Charakter, online mit Freunden mit Bild und Ton, als Fernpartie oder im Analysebrett. Kostenlos, ohne Anmeldung.',
+ """<section class="hero" id="start">
+<div>
+<h1>Schach zu dritt – mit Bündnissen, Verrat und Hilfspflicht</h1>
+<p class="lead">Drei Spieler, ein sternförmiges Brett, drei Sektionen, die sich in der Mitte treffen. Wer hier gewinnen will, muss nicht nur rechnen, sondern auch verhandeln: Mit wem gehe ich gemeinsam gegen den Führenden vor – und wann ist es Zeit, das Bündnis zu brechen?</p>
+<a class="cta go" href="spiel.html">▶ Jetzt kostenlos spielen</a><a class="cta alt" href="regeln.html">Regeln lesen</a>
+<p style="color:var(--muted);font-size:14px">Läuft direkt im Browser auf Handy, Tablet und Computer. Keine Anmeldung, keine Installation nötig.</p>
+</div>
+<img src="img/brett-3d.webp" width="780" height="425" alt="Das sternförmige Brett in der 3D-Ansicht mit den Computergegnern Grumbo und Flammo auf Monitoren">
+</section>
+
+<h2>Was ist Drei-Personen-Schach?</h2>
+<p>Drei-Personen-Schach überträgt das klassische Schach auf drei Spieler: <span class="b">Blau</span>, <span class="g">Grün</span> und <span class="r">Rot</span> ziehen reihum, jeder mit den bekannten sechzehn Figuren. Das Brett besteht aus drei Sektionen zu je vier mal acht Feldern, die zu einem Stern zusammengesetzt sind. In der Mitte stoßen alle drei Sektionen aneinander – dort entscheidet sich fast jede Partie.</p>
+<p>Weil drei Spieler am Brett sitzen, verändert sich das Spiel grundlegend. Wer früh zu stark wird, zieht die Angriffe beider Gegner auf sich. Wer abwartet, kann zum lachenden Dritten werden. Und eine besondere Regel, die <a href="regeln.html#hilfspflicht">Hilfspflicht</a>, verhindert, dass ein Spieler einen anderen bequem ins Matt laufen lässt.</p>
+
+<h2>So kannst du spielen</h2>
+<div class="grid">
+<div class="card"><h3>🤖 Gegen den Computer</h3><p>Drei Monster mit eigenem Charakter: der verspielte <b>Blubbo</b>, der mürrische <b>Grumbo</b> und der hitzköpfige <b>Flammo</b>. Sie freuen sich, ärgern sich, schmieden Bündnisse – und verraten sie auch mal. Fünf Spielstärken von leicht bis Meister.</p></div>
+<div class="card"><h3>🌐 Live mit Freunden</h3><p>Einladungslink per WhatsApp, SMS oder QR-Code verschicken – und schon sitzt ihr zu dritt am Brett. Mit Kamera und Mikrofon, Chat, Emoji-Reaktionen und automatischer Übersetzung in zwölf Sprachen.</p></div>
+<div class="card"><h3>✉️ Fernpartie</h3><p>Jeder zieht, wann er Zeit hat. Der Spielstand liegt sicher auf dem Server, wer dran ist, bekommt eine Benachrichtigung aufs Handy. Wer gerade gleichzeitig online ist, kann sich sehen und hören.</p></div>
+<div class="card"><h3>🔬 Analyse</h3><p>Nach der Partie zeigt die Analyse Patzer, Wendepunkte und bessere Züge, eine Punktekurve und ein Verhaltensprofil jedes Spielers. Auf Wunsch schreibt eine KI einen Bericht über Verlauf und Psychologie der Partie.</p></div>
+<div class="card"><h3>♟ Analysebrett</h3><p>Beliebige Stellungen aufbauen, Züge ausprobieren, Vorschläge des Computers ansehen und die Stellung per Link mit Freunden teilen – zum Beispiel, um einen strittigen Zug zu besprechen.</p></div>
+<div class="card"><h3>🎨 Für alle Augen</h3><p>Spielerfarben frei wählbar mit Farbrad, zusätzliche Zeichen bei Farbsehschwäche, 2D- und 3D-Ansicht, Hoch- und Querformat am Handy.</p></div>
+</div>
+
+<div class="cols" style="margin-top:30px">
+<figure><img src="img/brett-2d.webp" width="382" height="354" alt="Das Brett in der 2D-Ansicht: Eine blaue Figur ist ausgewählt, mögliche Züge leuchten" loading="lazy"><figcaption>2D-Ansicht: Figur antippen, die erlaubten Felder leuchten.</figcaption></figure>
+<div>
+<h2 style="margin-top:0">Warum zu dritt alles anders ist</h2>
+<p>Im klassischen Schach ist jeder Vorteil gut. Zu dritt kann ein Vorteil gefährlich werden: Wer Material gewinnt, wird zum Ziel. Erfahrene Spieler halten sich deshalb oft knapp hinter dem Führenden, schwächen beide Gegner gleichmäßig und schlagen erst zu, wenn die anderen sich gegenseitig zermürbt haben.</p>
+<p>Dazu kommt die Mitte des Sterns: Türme, Damen und Läufer können über sie in die Nachbarsektionen wechseln, aus den mittleren Spalten sogar in beide. Eine Figur in der Mitte bedroht deshalb oft zwei Gegner gleichzeitig – und wird von beiden bedroht.</p>
+</div></div>
+
+<div class="cols">
+<div>
+<h2>Computergegner mit Persönlichkeit</h2>
+<p>Die Monster sind mehr als Rechenmaschinen. Sie sprechen – auf Wunsch laut –, schlagen Bündnisse gegen den Führenden vor, nehmen Angebote an oder lehnen sie ab und vergessen nicht, wer ihnen zuletzt eine Figur genommen hat. Du kannst sie sogar direkt ansprechen: „Grumbo, was hältst du von Flammo?“</p>
+<p>So entsteht genau die Mischung aus Rechnen und Verhandeln, die Drei-Personen-Schach ausmacht – auch wenn gerade keine Freunde zum Spielen da sind.</p>
+</div>
+<figure><img src="img/monster.webp" alt="Die Computergegner Grumbo und Flammo in ihren Fenstern" loading="lazy"><figcaption>Grumbo und Flammo – zwei der drei Computergegner.</figcaption></figure>
+</div>
+
+<h2>Aus jeder Partie lernen</h2>
+<div class="cols">
+<figure><img src="img/analyse.webp" alt="Die Spielanalyse mit Punktekurve und Spielerprofilen" loading="lazy"><figcaption>Die Analyse: Punktekurve, Genauigkeit und Auffälligkeiten jedes Spielers.</figcaption></figure>
+<div>
+<p>Die Analyse vergleicht jeden Zug mit allen anderen möglichen Zügen der Stellung und markiert Patzer, Fehler und Ungenauigkeiten. Ein Klick auf einen Schlüsselmoment springt direkt in die Stellung, wo du eine bessere Fortsetzung ausprobieren kannst.</p>
+<p>Besonders spannend wird es, wenn alle Mitspieler der Gesprächsmitschrift zugestimmt haben: Dann zeigt die Analyse, wer seine Ankündigungen wahr gemacht hat – und wer geblufft hat.</p>
+</div></div>
+
+<h2>Häufige Fragen</h2>
+<details><summary>Kostet das Spiel etwas?</summary><p>Nein. Drei-Personen-Schach ist kostenlos und läuft ohne Anmeldung direkt im Browser.</p></details>
+<details><summary>Brauche ich drei Personen?</summary><p>Nein. Freie Plätze übernehmen Computergegner – du kannst allein gegen zwei Monster spielen, zu zweit gegen eines oder zu dritt ohne Computer.</p></details>
+<details><summary>Kann ich das Spiel installieren?</summary><p>Ja. Im Browser-Menü „Zum Startbildschirm hinzufügen“ wählen – dann startet Drei-Personen-Schach wie eine App, im Vollbild.</p></details>
+<details><summary>Was passiert mit Kamera und Mikrofon?</summary><p>Bild und Ton gehen direkt an deine Mitspieler und werden nicht gespeichert. Mehr dazu in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p></details>
+<details><summary>Ich kenne normales Schach – worauf muss ich achten?</summary><p>Die Figuren ziehen wie gewohnt; neu sind die Übergänge über die Mitte, die Umwandlung auf der Grundreihe einer fremden Sektion und die Hilfspflicht. Die <a href="regeln.html">Regeln</a> erklären alles mit Beispielen, und die <a href="strategie.html">Strategie-Seite</a> zeigt, wie man zu dritt denkt.</p></details>
+
+<p style="text-align:center;margin-top:34px"><a class="cta go" href="spiel.html">▶ Jetzt spielen</a></p>
+""", redirect=True)
+
+# ---------- Regeln ----------
+rules = open('/tmp/claude-0/-home-claude/894eb36e-6bd2-5b97-9566-0bfc1d8ee3fa/scratchpad/rules.html', encoding='utf-8').read()
+rules = re.sub(r'<h2>.*?</h2>', '', rules, count=1)
+rules = rules.replace('<li>Rechts kannst du alle Fälle ausprobieren.</li>', '<li>Im Spiel kannst du unter „📖 Regeln“ jede Figur auf einem Übungsbrett ausprobieren.</li>')
+rules = rules.replace('<h3>Schach, Hilfspflicht und Matt</h3>', '<h3 id="hilfspflicht">Schach, Hilfspflicht und Matt</h3>')
+rules = rules.replace('<h3>', '<h2>').replace('</h3>', '</h2>').replace('<h3 id="hilfspflicht">', '<h2 id="hilfspflicht">')
+page('regeln.html', 'Spielregeln – Drei-Personen-Schach',
+ 'Die vollständigen Regeln des Drei-Personen-Schach: Brett, Züge über die Mitte, Bauern, Rochade, Hilfspflicht, Schachmatt, Zeitkontrolle und Punktewertung.',
+ f"""<article>
+<h1>Spielregeln</h1>
+<p class="lead">Wer normales Schach kennt, kann nach fünf Minuten loslegen. Hier stehen alle Regeln vollständig – vom Brett über die Züge durch die Mitte bis zur Hilfspflicht, die das Spiel zu dritt erst fair macht.</p>
+<figure><img src="img/brett-2d.webp" width="382" height="354" alt="Das sternförmige Brett von oben" style="max-width:420px;display:block;margin:0 auto"><figcaption>Das Brett: drei Sektionen mit je 4 × 8 Feldern, Reihen A bis D, Spalten 1 bis 8.</figcaption></figure>
+{rules}
+<h2>Die Notation</h2>
+<p>Jedes Feld hat einen Namen aus drei Zeichen: Sektion (B, G oder R für Blau, Grün, Rot), Reihe (A bis D) und Spalte (1 bis 8). <b>BA5</b> ist also das Feld A5 in der blauen Sektion – dort steht zu Beginn der blaue König. Ein Zug wird als Start- und Zielfeld notiert, zum Beispiel <b>BB4–BD4</b> für den Doppelschritt eines Bauern; ein Schlagzug mit „×“, etwa <b>GC3×RD6</b>.</p>
+<p class="note">Tipp: Im Spiel lassen sich die Koordinaten im Menü ☰ einblenden. Die Zugliste oben rechts zeigt jeden Zug in dieser Schreibweise, und mit 📼 kannst du jede Partie Zug für Zug nachspielen.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="spiel.html">▶ Regeln gleich ausprobieren</a></p>
+</article>""")
+
+# ---------- Strategie ----------
+page('strategie.html', 'Strategie für Drei-Personen-Schach – Tipps für Eröffnung, Mitte, Bündnisse und Endspiel',
+ 'Wie denkt man im Schach zu dritt? Strategie-Ratgeber für Drei-Personen-Schach: Eröffnung, die Mitte des Sterns, Doppelangriffe, Hilfspflicht, Bündnisse, Königssicherheit und Punktewertung.',
+ """<article>
+<h1>Strategie: Wie man zu dritt gewinnt</h1>
+<p class="lead">Im Schach zu dritt gelten viele bekannte Grundsätze weiter – aber einige kehren sich um. Dieser Ratgeber zeigt, worauf es ankommt, von der ersten Bauernbewegung bis zur Punktewertung.</p>
+
+<h2>1. Der Führende ist das Ziel</h2>
+<p>Die wichtigste Regel des Drei-Personen-Schachs steht in keinem Regelwerk: <b>Wer deutlich führt, wird von beiden Gegnern angegriffen.</b> Schon ein früher Figurengewinn kann dazu führen, dass die anderen beiden ihre Kräfte gegen dich bündeln. Plane deshalb nicht nur, wie du Material gewinnst, sondern auch, wie du danach nicht zur Zielscheibe wirst.</p>
+<p>Starke Spieler halten sich oft knapp hinter dem Führenden. Sie schlagen dort zu, wo es nichts kostet, und lassen die anderen beiden sich gegenseitig schwächen. Erst wenn ein Gegner deutlich geschwächt ist, lohnt sich der entscheidende Angriff.</p>
+
+<h2>2. Die Eröffnung: Entwicklung mit Rücksicht auf zwei Seiten</h2>
+<p>Wie im klassischen Schach gilt: Springer und Läufer früh entwickeln, die Dame nicht zu früh herausbringen, den König mit der Rochade in Sicherheit bringen. Der Unterschied: Deine Sektion grenzt an <b>zwei</b> Gegner. Die Spalten 1 bis 3 zeigen zum einen Nachbarn, die Spalten 6 bis 8 zum anderen, die Spalten 4 und 5 zu beiden.</p>
+<ul>
+<li>Ein Doppelschritt eines Mittelbauern öffnet Linien zu beiden Gegnern gleichzeitig – gut für deine Figuren, aber auch für ihre.</li>
+<li>Bauern auf den Flügeln sind sicherer, weil sie nur einen Nachbarn betreffen.</li>
+<li>Beobachte, welcher Gegner aggressiver eröffnet. Gegen ihn lohnt sich eine solide Verteidigung, gegen den anderen ein früher Gegenstoß.</li>
+</ul>
+
+<h2>3. Die Mitte des Sterns</h2>
+<p>In der Mitte treffen sich alle drei Sektionen. Türme, Damen und Läufer können von hier aus in die Nachbarsektionen wechseln, aus den mittleren Spalten sogar in beide. Eine Dame im Zentrum hat deshalb enorme Reichweite – sie ist aber auch zwei Gegnern gleichzeitig ausgesetzt.</p>
+<p>Gute Faustregel: <b>Besetze die Mitte mit Figuren, die gedeckt sind</b>, und stelle keine ungedeckte Figur dorthin, die von zwei Seiten angegriffen werden kann. Ein Bauer auf D4 oder D5 kann übrigens wie Turm und Dame geradeaus in beide Nachbarsektionen ziehen – auch das macht die Mittelfelder so wertvoll.</p>
+
+<h2>4. Doppelangriffe in neuer Form</h2>
+<p>Im klassischen Schach greift eine Gabel zwei Figuren eines Gegners an. Zu dritt kannst du mit einem einzigen Zug <b>zwei verschiedene Gegner</b> bedrohen. Das ist doppelt wirkungsvoll: Der erste Gegner muss reagieren, und ziehst du danach, ist der zweite immer noch bedroht. Gleichzeitig gilt der Umkehrschluss – achte darauf, dass du nicht selbst von zwei Seiten in die Zange genommen wirst. Zwei Gegner können in einer Runde nacheinander je eine Figur von dir schlagen.</p>
+
+<h2>5. Die Hilfspflicht klug nutzen</h2>
+<p>Die <a href="regeln.html#hilfspflicht">Hilfspflicht</a> verbietet dem Spieler, der vor einem bedrohten Spieler zieht, einen Zug zu machen, nach dem dieser matt wäre. Ist der Bedrohte bereits matt, muss der Helfer ihn befreien. Daraus ergeben sich zwei strategische Folgen:</p>
+<ul>
+<li><b>Als Angreifer:</b> Ein Matt gelingt am sichersten, wenn der dritte Spieler es nicht verhindern kann – etwa weil er selbst im Schach steht oder keine Figur in der Nähe hat.</li>
+<li><b>Als Helfer:</b> Die Pflicht kann dich zwingen, einen Zug zu machen, den du sonst nie spielen würdest. Rechne damit, bevor du einen Gegner zu stark werden lässt.</li>
+</ul>
+<p>Wichtig: Es gewinnt, wer dem König Schach gibt – nicht, wer nur die Fluchtfelder nimmt. Wer beim Mattsetzen hilft, ohne selbst Schach zu geben, verliert trotzdem.</p>
+
+<h2>6. Bündnisse: Absprachen, Bluffs und Verrat</h2>
+<p>Drei Spieler bedeuten Diplomatie. Ein kurzes Bündnis gegen den Führenden ist oft die vernünftigste Strategie für die beiden anderen. Doch jedes Bündnis hat ein Verfallsdatum: Sobald der gemeinsame Gegner geschwächt ist, werden die Partner wieder zu Konkurrenten.</p>
+<ul>
+<li>Schlage Bündnisse vor, wenn du hinten liegst – dann profitierst du am meisten.</li>
+<li>Halte Abmachungen, solange sie dir nützen, und beobachte genau, ob dein Partner es auch tut.</li>
+<li>Ein glaubhafter Bluff („Ich greife gleich Rot an“) kann einen Gegner zu Verteidigungszügen zwingen, die ihn Zeit kosten.</li>
+</ul>
+<p>Die Computergegner im Spiel verhandeln übrigens selbst: Blubbo bietet gern Bündnisse an und verrät sie auch, Grumbo ist ehrlich, aber nachtragend, Flammo blufft und rächt sich. Wer ihre Charaktere kennt, kann sie gegeneinander ausspielen.</p>
+
+<h2>7. Königssicherheit</h2>
+<p>Ein König kann zu dritt aus mehr Richtungen angegriffen werden. Die Rochade ist daher fast immer sinnvoll – meist auf die Seite, deren Nachbar weniger aggressiv spielt. Halte die Bauern vor dem König möglichst lange stehen, und achte auf Figuren, die über die Mitte in deine Sektion eindringen können.</p>
+
+<h2>8. Zeit und Punkte: das Endspiel</h2>
+<p>Kann niemand mehr ziehen oder ist die Zeit abgelaufen, entscheidet die Punktewertung: eigene Figuren auf dem Brett plus geschlagene gegnerische Figuren, mit Bauer 1, Springer und Läufer 3, Turm 4 und Dame 6. Bei Gleichstand gewinnt, wer weniger Bedenkzeit verbraucht hat.</p>
+<p>Daraus folgt: Geschlagene Figuren zählen doppelt – sie fehlen dem Gegner und zählen für dich. Wenn ein Matt unwahrscheinlich ist, lohnt es sich, gegen Ende Material sicher einzusammeln, statt riskante Angriffe zu starten. Mit Zeitkontrolle gilt außerdem: Schnelles, solides Spiel kann am Ende den Ausschlag geben.</p>
+
+<h2>9. Aus Partien lernen</h2>
+<p>Nach jeder Partie zeigt die Analyse im Spiel, wo die Wendepunkte lagen, welche Züge besser gewesen wären und wie sich die Spieler unter Druck verhalten haben – etwa ob jemand nach eigenen Verlusten mehr Fehler macht oder bevorzugt den Führenden angreift. Mit dem Analysebrett kannst du jede Stellung nachbauen und Alternativen ausprobieren.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="spiel.html">▶ Gelerntes ausprobieren</a></p>
+</article>""")
+
+# ---------- Über ----------
+page('ueber.html', 'Über das Spiel – Drei-Personen-Schach',
+ 'Wie Drei-Personen-Schach entstanden ist, wer dahintersteht, wie das Spiel technisch funktioniert und wie du Kontakt aufnehmen kannst.',
+ """<article>
+<h1>Über das Spiel</h1>
+<p class="lead">Drei-Personen-Schach ist ein Hobbyprojekt aus Köln – entstanden aus der Frage, wie Schach sich anfühlt, wenn plötzlich ein Dritter mit am Tisch sitzt.</p>
+<h2>Die Idee</h2>
+<p>Schachvarianten für drei Spieler gibt es schon lange, meist auf sechseckigen oder runden Brettern. Diese Version setzt drei klassische Bretthälften zu einem Stern zusammen. So bleibt jede Sektion vertraut – vier Reihen, acht Spalten, die gewohnte Grundaufstellung –, und trotzdem entsteht in der Mitte ein völlig neues Spielfeld, auf dem alle drei Parteien aufeinandertreffen.</p>
+<p>Schnell zeigte sich, dass zu dritt eine eigene Dynamik entsteht: Bündnisse, Verrat, der lachende Dritte. Um zu verhindern, dass ein Spieler einen anderen tatenlos ins Matt laufen lässt, kam die Hilfspflicht hinzu. Sie macht das Spiel fairer und sorgt für überraschende Wendungen.</p>
+<h2>Wer dahintersteht</h2>
+<p>Entwickelt wird Drei-Personen-Schach von Guido Suchsland. Gespielt und getestet wird es mit Freunden – viele Verbesserungen, von der Fernpartie bis zur Übersetzung während des Spiels, gehen auf ihre Wünsche zurück.</p>
+<h2>Technik</h2>
+<p>Das Spiel läuft vollständig im Browser. Online-Partien verbinden die Geräte direkt miteinander; ein kleiner eigener Server vermittelt nur die Verbindung, speichert Fernpartien und verschickt Benachrichtigungen. Die Computergegner rechnen auf deinem Gerät, nur der optionale KI-Bericht und die freien Gespräche mit den Monstern nutzen ein Sprachmodell. Was dabei mit deinen Daten geschieht, steht in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+<h2 id="kontakt">Kontakt</h2>
+<p>Fragen, Fehlermeldungen oder Ideen? Die Kontaktdaten stehen im <a href="impressum.html">Impressum</a>. Über Rückmeldungen zum Spiel freue ich mich.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="spiel.html">▶ Jetzt spielen</a></p>
+</article>""")
+
+# ---------- Impressum ----------
+IMP = {
+ 'name': 'Guido Suchsland',
+ 'street': '[Straße und Hausnummer]',
+ 'city': '[PLZ Ort]',
+ 'mail': '[E-Mail-Adresse]',
+}
+page('impressum.html', 'Impressum – Drei-Personen-Schach', 'Impressum und Anbieterkennzeichnung von Drei-Personen-Schach.',
+ f"""<article>
+<h1>Impressum</h1>
+<h2>Angaben gemäß § 5 DDG</h2>
+<p>{IMP['name']}<br>{IMP['street']}<br>{IMP['city']}<br>Deutschland</p>
+<h2>Kontakt</h2>
+<p>E-Mail: {IMP['mail']}</p>
+<h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+<p>{IMP['name']}, Anschrift wie oben</p>
+<h2>Verbraucherstreitbeilegung</h2>
+<p>Ich bin nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+<h2>Haftung für Links</h2>
+<p>Diese Seiten enthalten Links zu Angeboten Dritter, auf deren Inhalte ich keinen Einfluss habe. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich. Bei Bekanntwerden von Rechtsverletzungen entferne ich derartige Links umgehend.</p>
+<h2>Urheberrecht</h2>
+<p>Spiel, Texte, Grafiken und Programmcode dieser Seiten sind urheberrechtlich geschützt (© 2026 Guido Suchsland). Verwendete Bibliotheken Dritter stehen unter ihren jeweiligen Lizenzen (three.js, PeerJS, Noto-Schrift), die im Ordner „lib“ beiliegen.</p>
+</article>""")
+print('ok')
