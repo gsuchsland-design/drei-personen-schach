@@ -250,6 +250,8 @@ body.barBottom #selfView { bottom:50px; }
   #rulesBtn .lbl { display:none; }
   #logBox { width:auto; min-width:128px; max-width:46vw; font-size:11px; }
   #logHead { padding:4px 5px; gap:4px; } #logHead button { padding:2px 6px; font-size:11px; }
+  #logHead span { display:none; } #logBox { min-width:0; }
+  body.logLow #logBox { top:42px; } body.logLow { padding-top:76px !important; }
   #status { font-size:13px; }
   .clk { font-size:12px; min-width:0; padding:2px 6px; }
   #clocks { gap:5px; }
@@ -596,7 +598,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <div id="lbSeats"></div>
   <label class="lbRecRow"><input type="checkbox" id="lbRec" onchange="recSet(this.checked)"> 📝 Mein Gesprochenes und meine Chat-Nachrichten dürfen für die Spielanalyse mitgeschrieben werden</label>
   <div id="lbRecState" class="lbHint"></div>
-  <div id="lbHost">
+  <div id="lbInvite">
     <div class="lbLbl">Einladungslink</div>
     <div class="lbLinkRow"><input id="lbLink" readonly onclick="this.select()"><button onclick="copyInvite()" title="Link kopieren">📋</button></div>
     <div class="lbShareRow">
@@ -605,6 +607,9 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     </div>
     <div class="lbHint">„Einladen über …“ öffnet das Teilen-Menü deines Handys – dort findest du auch Instagram, Signal, Telegram usw. Sitzt ihr zusammen, kann man auch den QR-Code scannen.</div>
     <div id="lbQR"></div>
+    <div id="lbInvGuest" class="lbHint">Du kannst auch selbst Freunde einladen – sie bekommen einen freien Platz. Der Gastgeber kann Mitspieler jederzeit entfernen.</div>
+  </div>
+  <div id="lbHost">
     <div class="lbLbl">Wer zu spät kommt</div>
     <select id="lbSpec" onchange="setSpecMode(this.value)" style="width:100%;padding:7px;background:#333;color:#fff;border:1px solid #666;border-radius:6px;font-size:14px">
       <option value="ask">darf zuschauen – ich werde vorher gefragt</option><option value="always">darf immer zuschauen</option><option value="never">darf nicht zuschauen</option></select>
@@ -739,7 +744,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101921"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101923"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -771,7 +776,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 19:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 20:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -1782,6 +1787,9 @@ function showLobby(){
   setupOpen=true;
   document.getElementById('lbHost').style.display=NET.host?'':'none';
   document.getElementById('lbGuest').style.display=NET.host?'none':'';
+  document.getElementById('lbInvite').style.display=NET.spec?'none':'';
+  document.getElementById('lbInvGuest').style.display=NET.host?'none':'';
+  if(!NET.host&&!NET.spec)renderInvite();
   document.getElementById('lobbyModal').classList.add('show');
   renderLobby();updateStatus();
 }
@@ -1854,7 +1862,15 @@ let CANVAS_ID='c',FIT_PAD=3.8;
 let SIDE=38,TH=SIDE*Math.sqrt(3)/2;
 let ox=50,oy=30,zoom=1.0;
 
+function topBarFix(){   // Zugfenster darf die Knöpfe oben nicht verdecken
+  const lb=document.getElementById('logBox');if(!lb)return;
+  document.body.classList.remove('logLow');
+  if(document.body.classList.contains('barBottom')||innerWidth>=700)return;
+  let right=0;for(const id of['menuBtn','btn3d','rulesBtn','soundBtn','fsBtn2','avBtn','micBtn']){const e=document.getElementById(id);if(e&&e.getClientRects().length)right=Math.max(right,e.getBoundingClientRect().right);}
+  if(lb.getBoundingClientRect().left<right+4)document.body.classList.add('logLow');
+}
 function resizeCanvas(){
+  topBarFix();
   const cv=document.getElementById('c');
   const panel=document.getElementById('panel');
   const fs=!!document.fullscreenElement;
@@ -1876,6 +1892,8 @@ function resizeCanvas(){
   const c3=document.getElementById('c3'),ref=cv.offsetParent!==null?cv:(c3&&c3.offsetParent!==null?c3:null);
   if(ref){const top=ref.getBoundingClientRect().top,pb=parseFloat(getComputedStyle(document.body).paddingBottom)||0;
     if(top>0&&top<window.innerHeight-150)avh=Math.floor(window.innerHeight-top-pb-2);}
+  {let bar=0;for(const id of['abBar','replayBar']){const e=document.getElementById(id);if(e&&e.getClientRects().length)bar=Math.max(bar,e.offsetHeight+12);}
+   if(bar&&avh-bar>=250)avh-=bar;}
   cv.width=Math.max(300,avw);cv.height=Math.max(250,avh);
   if(window.V3&&V3.resize)V3.resize(cv.width,cv.height);
   fitBoard();draw();
@@ -2666,7 +2684,7 @@ function renderLog(){
   ol.innerHTML=h;
   if(R){const c=[...ol.querySelectorAll('.var')].pop()||ol.querySelector('.rpCur');if(c)c.scrollIntoView({block:'nearest'});else ol.scrollTop=0;replayUI();}else ol.scrollTop=ol.scrollHeight;
   const b=document.getElementById('btnUndo');if(b){b.disabled=FERN.on||NET.on?(NET.spec||!NET.started||(!NET.host&&!moveLog.some(e=>e.player===NET.seat))):!history.length;
-    b.textContent=NET.on&&!NET.host?T('↶ Bitten'):T('↶ Zurück');b.title=NET.on&&!NET.host?T('Die anderen fragen, ob du deinen letzten Zug zurücknehmen darfst'):T('Letzten Zug zurücknehmen (Strg+Z)');}
+    b.textContent=innerWidth<700?'↶':NET.on&&!NET.host?T('↶ Bitten'):T('↶ Zurück');b.title=NET.on&&!NET.host?T('Die anderen fragen, ob du deinen letzten Zug zurücknehmen darfst'):T('Letzten Zug zurücknehmen (Strg+Z)');}
 }
 // ================= Mitspieler-Avatare (eigene Monster, Gefühle) =================
 // Jeder Spieler hat einen Avatar, gezeichnet auf ein eigenes Canvas (320×240).
@@ -4896,6 +4914,7 @@ function replayOpen(i){
     selected=null;validMoves=new Set();castleMap={};
     document.body.classList.add('replay');
     const lb=document.getElementById('logBox');if(lb.classList.contains('collapsed'))toggleLog();
+    setTimeout(resizeCanvas,30);
   }
   replayGo(i==null?REPLAY.n:i);
 }
@@ -4935,7 +4954,7 @@ function replayExit(){
   setFull(R.real);
   if(R.local){paused=R.real.paused;lastTick=performance.now();}
   document.body.classList.remove('replay');
-  updateCaptured();renderLog();draw();
+  updateCaptured();renderLog();draw();setTimeout(resizeCanvas,30);
   if(R.local&&!paused)maybeAI();
 }
 
