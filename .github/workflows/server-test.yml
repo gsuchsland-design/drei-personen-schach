@@ -2,15 +2,21 @@ name: Server prüfen
 on:
   push:
     paths: ['tools/server-test.txt']
+permissions:
+  contents: write
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Server und KI-Bericht prüfen
         run: |
           H=$(curl -s https://raw.githubusercontent.com/${{ github.repository }}/main/server.json | jq -r .host)
           echo "Server: $H"
-          curl -s -m 30 "https://$H/"; echo
+          { curl -s -m 30 "https://$H/"; echo
           curl -s -m 90 -X POST "https://$H/ai/bericht" -H 'Content-Type: application/json' \
             -d '{"lang":"de","facts":"Spieler: Blau: Guido, Grün: Grumbo (Computer), Rot: Anna\nErgebnis: Grün gewinnt durch Schachmatt gegen Rot\nZüge: 64\nBlau Genauigkeit 61 %, Patzer 3. Grumbo 100 %. Anna 48 %, Patzer 5, nach Verlusten unruhiger.\nGesagt und getan: nach Zug 12 Guido: Anna, lass uns Grumbo angreifen, Ziel Grumbo: hielt Wort"}'
-          echo
+          echo; } > tools/server-test-result.txt 2>&1
+          cat tools/server-test-result.txt
+          git config user.name "github-actions[bot]"; git config user.email "41898131+github-actions[bot]@users.noreply.github.com"
+          git add tools/server-test-result.txt; git commit -m "Server-Prüfung: Ergebnis" || true; git push
