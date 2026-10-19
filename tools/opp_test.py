@@ -12,7 +12,7 @@ JS="""()=>{
   for(const f of ['draw','snd','renderLog','updateCaptured','renderClocks','ask','toast','resizeCanvas','speakMonster'])window[f]=function(){};
   const oe=endGame;endGame=function(w,l){window._win=w;return oe(w,l);};
   window.runGames=(learn,n,seed0,cap)=>{
-    OPP.on=learn;OPP.prof={};DIPLO.on=false;
+    OPP.on=learn;OPP_USE=learn;OPP.prof={};DIPLO.on=false;
     let pts=0,mates=0,moves=0;
     for(let g=0;g<n;g++){
       let x=(seed0+g*7919)>>>0||1;const R=Math.random;Math.random=()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296;};
