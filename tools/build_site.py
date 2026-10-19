@@ -4,6 +4,9 @@ Aufruf: python3 tools/build_site.py   – danach die erzeugten .html-Dateien ver
 import os, re
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'Drei-Personen-Schach'
+DOMAIN = 'dreipersonenschach.de'
+LIVE = os.path.exists(os.path.join(ROOT, 'CNAME'))   # erst mit eigener Domain: kanonische Adressen setzen
+PAGES = []
 NAV = [('index.html#start', 'Start'), ('regeln.html', 'Regeln'), ('strategie.html', 'Strategie'), ('ueber.html', 'Über das Spiel')]
 
 def page(fn, title, desc, body, redirect=False):
@@ -13,6 +16,8 @@ def page(fn, title, desc, body, redirect=False):
         rd = """<script>(function(){var q=location.search,h=location.hash;
   if(/[?&](spiel|fern|pos|t|fernhost|peerhost|srv|turnapp)=/.test(q)){location.replace('spiel.html'+q+h);return;}
   try{if(h!=='#start'&&localStorage.getItem('dreiSchach.lang'))location.replace('spiel.html');}catch(e){}})();</script>"""
+    PAGES.append(fn)
+    canon = f'<link rel="canonical" href="https://{DOMAIN}/{"" if fn == "index.html" else fn}">\n' if LIVE else ''
     html = f"""<!DOCTYPE html>
 <html lang="de"><head>
 <meta charset="utf-8">
@@ -26,7 +31,7 @@ def page(fn, title, desc, body, redirect=False):
 <meta property="og:description" content="{desc}">
 <meta property="og:image" content="img/brett-3d.webp">
 <link rel="stylesheet" href="site.css">
-{rd}
+{canon}{rd}
 </head><body>
 <header class="top"><div class="in">
 <a class="logo" href="index.html#start"><img src="icon-192.png" alt="">{SITE}</a>
@@ -201,9 +206,9 @@ page('ueber.html', 'Über das Spiel – Drei-Personen-Schach',
 # ---------- Impressum ----------
 IMP = {
  'name': 'Guido Suchsland',
- 'street': '[Straße und Hausnummer]',
- 'city': '[PLZ Ort]',
- 'mail': '[E-Mail-Adresse]',
+ 'street': 'Hansaring 29',
+ 'city': '50670 Köln',
+ 'mail': '<span id="mail">g.suchsland (at) gmail.com</span>',
 }
 page('impressum.html', 'Impressum – Drei-Personen-Schach', 'Impressum und Anbieterkennzeichnung von Drei-Personen-Schach.',
  f"""<article>
@@ -212,6 +217,8 @@ page('impressum.html', 'Impressum – Drei-Personen-Schach', 'Impressum und Anbi
 <p>{IMP['name']}<br>{IMP['street']}<br>{IMP['city']}<br>Deutschland</p>
 <h2>Kontakt</h2>
 <p>E-Mail: {IMP['mail']}</p>
+<script>(function(){{var u='g.suchsland',d='gmail.com',a=document.createElement('a');a.href='mailto:'+u+'@'+d;a.textContent=u+'@'+d;
+  var s=document.getElementById('mail');s.textContent='';s.appendChild(a);}})();</script>
 <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
 <p>{IMP['name']}, Anschrift wie oben</p>
 <h2>Verbraucherstreitbeilegung</h2>
@@ -221,4 +228,10 @@ page('impressum.html', 'Impressum – Drei-Personen-Schach', 'Impressum und Anbi
 <h2>Urheberrecht</h2>
 <p>Spiel, Texte, Grafiken und Programmcode dieser Seiten sind urheberrechtlich geschützt (© 2026 Guido Suchsland). Verwendete Bibliotheken Dritter stehen unter ihren jeweiligen Lizenzen (three.js, PeerJS, Noto-Schrift), die im Ordner „lib“ beiliegen.</p>
 </article>""")
+# ---------- Sitemap ----------
+urls = ['index.html'] + [f for f in PAGES if f != 'index.html'] + ['spiel.html', 'datenschutz.html']
+sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+for f in urls:
+    sm += f'  <url><loc>https://{DOMAIN}/{"" if f == "index.html" else f}</loc></url>\n'
+open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf-8').write(sm + '</urlset>\n')
 print('ok')

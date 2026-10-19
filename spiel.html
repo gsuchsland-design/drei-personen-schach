@@ -5897,7 +5897,7 @@ function movesText(){
   lines.push(...(tk[0]||[]));
   log.forEach((e,i)=>{div.innerHTML=moveText(e);lines.push(`${i+1}. ${PNAMES[e.player]}: ${div.textContent.replace(/︎/g,'').replace(/\s+/g,' ').trim()}`+(e.ms!=null?` (${fmtMs(e.ms)})`:''));lines.push(...(tk[i+1]||[]));});
   if(gameOver){lines.push('');lines.push((REPLAY?'':document.getElementById('status').textContent)||'');}
-  lines.push('');lines.push('https://gsuchsland-design.github.io/drei-personen-schach/');
+  lines.push('');lines.push(location.origin+location.pathname.replace(/spiel\.html$/,''));
   return lines.join('\n');
 }
 async function exportMoves(){
