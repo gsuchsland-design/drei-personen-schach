@@ -260,6 +260,8 @@ body.barBottom #selfView { bottom:50px; }
   #replayBar button { padding:5px 2px; min-width:0; } #rpTitle { display:none; }
   #rpPos { grid-column:span 2; grid-row:2; font-size:12px; } #rpExport { grid-column:span 2; grid-row:2; font-size:12px !important; } #rpExit { grid-column:span 2; grid-row:2; font-size:12px !important; }
   #rpFirst { grid-column:1 / span 1; } #rpLast { grid-column:span 2; }
+  #rpVarUndo, #rpVarAI, #rpVarEnd { grid-row:3; grid-column:span 2; font-size:12px !important; }
+  body.variant #replayBar .rpV { display:block; }
   #setupBox { min-width:0; width:92vw; padding:14px; }
 }
 
@@ -278,6 +280,13 @@ body.replay #viewBar { display:none !important; }
 #logList li:hover { background:rgba(255,210,63,.12); }
 #logList li.rpCur { background:#5a4a14 !important; color:#fff; }
 #logList li.rpAfter { opacity:.35; }
+#logList li.var { color:#ffd27a; font-style:italic; background:rgba(212,167,44,.1) !important; }
+#logList .ms { float:right; color:#888; margin-left:6px; font-size:10.5px; }
+#replayBar .rpV { display:none; }
+body.variant #replayBar .rpV { display:inline-block; }
+#rpVarAI, #rpVarEnd { font-size:13px !important; }
+body.variant #rpPos { color:#ffd27a; }
+body.variant #c { outline-color:rgba(255,210,122,.9); outline-style:solid; }
 body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 /* ---------- Einführung ---------- */
 #tour { display:none; position:fixed; inset:0; z-index:600; }
@@ -604,6 +613,9 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <button id="rpNext" onclick="replayStep(1)" title="Einen Zug vor">▶❘</button>
   <button id="rpLast" onclick="replayStop();replayGo(REPLAY.n)" title="Zum Ende">⏭</button>
   <span id="rpPos"></span>
+  <button id="rpVarUndo" class="rpV" onclick="undoMove()" title="Variantenzug zurücknehmen">↶</button>
+  <button id="rpVarAI" onclick="varAI()" title="Der Computer (stark) zieht für den Spieler am Zug">🤖 Computerzug</button>
+  <button id="rpVarEnd" class="rpV" onclick="varDiscard()">✕ Variante verwerfen</button>
   <button id="rpExport" onclick="exportMoves()" title="Zugliste teilen oder speichern">📄 Zugliste</button>
   <button id="rpExit" onclick="replayExit()">✕ Zurück zum Spiel</button>
 </div>
@@ -625,7 +637,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101914"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101915"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -657,7 +669,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 13:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 14:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -1081,7 +1093,7 @@ function netBroadcast(m,except){
   for(const z of Object.values(NET.specs))if(z.conn!==except)netSend(z.conn,m);
 }
 function netOrigin(m){   // Zug/Ereignis, das auf diesem Gerät entstanden ist
-  if(!NET.on||netApplying)return;
+  if(!NET.on||netApplying||REPLAY)return;   // Varianten im Analysebrett bleiben auf diesem Gerät
   if(NET.host){m.clock=clock;m.timeUsed=timeUsed;netBroadcast(m);}else netToHost(m);
 }
 // ---------- Gastgeber ----------
@@ -2168,7 +2180,7 @@ function advanceTurn(newEP=null){
   startTurnClock();
   updateStatus();updateCaptured();draw();
   if(gameOver)endByPoints();
-  else{maybeAI();if(NET.on&&!NET.spec&&cur()===NET.seat)notifyTurn();}
+  else{maybeAI();if(NET.on&&!NET.spec&&!REPLAY&&cur()===NET.seat)notifyTurn();}
 }
 let titleFlash=null;
 function notifyTurn(){
@@ -2225,6 +2237,7 @@ function endGame(winner,loser){
 }
 // Spielende: Meldung in der Leiste (kein Fenster), dazu „Revanche“ bzw. „Noch eine Partie“
 function gameEndPrompt(text){
+  if(REPLAY){toast(text,4000);return;}   // Ende in einer Variante: nur Hinweis, keine Revanche
   if(FERN.on){FERN.endShown=true;ask('end',text,[{label:'OK',fn:()=>{}}]);return;}
   if(NET.on&&!NET.host){ask('end',text,[{label:'OK',fn:()=>{}}]);if(!NET.spec)setTimeout(()=>toast(T('Der Gastgeber kann eine Revanche starten.'),5000),1500);return;}
   ask('end',text,[{label:NET.on?T('🔄 Revanche'):T('🔄 Noch eine Partie'),fn:rematch},{label:T('Schließen'),bg:'#555',fn:()=>{}}]);
@@ -2275,6 +2288,7 @@ function snapshot(){
     clock:Object.assign({},clock),flagged:new Set(flagged),moveLeft,timeUsed:Object.assign({},timeUsed)};
 }
 function undoMove(){
+  if(REPLAY&&REPLAY.var){if(!promoPending&&!moveAnim&&history.length){undoOnce();renderLog();}return;}   // Variante: nur dort zurück
   replayExit();
   if(FERN.on){toast(T('In Fernpartien können Züge nicht zurückgenommen werden.'),3000);return;}
   if(NET.on){netUndoButton();return;}
@@ -2348,12 +2362,13 @@ function undoOnce(){
   gameState=h.gameState;movedPieces=h.movedPieces;epTarget=h.epTarget;turnIdx=h.turnIdx;
   helpDuty=h.helpDuty;gameOver=h.gameOver;turnNote=h.turnNote;capturedBy=h.capturedBy;
   moveLog.length=h.logLen;
-  clock=h.clock;timeUsed=h.timeUsed;flagged=h.flagged;moveLeft=tc.move;lastTick=performance.now();
+  clock=h.clock;timeUsed=h.timeUsed;flagged=h.flagged;moveLeft=tc.move;lastTick=performance.now();turnUsed0=timeUsed[cur()]||0;
   selected=null;validMoves=new Set();castleMap={};
   updateStatus();
   if(gameOver){const el=document.getElementById('status');el.textContent=h.status;el.style.color=h.statusColor;}
   updateCaptured();renderLog();renderClocks();draw();
 }
+function fmtMs(ms){const t=Math.round(ms/1000);return t<60?t+' s':Math.floor(t/60)+':'+String(t%60).padStart(2,'0');}
 function moveText(e){
   let t;
   if(e.timeout)return `<i style="color:#bbb">${e.timeout==='move'?T('Zugzeit abgelaufen'):T('Partiezeit verbraucht')}</i>`;
@@ -2369,9 +2384,16 @@ function moveText(e){
 }
 function renderLog(){
   const ol=document.getElementById('logList');if(!ol)return;
-  const L=REPLAY?REPLAY.real.moveLog:moveLog,ri=REPLAY?REPLAY.i:-1;
-  ol.innerHTML=L.map((e,i)=>`<li${REPLAY?(i===ri-1?' class="rpCur"':i>=ri?' class="rpAfter"':''):''}><span class="num">${i+1}.</span><span style="color:${PCOLOR[e.player]}">●</span> ${moveText(e)}</li>`).join('');
-  if(REPLAY){const c=ol.querySelector('.rpCur');if(c)c.scrollIntoView({block:'nearest'});else ol.scrollTop=0;}else ol.scrollTop=ol.scrollHeight;
+  const R=REPLAY,L=R?R.real.moveLog:moveLog,ri=R?R.i:-1;
+  const li=(e,num,cls,di)=>`<li${cls?` class="${cls}"`:''}${di!=null?` data-i="${di}"`:''}><span class="num">${num}</span><span style="color:${PCOLOR[e.player]}">●</span> ${moveText(e)}${e.ms!=null?`<span class="ms">${fmtMs(e.ms)}</span>`:''}</li>`;
+  let h='';
+  if(R&&R.var){   // Analysebrett: echte Züge bis zur Abzweigung, dann die Variante, danach grau der echte Rest
+    for(let i=0;i<R.var.base;i++)h+=li(L[i],(i+1)+'.',i===R.var.base-1?'rpCur':'',i);
+    moveLog.slice(R.var.base).forEach((e,k)=>{h+=li(e,'◇'+(R.var.base+k+1),'var',null);});
+    for(let i=R.var.base;i<L.length;i++)h+=li(L[i],(i+1)+'.','rpAfter',i);
+  }else h=L.map((e,i)=>li(e,(i+1)+'.',R?(i===ri-1?'rpCur':i>=ri?'rpAfter':''):'',i)).join('');
+  ol.innerHTML=h;
+  if(R){const c=[...ol.querySelectorAll('.var')].pop()||ol.querySelector('.rpCur');if(c)c.scrollIntoView({block:'nearest'});else ol.scrollTop=0;replayUI();}else ol.scrollTop=ol.scrollHeight;
   const b=document.getElementById('btnUndo');if(b){b.disabled=FERN.on||NET.on?(NET.spec||!NET.started||(!NET.host&&!moveLog.some(e=>e.player===NET.seat))):!history.length;
     b.textContent=NET.on&&!NET.host?T('↶ Bitten'):T('↶ Zurück');b.title=NET.on&&!NET.host?T('Die anderen fragen, ob du deinen letzten Zug zurücknehmen darfst'):T('Letzten Zug zurücknehmen (Strg+Z)');}
 }
@@ -3410,7 +3432,7 @@ function applyGameData(d){
   const sb=document.getElementById('startBtn');sb.textContent=T('▶ Fortsetzen');sb.classList.add('show');
   updateStatus();renderClocks();resizeCanvas();
 }
-function autosave(){if(FERN.on){fernAfterMove();return;}if(NET.on){hostSave();return;}try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
+function autosave(){if(REPLAY)return;if(FERN.on){fernAfterMove();return;}if(NET.on){hostSave();return;}try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
 function resumeAutosave(){
   try{const t=localStorage.getItem(SAVE_KEY);if(t)applyGameData(deser(t));}
   catch(e){alert(T('Die letzte Partie konnte nicht geladen werden.'));}
@@ -3473,7 +3495,8 @@ function fmtTime(ms){
   if(t>=3600)return `${Math.floor(t/3600)}:${String(m%60).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   return `${m}:${String(s).padStart(2,'0')}`;
 }
-function startTurnClock(){moveLeft=tc.move;lastTick=performance.now();renderClocks();}
+var turnUsed0=null;   // verbrauchte Zeit des Spielers am Zug zu Beginn seines Zuges → Bedenkzeit pro Zug
+function startTurnClock(){moveLeft=tc.move;lastTick=performance.now();turnUsed0=timeUsed[cur()]||0;renderClocks();}
 function renderClocks(){
   const box=document.getElementById('clocks');if(!box)return;
   box.classList.add('on');
@@ -3657,7 +3680,11 @@ function aiMove(){
   replayExit();
   if(gameOver||paused||setupOpen||promoPending||moveAnim)return;
   const p=cur(),lvl=aiPlayers[p];if(!lvl)return;
-  const moves=allLegalMoves(p);if(!moves.length)return;
+  const best=aiChoose(p,lvl);if(!best)return;
+  aiPlay(p,best);
+}
+function aiChoose(p,lvl){   // bester Zug für p in der aktuellen Stellung (ohne ihn auszuführen)
+  const moves=allLegalMoves(p);if(!moves.length)return null;
   let best=null;
   if(lvl==='easy'){
     const caps=moves.filter(m=>gameState[m.to]);
@@ -3689,6 +3716,9 @@ function aiMove(){
       }
     }
   }
+  return best;
+}
+function aiPlay(p,best){
   // 1. Figur auswählen und Zugmöglichkeiten zeigen
   const allAI=TURN_ORDER.every(q=>aiPlayers[q]);
   const vm=getValidMoves(best.from,movedPieces,epTarget);
@@ -3712,6 +3742,7 @@ function doMove(fromCoord,toCoord){
   let newEP=null;
   history.push(snapshot());
   const entry={player,piece:pd.piece,from:fromCoord,to:toCoord,cap:null,capFrom:null,ep:false,castle:null,promo:null,mark:''};
+  if(!FERN.on&&!REPLAY&&typeof turnUsed0==='number')entry.ms=Math.max(0,Math.round((timeUsed[player]||0)-turnUsed0));
 
   // Castling?
   const tFid=C2F[toCoord];
@@ -4103,8 +4134,11 @@ function blockReason(from,to,player){
   return'';
 }
 function onFieldClick(fid){
-  if(REPLAY){toast(T('Du spielst gerade nach – „✕ Zurück zum Spiel“ beendet das Nachspielen.'),2800);return;}
-  if(promoPending||gameOver||setupOpen||paused||moveAnim||aiPlayers[cur()]||netBlocks(cur()))return;
+  if(REPLAY&&!REPLAY.var){   // beim Nachspielen: eine Figur ziehen = Variante ausprobieren (Analysebrett)
+    if(!varAllowed()){toast(T('Varianten gehen in laufenden Online- und Fernpartien erst nach dem Spiel.'),3200);return;}
+    if(!varStart())return;
+  }
+  if(promoPending||gameOver||setupOpen||paused||moveAnim||aiPlayers[cur()]||(!REPLAY&&netBlocks(cur())))return;
   const coord=COORD_LABELS[fid],pd=gameState[coord],player=cur();
   // Sicherheitsnetz: Sperrt die Hilfspflicht alle Züge, Pflicht neu prüfen (Matt bleibt bzw. Pflicht entfällt)
   if(helpDuty&&helpDuty.helper===player&&!playerHasValidMove(player,epTarget)){recheckHelpDuty();if(gameOver)return;}
@@ -4573,7 +4607,8 @@ function replayOpen(i){
     if(!moveLog.length){toast(T('Noch keine Züge zum Nachspielen.'),2500);return;}
     if(promoPending||moveAnim)return;
     const local=!NET.on&&!FERN.on;
-    REPLAY={real:{gameState,moveLog,capturedBy,paused},boards:replayBoards(moveLog),n:moveLog.length,i:moveLog.length,timer:null,local};
+    REPLAY={real:fullState(),boards:replayBoards(moveLog),n:moveLog.length,i:moveLog.length,timer:null,local,var:null};
+    try{if(!localStorage.getItem('dreiSchach.varTip')){localStorage.setItem('dreiSchach.varTip','1');setTimeout(()=>toast(T('💡 Tipp: Zieh einfach eine Figur – dann probierst du eine Variante aus, ohne die Partie zu verändern.'),6000),600);}}catch(e){}
     if(local){paused=true;cancelAI();}
     selected=null;validMoves=new Set();castleMap={};
     document.body.classList.add('replay');
@@ -4583,6 +4618,7 @@ function replayOpen(i){
 }
 function replayGo(i){
   const R=REPLAY;if(!R)return;
+  if(R.var)varClear();
   i=Math.max(0,Math.min(R.n,i));R.i=i;
   const b=R.boards[i];
   gameState=i===R.n?R.real.gameState:b.gs;capturedBy=i===R.n?R.real.capturedBy:b.cap;
@@ -4600,7 +4636,8 @@ function replayPlay(){
 function replayStop(){const R=REPLAY;if(R&&R.timer){clearInterval(R.timer);R.timer=null;replayUI();}}
 function replayUI(){
   const R=REPLAY;if(!R)return;
-  document.getElementById('rpPos').textContent=T('Zug {0} von {1}',[R.i,R.n]);
+  document.getElementById('rpPos').textContent=R.var?T('Variante ab Zug {0}: +{1}',[R.var.base,moveLog.length-R.var.base]):T('Zug {0} von {1}',[R.i,R.n]);
+  document.getElementById('rpVarUndo').disabled=!(R.var&&history.length);
   const pb=document.getElementById('rpPlay');pb.textContent=R.timer?'⏸':'▶';pb.title=R.timer?T('Anhalten'):T('Automatisch abspielen');
   document.getElementById('rpBack').disabled=document.getElementById('rpFirst').disabled=R.i<=0;
   document.getElementById('rpNext').disabled=document.getElementById('rpLast').disabled=R.i>=R.n;
@@ -4608,12 +4645,86 @@ function replayUI(){
 function replayExit(){
   const R=REPLAY;if(!R)return;
   if(R.timer)clearInterval(R.timer);
+  if(R.var)varClear();
   REPLAY=null;
-  gameState=R.real.gameState;moveLog=R.real.moveLog;capturedBy=R.real.capturedBy;
+  setFull(R.real);
   if(R.local){paused=R.real.paused;lastTick=performance.now();}
   document.body.classList.remove('replay');
   updateCaptured();renderLog();draw();
   if(R.local&&!paused)maybeAI();
+}
+
+// ---------- Analysebrett: Varianten aus einer nachgespielten Stellung ----------
+// Der komplette echte Spielstand liegt in REPLAY.real; die Variante läuft mit den normalen Regeln auf Kopien.
+// „Variante verwerfen“, Blättern oder „Zurück zum Spiel“ stellen den echten Stand wieder her.
+function fullState(){
+  const st=document.getElementById('status');
+  return{gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,history,tc,clock,timeUsed,flagged,moveLeft,
+    eliminated,aiPlayers,paused,turnUsed0,status:st.textContent,statusColor:st.style.color};
+}
+function setFull(s){
+  gameState=s.gameState;movedPieces=s.movedPieces;epTarget=s.epTarget;turnIdx=s.turnIdx;helpDuty=s.helpDuty;gameOver=s.gameOver;turnNote=s.turnNote;
+  capturedBy=s.capturedBy;moveLog=s.moveLog;history=s.history;tc=s.tc;clock=s.clock;timeUsed=s.timeUsed;flagged=s.flagged;moveLeft=s.moveLeft;
+  eliminated=s.eliminated;aiPlayers=s.aiPlayers;turnUsed0=s.turnUsed0;
+  selected=null;validMoves=new Set();castleMap={};
+  const st=document.getElementById('status');st.textContent=s.status;st.style.color=s.statusColor;
+}
+function varAllowed(){const R=REPLAY;return !!R&&(R.local||R.real.gameOver);}
+// Stellung nach Zug i mit allem, was die Regeln brauchen (bewegte Figuren, en passant, wer am Zug ist)
+function varPosition(i){
+  const R=REPLAY,real=R.real,log=real.moveLog;
+  if(i===R.n)return{gs:Object.assign({},real.gameState),mp:new Set(real.movedPieces),ep:(real.epTarget||[]).slice(),ti:real.turnIdx};
+  const h=real.history&&real.history.length===log.length&&real.history[i];
+  if(h&&h.logLen===i)return{gs:Object.assign({},h.gameState),mp:new Set(h.movedPieces),ep:(h.epTarget||[]).map(e=>Object.assign({},e)),ti:h.turnIdx};
+  // ohne Schnappschüsse (Gäste, Fernpartien, ältere Dateien): aus dem Protokoll ableiten
+  const gs=Object.assign({},R.boards[i].gs),mp=new Set(),last={};
+  for(const e of log.slice(0,i)){
+    if(e.timeout||!e.from)continue;
+    mp.add(e.from);if(e.castle)mp.add(`${e.player}A${e.castle==='0-0'?8:1}`);
+    last[e.player]=e;
+  }
+  const ep=[];
+  for(const p of TURN_ORDER){const e=last[p];
+    if(e&&e.piece==='P'&&!e.castle&&e.from[0]===p&&e.from[1]==='B'&&e.to[0]===p&&e.to[1]==='D'&&gs[e.to]&&gs[e.to].piece==='P'&&gs[e.to].player===p)
+      ep.push({pawnCoord:e.to,landCoord:`${p}C${e.from.slice(2)}`,by:p});}
+  return{gs,mp,ep,ti:TURN_ORDER.indexOf(log[i].player)};
+}
+function varStart(){
+  const R=REPLAY,i=R.i;
+  if(i===R.n&&R.real.gameOver){toast(T('In dieser Stellung ist die Partie vorbei – blättere zurück, um eine Variante zu probieren.'),3500);return false;}
+  replayStop();
+  const p=varPosition(i),cap=i===R.n?R.real.capturedBy:R.boards[i].cap;
+  gameState=p.gs;movedPieces=p.mp;epTarget=p.ep;turnIdx=p.ti<0?R.real.turnIdx:p.ti;
+  capturedBy={B:cap.B.slice(),G:cap.G.slice(),R:cap.R.slice()};
+  moveLog=R.real.moveLog.slice(0,i);history=[];tc={move:0,game:0};clock=Object.assign({},R.real.clock);timeUsed=Object.assign({},R.real.timeUsed);
+  flagged=new Set();moveLeft=0;aiPlayers={B:null,G:null,R:null};gameOver=false;turnNote='';helpDuty=null;paused=false;promoPending=null;turnUsed0=null;
+  eliminated=new Set(TURN_ORDER.filter(q=>!Object.values(gameState).some(x=>x.piece==='K'&&x.player===q)));
+  selected=null;validMoves=new Set();castleMap={};
+  R.var={base:i};document.body.classList.add('variant');
+  const end=setHelpDuty(cur(),epTarget);
+  if(end){turnNote=end.note;gameOver=true;}
+  updateStatus();updateCaptured();renderLog();draw();
+  return !gameOver;
+}
+function varClear(){   // zurück zur nachgespielten Stellung
+  const R=REPLAY;if(!R||!R.var)return;
+  if(moveAnim)moveAnim=null;
+  R.var=null;document.body.classList.remove('variant');
+  document.getElementById('promoModal').classList.remove('show');promoPending=null;
+  setFull(R.real);
+  paused=R.local?true:R.real.paused;
+}
+function varDiscard(){const R=REPLAY;if(!R)return;varClear();replayGo(R.i);}
+// Ein starker Computerzug für den Spieler am Zug – zum Vergleichen mit dem eigenen Plan
+function varAI(){
+  const R=REPLAY;if(!R)return;
+  if(!R.var){if(!varAllowed()){toast(T('Varianten gehen in laufenden Online- und Fernpartien erst nach dem Spiel.'),3200);return;}if(!varStart())return;}
+  if(gameOver||promoPending||moveAnim)return;
+  const p=cur(),best=aiChoose(p,'hard');if(!best)return;
+  const vm=getValidMoves(best.from,movedPieces,epTarget);
+  selected=C2F[best.from];validMoves=vm.moves;castleMap=vm.castles;draw();
+  setTimeout(()=>{if(!REPLAY||!REPLAY.var||cur()!==p)return;
+    startMoveAnim(best.from,best.to,()=>{if(!REPLAY||!REPLAY.var)return;doMove(best.from,best.to);if(promoPending)finishPromotion('Q');});},450);
 }
 // Zugliste als lesbarer Text (zum Teilen, Ausdrucken, Archivieren)
 function movesText(){
@@ -4625,7 +4736,7 @@ function movesText(){
   const lines=[T('Drei-Personen-Schach')+' – '+T('Partie vom {0}',[`${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`])];
   lines.push(TURN_ORDER.map(p=>PNAMES[p]+(names[p]?': '+names[p]:'')).join(' · '));
   lines.push('');
-  log.forEach((e,i)=>{div.innerHTML=moveText(e);lines.push(`${i+1}. ${PNAMES[e.player]}: ${div.textContent.replace(/︎/g,'').replace(/\s+/g,' ').trim()}`);});
+  log.forEach((e,i)=>{div.innerHTML=moveText(e);lines.push(`${i+1}. ${PNAMES[e.player]}: ${div.textContent.replace(/︎/g,'').replace(/\s+/g,' ').trim()}`+(e.ms!=null?` (${fmtMs(e.ms)})`:''));});
   if(gameOver){lines.push('');lines.push((REPLAY?'':document.getElementById('status').textContent)||'');}
   lines.push('');lines.push('https://gsuchsland-design.github.io/drei-personen-schach/');
   return lines.join('\n');
@@ -4645,12 +4756,13 @@ async function exportMoves(){
   try{await navigator.clipboard.writeText(txt);toast(T('📋 Zugliste gespeichert und in die Zwischenablage kopiert.'),3000);}catch(e){}
 }
 document.getElementById('logList').addEventListener('click',e=>{
-  const li=e.target.closest('li');if(!li)return;
-  const i=[...li.parentNode.children].indexOf(li);if(i<0)return;
-  replayOpen(i+1);replayStop();
+  const li=e.target.closest('li');if(!li||li.dataset.i==null)return;
+  replayOpen(+li.dataset.i+1);replayStop();
 });
 window.addEventListener('keydown',e=>{
   if(!REPLAY||e.target.closest('input,textarea,select'))return;
+  if(REPLAY.var&&e.key==='ArrowLeft'){e.preventDefault();undoMove();return;}
+  if(REPLAY.var&&e.key==='Escape'){e.preventDefault();varDiscard();return;}
   if(e.key==='ArrowLeft'){e.preventDefault();replayStep(-1);}
   else if(e.key==='ArrowRight'){e.preventDefault();replayStep(1);}
   else if(e.key==='Home'){e.preventDefault();replayStop();replayGo(0);}
