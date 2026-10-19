@@ -280,6 +280,10 @@ body.replay #viewBar { display:none !important; }
 #logList li:hover { background:rgba(255,210,63,.12); }
 #logList li.rpCur { background:#5a4a14 !important; color:#fff; }
 #logList li.rpAfter { opacity:.35; }
+#recBadge { display:none; font-size:13px; padding:0 6px; border:1px solid #c33; border-radius:10px; background:rgba(160,30,30,.35); flex:none; }
+body.recOn #recBadge { display:inline-block; }
+.lbRecRow { font-size:13px; margin-top:10px !important; }
+#logList li.talk { white-space:normal; color:#c9c2e6; font-family:sans-serif; font-size:11.5px; padding-left:20px; cursor:default; }
 #logList li.var { color:#ffd27a; font-style:italic; background:rgba(212,167,44,.1) !important; }
 #logList .ms { float:right; color:#888; margin-left:6px; font-size:10.5px; }
 #replayBar .rpV { display:none; }
@@ -357,6 +361,8 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <label><input type="checkbox" id="tr_subs" onchange="trSet('subs',this.checked)"> Übersetzung als Untertitel anzeigen</label>
   <label><input type="checkbox" id="tr_read" onchange="trSet('read',this.checked)"> Übersetzung immer vorlesen</label>
   <div class="sub" id="trState"></div>
+  <label><input type="checkbox" id="avRec" onchange="recSet(this.checked)"> 📝 Mitschrift für die Spielanalyse erlauben</label>
+  <div class="sub" id="avRecState"></div>
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <button class="langBtn notr" onclick="openLang()" style="margin-top:6px">🌐 Sprache · Language</button>
@@ -387,7 +393,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <div id="info">Klick auf Figur → Züge · Zweiter Klick → Ziehen · Rad = Zoom · Ziehen = Bewegen · Doppelklick = Einpassen</div>
 </div>
 <div id="status">Blau am Zug</div>
-<div id="msgRow"><div id="msgLine"></div><button id="chatBtn" onclick="toggleChat()" title="Chat und Reaktionen">💬<span id="chatBadge"></span></button></div>
+<div id="msgRow"><span id="recBadge" title="Gesprochenes und Chat werden für die Spielanalyse mitgeschrieben – alle haben zugestimmt">📝</span><div id="msgLine"></div><button id="chatBtn" onclick="toggleChat()" title="Chat und Reaktionen">💬<span id="chatBadge"></span></button></div>
 <div id="askBar"><span id="askTxt"></span><span id="askBtns"></span></div>
 <div id="specReq"><span id="specReqTxt"></span><button onclick="specAnswer(true)">Ja</button><button onclick="specAnswer(false)" style="background:#a33">Nein</button></div>
 <div id="avStrip"></div>
@@ -512,6 +518,8 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="row"><span style="width:86px">Deine Farbe</span><select id="olColor"><option value="B">Blau (beginnt)</option><option value="G">Grün</option><option value="R">Rot</option></select></div>
     <div class="row"><span style="width:86px">Freie Plätze</span><select id="olAI"><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
     <div class="row"><label><input type="checkbox" id="olCam" checked> Kamera</label><label style="margin-left:14px"><input type="checkbox" id="olMic" checked> Mikrofon</label></div>
+    <div class="row"><label><input type="checkbox" id="olRec" onchange="recSet(this.checked)"> 📝 Mitschrift für die Spielanalyse erlauben</label></div>
+    <div class="hint" style="margin-left:0">Gesprochenes und Chat werden nur mitgeschrieben, wenn alle Mitspieler zustimmen.</div>
     <div class="hint" style="margin-left:0">Die Zeitkontrolle von oben gilt auch online.</div>
     <button onclick="netCreate()" style="background:#7a3fc4">🌐 Online-Spiel erstellen &amp; einladen</button>
     <div class="row" style="font-weight:bold;margin:18px 0 2px;border-top:1px solid #444;padding-top:12px">✉️ Fernpartie – jeder zieht, wann er Zeit hat</div>
@@ -532,6 +540,8 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <h3>🌐 Warteraum <span id="lbCount" style="font-weight:normal;color:#bbb"></span><button class="lbMin" onclick="toggleLobbyMini()" title="Warteraum verkleinern/vergrößern">–</button></h3>
   <div id="lbStatus" class="lbStat"></div>
   <div id="lbSeats"></div>
+  <label class="lbRecRow"><input type="checkbox" id="lbRec" onchange="recSet(this.checked)"> 📝 Mein Gesprochenes und meine Chat-Nachrichten dürfen für die Spielanalyse mitgeschrieben werden</label>
+  <div id="lbRecState" class="lbHint"></div>
   <div id="lbHost">
     <div class="lbLbl">Einladungslink</div>
     <div class="lbLinkRow"><input id="lbLink" readonly onclick="this.select()"><button onclick="copyInvite()" title="Link kopieren">📋</button></div>
@@ -597,6 +607,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <input type="text" id="jnName" maxlength="18" placeholder="Dein Name" onkeydown="if(event.key==='Enter')netJoin()">
   <label><input type="checkbox" id="jnCam" checked> Kamera einschalten</label>
   <label><input type="checkbox" id="jnMic" checked> Mikrofon einschalten</label>
+  <label><input type="checkbox" id="jnRec" onchange="recSet(this.checked)"> 📝 Mitschrift für die Spielanalyse erlauben (nur wenn alle zustimmen)</label>
   <button onclick="netJoin()">Mitspielen</button>
   <button class="installBtn" style="display:none;background:#555" onclick="doInstall()">📲 Als App installieren</button>
   <div class="lbHint">Tipp: Im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann hast du das Spiel wie eine App.</div>
@@ -637,7 +648,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101915"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101916"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -669,7 +680,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 14:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 15:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -896,8 +907,8 @@ function grabStill(p){
 }
 function netAV(){   // eigenen Kamera-/Mikrofonstatus mitteilen
   if(!NET.on||!NET.seat)return;
-  const m={t:'av',p:NET.seat,cam:!!camStream,mic:micLive()};
-  NET.avs[NET.seat]={cam:m.cam,mic:m.mic};
+  const m={t:'av',p:NET.seat,cam:!!camStream,mic:micLive(),rec:REC.mine};
+  NET.avs[NET.seat]={cam:m.cam,mic:m.mic,rec:m.rec};
   if(NET.host){netBroadcast(m);hostLobby();}else netToHost(m);
   renderLobby();
 }
@@ -955,6 +966,7 @@ function netChatOut(m){
   if(NET.host){netBroadcast(m);chatIn(m);}else{netToHost(m);chatIn(m);}
 }
 function chatIn(m){   // eingehende (oder eigene) Chat-Nachricht / Reaktion anzeigen
+  if(m.t==='say'||m.t==='chat')talkAdd(m);
   const lk=m.p||('s:'+(m.name||''));
   if(m.t==='lang'){const neu=NET.langs[lk]!==m.lang;NET.langs[lk]=m.lang;
     if(m.p!==NET.seat&&neu&&performance.now()-(NET.langSent||0)>5000){NET.langSent=performance.now();netChatOut({t:'lang',lang:myLang()});}
@@ -986,6 +998,39 @@ const TR={speak:true,read:false,subs:true};
 try{Object.assign(TR,JSON.parse(localStorage.getItem('dreiSchach.tr')||'{}'));}catch(e){}
 function trSave(){try{localStorage.setItem('dreiSchach.tr',JSON.stringify(TR));}catch(e){}}
 function trSet(k,v){TR[k]=v;trSave();trTick();}
+// ---------- Mitschrift für die Spielanalyse ----------
+// Gesprochenes (Spracherkennung des eigenen Geräts) und Chat werden nur dann zur Partie gespeichert,
+// wenn ALLE menschlichen Mitspieler zugestimmt haben. Die Zustimmung reist mit dem Kamera-/Mikrofonstatus (NET.avs[p].rec).
+var REC={mine:false},TALK=[];
+try{REC.mine=localStorage.getItem('dreiSchach.rec')==='1';}catch(e){}
+function recSet(on){
+  REC.mine=!!on;try{localStorage.setItem('dreiSchach.rec',on?'1':'0');}catch(e){}
+  if(NET.on)netAV();recUI();trTick();
+}
+function recHumans(){
+  return TURN_ORDER.filter(p=>{const k=NET.host?(NET.seats[p]||{}).kind:p===NET.seat?'me':((NET.lobby||{})[p]||{}).kind;return k==='me'||k==='peer'||k==='away';});
+}
+function recOf(p){return p===NET.seat?REC.mine:!!(NET.avs[p]&&NET.avs[p].rec);}
+function recAll(){if(!NET.on||NET.spec)return false;const h=recHumans();return h.length>0&&h.every(recOf);}
+function recUI(){
+  for(const id of['olRec','jnRec','lbRec','avRec']){const c=document.getElementById(id);if(c)c.checked=REC.mine;}
+  const on=recAll();document.body.classList.toggle('recOn',on);
+  let txt='';
+  if(NET.on&&!NET.spec){
+    const miss=recHumans().filter(p=>!recOf(p)).map(p=>p===NET.seat?T('du'):(netName(p)||PNAMES[p]));
+    txt=on?T('📝 Alle haben zugestimmt – Gesprochenes und Chat werden für die Analyse mitgeschrieben.'):T('📝 Mitschrift nur, wenn alle zustimmen. Noch offen: {0}',[miss.join(', ')]);
+  }
+  for(const id of['lbRecState','avRecState']){const e=document.getElementById(id);if(e)e.textContent=txt;}
+}
+function talkAdd(m){   // Nachricht ins Gesprächsprotokoll der Partie (Zeitpunkt = Anzahl der Züge bis dahin)
+  if(!m||!m.p||!m.text||(m.t!=='say'&&m.t!=='chat')||!recAll())return;
+  if(m.id&&TALK.some(x=>x.id===m.id))return;
+  const log=(typeof REPLAY!=='undefined'&&REPLAY)?REPLAY.real.moveLog:moveLog;
+  TALK.push({id:m.id||'',p:m.p,name:m.name||'',k:m.t,text:String(m.text).slice(0,300),lang:m.lang||'',n:log.length,ts:Date.now()});
+  if(TALK.length>3000)TALK.shift();
+}
+function talkName(x){return x.name||netName(x.p)||PNAMES[x.p];}
+
 const BCP={de:'de-DE',en:'en-US',fr:'fr-FR',es:'es-ES',it:'it-IT',pt:'pt-PT',nl:'nl-NL',pl:'pl-PL',tr:'tr-TR',ru:'ru-RU',uk:'uk-UA',zh:'zh-CN'};
 NET.langs={};
 function othersLangs(){return Object.entries(NET.langs).filter(([k])=>k!==(NET.seat||'me')).map(([,l])=>l);}
@@ -1040,7 +1085,7 @@ function srStart(){
 }
 function srStop(){if(SR){try{SR.onend=()=>{srOn=false;SR=null;};SR.stop();}catch(e){}}srOn=false;}
 function trTick(){   // Spracherkennung nur, wenn sie gebraucht wird: online, Mikrofon an, jemand spricht eine andere Sprache
-  srWant=!!(TR.speak&&NET.on&&!NET.spec&&micLive()&&needTranslation()&&!ttsBusy);
+  srWant=!!(NET.on&&!NET.spec&&micLive()&&!ttsBusy&&((TR.speak&&needTranslation())||(NET.started&&recAll())));
   if(srWant&&!srOn)srStart();else if(!srWant&&srOn)srStop();
   updTrUI();
 }
@@ -1131,7 +1176,7 @@ function hostLobby(){
   if(!NET.host)return;
   const L={};
   for(const p of TURN_ORDER){const s=NET.seats[p];L[p]={kind:s.kind,name:s.kind==='ai'||s.kind==='dropped'?'':(s.name||''),
-    id:s.kind==='me'?(NET.peer&&NET.peer.id):s.kind==='peer'?s.id:null,av:NET.avs[p]||null};}
+    id:s.kind==='me'?(NET.peer&&NET.peer.id):s.kind==='peer'?s.id:null,av:p===NET.seat?{cam:!!camStream,mic:micLive(),rec:REC.mine}:(NET.avs[p]||null)};}
   NET.lobby=L;
   NET.specList=Object.values(NET.specs).map(z=>({id:z.conn.peer,name:z.name}));
   netBroadcast({t:'lobby',lobby:L,specs:NET.specList,started:NET.started,lvl:NET.cfg.lvl});
@@ -1203,7 +1248,7 @@ function hostRecv(conn,m){
   if(m.t==='undoReq'){hostUndoRequest(p);return;}
   if(m.t==='undoAns'){undoAnswer(p,m.id,m.ok);return;}
   if(m.t==='bye'){hostDrop(conn,true);try{conn.close();}catch(e){}return;}
-  if(m.t==='av'){NET.avs[p]={cam:m.cam,mic:m.mic};netBroadcast({t:'av',p,cam:m.cam,mic:m.mic},conn);hostLobby();return;}
+  if(m.t==='av'){NET.avs[p]={cam:m.cam,mic:m.mic,rec:!!m.rec};netBroadcast({t:'av',p,cam:m.cam,mic:m.mic,rec:!!m.rec},conn);hostLobby();return;}
   if(m.t==='mv'||m.t==='promo'){m.p=p;m.fromConn=conn;NET.q.push(m);netPump();return;}
   if(m.t==='resync'){netSend(conn,{t:'sync',data:netSyncData()});return;}
 }
@@ -1360,7 +1405,7 @@ function netStart(){
 }
 function netSyncData(){
   replayExit();
-  return{gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,tc,clock,timeUsed,flagged,
+  return{talk:TALK,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,tc,clock,timeUsed,flagged,
     moveLeft,aiPlayers,eliminated,status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
 // ---------- Gast ----------
@@ -1439,7 +1484,7 @@ function guestConnect(re){
   const c=NET.peer.connect('dps-'+NET.code,{reliable:true});NET.hostConn=c;NET.hostSeen=performance.now();
   c.on('iceStateChanged',st=>{if(st==='failed'||st==='disconnected'&&!c.open)NET.iceFailed=true;});
   c.on('open',()=>setTimeout(()=>{if(NET.on){NET.langSent=performance.now();netChatOut({t:'lang',lang:myLang()});}},2500));
-  c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,ver:APP_VER,av:{cam:!!camStream,mic:micLive()}}));
+  c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,ver:APP_VER,av:{cam:!!camStream,mic:micLive(),rec:REC.mine}}));
   c.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}if(NET.hostConn===c){NET.hostSeen=performance.now();NET.retries=0;
     if(NET.lostSince){NET.lostSince=0;hideBanner();clearTimeout(NET.lostTimer);NET.lostTimer=null;toast(T('✓ Wieder verbunden'),2000);}joinRecv(m);}});
   c.on('close',()=>{if(NET.hostConn===c)guestLost();});
@@ -1520,7 +1565,7 @@ function joinRecv(m){
   if(m.t==='start'){unask('end');netBeginGame(m.cfg);return;}
   if(m.t==='sync'){netApplySync(m.data);return;}
   if(m.t==='seat'){aiPlayers[m.p]=m.ai;updateStatus();renderClocks();return;}
-  if(m.t==='av'){NET.avs[m.p]={cam:m.cam,mic:m.mic};netAttach();renderLobby();return;}
+  if(m.t==='av'){NET.avs[m.p]={cam:m.cam,mic:m.mic,rec:!!m.rec};netAttach();renderLobby();return;}
   if(m.t==='pause'){paused=m.on;lastTick=performance.now();renderClocks();toast(paused?T('⏸ Der Gastgeber hat die Uhr angehalten.'):T('▶ Weiter geht’s!'),2200);return;}
   if(m.t==='mv'||m.t==='promo'||m.t==='to'){NET.q.push(m);netPump();return;}
 }
@@ -1530,6 +1575,7 @@ function camFix(){   // eigenes Kamerabild gehört zum eigenen Platz
 }
 function netApplySync(d){
   replayExit();
+  if(d.talk)TALK=d.talk;
   cancelAI();moveAnim=null;kicks=[];NET.q=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
   gameOver=d.gameOver;turnNote=d.turnNote||'';capturedBy=d.capturedBy;moveLog=d.moveLog||[];history=[];
@@ -1658,7 +1704,7 @@ function renderLobby(){
       st=s.kind==='open'&&p!==NET.seat?T('wartet auf Mitspieler …'):'';
     }
     if(p===NET.seat)av={cam:!!camStream,mic:micLive()};
-    const icons=name&&!name.startsWith(T('Computer'))?` <span class="lbIc">${av.cam?'📷':'🚫📷'} ${av.mic?'🎤':'🔇'}</span>`:'';
+    const icons=name&&!name.startsWith(T('Computer'))?` <span class="lbIc">${av.cam?'📷':'🚫📷'} ${av.mic?'🎤':'🔇'}${recOf(p)?' 📝':''}</span>`:'';
     const kick=NET.host&&NET.seats[p]&&NET.seats[p].kind==='peer'?T(`<button class="kick" onclick="netKick('seat','{0}')" title="Aus dem Spiel nehmen">✕ entfernen</button>`,[p]):
       NET.started&&!NET.spec&&(NET.host?(NET.seats[p]||{}).kind:((NET.lobby||{})[p]||{}).kind)==='away'?T(`<button class="kick" style="background:#556 !important" onclick="{0}">🤖 Computer übernimmt</button>`,[NET.host?`hostAwayAI('${p}')`:`netToHost({t:'awayAI',p:'${p}'})`]):'';
     h+=`<div class="lbSeat"><span class="lbDot" style="background:${PCOLOR[p]}"></span><b style="color:${PCOLOR[p]}">${PNAMES[p]}</b> <span>${esc(name)||'<i>'+st+'</i>'}</span>${icons}${kick}</div>`;
@@ -1676,6 +1722,7 @@ function renderLobby(){
   const mb=document.getElementById('lbMic'),cb=document.getElementById('lbCam');
   if(mb){mb.textContent=micLive()?T('🎤 Mikrofon an'):T('🔇 Mikrofon aus');mb.classList.toggle('off',!micLive());}
   if(cb){cb.textContent=camStream?T('📷 Kamera an'):T('🚫 Kamera aus');cb.classList.toggle('off',!camStream);}
+  recUI();if(NET.started)trTick();
 }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 const INVITE_TXT='Spiel mit mir Drei-Personen-Schach! ♟️ Tippe auf den Link, um mitzuspielen:';
@@ -2136,6 +2183,7 @@ let showCoordRing=true;
 
 function initGame(){
   replayExit();
+  TALK=[];
   gameState={};capturedBy={B:[],R:[],G:[]};movedPieces=new Set(); // reset
   epTarget=[];promoPending=null;castleMap={};eliminated=new Set();
   turnIdx=0;selected=null;validMoves=new Set();gameOver=false;helpDuty=null;turnNote='';history=[];moveLog=[];renderLog();
@@ -2391,6 +2439,9 @@ function renderLog(){
     for(let i=0;i<R.var.base;i++)h+=li(L[i],(i+1)+'.',i===R.var.base-1?'rpCur':'',i);
     moveLog.slice(R.var.base).forEach((e,k)=>{h+=li(e,'◇'+(R.var.base+k+1),'var',null);});
     for(let i=R.var.base;i<L.length;i++)h+=li(L[i],(i+1)+'.','rpAfter',i);
+  }else if(R&&TALK.length){   // beim Nachspielen: Mitschrift zwischen den Zügen
+    const tk={};for(const x of TALK)(tk[x.n]=tk[x.n]||[]).push(`<li class="talk${x.n>ri?' rpAfter':''}">${x.k==='say'?'🎙️':'💬'} <b style="color:${PCOLOR[x.p]}">${esc(talkName(x))}</b>: ${esc(x.text)}</li>`);
+    h=(tk[0]||[]).join('');L.forEach((e,i)=>{h+=li(e,(i+1)+'.',i===ri-1?'rpCur':i>=ri?'rpAfter':'',i);h+=(tk[i+1]||[]).join('');});
   }else h=L.map((e,i)=>li(e,(i+1)+'.',R?(i===ri-1?'rpCur':i>=ri?'rpAfter':''):'',i)).join('');
   ol.innerHTML=h;
   if(R){const c=[...ol.querySelectorAll('.var')].pop()||ol.querySelector('.rpCur');if(c)c.scrollIntoView({block:'nearest'});else ol.scrollTop=0;replayUI();}else ol.scrollTop=ol.scrollHeight;
@@ -3409,12 +3460,13 @@ function ser(v){return JSON.stringify(v,(k,x)=>x instanceof Set?{__set:[...x]}:x
 function deser(t){return JSON.parse(t,(k,x)=>x&&typeof x==='object'&&Array.isArray(x.__set)?new Set(x.__set):x);}
 function gameData(){
   replayExit();
-  return{v:1,saved:new Date().toISOString(),gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
+  return{v:1,saved:new Date().toISOString(),talk:TALK,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
     capturedBy,moveLog,history,tc,clock,timeUsed,flagged,moveLeft,aiPlayers,rotation,
     status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
 function applyGameData(d){
   replayExit();
+  TALK=d.talk||[];
   resetEmos();
   cancelAI();moveAnim=null;kicks=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
@@ -4638,6 +4690,7 @@ function replayUI(){
   const R=REPLAY;if(!R)return;
   document.getElementById('rpPos').textContent=R.var?T('Variante ab Zug {0}: +{1}',[R.var.base,moveLog.length-R.var.base]):T('Zug {0} von {1}',[R.i,R.n]);
   document.getElementById('rpVarUndo').disabled=!(R.var&&history.length);
+  document.getElementById('rpVarAI').style.display=varAllowed()?'':'none';
   const pb=document.getElementById('rpPlay');pb.textContent=R.timer?'⏸':'▶';pb.title=R.timer?T('Anhalten'):T('Automatisch abspielen');
   document.getElementById('rpBack').disabled=document.getElementById('rpFirst').disabled=R.i<=0;
   document.getElementById('rpNext').disabled=document.getElementById('rpLast').disabled=R.i>=R.n;
@@ -4736,7 +4789,10 @@ function movesText(){
   const lines=[T('Drei-Personen-Schach')+' – '+T('Partie vom {0}',[`${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`])];
   lines.push(TURN_ORDER.map(p=>PNAMES[p]+(names[p]?': '+names[p]:'')).join(' · '));
   lines.push('');
-  log.forEach((e,i)=>{div.innerHTML=moveText(e);lines.push(`${i+1}. ${PNAMES[e.player]}: ${div.textContent.replace(/︎/g,'').replace(/\s+/g,' ').trim()}`+(e.ms!=null?` (${fmtMs(e.ms)})`:''));});
+  const tk={};for(const x of TALK)(tk[x.n]=tk[x.n]||[]).push(`    ${x.k==='say'?'🎙️':'💬'} ${talkName(x)}: ${x.text}`);
+  if(TALK.length){lines.push(T('(mit Gesprächsmitschrift – alle Mitspieler haben zugestimmt)'));lines.push('');}
+  lines.push(...(tk[0]||[]));
+  log.forEach((e,i)=>{div.innerHTML=moveText(e);lines.push(`${i+1}. ${PNAMES[e.player]}: ${div.textContent.replace(/︎/g,'').replace(/\s+/g,' ').trim()}`+(e.ms!=null?` (${fmtMs(e.ms)})`:''));lines.push(...(tk[i+1]||[]));});
   if(gameOver){lines.push('');lines.push((REPLAY?'':document.getElementById('status').textContent)||'');}
   lines.push('');lines.push('https://gsuchsland-design.github.io/drei-personen-schach/');
   return lines.join('\n');
@@ -4846,6 +4902,7 @@ if(isLand()){document.body.classList.add('landSeen');document.getElementById('pa
 resizeCanvas();
 initGame();
 resizeCanvas();
+recUI();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
 translateDom(document.body);
