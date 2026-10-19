@@ -89,7 +89,7 @@ async def match(lvl,games):
         async with async_playwright() as pw:
             b=await pw.chromium.launch(executable_path=CHROME,args=['--no-sandbox'])
             pages=[await mkpage(b),await mkpage(b)]
-            tot_new=tot_old=n=0;mates=0;t0=time.time();seed=777
+            tot_new=tot_old=n=0;mates=0;t0=time.time();seed=int(os.environ.get('SEED','777'))
             while n<games:
                 res=await asyncio.gather(*[play(pg,th,BASE,BASE,lvl,300,seed+i*99991) for i,pg in enumerate(pages)])
                 seed+=3
