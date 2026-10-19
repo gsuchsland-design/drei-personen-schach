@@ -51,7 +51,8 @@ async def main(n):
                 await pg.goto('http://127.0.0.1:8767/index.html');await pg.wait_for_timeout(1500);await pg.evaluate(JS);return pg
             p1,p2=await page(),await page()
             t0=time.time()
-            on,off=await asyncio.gather(p1.evaluate("([n])=>runGames(true,n,4242,300)",[n]),p2.evaluate("([n])=>runGames(false,n,4242,300)",[n]))
+            sd=int(os.environ.get("SEED","4242"))
+            on,off=await asyncio.gather(p1.evaluate("([n,s])=>runGames(true,n,s,300)",[n,sd]),p2.evaluate("([n,s])=>runGames(false,n,s,300)",[n,sd]))
             print(json.dumps({'games':n,'secs':round(time.time()-t0),'blue_points_with_learning':on['pts'],'blue_points_without':off['pts'],
               'mates':[on['mates'],off['mates']],'profile':on['prof']},ensure_ascii=False))
     finally:srv.terminate()
