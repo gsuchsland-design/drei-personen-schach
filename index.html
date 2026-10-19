@@ -315,6 +315,11 @@ body.aboard #replayBar, body.aboard #viewBar, body.aboard #avStrip { display:non
 body.abEdit #c { outline:2px dashed #5b8fd0; outline-offset:-2px; }
 #rpBoard { font-size:13px !important; }
 @media (max-width:700px){ #abBar { width:98vw; padding:4px; } #abBar button, #abBar select { padding:4px 6px; font-size:12px; } .abHint { display:none; } #abBar .abTitle { display:none; } }
+#colRows .colRow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:8px 0; }
+#colRows input[type=color] { width:46px; height:34px; border:none; background:none; padding:0; cursor:pointer; }
+#colRows button { display:inline-block !important; width:auto !important; margin:0 !important; padding:4px 9px !important; font-size:12px !important; background:#444 !important; }
+.colSw { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:middle; border:1px solid #fff8; }
+.colNote { font-size:12px; color:#aaa; } .colWarn { color:#ffcf6b; font-size:13px; }
 #recBadge { display:none; font-size:13px; padding:0 6px; border:1px solid #c33; border-radius:10px; background:rgba(160,30,30,.35); flex:none; }
 body.recOn #recBadge { display:inline-block; }
 .lbRecRow { font-size:13px; margin-top:10px !important; }
@@ -430,7 +435,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <button id="btnFit" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="if(window.V3&&V3.on)V3.view('cur');else{fitBoard();draw();}">⤢ Einpassen</button>
   <button id="btnRotate" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="rotateBoard()">↻ Brett drehen</button>
   <label><input type="checkbox" id="chkCoordRing" checked> Koordinaten-Ring</label>
-  <label title="Zusätzliche Zeichen für die Spielerfarben: Blau ■, Grün ▲, Rot ●"><input type="checkbox" id="chkSym" onchange="setSym(this.checked)"> Farbsymbole ■▲●</label>
+  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="colOpen()" title="Spielerfarben selbst wählen">🎨 Farben</button>
   <label><input type="checkbox" id="chkFollow2d"> Brett folgt Spieler am Zug</label>
   <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="toggleAvMenu()">👥 Mitspieler &amp; Kamera</button>
   <label title="Wenn oben etwas die Knöpfe verdeckt"><input type="checkbox" id="chkBarBottom" onchange="setBarBottom(this.checked)"> Knopfleiste unten</label>
@@ -670,6 +675,14 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <h3>🔬 Spiel analysieren</h3>
   <div id="anaBody"></div>
 </div></div>
+<div id="colModal" class="netModal" onclick="if(event.target===this)colClose()"><div class="netBox" style="border-color:#c58bff">
+  <h3>🎨 Farben</h3>
+  <p class="lbHint" style="margin-top:0">Wähle für jeden Spieler die Farbe, die du am besten unterscheiden kannst. Das gilt nur auf deinem Gerät. Markierungen für Züge, Schlagen und Schach passen sich automatisch an, damit sie sich immer von den Feldern abheben.</p>
+  <div id="colRows"></div>
+  <label><input type="checkbox" id="colAuto" onchange="colAuto(this.checked)"> Wunschfarben der Mitspieler übernehmen (ihre Wunschfarbe bleibt als Rand ihres Fensters sichtbar)</label>
+  <label title="Zusätzliche Zeichen für die Spielerfarben: Blau ■, Grün ▲, Rot ●"><input type="checkbox" id="chkSym" onchange="setSym(this.checked)"> zusätzlich Zeichen ■ ▲ ● (z. B. bei Farbsehschwäche)</label>
+  <button onclick="colClose()">Fertig</button>
+</div></div>
 <div id="abBar">
   <div class="abRow">
     <b class="abTitle">🔬 Analysebrett</b>
@@ -726,7 +739,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101919"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101920"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -758,7 +771,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 18:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 18:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -985,8 +998,8 @@ function grabStill(p){
 }
 function netAV(){   // eigenen Kamera-/Mikrofonstatus mitteilen
   if(!NET.on||!NET.seat)return;
-  const m={t:'av',p:NET.seat,cam:!!camStream,mic:micLive(),rec:REC.mine};
-  NET.avs[NET.seat]={cam:m.cam,mic:m.mic,rec:m.rec};
+  const m={t:'av',p:NET.seat,cam:!!camStream,mic:micLive(),rec:REC.mine,col:COLS.mine||null};
+  NET.avs[NET.seat]={cam:m.cam,mic:m.mic,rec:m.rec,col:m.col};
   if(NET.host){netBroadcast(m);hostLobby();}else netToHost(m);
   renderLobby();
 }
@@ -1260,7 +1273,7 @@ function hostLobby(){
   if(!NET.host)return;
   const L={};
   for(const p of TURN_ORDER){const s=NET.seats[p];L[p]={kind:s.kind,name:s.kind==='ai'||s.kind==='dropped'?'':(s.name||''),
-    id:s.kind==='me'?(NET.peer&&NET.peer.id):s.kind==='peer'?s.id:null,av:p===NET.seat?{cam:!!camStream,mic:micLive(),rec:REC.mine}:(NET.avs[p]||null)};}
+    id:s.kind==='me'?(NET.peer&&NET.peer.id):s.kind==='peer'?s.id:null,av:p===NET.seat?{cam:!!camStream,mic:micLive(),rec:REC.mine,col:COLS.mine||null}:(NET.avs[p]||null)};}
   NET.lobby=L;
   NET.specList=Object.values(NET.specs).map(z=>({id:z.conn.peer,name:z.name}));
   netBroadcast({t:'lobby',lobby:L,specs:NET.specList,started:NET.started,lvl:NET.cfg.lvl});
@@ -1332,7 +1345,7 @@ function hostRecv(conn,m){
   if(m.t==='undoReq'){hostUndoRequest(p);return;}
   if(m.t==='undoAns'){undoAnswer(p,m.id,m.ok);return;}
   if(m.t==='bye'){hostDrop(conn,true);try{conn.close();}catch(e){}return;}
-  if(m.t==='av'){NET.avs[p]={cam:m.cam,mic:m.mic,rec:!!m.rec};netBroadcast({t:'av',p,cam:m.cam,mic:m.mic,rec:!!m.rec},conn);hostLobby();return;}
+  if(m.t==='av'){NET.avs[p]={cam:m.cam,mic:m.mic,rec:!!m.rec,col:m.col||null};netBroadcast({t:'av',p,cam:m.cam,mic:m.mic,rec:!!m.rec,col:m.col||null},conn);hostLobby();return;}
   if(m.t==='mv'||m.t==='promo'){m.p=p;m.fromConn=conn;NET.q.push(m);netPump();return;}
   if(m.t==='resync'){netSend(conn,{t:'sync',data:netSyncData()});return;}
 }
@@ -1568,7 +1581,7 @@ function guestConnect(re){
   const c=NET.peer.connect('dps-'+NET.code,{reliable:true});NET.hostConn=c;NET.hostSeen=performance.now();
   c.on('iceStateChanged',st=>{if(st==='failed'||st==='disconnected'&&!c.open)NET.iceFailed=true;});
   c.on('open',()=>setTimeout(()=>{if(NET.on){NET.langSent=performance.now();netChatOut({t:'lang',lang:myLang()});}},2500));
-  c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,ver:APP_VER,av:{cam:!!camStream,mic:micLive(),rec:REC.mine}}));
+  c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,ver:APP_VER,av:{cam:!!camStream,mic:micLive(),rec:REC.mine,col:COLS.mine||null}}));
   c.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}if(NET.hostConn===c){NET.hostSeen=performance.now();NET.retries=0;
     if(NET.lostSince){NET.lostSince=0;hideBanner();clearTimeout(NET.lostTimer);NET.lostTimer=null;toast(T('✓ Wieder verbunden'),2000);}joinRecv(m);}});
   c.on('close',()=>{if(NET.hostConn===c)guestLost();});
@@ -1649,7 +1662,7 @@ function joinRecv(m){
   if(m.t==='start'){unask('end');netBeginGame(m.cfg);return;}
   if(m.t==='sync'){netApplySync(m.data);return;}
   if(m.t==='seat'){aiPlayers[m.p]=m.ai;updateStatus();renderClocks();return;}
-  if(m.t==='av'){NET.avs[m.p]={cam:m.cam,mic:m.mic,rec:!!m.rec};netAttach();renderLobby();return;}
+  if(m.t==='av'){NET.avs[m.p]={cam:m.cam,mic:m.mic,rec:!!m.rec,col:m.col||null};netAttach();renderLobby();return;}
   if(m.t==='pause'){paused=m.on;lastTick=performance.now();renderClocks();toast(paused?T('⏸ Der Gastgeber hat die Uhr angehalten.'):T('▶ Weiter geht’s!'),2200);return;}
   if(m.t==='mv'||m.t==='promo'||m.t==='to'){NET.q.push(m);netPump();return;}
 }
@@ -1807,6 +1820,7 @@ function renderLobby(){
   if(mb){mb.textContent=micLive()?T('🎤 Mikrofon an'):T('🔇 Mikrofon aus');mb.classList.toggle('off',!micLive());}
   if(cb){cb.textContent=camStream?T('📷 Kamera an'):T('🚫 Kamera aus');cb.classList.toggle('off',!camStream);}
   recUI();if(NET.started)trTick();
+  colorsMaybe();
 }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 const INVITE_TXT='Spiel mit mir Drei-Personen-Schach! ♟️ Tippe auf den Link, um mitzuspielen:';
@@ -2245,6 +2259,119 @@ function drawPiece(ctx,piece,player,x,y,size){const w=size*1.5;ctx.drawImage(pie
 if(document.fonts){document.fonts.load(`20px ${PIECE_FONT}`,'♟').then(()=>{SPRITES={};try{draw();}catch(e){}}).catch(()=>{});}
 const PCOLOR={R:'#ff5533',B:'#5599ff',G:'#44ee22'};
 const PSYM={B:'■',G:'▲',R:'●'};   // Farbenblind-Hilfe: jede Farbe hat zusätzlich ein Zeichen
+
+// ================= Farben: jeder wählt seine Farbe und die der Gegner (Farbrad) =================
+// PCOLOR = angezeigte Spielerfarbe. Daraus werden Felder, Beschriftung, Figuren und 3D abgeleitet.
+// Markierungen (Zugmöglichkeit, Schlagen, Rochade, Auswahl, Schach, letzter Zug) werden je Feldfarbe so gewählt,
+// dass sie sich deutlich vom Feld und von den Nachbarfeldern abheben (Farbabstand im Lab-Farbraum).
+const COL_DEF={B:'#5599ff',G:'#44ee22',R:'#ff5533'};
+const FIELD_DEF={B:'#2255cc',G:'#22aa00',R:'#cc3311'};
+var COLS={over:{},auto:true,mine:null};   // over: eigene Festlegung je Sitz; auto: Wunschfarben der Mitspieler übernehmen; mine: meine Wunschfarbe
+try{Object.assign(COLS,JSON.parse(localStorage.getItem('dreiSchach.colors')||'{}'));}catch(e){}
+function colSave(){try{localStorage.setItem('dreiSchach.colors',JSON.stringify(COLS));}catch(e){}}
+function hexRgb(h){h=String(h||'#000').replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16)||0;return[n>>16,(n>>8)&255,n&255];}
+function rgbHex(r,g,b){return'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');}
+function mixHex(a,b,t){const x=hexRgb(a),y=hexRgb(b);return rgbHex(x[0]+(y[0]-x[0])*t,x[1]+(y[1]-x[1])*t,x[2]+(y[2]-x[2])*t);}
+function scaleHex(a,k){const x=hexRgb(a);return rgbHex(x[0]*k,x[1]*k,x[2]*k);}
+function lab(h){
+  const f=v=>{v/=255;return v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4);};
+  const[r,g,b]=hexRgb(h).map(f);
+  const X=(r*0.4124+g*0.3576+b*0.1805)/0.95047,Y=r*0.2126+g*0.7152+b*0.0722,Z=(r*0.0193+g*0.1192+b*0.9505)/1.08883;
+  const q=t=>t>0.008856?Math.cbrt(t):7.787*t+16/116;
+  return[116*q(Y)-16,500*(q(X)-q(Y)),200*(q(Y)-q(Z))];
+}
+function dE(a,b){const x=lab(a),y=lab(b);return Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2]);}
+function lum(h){return lab(h)[0];}
+// Wunschfarbe, die ein Spieler sich selbst gegeben hat (online), sonst null
+function ownCol(p){
+  if(typeof NET!=='undefined'&&NET.on){if(p===NET.seat)return COLS.mine||null;const a=NET.avs&&NET.avs[p];return a&&a.col||null;}
+  return null;
+}
+function seatCol(p){
+  if(typeof NET!=='undefined'&&NET.on&&p===NET.seat&&COLS.mine)return COLS.mine;
+  if(COLS.over[p])return COLS.over[p];
+  if(COLS.auto&&ownCol(p))return ownCol(p);
+  return COL_DEF[p];
+}
+// Feldfarbe: etwas dunkler als die Spielerfarbe, damit Figuren darauf lesbar bleiben
+var FCOL=Object.assign({},FIELD_DEF),HLC={};
+function fieldColOf(p){const c=PCOLOR[p];if(c.toLowerCase()===COL_DEF[p])return FIELD_DEF[p];
+  const L=lum(c);return scaleHex(c,L>70?0.7:L>45?0.82:1);}
+function pickFar(cands,avoid,min){   // erster Kandidat mit genug Abstand zu allem, sonst der mit dem größten Mindestabstand
+  let best=cands[0],bv=-1;
+  for(const c of cands){const m=Math.min(...avoid.map(a=>dE(c,a)));if(m>=min)return c;if(m>bv){bv=m;best=c;}}
+  return best;
+}
+function okFar(c,avoid,min){return Math.min(...avoid.map(a=>dE(c,a)))>=min;}
+function colorsCompute(){
+  for(const p of TURN_ORDER)PCOLOR[p]=seatCol(p);
+  for(const p of TURN_ORDER)FCOL[p]=fieldColOf(p);
+  const BLACK='#111111',BG='#1e1e1e',ALL=[BLACK].concat(TURN_ORDER.map(p=>FCOL[p]));
+  // Markierungsfarbe möglichst überall gleich (leichter zu lernen); nur wenn das nicht geht, je Sektion anders
+  const choose=(cands,eff,extra,min)=>{
+    const g=cands.find(c=>okFar(eff(c),ALL.concat(extra('*')),min));
+    const out={};
+    for(const s of TURN_ORDER)for(const k of['1','0']){
+      if(g){out[s+k]=g;continue;}
+      const near=[k==='1'?FCOL[s]:BLACK,FCOL[s],BLACK].concat(extra(s+k));
+      out[s+k]=pickFar(cands.map(eff),near,min);out[s+k]=cands[cands.map(eff).indexOf(out[s+k])];
+    }
+    return out;
+  };
+  const id=c=>c,half=c=>mixHex(BG,c,0.55);
+  const V=choose(['#ffdc32','#ffffff','#00e5ff','#ff9a1f','#c58bff'],half,()=>[],32);
+  const S=choose(['#ffdd00','#ffffff','#00ffd5','#ff9a1f'],id,k=>[half(V[k==='*'?'B1':k])],40);
+  const C=choose(['#ff3300','#ff4fd8','#ffffff','#00e5ff','#b46bff','#ff9a1f'],id,k=>{k=k==='*'?'B1':k;return[half(V[k]),S[k]];},30);
+  const CA=choose(['#50c8ff','#ffffff','#c58bff'],id,k=>{k=k==='*'?'B1':k;return[half(V[k]),C[k],S[k]];},25);
+  const K=choose(['#ff1a1a','#ffffff','#ffdc32','#ff4fd8'],id,()=>[],40);
+  HLC={};
+  for(const s of TURN_ORDER)for(const k of['1','0']){const x=s+k;HLC[x]={valid:V[x],vEff:half(V[x]),sel:S[x],cap:C[x],castle:CA[x],chk:K[x]};}
+}
+function hl(fid){const s=COORD_LABELS[fid][0];return HLC[s+(COLORED_FIDS.has(fid)?'1':'0')]||HLC.B1;}
+function validFill(fid){const v=hl(fid).valid;const[r,g,b]=hexRgb(v);return`rgba(${r},${g},${b},0.55)`;}
+// Ähnliche Spielerfarben erkennen (Warnung im Farbdialog)
+function colClashes(){const out=[];const t=TURN_ORDER;for(let i=0;i<3;i++)for(let j=i+1;j<3;j++)if(dE(PCOLOR[t[i]],PCOLOR[t[j]])<22)out.push([t[i],t[j]]);return out;}
+function colorsApply(){
+  colorsCompute();
+  if(typeof SEC_COL!=='undefined')for(const p of TURN_ORDER)SEC_COL[p]=PCOLOR[p].toLowerCase()===COL_DEF[p]?({R:'#ff9977',B:'#88aaff',G:'#88ee66'})[p]:mixHex(PCOLOR[p],'#ffffff',0.35);
+  if(typeof AVCOL!=='undefined')for(const p of TURN_ORDER)AVCOL[p]=ownCol(p)||(PCOLOR[p].toLowerCase()===COL_DEF[p]?({B:'#4f8dff',G:'#3fcf2a',R:'#ff5533'})[p]:PCOLOR[p]);
+  SPRITES={};
+  for(const p of TURN_ORDER){const c=document.getElementById('clk'+p);if(c)c.style.color=PCOLOR[p];
+    const s=document.getElementById('pl'+p);if(s&&s.previousElementSibling)s.previousElementSibling.style.color=PCOLOR[p];}
+  for(const c of document.querySelectorAll('#avStrip .avCv'))for(const p of TURN_ORDER)if(c===AV[p].cv)c.style.borderColor=AVCOL[p];
+  if(window.V3&&V3.recolor)V3.recolor();
+  try{renderClocks();renderLog();updateCaptured();updateStatus();draw();}catch(e){}
+}
+// ---------- Farbdialog ----------
+function colOpen(){colRender();document.getElementById('colModal').classList.add('show');}
+function colClose(){document.getElementById('colModal').classList.remove('show');}
+function colRender(){
+  const box=document.getElementById('colRows');let h='';
+  for(const p of TURN_ORDER){
+    const me=typeof NET!=='undefined'&&NET.on&&p===NET.seat,own=ownCol(p),nm=(typeof netName==='function'&&netName(p))||PNAMES[p];
+    h+=`<div class="colRow"><input type="color" value="${PCOLOR[p]}" oninput="colSet('${p}',this.value)" aria-label="${esc(nm)}"> <b style="color:${PCOLOR[p]}">${esc(nm)}</b>${me?' '+T('(du – die anderen sehen diese Farbe als Vorschlag)'):''}`;
+    if(!me&&own&&own.toLowerCase()!==PCOLOR[p].toLowerCase())h+=` <button onclick="colTake('${p}')" title="${T('Wunschfarbe übernehmen')}"><span class="colSw" style="background:${own}"></span> ${T('Wunsch übernehmen')}</button>`;
+    else if(!me&&own)h+=` <span class="colNote"><span class="colSw" style="background:${own}"></span> ${T('Wunschfarbe von {0}',[esc(nm)])}</span>`;
+    h+=` <button onclick="colReset('${p}')">${T('Standard')}</button></div>`;
+  }
+  const cl=colClashes();
+  if(cl.length)h+=`<p class="colWarn">⚠️ ${cl.map(([a,b])=>T('{0} und {1} sind schwer zu unterscheiden.',[PNAMES[a],PNAMES[b]])).join(' ')}</p>`;
+  box.innerHTML=h;
+  document.getElementById('colAuto').checked=COLS.auto;
+}
+function colSet(p,v){
+  if(typeof NET!=='undefined'&&NET.on&&p===NET.seat){COLS.mine=v;netAV();}else COLS.over[p]=v;
+  colSave();colorsApply();clearTimeout(colSet.t);colSet.t=setTimeout(colRender,250);
+}
+function colTake(p){delete COLS.over[p];COLS.auto=true;colSave();colorsApply();colRender();}
+function colReset(p){
+  if(typeof NET!=='undefined'&&NET.on&&p===NET.seat){COLS.mine=null;netAV();}
+  COLS.over[p]=COL_DEF[p];if(!ownCol(p)||(typeof NET!=='undefined'&&NET.on&&p===NET.seat))delete COLS.over[p];
+  colSave();colorsApply();colRender();
+}
+function colAuto(on){COLS.auto=!!on;colSave();colorsApply();colRender();}
+var colSig='';
+function colorsMaybe(){const s=TURN_ORDER.map(p=>seatCol(p)+'/'+(ownCol(p)||'')).join();if(s!==colSig){colSig=s;colorsApply();}}
 let symOn=false;try{symOn=localStorage.getItem('dreiSchach.sym')==='1';}catch(e){}
 function setSym(on){symOn=on;try{localStorage.setItem('dreiSchach.sym',on?'1':'0');}catch(e){}
   const c=document.getElementById('chkSym');if(c)c.checked=on;renderClocks();draw();if(window.V3&&V3.on&&V3.sync)V3.sync();}
@@ -4082,7 +4209,7 @@ function drawCaptured(ctx){
 
 
 // Schlagbare Figur: rot markiert – auf roten Feldern pink, damit man es dort auch sieht
-function capCol(fid){return COLORED_FIDS.has(fid)&&COORD_LABELS[fid][0]==='R'?'#ff4fd8':'#ff3300';}
+function capCol(fid){return hl(fid).cap;}
 // Vorheriger Zug: farbige Felder dunkler, schwarze Felder grau (Zielfeld etwas kräftiger als Startfeld)
 function lastMoveFill(fid,isTo){
   if(!COLORED_FIDS.has(fid))return isTo?'#5c5c5c':'#3e3e3e';
@@ -4091,9 +4218,9 @@ function lastMoveFill(fid,isTo){
 }
 function fieldFill(fid){
   const s=COORD_LABELS[fid][0],col=COLORED_FIDS.has(fid);
-  if(showSection)return col?(s==='R'?'#bb2200':s==='B'?'#1144bb':'#117700'):(s==='R'?'#330000':s==='B'?'#000a20':'#001500');
+  if(showSection)return col?scaleHex(FCOL[s],0.9):scaleHex(FCOL[s],0.15);
   if(!col)return'#111';
-  return s==='R'?'#cc3311':s==='B'?'#2255cc':'#22aa00';
+  return FCOL[s];
 }
 // ---------- Zuganimation ----------
 let moveAnim=null;   // {items:[{piece,player,from,to}],t0,dur,done}
@@ -4195,17 +4322,17 @@ function draw(){
     const isCastle=isV&&!!castleMap[fid];
     ctx.beginPath();ctx.moveTo(d.pts[0][0],d.pts[0][1]);
     for(let i=1;i<4;i++)ctx.lineTo(d.pts[i][0],d.pts[i][1]);ctx.closePath();
-    if(isSel){ctx.fillStyle='#ffdd00';ctx.shadowColor='#ffaa00';ctx.shadowBlur=12;}
-    else if(isCastle){ctx.fillStyle='rgba(80,200,255,0.6)';ctx.shadowColor='#88ddff';ctx.shadowBlur=8;}
+    if(isSel){ctx.fillStyle=hl(fid).sel;ctx.shadowColor=hl(fid).sel;ctx.shadowBlur=12;}
+    else if(isCastle){ctx.fillStyle=hl(fid).castle;ctx.globalAlpha=0.75;ctx.shadowColor=hl(fid).castle;ctx.shadowBlur=8;}
     else if(isEnemy){ctx.fillStyle=capCol(fid);ctx.shadowColor=capCol(fid);ctx.shadowBlur=8;}
-    else if(isV){ctx.fillStyle='rgba(255,220,50,0.55)';ctx.shadowColor='#ffcc00';ctx.shadowBlur=6;}
+    else if(isV){ctx.fillStyle=validFill(fid);ctx.shadowColor=hl(fid).valid;ctx.shadowBlur=6;}
     else if(fid===lm.from||fid===lm.to){ctx.fillStyle=lastMoveFill(fid,fid===lm.to);ctx.shadowBlur=0;}
     else{ctx.fillStyle=fieldFill(fid);ctx.shadowBlur=0;}
-    ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#444';ctx.lineWidth=0.5;ctx.stroke();
+    ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.strokeStyle='#444';ctx.lineWidth=0.5;ctx.stroke();
     if(checkedKings.has(fid)){   // Schach: roter Rahmen – auf roten Feldern weiß, damit man ihn dort sieht
-      const onRed=COLORED_FIDS.has(fid)&&COORD_LABELS[fid][0]==='R',cc=onRed?'#ffffff':'#ff1a1a';
+      const cc=hl(fid).chk;
       ctx.save();ctx.strokeStyle=cc;ctx.lineWidth=Math.max(2,3.5*zoom);
-      ctx.shadowColor=onRed?'#ffffff':'#ff0000';ctx.shadowBlur=14;ctx.stroke();ctx.restore();}
+      ctx.shadowColor=cc;ctx.shadowBlur=14;ctx.stroke();ctx.restore();}
     if(showPieces){
       const pd=animHidden(coord)?null:gameState[coord];
       if(pd){
@@ -4222,7 +4349,7 @@ function draw(){
     if(showLabels&&zoom>=0.55){
       ctx.font=`bold ${Math.max(5,6.5*zoom)}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
       const col2=COLORED_FIDS.has(fid),sec=COORD_LABELS[fid][0];
-      ctx.fillStyle=col2?'rgba(255,255,255,0.7)':(sec==='R'?'#ff7755':sec==='B'?'#6699ff':'#55ee55');
+      ctx.fillStyle=col2?(lum(FCOL[sec])>75?'rgba(0,0,0,0.65)':'rgba(255,255,255,0.7)'):PCOLOR[sec];
       ctx.fillText(coord,d.cx,(showPieces&&gameState[coord])?d.cy+4*zoom:d.cy);
     }
   }
@@ -5588,7 +5715,7 @@ if(isLand()){document.body.classList.add('landSeen');document.getElementById('pa
 resizeCanvas();
 initGame();
 resizeCanvas();
-recUI();diploUI();oppUI();
+recUI();diploUI();oppUI();colorsMaybe();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
 translateDom(document.body);
@@ -5696,7 +5823,8 @@ window.V3={on:false};
     if(kind==='g')m=new THREE.MeshStandardMaterial({color:'#ffd23f',metalness:0.35,roughness:0.28,emissive:new THREE.Color('#8a6400'),emissiveIntensity:0.45});
     else if(kind==='f')m=new THREE.MeshStandardMaterial({color:'#1d3a1d',roughness:1});
     else{
-      const WOODCOL={R:'#d8452a',B:'#3f78d8',G:'#45b52a'};const base=kind==='d'?shade(WOODCOL[player],-0.55):WOODCOL[player];
+      const WD={R:'#d8452a',B:'#3f78d8',G:'#45b52a'},wc=PCOLOR[player].toLowerCase()===COL_DEF[player]?WD[player]:scaleHex(PCOLOR[player],0.85);
+      const base=kind==='d'?shade(wc,-0.55):wc;
       const o={color:new THREE.Color(base),map:woodTex(),roughness:kind==='d'?0.6:0.42,metalness:0};
       m=THREE.MeshPhysicalMaterial?new THREE.MeshPhysicalMaterial(Object.assign(o,{clearcoat:kind==='d'?0.2:0.9,clearcoatRoughness:0.12})):new THREE.MeshStandardMaterial(o);
     }
@@ -5801,12 +5929,12 @@ window.V3={on:false};
       const head=new THREE.Group();head.position.y=MY;head.rotation.x=-0.3;   // leicht nach hinten geneigt
       const scr=new THREE.Mesh(new THREE.PlaneGeometry(MW,MH),new THREE.MeshBasicMaterial({map:tex}));scr.position.set(0,MH/2+0.2,0.13);
       const bez=new THREE.Mesh(new THREE.BoxGeometry(MW+0.36,MH+0.36,0.22),bezMat);bez.position.set(0,MH/2+0.2,0);
-      const glow=new THREE.Mesh(new THREE.BoxGeometry(MW+0.56,MH+0.56,0.1),new THREE.MeshStandardMaterial({color:PCOLOR[p],emissive:PCOLOR[p],emissiveIntensity:0.55}));
+      const glow=new THREE.Mesh(new THREE.BoxGeometry(MW+0.56,MH+0.56,0.1),new THREE.MeshStandardMaterial({color:AVCOL[p],emissive:AVCOL[p],emissiveIntensity:0.55}));
       glow.position.set(0,MH/2+0.2,-0.08);
       head.add(glow,bez,scr);
       g.add(head);   // ohne Fuß: der Monitor schwebt hinter der Sektion
       g.lookAt(0,0,0);   // Bildschirm zur Brettmitte
-      monGroup.add(g);monitors[p]={g,tex,head,home:[d[0]*D,d[1]*D]};head.scale.setScalar(monScale);
+      monGroup.add(g);monitors[p]={g,tex,head,glow,home:[d[0]*D,d[1]*D]};head.scale.setScalar(monScale);
     }
     monMinR=maxR+0.6;monMaxR=maxR+14;
     try{const sv=JSON.parse(localStorage.getItem('dreiSchach.monPos')||'{}');for(const p of TURN_ORDER)if(sv[p])placeMon(p,sv[p][0],sv[p][1]);}catch(e){}
@@ -5828,12 +5956,13 @@ window.V3={on:false};
     for(const[fid,m]of Object.entries(fieldMesh)){
       const coord=COORD_LABELS[fid],isV=validMoves.has(fid)&&showHints;
       let col=fieldFill(fid),em='#000000',ei=0;
-      if(fid===selected){col=HL.sel;em=HL.sel;ei=0.35;}
-      else if(isV&&castleMap[fid]){col=HL.castle;em=HL.castle;ei=0.3;}
+      const H=hl(fid);
+      if(fid===selected){col=H.sel;em=H.sel;ei=0.35;}
+      else if(isV&&castleMap[fid]){col=H.castle;em=H.castle;ei=0.3;}
       else if(isV&&gameState[coord]&&gameState[coord].player!==cur()){col=capCol(fid);em=col;ei=0.35;}
-      else if(isV){col=HL.valid;em=HL.valid;ei=0.25;}
+      else if(isV){col=mixHex(H.valid,'#000000',0.1);em=H.valid;ei=0.25;}
       if((fid===lm.from||fid===lm.to)&&ei===0){col=lastMoveFill(fid,fid===lm.to);}
-      if(checked.has(fid)){const onRed=COLORED_FIDS.has(fid)&&COORD_LABELS[fid][0]==='R';em=onRed?'#ffffff':'#ff0000';ei=onRed?0.7:0.8;}
+      if(checked.has(fid)){em=H.chk;ei=0.75;}
       m.material.color.set(col);m.material.emissive.set(em);m.material.emissiveIntensity=ei;
     }
     // Figuren
@@ -6059,6 +6188,9 @@ window.V3={on:false};
 
   // ---------- öffentliche Funktionen ----------
   V3.sync=sync;
+  V3.recolor=()=>{for(const k of Object.keys(matCache)){try{matCache[k].dispose();}catch(e){}delete matCache[k];}
+    for(const p of TURN_ORDER){const m=monitors[p];if(m&&m.glow){m.glow.material.color.set(AVCOL[p]);m.glow.material.emissive.set(AVCOL[p]);}}
+    if(V3.on)sync();};
   V3.resize=(w,h)=>{if(!R)return;R.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();refit(false);};
   V3.refit=f=>refit(f);
   V3.view=p=>{if(V3.on)preset(p==='cur'?cur():p);};
