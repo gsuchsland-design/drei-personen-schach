@@ -296,6 +296,8 @@ body.replay #viewBar { display:none !important; }
 .anaCard { border:1px solid; border-left-width:4px; border-radius:8px; padding:8px 10px; background:#262626; }
 .anaCard ul, .anaList { margin:4px 0 0 18px; } .anaCard li, .anaList li { margin:2px 0; }
 .anaList a { color:#8fb6ff; cursor:pointer; text-decoration:underline; }
+.anaAIText { background:#1d2a1d; border:1px solid #3c6; border-radius:8px; padding:8px 12px; margin-top:8px; } .anaAIText h4 { margin:8px 0 2px !important; }
+#anaAIBtn { padding:7px 12px; font-size:14px; background:#2a6; color:#fff; border:none; border-radius:7px; cursor:pointer; } #anaAIBtn:disabled { opacity:.5; }
 .anaNote { color:#aaa; font-size:12.5px; margin:8px 0; }
 .cls-blunder { color:#ff6b5b; font-weight:bold; } .cls-mistake { color:#ffb347; } .cls-inacc { color:#e6d36b; }
 #rpAna { font-size:13px !important; }
@@ -759,7 +761,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101926"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101927"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -791,7 +793,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 23:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 23:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -5505,6 +5507,8 @@ function anaChart(){
 }
 function anaRender(){
   const st=anaStats(),log=ANA.R.real.moveLog,res=ANA.res;
+  const aiBox=`<div id="anaAIWrap"><button id="anaAIBtn" onclick="anaAIReport()">📝 ${T('KI-Bericht schreiben lassen')}</button>
+    <div class="anaNote" style="margin-top:4px">${T('Für den Bericht werden die Auswertung und – falls vorhanden – die Gesprächsmitschrift an den KI-Dienst von Cloudflare geschickt.')}</div><div id="anaAI"></div></div>`;
   const pct=(a,b)=>b?Math.round(100*a/b):0,sec=ms=>ms.length?Math.round(ms.reduce((a,b)=>a+b,0)/ms.length/1000):null;
   let h=anaChart();
   h+=`<h4>${T('Spieler im Vergleich')}</h4><div class="anaGrid">`;
@@ -5560,7 +5564,31 @@ function anaRender(){
   else h+=`<p class="anaNote">${T('Keine groben Fehler gefunden.')}</p>`;
   h+=`<p class="anaNote">${T('Fair Play: Menschen stimmen bei nicht eindeutigen Zügen meist zu deutlich unter 50 % mit dem starken Computer überein. Sehr hohe Werte über viele Züge können auf Hilfe von außen hindeuten – ein Hinweis, kein Beweis.')}</p>`;
   h+=`<p class="anaNote">${T('Bewertet wird mit der Stellungsbewertung des Computers (eine Ebene tief, bei drei Spielern gibt es keinen objektiv besten Zug). Die Angaben sind Hinweise, keine Urteile.')}</p>`;
-  document.getElementById('anaBody').innerHTML=h;
+  document.getElementById('anaBody').innerHTML=aiBox+h;
+}
+// ---------- KI-Bericht (Profi-Analyse) ----------
+function anaFacts(){
+  const R=ANA.R,body=document.getElementById('anaBody').cloneNode(true),w=body.querySelector('#anaAIWrap');if(w)w.remove();
+  for(const sv of body.querySelectorAll('svg'))sv.remove();
+  const names=TURN_ORDER.map(p=>`${PNAMES[p]}: ${anaName(p)}${isAIPlayer(p)?' ('+T('Computer')+')':''}`).join(', ');
+  let f=`${T('Spieler')}: ${names}\n${T('Ergebnis')}: ${R.real.gameOver?R.real.status:T('Partie läuft noch')}\n${T('Züge')}: ${R.n}\n\n`+(()=>{const tmp=document.createElement('div');tmp.style.cssText='position:fixed;left:-9999px;top:0;width:800px';tmp.appendChild(body);document.body.appendChild(tmp);const t=body.innerText;tmp.remove();return t;})().replace(/\n{3,}/g,'\n\n');
+  if(TALK.length){f+='\n\n'+T('Gesprächsmitschrift')+':\n'+TALK.slice(-80).map(x=>`[${T('nach Zug {0}',[x.n])}] ${talkName(x)}: ${x.text}`).join('\n');}
+  return f.slice(0,9000);
+}
+function mdLite(t){return esc(t).replace(/^#{1,4}\s*(.+)$/gm,'<h4>$1</h4>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');}
+async function anaAIReport(){
+  const out=document.getElementById('anaAI'),btn=document.getElementById('anaAIBtn');if(!out)return;
+  btn.disabled=true;out.innerHTML=`<p class="anaNote">⏳ ${T('Der Bericht wird geschrieben … (bis zu 30 Sekunden)')}</p>`;
+  try{
+    if(!await fernSrvLoad())throw new Error(T('Der Spielserver ist noch nicht eingerichtet.'));
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),60000);
+    const r=await fetch(fernBase()+'/ai/bericht',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lang:myLang(),facts:anaFacts()}),signal:ctl.signal});
+    clearTimeout(to);
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok||!j.text)throw new Error(r.status===429?T('Das kostenlose Tageskontingent für KI-Berichte ist aufgebraucht – morgen geht es wieder.'):(j.error||('HTTP '+r.status)));
+    out.innerHTML=`<div class="anaAIText"><p>${mdLite(j.text)}</p></div><p class="anaNote">${T('Von einer KI geschrieben – kann sich irren.')}</p>`;
+    btn.style.display='none';
+  }catch(e){out.innerHTML=`<p class="colWarn">${esc(T('Der KI-Bericht konnte nicht erstellt werden: ')+(e.name==='AbortError'?T('Zeitüberschreitung'):e.message||e))}</p>`;btn.disabled=false;}
 }
 function anaDiploText(d){
   const n=x=>anaName(x);

@@ -18,3 +18,7 @@ class_name = "Fern"
 [[migrations]]
 tag = "v2"
 new_sqlite_classes = ["Fern"]
+
+# Sprachmodell für den KI-Bericht der Spielanalyse (Cloudflare Workers AI, kostenloses Tageskontingent)
+[ai]
+binding = "AI"

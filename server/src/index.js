@@ -3,6 +3,7 @@
 //    tauschen die Verbindungsdaten aus. Spielzüge, Bild und Ton laufen danach direkt zwischen den Geräten.
 // 2. /turn: kurzlebige Zugangsdaten für die Cloudflare-TURN-Weiterleitung (für Netze, die direkte Verbindungen blockieren).
 // 3. /fern/…: Fernpartien – Spielstand liegt auf dem Server, Benachrichtigung per Web-Push (siehe fern.js).
+// 4. /ai/bericht: KI-Bericht zur Spielanalyse (Cloudflare Workers AI).
 // © 2026 Guido Suchsland
 
 import { fernRoute, Fern } from './fern.js';
@@ -37,6 +38,33 @@ async function turnServers(env) {
     .filter(s => s.urls.length);
 }
 
+// ---------- KI-Bericht zur Spielanalyse ----------
+// Bekommt die Fakten der Analyse (Text) und lässt ein kleines Sprachmodell daraus einen lesbaren Bericht schreiben.
+// Das Modell rechnet kein Schach – die Fakten stammen aus der Analyse im Browser.
+const AI_MODEL = '@cf/mistralai/mistral-small-3.1-24b-instruct';
+const LANGNAME = { de: 'Deutsch', en: 'English', fr: 'Français', es: 'Español', it: 'Italiano', pt: 'Português', nl: 'Nederlands', pl: 'Polski', tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '中文' };
+async function aiReport(req, env) {
+  if (!env.AI) return json({ error: 'KI ist auf diesem Server nicht eingerichtet' }, 501);
+  let b; try { b = await req.json(); } catch (e) { return json({ error: 'bad json' }, 400); }
+  const facts = String(b.facts || '').slice(0, 9000), lang = LANGNAME[b.lang] ? b.lang : 'de';
+  if (facts.length < 50) return json({ error: 'zu wenig Daten' }, 400);
+  const system = 'Du bist ein erfahrener Schachtrainer und Spielpsychologe. Du bekommst die automatische Auswertung einer Partie ' +
+    'Drei-Personen-Schach (drei Spieler, Bündnisse und Verrat sind erlaubt, Mitschrift der Gespräche nur mit Zustimmung aller). ' +
+    'Schreibe daraus einen lebendigen, fairen Bericht mit höchstens 280 Wörtern, Sprache: ' + LANGNAME[lang] + '. ' +
+    'Gliederung mit kurzen Zwischenüberschriften: Verlauf, Wendepunkte, Spielweise und Psychologie je Spieler, ein konkreter Tipp für jeden Spieler. ' +
+    'Nutze ausschließlich die gegebenen Fakten, erfinde keine Züge, Zahlen oder Zitate. Werte respektvoll, ohne Spott; Hinweise auf mögliche Computerhilfe nur vorsichtig als Hinweis formulieren. ' +
+    'Ironie oder Bluffs in der Mitschrift darfst du deuten, kennzeichne Deutungen aber als Vermutung.';
+  try {
+    const r = await env.AI.run(AI_MODEL, { messages: [{ role: 'system', content: system }, { role: 'user', content: facts }], max_tokens: 800, temperature: 0.5 });
+    const text = (r && (r.response || r.result && r.result.response)) || '';
+    if (!text) return json({ error: 'leere Antwort' }, 502);
+    return json({ text }, 200, { 'Cache-Control': 'no-store' });
+  } catch (e) {
+    const m = String(e && e.message || e);
+    return json({ error: /limit|quota|neuron|429/i.test(m) ? 'Tageskontingent aufgebraucht – morgen wieder.' : m }, /limit|quota|neuron|429/i.test(m) ? 429 : 502);
+  }
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -48,6 +76,7 @@ export default {
       return hub.fetch(req);
     }
     if (url.pathname.startsWith('/fern/')) return fernRoute(req, env, url);
+    if (url.pathname === '/ai/bericht' && req.method === 'POST') return aiReport(req, env);
     if (url.pathname === '/peerjs/id') return new Response(randomId(), { headers: { 'Content-Type': 'text/plain', ...CORS } });
     if (url.pathname === '/peerjs/peers') return json([], 401);
     if (url.pathname === '/turn') {
