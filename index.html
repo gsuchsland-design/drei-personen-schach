@@ -279,6 +279,11 @@ body.barBottom #selfView { bottom:50px; }
   <label><input type="radio" name="camOffMode" value="still" checked onchange="setCamOffMode(this.value)"> Standbild (letztes Bild)</label>
   <label><input type="radio" name="camOffMode" value="avatar" onchange="setCamOffMode(this.value)"> Avatar</label>
   <label><input type="checkbox" id="chkSelf" checked onchange="showSelf=this.checked;updateSelfView()"> Eigenes Bild klein anzeigen</label>
+  <div class="sub">🌐 Übersetzung bei Mitspielern mit anderer Sprache:</div>
+  <label><input type="checkbox" id="tr_speak" onchange="trSet('speak',this.checked)"> Mein Gesprochenes mitschreiben und übersetzen</label>
+  <label><input type="checkbox" id="tr_subs" onchange="trSet('subs',this.checked)"> Übersetzung als Untertitel anzeigen</label>
+  <label><input type="checkbox" id="tr_read" onchange="trSet('read',this.checked)"> Übersetzung immer vorlesen</label>
+  <div class="sub" id="trState"></div>
   <div class="sub" id="camInfo"></div>
   <div class="sub" id="camErr" style="color:#ff8a7a"></div>
   <button class="langBtn notr" onclick="openLang()" style="margin-top:6px">🌐 Sprache · Language</button>
@@ -538,7 +543,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101812"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101913"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -570,7 +575,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 04:10';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 05:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -774,6 +779,7 @@ function toggleMic(){
   if(!micStream){micOn();return;}
   const t=micStream.getAudioTracks()[0];if(t)t.enabled=!t.enabled;
   netAV();syncAvUI();toast(micLive()?T('🎤 Mikrofon an'):T('🔇 Du bist stumm geschaltet'),1800);
+  try{trTick();}catch(e){}
 }
 function netTracks(){   // aktuelle Kamera/Mikrofon an alle laufenden Verbindungen geben
   if(!NET.on)return;dummyTracks();
@@ -855,6 +861,12 @@ function netChatOut(m){
   if(NET.host){netBroadcast(m);chatIn(m);}else{netToHost(m);chatIn(m);}
 }
 function chatIn(m){   // eingehende (oder eigene) Chat-Nachricht / Reaktion anzeigen
+  const lk=m.p||('s:'+(m.name||''));
+  if(m.t==='lang'){const neu=NET.langs[lk]!==m.lang;NET.langs[lk]=m.lang;
+    if(m.p!==NET.seat&&neu&&performance.now()-(NET.langSent||0)>5000){NET.langSent=performance.now();netChatOut({t:'lang',lang:myLang()});}
+    trTick();return;}
+  if(m.t==='say'){if(m.lang)NET.langs[lk]=m.lang;sayIn(m);return;}
+  if(m.lang)NET.langs[lk]=m.lang;
   if(NET.chat.some(x=>x.id===m.id))return;
   const now=performance.now();
   if(m.t==='react'){if(m.p){AV[m.p].react={e:m.e,since:now,until:now+3200};}toast(`${chatName(m)}: ${m.e}`,2500);return;}
@@ -874,6 +886,97 @@ function renderChat(){
   l.innerHTML=NET.chat.map(m=>{const col=m.p?PCOLOR[m.p]:'#bbb';
     return `<div class="cm"><b style="color:${col}">${esc(chatName(m))}:</b> ${esc(m.shown||m.text)}${m.tr?`<span class="orig">🌐 ${esc(m.text)}</span>`:''}</div>`;}).join('')||'<div style="color:#888">Noch keine Nachrichten. Schreib etwas oder schick eine Reaktion 👇</div>';
   l.scrollTop=l.scrollHeight;
+}
+// ---------- Simultanübersetzung: Gesprochenes → Text → Übersetzung als Untertitel / vorgelesen ----------
+const TR={speak:true,read:false,subs:true};
+try{Object.assign(TR,JSON.parse(localStorage.getItem('dreiSchach.tr')||'{}'));}catch(e){}
+function trSave(){try{localStorage.setItem('dreiSchach.tr',JSON.stringify(TR));}catch(e){}}
+function trSet(k,v){TR[k]=v;trSave();trTick();}
+const BCP={de:'de-DE',en:'en-US',fr:'fr-FR',es:'es-ES',it:'it-IT',pt:'pt-PT',nl:'nl-NL',pl:'pl-PL',tr:'tr-TR',ru:'ru-RU',uk:'uk-UA',zh:'zh-CN'};
+NET.langs={};
+function othersLangs(){return Object.entries(NET.langs).filter(([k])=>k!==(NET.seat||'me')).map(([,l])=>l);}
+function needTranslation(){const me=myLang();return othersLangs().some(l=>l&&l!==me);}
+// Übersetzen: zuerst im Browser (Chrome, ohne Server), sonst über den freien Dienst MyMemory
+const trCache=new Map(),trApis={};
+async function translateIn(text,from,to){
+  if(!text||from===to)return null;
+  const key=from+'|'+to+'|'+text;if(trCache.has(key))return trCache.get(key);
+  let out=null;
+  try{
+    if(window.Translator&&Translator.create){   // nur nutzen, wenn das Sprachmodell schon auf dem Gerät ist (sonst hängt es)
+      const k=from+'>'+to,tmo=(pr,ms)=>Promise.race([pr,new Promise(r=>setTimeout(()=>r(null),ms))]);
+      if(trApis[k]===undefined){trApis[k]=false;const av=await tmo(Translator.availability({sourceLanguage:from,targetLanguage:to}),1500);
+        if(av==='available')trApis[k]=await tmo(Translator.create({sourceLanguage:from,targetLanguage:to}),3000)||false;}
+      if(trApis[k])out=await tmo(trApis[k].translate(text),4000);
+    }
+  }catch(e){}
+  if(!out){
+    try{const ctl=new AbortController(),tt=setTimeout(()=>ctl.abort(),6000);
+      const r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0,480))}&langpair=${from}|${to}`,{signal:ctl.signal});clearTimeout(tt);
+      if(r.ok){const j=await r.json();const t=j&&j.responseData&&j.responseData.translatedText;if(t&&!/MYMEMORY WARNING|INVALID/i.test(t))out=t.replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,'&');}
+    }catch(e){}
+  }
+  if(out){trCache.set(key,out);if(trCache.size>300)trCache.delete(trCache.keys().next().value);}
+  return out;
+}
+window.translateIn=translateIn;
+// Vorlesen (eigene Spracherkennung pausiert solange, damit sie das Vorgelesene nicht mitschreibt)
+let ttsBusy=false;
+function speakOut(text,lang){
+  if(!window.speechSynthesis||!text)return;
+  try{const u=new SpeechSynthesisUtterance(text);u.lang=BCP[lang]||lang;u.rate=1.05;
+    const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith(lang));if(v)u.voice=v;
+    u.onstart=()=>{ttsBusy=true;srStop();};u.onend=u.onerror=()=>{ttsBusy=false;setTimeout(trTick,300);};
+    speechSynthesis.speak(u);}catch(e){}
+}
+// Spracherkennung des eigenen Mikrofons
+let SR=null,srOn=false,srWant=false;
+function srSupported(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition);}
+function srStart(){
+  if(srOn||!srSupported())return;
+  try{
+    const C=window.SpeechRecognition||window.webkitSpeechRecognition;SR=new C();
+    SR.lang=BCP[myLang()]||myLang();SR.continuous=true;SR.interimResults=false;SR.maxAlternatives=1;
+    SR.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(!r.isFinal)continue;
+      const text=(r[0].transcript||'').trim();if(text.length>1)netChatOut({t:'say',text:text.slice(0,300),lang:myLang()});}};
+    SR.onend=()=>{srOn=false;SR=null;if(srWant&&!ttsBusy)setTimeout(trTick,400);};
+    SR.onerror=e=>{if(e&&(e.error==='not-allowed'||e.error==='service-not-allowed')){TR.speak=false;trSave();updTrUI();toast(T('Spracherkennung ist in diesem Browser nicht erlaubt.'));}};
+    SR.start();srOn=true;
+  }catch(e){srOn=false;}
+}
+function srStop(){if(SR){try{SR.onend=()=>{srOn=false;SR=null;};SR.stop();}catch(e){}}srOn=false;}
+function trTick(){   // Spracherkennung nur, wenn sie gebraucht wird: online, Mikrofon an, jemand spricht eine andere Sprache
+  srWant=!!(TR.speak&&NET.on&&!NET.spec&&micLive()&&needTranslation()&&!ttsBusy);
+  if(srWant&&!srOn)srStart();else if(!srWant&&srOn)srStop();
+  updTrUI();
+}
+setInterval(()=>{if(NET.on){netChatOut({t:'lang',lang:myLang()});trTick();}},15000);
+// eingehende Mitschrift: übersetzen, als Untertitel zeigen und/oder vorlesen
+async function sayIn(m){
+  if(m.p===NET.seat&&NET.seat)return;
+  const me=myLang();if(!m.lang||m.lang===me)return;
+  const t=await translateIn(m.text,m.lang,me);const txt=t||m.text;
+  if(m.p&&TR.subs)AV[m.p].sub={text:txt,orig:m.text,until:performance.now()+Math.min(9000,3500+txt.length*80)};
+  if(TR.read&&t)speakOut(t,me);
+}
+function drawSub(x,a){
+  const now=performance.now();if(!a.sub||now>a.sub.until)return;
+  x.save();x.font='bold 19px sans-serif';
+  const words=a.sub.text.split(/\s+/),lines=[];let cur='';
+  for(const w of words){const tst=cur?cur+' '+w:w;if(x.measureText(tst).width>AV_W-28&&cur){lines.push(cur);cur=w;}else cur=tst;}
+  if(cur)lines.push(cur);while(lines.length>3)lines.shift();
+  const lh=23,h=lines.length*lh+10;x.globalAlpha=Math.min(1,(a.sub.until-now)/500);
+  x.fillStyle='rgba(0,0,0,.72)';roundRect(x,6,6,AV_W-12,h,7);x.fill();
+  x.fillStyle='#fff';x.textBaseline='top';lines.forEach((l,i)=>x.fillText(l,14,11+i*lh));
+  x.font='10px sans-serif';x.fillStyle='rgba(255,255,255,.6)';x.fillText('🌐',AV_W-24,9);
+  x.restore();
+}
+function updTrUI(){
+  const s=document.getElementById('trState');if(!s)return;
+  for(const k of ['speak','read','subs']){const c=document.getElementById('tr_'+k);if(c)c.checked=!!TR[k];}
+  s.textContent=!srSupported()?T('Dieser Browser kann Gesprochenes nicht mitschreiben – Untertitel und Vorlesen funktionieren trotzdem.'):
+    srOn?T('🎙️ Deine Sprache wird gerade mitgeschrieben und für die anderen übersetzt.'):
+    (NET.on&&!needTranslation())?T('Alle sprechen deine Sprache – keine Übersetzung nötig.'):'';
 }
 function netAttach(){   // Videos den Spielerfenstern zuordnen
   if(!NET.on)return;
@@ -993,7 +1096,7 @@ function hostRecv(conn,m){
     return;
   }
   if(NET.specs[conn.peer]){   // Zuschauer
-    if(m.t==='chat'||m.t==='react'){m.p=null;m.name=NET.specs[conn.peer].name;netBroadcast(m,conn);chatIn(m);return;}
+    if(m.t==='chat'||m.t==='react'||m.t==='say'||m.t==='lang'){m.p=null;m.name=NET.specs[conn.peer].name;netBroadcast(m,conn);chatIn(m);return;}
     if(m.t==='bye'){hostDropSpec(conn);try{conn.close();}catch(e){}}
     else if(m.t==='resync')netSend(conn,{t:'sync',data:netSyncData()});
     return;
@@ -1002,7 +1105,7 @@ function hostRecv(conn,m){
   NET.seats[p].seen=performance.now();
   if(m.t==='ping')return;
   if(m.t==='awayAI'){hostAwayAI(m.p);return;}
-  if(m.t==='chat'||m.t==='react'){m.p=p;netBroadcast(m,conn);chatIn(m);return;}
+  if(m.t==='chat'||m.t==='react'||m.t==='say'||m.t==='lang'){m.p=p;netBroadcast(m,conn);chatIn(m);return;}
   if(m.t==='undoReq'){hostUndoRequest(p);return;}
   if(m.t==='undoAns'){undoAnswer(p,m.id,m.ok);return;}
   if(m.t==='bye'){hostDrop(conn,true);try{conn.close();}catch(e){}return;}
@@ -1240,6 +1343,7 @@ document.addEventListener('visibilitychange',()=>{
 function guestConnect(re){
   const c=NET.peer.connect('dps-'+NET.code,{reliable:true});NET.hostConn=c;NET.hostSeen=performance.now();
   c.on('iceStateChanged',st=>{if(st==='failed'||st==='disconnected'&&!c.open)NET.iceFailed=true;});
+  c.on('open',()=>setTimeout(()=>{if(NET.on){NET.langSent=performance.now();netChatOut({t:'lang',lang:myLang()});}},2500));
   c.on('open',()=>netSend(c,{t:'hello',name:NET.myName,token:NET.token,re,ver:APP_VER,av:{cam:!!camStream,mic:micLive()}}));
   c.on('data',d=>{let m;try{m=deser(d);}catch(e){return;}if(NET.hostConn===c){NET.hostSeen=performance.now();NET.retries=0;
     if(NET.lostSince){NET.lostSince=0;hideBanner();clearTimeout(NET.lostTimer);NET.lostTimer=null;toast(T('✓ Wieder verbunden'),2000);}joinRecv(m);}});
@@ -1295,7 +1399,7 @@ function joinRecv(m){
   if(m.t==='bye'){NET.retries=99;hostGone();return;}
   if(m.t==='note'){toast(m.txt);return;}
   if(m.t==='awayAsk'){awayAsk(m.p,m.name);return;}
-  if(m.t==='chat'||m.t==='react'){chatIn(m);return;}
+  if(m.t==='chat'||m.t==='react'||m.t==='say'||m.t==='lang'){chatIn(m);return;}
   if(m.t==='awayDone'){unask('away'+m.p);return;}
   if(m.t==='undoAsk'){undoAskLocal(m.id,m.p,m.n,ok=>netToHost({t:'undoAns',id:m.id,ok}));return;}
   if(m.t==='undoDone'){unask('undo'+m.id);toast(m.txt,4000);return;}
@@ -2273,6 +2377,7 @@ function drawNameTag(x,p,ai){
 function roundRect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
 function drawOverlays(p,t){
   const a=AV[p],x=avCanvas(p).getContext('2d'),now=performance.now();
+  drawSub(x,a);
   if(a.chat&&now<a.chat.until){   // Chat-Nachricht als Sprechblase unten im Fenster (bis 3 Zeilen)
     x.save();x.font='bold 15px sans-serif';
     const words=a.chat.text.split(/\s+/),lines=[];let cur='';
@@ -2963,7 +3068,7 @@ function setBarBottom(on){
   document.body.classList.toggle('barBottom',on);try{localStorage.setItem('dreiSchach.barBottom',on?'1':'0');}catch(e){}
   document.getElementById('chkBarBottom').checked=on;setTimeout(resizeCanvas,30);
 }
-function toggleAvMenu(){const m=document.getElementById('avMenu');m.classList.toggle('show');syncAvUI();}
+function toggleAvMenu(){const m=document.getElementById('avMenu');m.classList.toggle('show');syncAvUI();try{updTrUI();}catch(e){}}
 document.addEventListener('pointerdown',e=>{const m=document.getElementById('avMenu');
   if(m&&m.classList.contains('show')&&!m.contains(e.target)&&e.target.id!=='avBtn'&&!(e.target.closest&&e.target.closest('#controls')))m.classList.remove('show');});
 // ---------- eigene Kamera (Probelauf; im Multiplayer geht dasselbe Bild an die Mitspieler) ----------
