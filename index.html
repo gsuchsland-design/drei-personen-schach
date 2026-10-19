@@ -739,7 +739,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101920"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101921"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -771,7 +771,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 18:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 19:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -2104,8 +2104,12 @@ function rawMoves(coord,piece,player,state,epTarget,forAtk){
         }
       } else if(cr>4&&dr>0){
         const nr2=9-cr,nc2=9-cc;
+        // Schräg über die Mitte nur in die Sektion, an die die eigene Spalte grenzt – sonst würde z. B. ein Bauer
+        // auf D3 ein D5-Feld schlagen, das sein Feld gar nicht berührt.
+        const mine=crossRook(sec,col);
         if(nr2>=1&&nr2<=4&&nc2>=1&&nc2<=8)
           for(const ns of crossRook(sec,cc)){
+            if(!mine.includes(ns))continue;
             const c2=ns+IDX_ROW[nr2]+nc2;
             if(C2F[c2]){
               if(forAtk)out.add(c2);
