@@ -759,7 +759,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101925"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101926"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -791,7 +791,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 22:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 23:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -5405,22 +5405,27 @@ function analyseGame(){
     if(!ANA||ANA.R!==REPLAY){ANA=null;return;}
     const t0=performance.now();
     try{
-      while(ANA.i<n&&performance.now()-t0<40){
+      while(ANA.i<n&&performance.now()-t0<60){
         const i=ANA.i++,e=log[i];
         if(e.timeout||!e.from)continue;
         const pos=varPosition(i);
         gameState=pos.gs;movedPieces=pos.mp;epTarget=pos.ep;turnIdx=pos.ti<0?TURN_ORDER.indexOf(e.player):pos.ti;moveLog=log.slice(0,i);
         const p=e.player,moves=allLegalMoves(p);if(!moves.length)continue;
-        let best=null,bv=-1e9,pv=null;
+        let best=null,bv=-1e9,bv2=-1e9,pv=null;
         for(const m of moves){
           const ns=m.castle?applyCastle(gameState,m.from,m.castle):applyMove(gameState,m.from,m.to,epTarget);
           const v=anaClamp(evalAfter(p,ns,m));
-          if(v>bv){bv=v;best={m,pc:gameState[m.from].piece,cap:gameState[m.to]?gameState[m.to].piece:null};}
+          if(v>bv){bv2=bv;bv=v;best={m,pc:gameState[m.from].piece,cap:gameState[m.to]?gameState[m.to].piece:null};}else if(v>bv2)bv2=v;
           if(m.from===e.from&&m.to===e.to)pv=v;
         }
         if(pv==null)continue;
         const loss=Math.max(0,bv-pv);
         res[i]={p,loss,cls:(ANA_CLASS.find(c=>loss>=c[0])||[])[1]||'',best:loss>=0.6?best:null,check:!!e.mark};
+        // Fair Play: stimmt der Zug mit dem Zug des starken Computers überein? (nur bei nicht eindeutigen Stellungen)
+        if(!isAIPlayer(p)&&moves.length>=3&&bv-bv2<1.5){
+          let sx=(i+1)*2654435761>>>0;const RR=Math.random;Math.random=()=>{sx=(sx*1664525+1013904223)>>>0;return sx/4294967296;};
+          try{const em=aiChoose(p,'hard');res[i].eng=!!em&&em.from===e.from&&em.to===e.to;}finally{Math.random=RR;}
+        }
       }
     }finally{   // nach jedem Häppchen wieder die nachgespielte Stellung herstellen
       AIW=savedW;setFull(R.real);
@@ -5520,6 +5525,9 @@ function anaRender(){
     if(s.fastN>=5&&s.slowN>=5&&s.fastErr/s.fastN>s.slowErr/s.slowN*1.8+0.05)traits.push(T('schnelle Züge sind deutlich fehleranfälliger'));
     if(s.caps===0&&s.moves>=15)traits.push(T('sehr vorsichtig: hat nichts geschlagen'));
     if(traits.length)lines.push('<b>'+T('Auffällig:')+'</b> '+traits.join('; '));
+    if(!isAIPlayer(p)){const ev=res.filter(r=>r&&r.p===p&&r.eng!==undefined),hit=ev.filter(r=>r.eng).length;
+      if(ev.length>=8){const q=Math.round(100*hit/ev.length);
+        lines.push(T('Übereinstimmung mit dem starken Computer: {0} % (bei {1} nicht eindeutigen Zügen)',[q,ev.length])+(ev.length>=15&&q>=70?' – <b class="cls-blunder">'+T('auffällig hoch')+'</b>':''));}}
     h+=`<div class="anaCard" style="border-color:${PCOLOR[p]}"><b style="color:${PCOLOR[p]}">${esc(anaName(p))}</b>${isAIPlayer(p)?' 🤖':''}<ul>${lines.map(l=>`<li>${l}</li>`).join('')}</ul></div>`;
   }
   h+='</div>';
@@ -5550,6 +5558,7 @@ function anaRender(){
         (k.r.best?` · ${T('besser: {0}',[esc(mvShort(k.r.best.m,k.r.best.pc))+(k.r.best.cap?' ×'+PIECES[k.r.best.cap]:'')])}`:'')+`</li>`;}
     h+='</ul>';}
   else h+=`<p class="anaNote">${T('Keine groben Fehler gefunden.')}</p>`;
+  h+=`<p class="anaNote">${T('Fair Play: Menschen stimmen bei nicht eindeutigen Zügen meist zu deutlich unter 50 % mit dem starken Computer überein. Sehr hohe Werte über viele Züge können auf Hilfe von außen hindeuten – ein Hinweis, kein Beweis.')}</p>`;
   h+=`<p class="anaNote">${T('Bewertet wird mit der Stellungsbewertung des Computers (eine Ebene tief, bei drei Spielern gibt es keinen objektiv besten Zug). Die Angaben sind Hinweise, keine Urteile.')}</p>`;
   document.getElementById('anaBody').innerHTML=h;
 }
