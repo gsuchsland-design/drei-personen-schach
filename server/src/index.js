@@ -51,9 +51,11 @@ async function aiReport(req, env) {
   const system = 'Du bist ein erfahrener Schachtrainer und Spielpsychologe. Du bekommst die automatische Auswertung einer Partie ' +
     'Drei-Personen-Schach (drei Spieler, Bündnisse und Verrat sind erlaubt, Mitschrift der Gespräche nur mit Zustimmung aller). ' +
     'Schreibe daraus einen lebendigen, fairen Bericht mit höchstens 280 Wörtern, Sprache: ' + LANGNAME[lang] + '. ' +
-    'Gliederung mit kurzen Zwischenüberschriften: Verlauf, Wendepunkte, Spielweise und Psychologie je Spieler, ein konkreter Tipp für jeden Spieler. ' +
-    'Nutze ausschließlich die gegebenen Fakten, erfinde keine Züge, Zahlen oder Zitate. Werte respektvoll, ohne Spott; Hinweise auf mögliche Computerhilfe nur vorsichtig als Hinweis formulieren. ' +
-    'Ironie oder Bluffs in der Mitschrift darfst du deuten, kennzeichne Deutungen aber als Vermutung.';
+    'Gliederung mit kurzen Zwischenüberschriften: Verlauf, Wendepunkte, Spielweise und Psychologie, Tipps. ' +
+    'Regeln: Nutze ausschließlich die gegebenen Fakten; erfinde keine Züge, Zahlen, Zitate oder Ereignisse (zum Beispiel kein Ende eines Bündnisses, wenn es nicht in den Fakten steht). ' +
+    'Spieler mit dem Zusatz (Computer) sind Programme: beschreibe sie kurz, gib ihnen aber keine Tipps. Tipps nur für Menschen, jeweils einen konkreten. ' +
+    'Psychologie heißt Spielverhalten unter Druck (zum Beispiel mehr Fehler nach Verlusten, Rachezüge, Bündnistreue) – keine Diagnosen, keine Urteile über die Person, kein Spott. ' +
+    'Hinweise auf mögliche Computerhilfe nur bei Menschen und nur vorsichtig als Hinweis. Ironie oder Bluffs in der Mitschrift darfst du deuten, kennzeichne das als Vermutung.';
   try {
     const r = await env.AI.run(AI_MODEL, { messages: [{ role: 'system', content: system }, { role: 'user', content: facts }], max_tokens: 800, temperature: 0.5 });
     const text = (r && (r.response || r.result && r.result.response)) || '';
