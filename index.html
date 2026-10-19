@@ -258,9 +258,10 @@ body.barBottom #selfView { bottom:50px; }
   #rulesBox { margin:6px; padding:44px 12px 12px; } #rulesText { font-size:13px; }
   body.replay #replayBar { display:grid; grid-template-columns:repeat(6,1fr); width:96vw; bottom:6px; padding:5px 6px; gap:4px; }
   #replayBar button { padding:5px 2px; min-width:0; } #rpTitle { display:none; }
-  #rpPos { grid-column:span 2; grid-row:2; font-size:12px; } #rpExport { grid-column:span 2; grid-row:2; font-size:12px !important; } #rpExit { grid-column:span 2; grid-row:2; font-size:12px !important; }
+  #rpPos { grid-column:span 2; grid-row:2; font-size:12px; } #rpAna, #rpExport { grid-column:span 2; grid-row:2; font-size:12px !important; } #rpExit { grid-column:1 / -1; grid-row:5; font-size:12px !important; }
+  #rpPos { grid-column:1 / -1; grid-row:2; } #rpAna, #rpExport { grid-row:3; grid-column:span 3; }
   #rpFirst { grid-column:1 / span 1; } #rpLast { grid-column:span 2; }
-  #rpVarUndo, #rpVarAI, #rpVarEnd { grid-row:3; grid-column:span 2; font-size:12px !important; }
+  #rpVarUndo, #rpVarAI, #rpVarEnd { grid-row:4; grid-column:span 2; font-size:12px !important; }
   body.variant #replayBar .rpV { display:block; }
   #setupBox { min-width:0; width:92vw; padding:14px; }
 }
@@ -280,6 +281,22 @@ body.replay #viewBar { display:none !important; }
 #logList li:hover { background:rgba(255,210,63,.12); }
 #logList li.rpCur { background:#5a4a14 !important; color:#fff; }
 #logList li.rpAfter { opacity:.35; }
+#anaModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:240; overflow:auto; }
+#anaModal.show { display:block; }
+#anaBox { max-width:900px; margin:24px auto; background:#222; border:2px solid #d4a72c; border-radius:12px; padding:16px 20px; color:#ddd; position:relative; font-size:14px; line-height:1.45; }
+#anaBox h3 { color:#ffd27a; font-size:18px; margin-bottom:8px; }
+#anaBox h4 { color:#ffd23f; font-size:15px; margin:14px 0 6px; }
+#anaClose { position:absolute; top:10px; right:12px; font-size:20px; background:none; border:none; color:#ccc; cursor:pointer; }
+.anaBar { height:8px; background:#333; border-radius:4px; overflow:hidden; } .anaBar i { display:block; height:100%; background:#d4a72c; }
+.anaChart { width:100%; height:auto; background:#1a1a1a; border-radius:8px; }
+.anaGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; }
+.anaCard { border:1px solid; border-left-width:4px; border-radius:8px; padding:8px 10px; background:#262626; }
+.anaCard ul, .anaList { margin:4px 0 0 18px; } .anaCard li, .anaList li { margin:2px 0; }
+.anaList a { color:#8fb6ff; cursor:pointer; text-decoration:underline; }
+.anaNote { color:#aaa; font-size:12.5px; margin:8px 0; }
+.cls-blunder { color:#ff6b5b; font-weight:bold; } .cls-mistake { color:#ffb347; } .cls-inacc { color:#e6d36b; }
+#rpAna { font-size:13px !important; }
+@media (max-width:700px){ #anaBox { margin:6px; padding:12px; font-size:13px; } }
 #recBadge { display:none; font-size:13px; padding:0 6px; border:1px solid #c33; border-radius:10px; background:rgba(160,30,30,.35); flex:none; }
 body.recOn #recBadge { display:inline-block; }
 .lbRecRow { font-size:13px; margin-top:10px !important; }
@@ -334,6 +351,10 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   #setupBox { max-height:96vh; }
   .netBox { max-height:96vh; }
   #lobbyModal .netBox, #fernModal .netBox { max-height:calc(100vh - 50px); }
+}
+@media (max-width:700px) and (orientation:portrait){
+  body.replay #replayBar { display:grid; grid-template-columns:repeat(6,1fr); width:96vw; }
+  body:not(.variant) #rpVarAI { grid-column:1 / -1; }
 }
 </style>
 </head><body>
@@ -621,6 +642,11 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <button class="lbLeave" onclick="location.href=location.pathname">Nein danke, lieber allein spielen</button>
   <div class="lbHint" style="text-align:center">Bild und Ton gehen nur an deine Mitspieler und werden nicht gespeichert. Mehr unter <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a>.<br>© 2026 Guido Suchsland</div>
 </div></div>
+<div id="anaModal" onclick="if(event.target===this)anaClose()"><div id="anaBox">
+  <button id="anaClose" onclick="anaClose()" title="Schließen">✕</button>
+  <h3>🔬 Spiel analysieren</h3>
+  <div id="anaBody"></div>
+</div></div>
 <div id="replayBar">
   <span id="rpTitle">📼 Nachspielen</span>
   <button id="rpFirst" onclick="replayStop();replayGo(0)" title="Zum Anfang">⏮</button>
@@ -632,6 +658,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <button id="rpVarUndo" class="rpV" onclick="undoMove()" title="Variantenzug zurücknehmen">↶</button>
   <button id="rpVarAI" onclick="varAI()" title="Der Computer (stark) zieht für den Spieler am Zug">🤖 Computerzug</button>
   <button id="rpVarEnd" class="rpV" onclick="varDiscard()">✕ Variante verwerfen</button>
+  <button id="rpAna" onclick="analyseGame()" title="Partie auswerten: Fehler, Verhalten, Gesagtes und Getanes">🔬 Analyse</button>
   <button id="rpExport" onclick="exportMoves()" title="Zugliste teilen oder speichern">📄 Zugliste</button>
   <button id="rpExit" onclick="replayExit()">✕ Zurück zum Spiel</button>
 </div>
@@ -653,7 +680,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101917"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101918"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -685,7 +712,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-19 16:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-19 17:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -1416,7 +1443,7 @@ function netStart(){
 }
 function netSyncData(){
   replayExit();
-  return{talk:TALK,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,tc,clock,timeUsed,flagged,
+  return{talk:TALK,dlog:DIPLO.log,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,tc,clock,timeUsed,flagged,
     moveLeft,aiPlayers,eliminated,status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
 // ---------- Gast ----------
@@ -1586,7 +1613,7 @@ function camFix(){   // eigenes Kamerabild gehört zum eigenen Platz
 }
 function netApplySync(d){
   replayExit();
-  if(d.talk)TALK=d.talk;
+  if(d.talk)TALK=d.talk;if(d.dlog)DIPLO.log=d.dlog;
   cancelAI();moveAnim=null;kicks=[];NET.q=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
   gameOver=d.gameOver;turnNote=d.turnNote||'';capturedBy=d.capturedBy;moveLog=d.moveLog||[];history=[];
@@ -2298,9 +2325,10 @@ function endGame(winner,loser){
 // Spielende: Meldung in der Leiste (kein Fenster), dazu „Revanche“ bzw. „Noch eine Partie“
 function gameEndPrompt(text){
   if(REPLAY){toast(text,4000);return;}   // Ende in einer Variante: nur Hinweis, keine Revanche
-  if(FERN.on){FERN.endShown=true;ask('end',text,[{label:'OK',fn:()=>{}}]);return;}
-  if(NET.on&&!NET.host){ask('end',text,[{label:'OK',fn:()=>{}}]);if(!NET.spec)setTimeout(()=>toast(T('Der Gastgeber kann eine Revanche starten.'),5000),1500);return;}
-  ask('end',text,[{label:NET.on?T('🔄 Revanche'):T('🔄 Noch eine Partie'),fn:rematch},{label:T('Schließen'),bg:'#555',fn:()=>{}}]);
+  const an={label:T('🔬 Analysieren'),bg:'#7a6420',fn:()=>setTimeout(analyseGame,50)};
+  if(FERN.on){FERN.endShown=true;ask('end',text,[an,{label:'OK',fn:()=>{}}]);return;}
+  if(NET.on&&!NET.host){ask('end',text,[an,{label:'OK',fn:()=>{}}]);if(!NET.spec)setTimeout(()=>toast(T('Der Gastgeber kann eine Revanche starten.'),5000),1500);return;}
+  ask('end',text,[{label:NET.on?T('🔄 Revanche'):T('🔄 Noch eine Partie'),fn:rematch},an,{label:T('Schließen'),bg:'#555',fn:()=>{}}]);
 }
 function rematch(){
   unask('end');
@@ -3472,13 +3500,13 @@ function ser(v){return JSON.stringify(v,(k,x)=>x instanceof Set?{__set:[...x]}:x
 function deser(t){return JSON.parse(t,(k,x)=>x&&typeof x==='object'&&Array.isArray(x.__set)?new Set(x.__set):x);}
 function gameData(){
   replayExit();
-  return{v:1,saved:new Date().toISOString(),talk:TALK,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
+  return{v:1,saved:new Date().toISOString(),talk:TALK,dlog:DIPLO.log,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
     capturedBy,moveLog,history,tc,clock,timeUsed,flagged,moveLeft,aiPlayers,rotation,
     status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
 function applyGameData(d){
   replayExit();
-  TALK=d.talk||[];
+  TALK=d.talk||[];DIPLO.log=d.dlog||[];
   resetEmos();
   cancelAI();moveAnim=null;kicks=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
@@ -3659,64 +3687,68 @@ function allLegalMoves(p){
   return out;
 }
 // Bewertung einer Stellung aus Sicht von p (nach dem eigenen Zug, bevor die Gegner ziehen)
+// Gewichte der Stellungsbewertung (durch Selbstspiel abgestimmt, siehe tools/tune-ai.md)
+var AIW={opp:0.5,lead:0,chk:0.3,l1:0.9,l2:0.45,pchk:0.4,p0:0.15,p1:0.6,castle:0.35,kmove:0.25,dev:0.15,pOwn:0.03,pX:0.12,pXr:0.04,earlyQ:0.15,N:3,B:3,R:4,Q:6};
+function evV(pc){return pc==="P"?1:pc==="K"?0:AIW[pc];}
+function evMat(ns,q){const W=AIW;let v=0;for(const pd of Object.values(ns))if(pd.player===q)v+=pd.piece==='P'?1:pd.piece==='K'?0:W[pd.piece];return v;}
+function evOpp(ns,opp){   // Material der Gegner; mit lead>0 zählt der Stärkere mehr (den Führenden bremsen)
+  const a=evMat(ns,opp[0]),b=evMat(ns,opp[1]),W=AIW;return a>=b?(W.opp+W.lead)*a+(W.opp-W.lead)*b:(W.opp-W.lead)*a+(W.opp+W.lead)*b;}
 function evalAfter(p,ns,mv){
-  const opp=TURN_ORDER.filter(x=>x!==p);
-  const mat=q=>{let v=0;for(const pd of Object.values(ns))if(pd.player===q)v+=VALUE[pd.piece];return v;};
-  let e=mat(p)-0.5*(mat(opp[0])+mat(opp[1]));
+  const opp=TURN_ORDER.filter(x=>x!==p),W=AIW;
+  let e=evMat(ns,p)-evOpp(ns,opp);
   // Matt / Schach
   const nxt=TURN_ORDER[(TURN_ORDER.indexOf(p)+1)%3],thd=TURN_ORDER[(TURN_ORDER.indexOf(p)+2)%3];
-  if(isInCheck(nxt,ns)){e+=0.3;if(!hasAnyMoveS(nxt,ns,null))return mateWinner(nxt,p,ns)===p?1e4:-1e4;}
-  if(isInCheck(thd,ns)){e+=0.3;if(!hasAnyMoveS(thd,ns,null))e+=mateWinner(thd,p,ns)===p?40:-40;}
+  if(isInCheck(nxt,ns)){e+=W.chk;if(!hasAnyMoveS(nxt,ns,null))return mateWinner(nxt,p,ns)===p?1e4:-1e4;}
+  if(isInCheck(thd,ns)){e+=W.chk;if(!hasAnyMoveS(thd,ns,null))e+=mateWinner(thd,p,ns)===p?40:-40;}
   // Bedrohungen: Angriffs- und Deckungskarten
   const att={},def=new Set();
   for(const[c,pd]of Object.entries(ns)){
     const sq=rawMoves(c,pd.piece,pd.player,ns,null,true);
     if(pd.player===p){for(const t of sq)def.add(t);}
-    else for(const t of sq){const v=VALUE[pd.piece]||10;if(att[t]===undefined||v<att[t])att[t]=v;}
+    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t])att[t]=v;}
   }
   const losses=[];
   for(const[c,pd]of Object.entries(ns)){
     if(pd.player!==p||pd.piece==='K'||att[c]===undefined)continue;
-    const v=VALUE[pd.piece];
+    const v=evV(pd.piece);
     losses.push(def.has(c)?Math.max(0,v-att[c]):v);
   }
   losses.sort((a,b)=>b-a);
-  e-=(losses[0]||0)*0.9+(losses[1]||0)*0.45;   // zwei Gegner können je einmal schlagen
+  e-=(losses[0]||0)*W.l1+(losses[1]||0)*W.l2;   // zwei Gegner können je einmal schlagen
   // eigene Angriffe auf ungedeckte Gegnerfiguren (kleiner Bonus)
   // Stellung: Entwicklung, Vormarsch, Rochade
   if(!mv)return e;
   const pd=ns[mv.castle?mv.castle.toCoord:mv.to];
-  if(mv.castle)e+=0.35;
+  if(mv.castle)e+=W.castle;
   else if(pd){
     const from=gameState[mv.from];
-    if(from.piece==='K')e-=0.25;
-    if((from.piece==='N'||from.piece==='B')&&mv.from[1]==='A')e+=0.15;
-    if(from.piece==='P'){const ownSec=mv.to[0]===p;const r='ABCD'.indexOf(mv.to[1]);e+=ownSec?0.03*r:0.12+0.04*(3-r);}
-    if(from.piece==='Q'&&moveLog.length<9)e-=0.15;
+    if(from.piece==='K')e-=W.kmove;
+    if((from.piece==='N'||from.piece==='B')&&mv.from[1]==='A')e+=W.dev;
+    if(from.piece==='P'){const ownSec=mv.to[0]===p;const r='ABCD'.indexOf(mv.to[1]);e+=ownSec?W.pOwn*r:W.pX+W.pXr*(3-r);}
+    if(from.piece==='Q'&&moveLog.length<9)e-=W.earlyQ;
   }
   return e;
 }
 // Stellungsbewertung, wenn p selbst am Zug ist (Ende der Vorausberechnung)
 function evalPos(p,ns){
   if(isInCheck(p,ns)&&!hasAnyMoveS(p,ns,null))return -1e4;
-  const opp=TURN_ORDER.filter(x=>x!==p);
-  const mat=q=>{let v=0;for(const pd of Object.values(ns))if(pd.player===q)v+=VALUE[pd.piece];return v;};
-  let e=mat(p)-0.5*(mat(opp[0])+mat(opp[1]));
-  if(isInCheck(p,ns))e-=0.4;
+  const opp=TURN_ORDER.filter(x=>x!==p),W=AIW;
+  let e=evMat(ns,p)-evOpp(ns,opp);
+  if(isInCheck(p,ns))e-=W.pchk;
   // eigene bedrohte Figuren (am Zug kann man nur eine retten)
   const att={},def=new Set();
   for(const[c,pd]of Object.entries(ns)){
     const sq=rawMoves(c,pd.piece,pd.player,ns,null,true);
     if(pd.player===p){for(const t of sq)def.add(t);}
-    else for(const t of sq){const v=VALUE[pd.piece]||10;if(att[t]===undefined||v<att[t])att[t]=v;}
+    else for(const t of sq){const v=evV(pd.piece)||10;if(att[t]===undefined||v<att[t])att[t]=v;}
   }
   const losses=[];
   for(const[c,pd]of Object.entries(ns)){
     if(pd.player!==p||pd.piece==='K'||att[c]===undefined)continue;
-    losses.push(def.has(c)?Math.max(0,VALUE[pd.piece]-att[c]):VALUE[pd.piece]);
+    losses.push(def.has(c)?Math.max(0,evV(pd.piece)-att[c]):evV(pd.piece));
   }
   losses.sort((a,b)=>b-a);
-  return e-(losses[1]||0)*0.6-(losses[0]||0)*0.15;
+  return e-(losses[1]||0)*W.p1-(losses[0]||0)*W.p0;
 }
 // beste Antwort eines Spielers in einer simulierten Stellung (eine Ebene, gierig)
 function bestReply(q,state){
@@ -4816,14 +4848,14 @@ const DLINES={   // Textbausteine: {0},{1} = Spielernamen
   noAlly:{B:'Mit mir selbst? Hihi, nein!',G:'Grumbo greift sich nicht selbst an.',R:'Gegen mich selbst? Sicher nicht!'},
 };
 // damit die Übersetzungsdateien die Bausteine finden (T() bekommt genau diese Texte)
-const DIPLO={on:true,pacts:[],offers:[],grudge:{B:{},G:{},R:{}},betray:{},lastTalk:-9,said:0};
+const DIPLO={on:true,pacts:[],offers:[],grudge:{B:{},G:{},R:{}},betray:{},lastTalk:-9,said:0,log:[]};
 try{DIPLO.on=localStorage.getItem('dreiSchach.diplo')!=='0';}catch(e){}
 let AIVOICE=true;try{AIVOICE=localStorage.getItem('dreiSchach.aivoice')!=='0';}catch(e){}
 function setDiplo(on){DIPLO.on=!!on;try{localStorage.setItem('dreiSchach.diplo',on?'1':'0');}catch(e){}diploUI();}
 function setAIVoice(on){AIVOICE=!!on;try{localStorage.setItem('dreiSchach.aivoice',on?'1':'0');}catch(e){}if(!on&&window.speechSynthesis)try{speechSynthesis.cancel();}catch(e){}diploUI();}
 function diploUI(){for(const id of['chkDiplo','avDiplo']){const c=document.getElementById(id);if(c)c.checked=DIPLO.on;}
   for(const id of['chkAIVoice','avAIVoice']){const c=document.getElementById(id);if(c)c.checked=AIVOICE;}}
-function diploReset(){DIPLO.pacts=[];DIPLO.offers=[];DIPLO.grudge={B:{},G:{},R:{}};DIPLO.betray={};DIPLO.lastTalk=-9;DIPLO.said=0;}
+function diploReset(){DIPLO.log=[];DIPLO.pacts=[];DIPLO.offers=[];DIPLO.grudge={B:{},G:{},R:{}};DIPLO.betray={};DIPLO.lastTalk=-9;DIPLO.said=0;}
 function diploBoss(){return DIPLO.on&&!FERN.on&&!REPLAY&&(!NET.on||NET.host)&&TURN_ORDER.some(p=>aiPlayers[p]);}
 function nMoves(){return moveLog.length;}
 function seatName(p){return isAIPlayer(p)?MONSTERS[p].name:(netName(p)||PNAMES[p]);}
@@ -4853,6 +4885,7 @@ function leaderSeat(){   // wer deutlich führt (Material + Geschlagenes)
 function makePact(a,b,target){
   DIPLO.pacts=DIPLO.pacts.filter(x=>x.a!==a&&x.b!==a&&x.a!==b&&x.b!==b);
   DIPLO.pacts.push({a,b,target,since:nMoves(),until:nMoves()+9+Math.floor(Math.random()*4)});
+  DIPLO.log.push({n:nMoves(),k:'pact',a,b,t:target});
 }
 function breakPact(x){DIPLO.pacts=DIPLO.pacts.filter(y=>y!==x);}
 // Bewertungszuschlag für einen Computerzug (in Materialeinheiten)
@@ -4875,7 +4908,7 @@ function diploTurn(p){
   const n=nMoves(),P=DPERS[p];
   DIPLO.betray[p]=false;
   // abgelaufene Bündnisse
-  for(const x of DIPLO.pacts.slice())if(n>=x.until){breakPact(x);const sp=x.a===p||!isAIPlayer(x.b)?x.a:x.b;aiSay(sp,'pactEnd',[sp===x.a?x.b:x.a]);}
+  for(const x of DIPLO.pacts.slice())if(n>=x.until){breakPact(x);DIPLO.log.push({n,k:'expire',a:x.a,b:x.b});const sp=x.a===p||!isAIPlayer(x.b)?x.a:x.b;aiSay(sp,'pactEnd',[sp===x.a?x.b:x.a]);}
   DIPLO.offers=DIPLO.offers.filter(o=>n-o.at<=4);
   const pact=pactOf(p);
   if(pact){if(Math.random()<P.betray)DIPLO.betray[p]=true;return;}
@@ -4889,7 +4922,7 @@ function diploTurn(p){
       aiSay(p,'propose',[partner,L]);
       setTimeout(()=>{if(gameOver||!diploBoss())return;
         const yes=Math.random()<DPERS[partner].accept&&(DIPLO.grudge[partner][p]||0)<3;
-        if(yes){makePact(p,partner,L);aiSay(partner,'accept',[p,L]);}else aiSay(partner,'decline',[p]);},1600);
+        if(yes){makePact(p,partner,L);aiSay(partner,'accept',[p,L]);}else{DIPLO.log.push({n:nMoves(),k:'decline',a:partner,b:p});aiSay(partner,'decline',[p]);}},1600);
     }else{
       DIPLO.offers.push({id,from:p,to:partner,target:L,at:n});
       aiSay(p,'propose',[partner,L],{offer:{id,to:partner}});
@@ -4905,7 +4938,7 @@ function diploAfterMove(e){
   DIPLO.grudge[victim][mover]=(DIPLO.grudge[victim][mover]||0)+val/3;
   const x=pactOf(mover);
   if(x&&allyOf(mover)===victim){   // Bündnispartner geschlagen = Verrat
-    breakPact(x);
+    breakPact(x);DIPLO.log.push({n:nMoves(),k:'betray',a:mover,b:victim});
     if(isAIPlayer(mover)&&DIPLO.betray[mover])aiSay(mover,'betray',[victim]);
     if(isAIPlayer(victim)){DIPLO.grudge[victim][mover]+=3;setTimeout(()=>aiSay(victim,'betrayed',[mover]),isAIPlayer(mover)?1500:300);}
     return;
@@ -4934,7 +4967,7 @@ function diploHear(m){
   if(o&&o.to===from){
     const ok=m.ans?m.ans.ok:(DW.yes.test(text)?true:DW.no.test(text)?false:null);
     if(ok!==null){DIPLO.offers=DIPLO.offers.filter(x=>x!==o);
-      setTimeout(()=>{if(ok){makePact(o.from,from,o.target);aiSay(o.from,'accept',[from,o.target]);}else aiSay(o.from,'humanNo',[from]);},700);
+      setTimeout(()=>{if(ok){makePact(o.from,from,o.target);aiSay(o.from,'accept',[from,o.target]);}else{DIPLO.log.push({n:nMoves(),k:'decline',a:from,b:o.from});aiSay(o.from,'humanNo',[from]);}},700);
       return;}
   }
   // 2. eigener Vorschlag eines Menschen
@@ -4950,7 +4983,7 @@ function diploHear(m){
   setTimeout(()=>{if(gameOver||!diploBoss())return;
     const lead=leaderSeat(),sensible=target===lead||score(target)>=score(partner);
     const yes=!pactOf(partner)&&(DIPLO.grudge[partner][from]||0)<3&&Math.random()<DPERS[partner].accept*(sensible?1:0.45);
-    if(yes){makePact(partner,from,target);aiSay(partner,'accept',[from,target]);}else aiSay(partner,'decline',[from]);
+    if(yes){makePact(partner,from,target);aiSay(partner,'accept',[from,target]);}else{DIPLO.log.push({n:nMoves(),k:'decline',a:partner,b:from});aiSay(partner,'decline',[from]);}
   },900);
 }
 // Angebot an einen Menschen: Knöpfe auf seinem Gerät (allein am Gerät: hier)
@@ -4966,6 +4999,180 @@ function diploAnswer(o,ok){
   const text=ok?T('🤝 Einverstanden!'):T('✋ Nein danke.');
   if(NET.on)netChatOut({t:'chat',text,lang:myLang(),ans:{id:o.id,ok}});
   else{toast(`${PNAMES[o.to]}: ${text}`,2500);diploHear({p:o.to,text:'',ans:{id:o.id,ok}});}
+}
+
+// ================= Spiel analysieren =================
+// Bewertet jeden Zug mit der Bewertung des Computers (eine Ebene: alle möglichen Züge der Stellung im Vergleich),
+// erstellt ein Verhaltensprofil je Spieler und gleicht die Mitschrift mit den Zügen ab. Läuft in Häppchen,
+// damit die Seite bedienbar bleibt; die echte Partie wird dabei nicht verändert.
+var ANA=null;
+const ANA_CLASS=[[2.5,'blunder'],[1.2,'mistake'],[0.6,'inacc']];
+function anaClamp(v){return Math.max(-40,Math.min(40,v));}
+function mvShort(m,pc){return m?`${PIECES[pc]||''} ${m.from}–${m.to}`:'';}
+function analyseGame(){
+  if(!REPLAY){if(!moveLog.length){toast(T('Noch keine Züge zum Nachspielen.'),2500);return;}replayOpen();}
+  const R=REPLAY;if(!R)return;
+  if(R.var)varDiscard();
+  replayStop();
+  const log=R.real.moveLog,n=log.length,res=new Array(n).fill(null);
+  ANA={R,res,i:0,n,done:false};
+  anaOpen();anaProgress(0);
+  const savedW=AIW;
+  const step=()=>{
+    if(!ANA||ANA.R!==REPLAY){ANA=null;return;}
+    const t0=performance.now();
+    try{
+      while(ANA.i<n&&performance.now()-t0<40){
+        const i=ANA.i++,e=log[i];
+        if(e.timeout||!e.from)continue;
+        const pos=varPosition(i);
+        gameState=pos.gs;movedPieces=pos.mp;epTarget=pos.ep;turnIdx=pos.ti<0?TURN_ORDER.indexOf(e.player):pos.ti;moveLog=log.slice(0,i);
+        const p=e.player,moves=allLegalMoves(p);if(!moves.length)continue;
+        let best=null,bv=-1e9,pv=null;
+        for(const m of moves){
+          const ns=m.castle?applyCastle(gameState,m.from,m.castle):applyMove(gameState,m.from,m.to,epTarget);
+          const v=anaClamp(evalAfter(p,ns,m));
+          if(v>bv){bv=v;best={m,pc:gameState[m.from].piece,cap:gameState[m.to]?gameState[m.to].piece:null};}
+          if(m.from===e.from&&m.to===e.to)pv=v;
+        }
+        if(pv==null)continue;
+        const loss=Math.max(0,bv-pv);
+        res[i]={p,loss,cls:(ANA_CLASS.find(c=>loss>=c[0])||[])[1]||'',best:loss>=0.6?best:null,check:!!e.mark};
+      }
+    }finally{   // nach jedem Häppchen wieder die nachgespielte Stellung herstellen
+      AIW=savedW;setFull(R.real);
+      if(R.i<R.n){gameState=R.boards[R.i].gs;capturedBy=R.boards[R.i].cap;}
+      moveLog=R.real.moveLog.slice(0,R.i);paused=R.local?true:R.real.paused;}
+    anaProgress(ANA.i/n);
+    if(ANA.i<n)setTimeout(step,0);else{ANA.done=true;anaRender();}
+  };
+  setTimeout(step,30);
+}
+function anaOpen(){document.getElementById('anaModal').classList.add('show');}
+function anaClose(){document.getElementById('anaModal').classList.remove('show');}
+function anaProgress(f){document.getElementById('anaBody').innerHTML=`<p>${T('Analysiere die Partie … {0} %',[Math.round(f*100)])}</p><div class="anaBar"><i style="width:${Math.round(f*100)}%"></i></div>`;}
+function anaJump(i){anaClose();if(REPLAY){replayStop();replayGo(i);}}
+// Profil je Spieler aus Zügen, Bewertung und Mitschrift
+function anaStats(){
+  const R=ANA.R,log=R.real.moveLog,res=ANA.res,boards=R.boards,st={};
+  for(const p of TURN_ORDER)st[p]={moves:0,loss:0,good:0,blunder:0,mistake:0,inacc:0,ms:[],capOn:{B:0,G:0,R:0},chkOn:{B:0,G:0,R:0},
+    leadCaps:0,caps:0,revOpp:0,revHit:0,tiltLoss:0,tiltN:0,fastErr:0,fastN:0,slowErr:0,slowN:0};
+  const lastHurt={};   // wer hat mich zuletzt geschlagen (und wie viele eigene Züge her)
+  const big={};       // nach großem Verlust: Anzahl folgender Züge mit Beobachtung
+  const scoreAt=(i,q)=>{const b=boards[i];let v=0;for(const pd of Object.values(b.gs))if(pd.player===q)v+=VALUE[pd.piece];for(const c of b.cap[q])v+=VALUE[c.piece];return v;};
+  log.forEach((e,i)=>{
+    if(e.timeout)return;const p=e.player,s=st[p],r=res[i];
+    if(r){s.moves++;s.loss+=Math.min(r.loss,6);if(!r.cls)s.good++;else s[r.cls]++;
+      if(big[p]>0){s.tiltLoss+=Math.min(r.loss,6);s.tiltN++;big[p]--;}}
+    if(e.ms!=null){s.ms.push(e.ms);if(r){if(e.ms<4000){s.fastN++;if(r.cls==='blunder'||r.cls==='mistake')s.fastErr++;}else{s.slowN++;if(r.cls==='blunder'||r.cls==='mistake')s.slowErr++;}}}
+    if(e.cap&&e.capFrom){s.capOn[e.capFrom]++;s.caps++;
+      const others=TURN_ORDER.filter(q=>q!==p),lead=others.reduce((a,q)=>scoreAt(i,q)>scoreAt(i,a)?q:a,others[0]);
+      if(scoreAt(i,lead)>scoreAt(i,others.find(q=>q!==lead))&&lead===e.capFrom)s.leadCaps++;
+      if(lastHurt[p]){s.revOpp++;if(lastHurt[p]===e.capFrom)s.revHit++;lastHurt[p]=null;}
+      const v=VALUE[e.cap]||0;lastHurt[e.capFrom]=p;if(v>=3)big[e.capFrom]=2;}
+    if(e.mark==='+'||e.mark==='#'){const nb=boards[i+1];if(nb)for(const q of TURN_ORDER)if(q!==p&&isInCheck(q,nb.gs))s.chkOn[q]++;}
+  });
+  return st;
+}
+// Mitschrift: angekündigte Angriffe mit den folgenden Zügen vergleichen
+function anaTalk(){
+  const log=ANA.R.real.moveLog,out=[];
+  for(const x of TALK){
+    if(!x.p||!DW.attack.test(x.text))continue;
+    const named=seatsIn(x.text).filter(q=>q!==x.p);
+    if(!named.length)continue;
+    const target=named.length>1&&isAIPlayer(named[0])?named[1]:named[0];   // „Grumbo, greif Rot an“ → Ziel Rot
+    let own=0,onT=0,onO=0;
+    for(let i=x.n;i<log.length&&own<6;i++){const e=log[i];if(e.player!==x.p||e.timeout)continue;own++;
+      if(e.cap&&e.capFrom)(e.capFrom===target?onT++:onO++);
+      const nb=ANA.R.boards[i+1];if(nb&&e.mark){if(isInCheck(target,nb.gs))onT++;else onO++;}}
+    const verdict=own===0?'none':onT&&onT>=onO?'kept':onO>onT?'bluff':'words';
+    out.push({x,target,verdict,n:x.n});
+  }
+  return out;
+}
+// stille Bündnisse: zwei schonen sich gegenseitig und greifen beide den Dritten an
+function anaSilent(st){
+  const out=[];
+  for(const[a,b]of[['B','G'],['B','R'],['G','R']]){
+    const c=TURN_ORDER.find(q=>q!==a&&q!==b);
+    const mutual=st[a].capOn[b]+st[b].capOn[a],third=st[a].capOn[c]+st[b].capOn[c];
+    if(third>=4&&mutual<=Math.floor(third/4)&&st[a].capOn[c]>=2&&st[b].capOn[c]>=2)out.push({a,b,c,mutual,third});
+  }
+  return out;
+}
+function anaName(p){return seatName(p);}
+function anaChart(){
+  const R=ANA.R,n=R.n,W=560,H=150,pad=24;if(n<2)return'';
+  const sc=R.boards.map(b=>{const o={};for(const q of TURN_ORDER){let v=0;for(const pd of Object.values(b.gs))if(pd.player===q)v+=VALUE[pd.piece];for(const c of b.cap[q])v+=VALUE[c.piece];o[q]=v;}return o;});
+  const mx=Math.max(...sc.flatMap(o=>Object.values(o))),mn=Math.min(...sc.flatMap(o=>Object.values(o)));
+  const X=i=>pad+(W-pad*2)*i/n,Y=v=>H-pad-(H-pad*2)*(v-mn)/Math.max(1,mx-mn);
+  let svg=`<svg class="anaChart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${T('Punkte im Verlauf der Partie')}">`;
+  svg+=`<line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="#555"/>`;
+  for(const q of TURN_ORDER)svg+=`<polyline fill="none" stroke="${PCOLOR[q]}" stroke-width="2" points="${sc.map((o,i)=>X(i).toFixed(1)+','+Y(o[q]).toFixed(1)).join(' ')}"/>`;
+  ANA.res.forEach((r,i)=>{if(r&&r.cls==='blunder')svg+=`<circle cx="${X(i+1).toFixed(1)}" cy="${Y(sc[i+1][r.p]).toFixed(1)}" r="4" fill="${PCOLOR[r.p]}" stroke="#fff"><title>${T('Patzer')} ${i+1}.</title></circle>`;});
+  svg+=`<text x="${pad}" y="14" fill="#999" font-size="11">${T('Punkte (Material + Geschlagenes)')} · ● = ${T('Patzer')}</text>`;
+  svg+=`<text x="${W-pad}" y="${H-6}" fill="#999" font-size="11" text-anchor="end">${T('Zug')} ${n}</text></svg>`;
+  return svg;
+}
+function anaRender(){
+  const st=anaStats(),log=ANA.R.real.moveLog,res=ANA.res;
+  const pct=(a,b)=>b?Math.round(100*a/b):0,sec=ms=>ms.length?Math.round(ms.reduce((a,b)=>a+b,0)/ms.length/1000):null;
+  let h=anaChart();
+  h+=`<h4>${T('Spieler im Vergleich')}</h4><div class="anaGrid">`;
+  for(const p of TURN_ORDER){const s=st[p];if(!s.moves&&!s.caps)continue;
+    const acc=pct(s.good,s.moves),avg=s.moves?s.loss/s.moves:0;
+    const lines=[];
+    lines.push(T('Genauigkeit: {0} % der Züge ohne Fehler',[acc]));
+    lines.push(T('Patzer {0} · Fehler {1} · Ungenauigkeiten {2}',[s.blunder,s.mistake,s.inacc]));
+    const sm=sec(s.ms);if(sm!=null)lines.push(T('Bedenkzeit im Schnitt: {0} s',[sm]));
+    // Angriffsziele
+    const tg=TURN_ORDER.filter(q=>q!==p).map(q=>({q,c:s.capOn[q],k:s.chkOn[q]}));
+    lines.push(T('Geschlagen bei: {0}',[tg.map(t=>`${anaName(t.q)} ${t.c}`).join(' · ')])+(tg.some(t=>t.k)?' · '+T('Schach gegen: {0}',[tg.map(t=>`${anaName(t.q)} ${t.k}`).join(' · ')]):''));
+    const traits=[];
+    if(s.caps>=4&&s.leadCaps/s.caps>=0.6)traits.push(T('greift bevorzugt den Führenden an'));
+    if(s.revOpp>=3&&s.revHit/s.revOpp>=0.6)traits.push(T('nachtragend: schlägt oft zurück, wer ihn zuletzt geschlagen hat'));
+    if(s.tiltN>=3&&s.tiltLoss/s.tiltN>avg*1.6+0.3)traits.push(T('nach eigenen Verlusten deutlich unruhiger (mehr Fehler)'));
+    else if(s.tiltN>=3&&s.tiltLoss/s.tiltN<avg*0.7)traits.push(T('bleibt nach Verlusten ruhig'));
+    if(s.fastN>=5&&s.slowN>=5&&s.fastErr/s.fastN>s.slowErr/s.slowN*1.8+0.05)traits.push(T('schnelle Züge sind deutlich fehleranfälliger'));
+    if(s.caps===0&&s.moves>=15)traits.push(T('sehr vorsichtig: hat nichts geschlagen'));
+    if(traits.length)lines.push('<b>'+T('Auffällig:')+'</b> '+traits.join('; '));
+    h+=`<div class="anaCard" style="border-color:${PCOLOR[p]}"><b style="color:${PCOLOR[p]}">${esc(anaName(p))}</b>${isAIPlayer(p)?' 🤖':''}<ul>${lines.map(l=>`<li>${l}</li>`).join('')}</ul></div>`;
+  }
+  h+='</div>';
+  // stille Bündnisse
+  const sil=anaSilent(st);
+  for(const x of sil)h+=`<p class="anaNote">🤝 ${T('Stilles Bündnis? {0} und {1} haben sich weitgehend geschont ({2}× geschlagen) und gemeinsam {3} angegriffen ({4}×).',[esc(anaName(x.a)),esc(anaName(x.b)),x.mutual,esc(anaName(x.c)),x.third])}</p>`;
+  // Bündnisse der Monster
+  if(DIPLO.log&&DIPLO.log.length){h+=`<h4>${T('Bündnisse und Verrat')}</h4><ul class="anaList">`;
+    for(const d of DIPLO.log)h+=`<li><a onclick="anaJump(${d.n})">${T('nach Zug {0}',[d.n])}</a>: ${esc(anaDiploText(d))}</li>`;h+='</ul>';}
+  // Mitschrift
+  if(TALK.length){const tk=anaTalk();
+    h+=`<h4>${T('Gesagt und getan')}</h4>`;
+    if(!tk.length)h+=`<p class="anaNote">${T('In der Mitschrift gibt es keine erkennbaren Ankündigungen von Angriffen.')}</p>`;
+    else{h+='<ul class="anaList">';const V={kept:T('✅ hielt Wort'),bluff:T('🎭 Bluff? – griff stattdessen andere an'),words:T('💬 nur Worte – keine Taten gegen das Ziel'),none:T('⏳ danach nicht mehr gezogen')};
+      for(const t of tk)h+=`<li><a onclick="anaJump(${t.n})">${T('nach Zug {0}',[t.n])}</a> <b style="color:${PCOLOR[t.x.p]}">${esc(talkName(t.x))}</b>: „${esc(t.x.text)}“ → ${T('Ziel {0}',[esc(anaName(t.target))])}: ${V[t.verdict]}</li>`;
+      h+='</ul>';}
+    h+=`<p class="anaNote">${T('Äußerungen in der Mitschrift: {0}. Die Auswertung erkennt einfache Ankündigungen („lass uns Rot angreifen“); Ironie und Andeutungen versteht sie nicht.',[TALK.length])}</p>`;}
+  // Schlüsselmomente
+  const key=res.map((r,i)=>r&&r.cls?{i,r}:null).filter(Boolean).sort((a,b)=>b.r.loss-a.r.loss).slice(0,10).sort((a,b)=>a.i-b.i);
+  if(key.length){h+=`<h4>${T('Schlüsselmomente')}</h4><ul class="anaList">`;
+    const L={blunder:T('Patzer'),mistake:T('Fehler'),inacc:T('Ungenauigkeit')};
+    for(const k of key){const e=log[k.i],d=document.createElement('span');d.innerHTML=moveText(e);
+      h+=`<li><a onclick="anaJump(${k.i})">${k.i+1}.</a> <b style="color:${PCOLOR[e.player]}">${esc(anaName(e.player))}</b> ${esc(d.textContent)} – <span class="cls-${k.r.cls}">${L[k.r.cls]}</span> `+(k.r.loss>=20?T('(lässt ein Matt zu oder verpasst eines)'):`(−${k.r.loss.toLocaleString(BCP[myLang()]||myLang(),{maximumFractionDigits:1})})`)+
+        (k.r.best?` · ${T('besser: {0}',[esc(mvShort(k.r.best.m,k.r.best.pc))+(k.r.best.cap?' ×'+PIECES[k.r.best.cap]:'')])}`:'')+`</li>`;}
+    h+='</ul>';}
+  else h+=`<p class="anaNote">${T('Keine groben Fehler gefunden.')}</p>`;
+  h+=`<p class="anaNote">${T('Bewertet wird mit der Stellungsbewertung des Computers (eine Ebene tief, bei drei Spielern gibt es keinen objektiv besten Zug). Die Angaben sind Hinweise, keine Urteile.')}</p>`;
+  document.getElementById('anaBody').innerHTML=h;
+}
+function anaDiploText(d){
+  const n=x=>anaName(x);
+  if(d.k==='pact')return T('{0} und {1} verbünden sich gegen {2}',[n(d.a),n(d.b),n(d.t)]);
+  if(d.k==='betray')return T('{0} verrät {1}',[n(d.a),n(d.b)]);
+  if(d.k==='expire')return T('Bündnis {0} + {1} endet',[n(d.a),n(d.b)]);
+  if(d.k==='decline')return T('{0} lehnt das Bündnis mit {1} ab',[n(d.a),n(d.b)]);
+  return '';
 }
 // Zugliste als lesbarer Text (zum Teilen, Ausdrucken, Archivieren)
 function movesText(){
