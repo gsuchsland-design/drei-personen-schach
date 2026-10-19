@@ -58,7 +58,9 @@ async function aiReport(req, env) {
     'Hinweise auf mögliche Computerhilfe nur bei Menschen und nur vorsichtig als Hinweis. Ironie oder Bluffs in der Mitschrift darfst du deuten, kennzeichne das als Vermutung.';
   try {
     const r = await env.AI.run(AI_MODEL, { messages: [{ role: 'system', content: system }, { role: 'user', content: facts }], max_tokens: 800, temperature: 0.5 });
-    const text = (r && (r.response || r.result && r.result.response)) || '';
+    let text = r && (r.response !== undefined ? r.response : r.result && r.result.response);
+    if (text && typeof text === 'object') text = text.text || text.report || JSON.stringify(text);
+    text = String(text || '');
     if (!text) return json({ error: 'leere Antwort' }, 502);
     return json({ text }, 200, { 'Cache-Control': 'no-store' });
   } catch (e) {
@@ -81,9 +83,10 @@ async function aiMonster(req, env) {
   const user = `Spielsituation:\n${cut(b.situation, 1200)}\n\nBisheriges Gespräch:\n${(Array.isArray(b.history) ? b.history : []).slice(-8).map((h) => cut(h.name, 20) + ': ' + cut(h.text, 200)).join('\n')}\n\nNeue Nachricht von ${cut(b.from, 20)}: ${cut(b.text, 300)}`;
   try {
     const r = await env.AI.run(AI_MODEL, { messages: [{ role: 'system', content: system }, { role: 'user', content: user }], max_tokens: 200, temperature: 0.8 });
-    const raw = String((r && (r.response || r.result && r.result.response)) || '');
-    const m = raw.match(/\{[\s\S]*\}/);
-    let o = null; try { o = m ? JSON.parse(m[0]) : null; } catch (e) {}
+    const resp = r && (r.response !== undefined ? r.response : r.result && r.result.response);
+    let o = null, raw = '';
+    if (resp && typeof resp === 'object') o = resp;   // manche Modelle liefern das JSON schon fertig gelesen
+    else { raw = String(resp || ''); const m = raw.match(/\{[\s\S]*\}/); try { o = m ? JSON.parse(m[0]) : null; } catch (e) {} }
     if (!o || !o.reply) o = { reply: raw.replace(/[{}"]/g, '').slice(0, 240), deal: 'none', target: '' };
     return json({ reply: cut(o.reply, 300), deal: ['accept', 'decline'].includes(o.deal) ? o.deal : 'none', target: cut(o.target, 30) }, 200, { 'Cache-Control': 'no-store' });
   } catch (e) {
