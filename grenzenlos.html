@@ -5,6 +5,9 @@
 <title>Schach ohne Grenzen – Schach auf dem unendlichen Brett</title>
 <meta name="description" content="Schach ohne Grenzen: normales Schach auf einem unendlichen Brett, zu zweit, zu dritt oder zu viert, gegen Computer oder online.">
 <link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest-grenzenlos.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16181d">
 <style>
 :root { --bg:#16181d; --panel:rgba(28,30,38,.95); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
@@ -31,6 +34,7 @@ a { color:#8fb6ff; }
 </style>
 </head><body>
 <canvas id="cv"></canvas>
+<canvas id="cv3" style="position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:none"></canvas>
 <canvas id="mini" title="Übersicht – antippen, um dorthin zu springen" width="300" height="300"></canvas>
 <div id="tip"></div>
 <div id="turn"></div>
@@ -71,14 +75,17 @@ a { color:#8fb6ff; }
    <div class="row"><button onclick="undo()">↶ Zug zurück</button><button onclick="gameStop()">■ Partie beenden</button><button onclick="KIT.anaOpen()">🔬 Auswertung</button></div>
    <div id="kitBox"></div>
   </div>
-  <div class="row"><button onclick="fitAll()">⤢ Alle Figuren</button><button onclick="viewMine()">🎯 Meine Armee</button><button onclick="location.href='spiel.html?lobby=1'+fernQS()">🌍 Lobby</button><button onclick="tourStart()">🎓 Einführung</button><button class="setupOnly" onclick="KIT.colOpen()">🎨 Farben</button></div>
+  <div class="row"><button onclick="fitAll()">⤢ Alle Figuren</button><button onclick="viewMine()">🎯 Meine Armee</button><button onclick="location.href='spiel.html?lobby=1'+fernQS()">🌍 Lobby</button><button onclick="tourStart()">🎓 Einführung</button></div>
+  <div class="row"><button id="b3d" onclick="set3D(!G3.on)">🧊 3D-Ansicht</button><select id="g3Style" onchange="g3StyleSet(this.value)" style="display:none"><option value="sym">Symbole</option><option value="chess">Schachfiguren 3D</option><option value="star">Sternfiguren</option><option value="ship">Raumschiffe</option></select>
+   <label id="g3SpaceL" style="display:none" title="Sternenhimmel: NASA (Tycho-2-Himmelskarte)"><input type="checkbox" id="g3Space" onchange="g3SpaceSet(this.checked)"> 🌌 Weltall</label></div>
+  <div class="row">Brett drehen: <select id="rotSel" onchange="rotSet(this.value)"><option value="me">eigene Seite unten</option><option value="turn">zum Spieler am Zug</option><option value="off">nicht automatisch</option></select><button onclick="rotBy(1)" title="Brett um 90° drehen">↻</button><button class="setupOnly" onclick="KIT.colOpen()">🎨 Farben</button></div>
   <h2>Züge</h2>
   <div id="log"></div>
   <p class="hint" style="margin-top:12px"><a href="grenzenlos-regeln.html" target="_blank">📖 Regeln</a> · <a href="spiel.html">← Drei-Personen-Schach</a> · <a href="raum.html">👑 Schach der 6 Reiche</a></p>
  </div>
 </div>
 <script src="lib/monsters.js?v=2026102010"></script>
-<script src="lib/kit.js?v=2026102010"></script>
+<script src="lib/kit.js?v=2026102011"></script>
 <script>
 'use strict';
 // ================= Spieler, Aufstellung =================
@@ -239,7 +246,7 @@ function turnStart(){sel=null;targets=[];DUTY=null;
       if(GM.online&&(p0===ON.seat||(KIT.isAI(p0)&&GM.lastBy===ON.seat))){GM.lastMoverSeat=p0;onPush();}
       if(GM.over){render();return;}if(elim){if(!legalMoves(p0).length){advance();return;}return turnStart();}}
     if(d&&(d.allowed||d.mated.length))DUTY=d;}
-  render();const p=gCur();
+  rotFollow();render();const p=gCur();
   if(GM&&!GM.over&&GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'&&(!GM.online||GM.lastBy===ON.seat)){clearTimeout(aiT);aiT=setTimeout(()=>aiMove(p),(GM.order.every(q=>GM.ctrl[q]!=='human')?120:420)+animLeft());}}
 function gameMove(from,m){
   const fk=key(...from),tk=key(...m.c),pc=S.get(fk);if(!pc)return;let cap=S.get(tk);
@@ -339,14 +346,26 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),mini=document.get
 const V={cx:4.5,cy:4.5,s:48};   // Blickmitte in Feldern, Pixel je Feld
 let DPR=1;
 function resize(){DPR=Math.min(devicePixelRatio||1,2);cv.width=innerWidth*DPR;cv.height=innerHeight*DPR;render();}
-const toScr=(x,y)=>[(x-V.cx)*V.s+innerWidth/2,innerHeight/2-(y-V.cy)*V.s];
-const toCell=(sx,sy)=>[Math.round((sx-innerWidth/2)/V.s+V.cx),Math.round((innerHeight/2-sy)/V.s+V.cy)];
+// Brett drehen: ROTK Vierteldrehungen gegen den Uhrzeigersinn (Blau 0, Rot 1, Grün 2, Gelb 3 → eigene Seite unten)
+let ROTK=0;
+const rot=(dx,dy,k)=>{k=((k%4)+4)%4;return k===0?[dx,dy]:k===1?[-dy,dx]:k===2?[-dx,-dy]:[dy,-dx];};
+const toScr=(x,y)=>{const[a,b]=rot(x-V.cx,y-V.cy,ROTK);return[a*V.s+innerWidth/2,innerHeight/2-b*V.s];};
+const scr2b=(sx,sy)=>{const[a,b]=rot((sx-innerWidth/2)/V.s,(innerHeight/2-sy)/V.s,-ROTK);return[a+V.cx,b+V.cy];};
+const toCell=(sx,sy)=>scr2b(sx,sy).map(Math.round);
+const panPx=(dx,dy)=>{const[a,b]=rot(dx/V.s,-dy/V.s,-ROTK);V.cx-=a;V.cy-=b;};
+const SEATK={B:0,R:1,G:2,Y:3};
+function rotMode(){try{return localStorage.getItem('grenz.rot')||'me';}catch(e){return'me';}}
+function rotSet(v){try{localStorage.setItem('grenz.rot',v);}catch(e){}rotFollow();}
+function rotBy(d){ROTK=(ROTK+d+4)%4;render();}
+function rotFollow(){const m=rotMode();if(m==='off'||!GM)return;const p=gCur();let who=null;
+  if(m==='turn')who=p;else if(GM.online)who=ON.seat;else{const hs=GM.order.filter(q=>GM.ctrl[q]==='human');who=hs.length===1?hs[0]:hs.includes(p)?p:null;}
+  if(!who)return;let k=SEATK[who]||0;if(k!==ROTK){ROTK=k;render();}}
 function zoneOf(x,y){if(!LAY)return null;const M=LAY.M;for(const q in LAY.seats){const s=LAY.seats[q];const u=(x-M[0])*s.r[0]+(y-M[1])*s.r[1],w=-((x-M[0])*s.f[0]+(y-M[1])*s.f[1]);
   if(Math.abs(u)<=3.5&&w>=LAY.dPawn-1e-9&&w<=LAY.dOff+1e-9)return q;}return null;}
-let RAF=0;function render(){if(RAF)return;RAF=requestAnimationFrame(()=>{RAF=0;paint();});}
+let RAF=0;function render(){if(RAF)return;RAF=requestAnimationFrame(()=>{RAF=0;if(G3.on){g3Render();paintMini();renderTurn();}else paint();});}
 function paint(){
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#16181d';ctx.fillRect(0,0,innerWidth,innerHeight);
-  const W=innerWidth,H=innerHeight,s=V.s,x0=Math.floor(V.cx-W/2/s)-1,x1=Math.ceil(V.cx+W/2/s)+1,y0=Math.floor(V.cy-H/2/s)-1,y1=Math.ceil(V.cy+H/2/s)+1;
+  const W=innerWidth,H=innerHeight,s=V.s,ex=(ROTK%2?H:W)/2/s,ey=(ROTK%2?W:H)/2/s,x0=Math.floor(V.cx-ex)-1,x1=Math.ceil(V.cx+ex)+1,y0=Math.floor(V.cy-ey)-1,y1=Math.ceil(V.cy+ey)+1;
   // Felder
   for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++){const[sx,sy]=toScr(x,y),z=zoneOf(x,y),dark=(x+y)%2===0;
     ctx.fillStyle=dark?'#6b5a45':'#d9c6a3';ctx.fillRect(sx-s/2,sy-s/2,s+0.5,s+0.5);
@@ -371,7 +390,7 @@ function paint(){
     if(t.castle&&!t.view){ctx.globalAlpha=0.55;ctx.fillRect(sx-s/2+2,sy-s/2+2,s-4,s-4);ctx.globalAlpha=1;}
     ctx.globalAlpha=0.85;ctx.beginPath();if(t.cap){ctx.lineWidth=Math.max(3,s*0.08);ctx.strokeStyle=ctx.fillStyle;ctx.arc(sx,sy,s*0.42,0,7);ctx.stroke();}else{ctx.arc(sx,sy,s*0.15,0,7);ctx.fill();}ctx.globalAlpha=1;}
   // Koordinaten am Rand, wenn groß genug
-  if(s>=34){ctx.font='11px sans-serif';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';
+  if(s>=34&&ROTK===0){ctx.font='11px sans-serif';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';
     for(let x=x0;x<=x1;x++){const[sx]=toScr(x,0);ctx.fillText(String(x),sx-s/2+3,H-8);}
     for(let y=y0;y<=y1;y++){const[,sy]=toScr(0,y);ctx.fillText(String(y),W-26,sy);}}
   paintMini();renderTurn();
@@ -383,13 +402,14 @@ function paintMini(){if(!S.size)return;bbox();const pad=4,b=BB,w=Math.max(b.x1-b
   mx.fillStyle='#0c0e12';mx.fillRect(0,0,300,300);
   const ms=(x,y)=>[150+(x-cx)*k,150-(y-cy)*k];
   for(const[kk,pc]of S){const[x,y]=unkey(kk),[a,c]=ms(x,y);mx.fillStyle=PCOL[pc.p];const r=pc.t==='K'?k*0.9:Math.max(2,k*0.42);mx.fillRect(a-r,c-r,2*r,2*r);if(pc.t==='K'){mx.strokeStyle='#fff';mx.lineWidth=2;mx.strokeRect(a-r,c-r,2*r,2*r);}}
-  const[v0,v1]=ms(V.cx-innerWidth/2/V.s,V.cy+innerHeight/2/V.s),[v2,v3]=ms(V.cx+innerWidth/2/V.s,V.cy-innerHeight/2/V.s);
-  mx.strokeStyle='rgba(255,255,255,.8)';mx.lineWidth=2;mx.strokeRect(v0,v1,v2-v0,v3-v1);MINI={cx,cy,k};}
+  const cs=[[0,0],[innerWidth,0],[innerWidth,innerHeight],[0,innerHeight]].map(([a,b])=>ms(...scr2b(a,b)));
+  mx.strokeStyle='rgba(255,255,255,.8)';mx.lineWidth=2;mx.beginPath();cs.forEach(([a,b],i)=>i?mx.lineTo(a,b):mx.moveTo(a,b));mx.closePath();mx.stroke();MINI={cx,cy,k};}
 let MINI=null;
 mini.addEventListener('click',e=>{if(!MINI)return;const r=mini.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*300,y=(e.clientY-r.top)/r.height*300;
   V.cx=MINI.cx+(x-150)/MINI.k;V.cy=MINI.cy-(y-150)/MINI.k;render();});
-function fitAll(){if(!S.size)return;bbox();const w=BB.x1-BB.x0+3,h=BB.y1-BB.y0+3;V.cx=(BB.x0+BB.x1)/2;V.cy=(BB.y0+BB.y1)/2;
-  const left=document.getElementById('ui').classList.contains('min')||innerWidth<700?0:310;V.s=Math.max(8,Math.min(90,Math.min((innerWidth-left-20)/w,(innerHeight-60)/h)));if(left)V.cx-=left/2/V.s;render();}
+function fitAll(){if(!S.size)return;bbox();let w=BB.x1-BB.x0+3,h=BB.y1-BB.y0+3;if(ROTK%2)[w,h]=[h,w];V.cx=(BB.x0+BB.x1)/2;V.cy=(BB.y0+BB.y1)/2;
+  const left=document.getElementById('ui').classList.contains('min')||innerWidth<700?0:310,mon=document.getElementById('kMons'),right=mon&&mon.style.display!=='none'&&innerWidth>=700?185:0;
+  V.s=Math.max(8,Math.min(90,Math.min((innerWidth-left-right-20)/w,(innerHeight-60)/h)));panPx((left-right)/2,0);render();}
 function viewMine(){const p=GM?(GM.online?ON.seat:GM.order.find(q=>GM.ctrl[q]==='human')):'B';const k=p&&kingOf(p);if(!k)return;V.cx=k[0];V.cy=k[1];V.s=Math.max(V.s,44);render();}
 function renderTurn(){const el=document.getElementById('turn');if(!GM){el.style.display='none';return;}
   let h;if(GM.over)h=`🏁 <span style="color:${PCOL[GM.winner]}">${PNAME[GM.winner]}</span> gewinnt!`;
@@ -410,7 +430,7 @@ function animPaint(){const now=performance.now(),e=Math.min(1,(now-ANIM.t0)/ANIM
   const knight=ANIM.pc.t==='N',x=ANIM.from[0]+(ANIM.to[0]-ANIM.from[0])*s,y=ANIM.from[1]+(ANIM.to[1]-ANIM.from[1])*s;
   const[sx,sy]=toScr(x,y);
   if(ANIM.cap){const k=Math.min(1,Math.max(0,(now-ANIM.t0-ANIM.dur*0.7)/700));   // geschlagene Figur fliegt weg und dreht sich
-    if(k<1){const[tx,ty]=toScr(...ANIM.to),dx=ANIM.to[0]-ANIM.from[0],dy=ANIM.to[1]-ANIM.from[1],l=Math.hypot(dx,dy)||1;
+    if(k<1){const[tx,ty]=toScr(...ANIM.to),[dx,dy]=rot(ANIM.to[0]-ANIM.from[0],ANIM.to[1]-ANIM.from[1],ROTK),l=Math.hypot(dx,dy)||1;
       ctx.save();ctx.translate(tx+dx/l*k*V.s*3,ty-dy/l*k*V.s*3-Math.sin(k*Math.PI)*V.s*1.5);ctx.rotate(k*Math.PI*3);ctx.globalAlpha=1-k;drawPiece(0,0,ANIM.cap,1-0.5*k);ctx.restore();ctx.globalAlpha=1;}}
   drawPiece(sx,sy-(knight?Math.sin(Math.PI*s)*V.s*0.6:0),ANIM.pc,1+(knight?0.15*Math.sin(Math.PI*s):0));}
 // ================= Bedienung =================
@@ -425,21 +445,103 @@ cv.addEventListener('pointerdown',e=>{ptrs.set(e.pointerId,{x:e.clientX,y:e.clie
   down={x:e.clientX,y:e.clientY,moved:0};});
 cv.addEventListener('pointermove',e=>{const tip=document.getElementById('tip');if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pinch&&ptrs.size>=2){const[a,b]=[...ptrs.values()],mx2=(a.x+b.x)/2,my2=(a.y+b.y)/2;V.s=Math.max(6,Math.min(140,pinch.s*Math.hypot(a.x-b.x,a.y-b.y)/Math.max(1,pinch.d)));
-    V.cx-=(mx2-pinch.mx)/V.s;V.cy+=(my2-pinch.my)/V.s;pinch.mx=mx2;pinch.my=my2;render();return;}
+    panPx(mx2-pinch.mx,my2-pinch.my);pinch.mx=mx2;pinch.my=my2;render();return;}
   if(down){const dx=e.clientX-down.x,dy=e.clientY-down.y;down.x=e.clientX;down.y=e.clientY;down.moved+=Math.abs(dx)+Math.abs(dy);
-    if(down.moved>6){V.cx-=dx/V.s;V.cy+=dy/V.s;tip.style.display='none';render();}return;}
+    if(down.moved>6){panPx(dx,dy);tip.style.display='none';render();}return;}
   if(e.pointerType==='touch')return;const[x,y]=toCell(e.clientX,e.clientY),pc=S.get(key(x,y));
   tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';tip.textContent=`(${x},${y})`+(pc?' | '+PNAMES[pc.t]+' '+PNAME[pc.p]:'');});
 const up=e=>{ptrs.delete(e.pointerId);if(pinch){if(ptrs.size<2)pinch=null;down=null;return;}
-  if(e.type==='pointerup'&&down&&down.moved<=6){const c=toCell(e.clientX,e.clientY),t=targets.find(t=>t.c[0]===c[0]&&t.c[1]===c[1]);
-    if(GM&&t&&sel&&!t.view&&!GM.over&&myTurn())gameMove(sel,t);
-    else if(S.get(key(...c)))select(c);else{sel=null;targets=[];render();}}
+  if(e.type==='pointerup'&&down&&down.moved<=6)clickCell(toCell(e.clientX,e.clientY));
   down=null;};
+function clickCell(c){const t=targets.find(t=>t.c[0]===c[0]&&t.c[1]===c[1]);
+  if(GM&&t&&sel&&!t.view&&!GM.over&&myTurn())gameMove(sel,t);
+  else if(S.get(key(...c)))select(c);else{sel=null;targets=[];render();}}
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
-cv.addEventListener('wheel',e=>{e.preventDefault();const[bx,by]=[(e.clientX-innerWidth/2)/V.s+V.cx,(innerHeight/2-e.clientY)/V.s+V.cy];
-  V.s=Math.max(6,Math.min(140,V.s*(e.deltaY<0?1.12:1/1.12)));V.cx=bx-(e.clientX-innerWidth/2)/V.s;V.cy=by-(innerHeight/2-e.clientY)/V.s;render();},{passive:false});
+cv.addEventListener('wheel',e=>{e.preventDefault();const[bx,by]=scr2b(e.clientX,e.clientY);
+  V.s=Math.max(6,Math.min(140,V.s*(e.deltaY<0?1.12:1/1.12)));const[ax,ay]=scr2b(e.clientX,e.clientY);V.cx+=bx-ax;V.cy+=by-ay;render();},{passive:false});
 cv.addEventListener('dblclick',()=>fitAll());
 addEventListener('resize',resize);
+// ================= 3D-Ansicht (three.js, Figurenstile wie im Schach der 6 Reiche) =================
+const G3={on:false,ready:false,style:'chess',space:false,cam:{th:Math.PI/2,ph:0.95,r:22},rotK:0};
+try{G3.style=localStorage.getItem('grenz.style3')||'chess';G3.space=localStorage.getItem('grenz.space')==='1';}catch(e){}
+function loadJS(src){return new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=src;sc.onload=res;sc.onerror=rej;document.head.appendChild(sc);});}
+async function set3D(on){
+  if(on&&!window.THREE){try{await loadJS('lib/three.min.js');await loadJS('lib/reiche3d.js?v=2026102010');}catch(e){alert('Die 3D-Ansicht konnte nicht geladen werden.');return;}}
+  G3.on=on;if(on&&!G3.ready)g3Init();
+  document.getElementById('cv').style.display=on?'none':'block';document.getElementById('cv3').style.display=on?'block':'none';
+  document.getElementById('b3d').textContent=on?'▦ 2D-Ansicht':'🧊 3D-Ansicht';document.getElementById('g3Style').style.display=on?'':'none';document.getElementById('g3SpaceL').style.display=on?'':'none';
+  try{localStorage.setItem('grenz.3d',on?'1':'0');}catch(e){}if(on)g3Resize();render();}
+function g3StyleSet(v){G3.style=v;try{localStorage.setItem('grenz.style3',v);}catch(e){}if(v==='ship'&&!G3.space){document.getElementById('g3Space').checked=true;g3SpaceSet(true);}render();}
+function g3SpaceSet(on){G3.space=on;try{localStorage.setItem('grenz.space',on?'1':'0');}catch(e){}if(G3.ready){R3.space(G3.scene,on);G3.scene.fog=on?null:G3.fog;}render();}
+function g3Init(){const T=THREE,c3=document.getElementById('cv3');
+  G3.R=new T.WebGLRenderer({canvas:c3,antialias:true});G3.R.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  G3.scene=new T.Scene();G3.scene.background=new T.Color('#16181d');G3.fog=new T.Fog('#16181d',30,70);G3.scene.fog=G3.fog;
+  G3.scene.add(new T.HemisphereLight(0xffffff,0x2a2f45,0.85));const dl=new T.DirectionalLight(0xffffff,0.9);dl.position.set(10,25,12);G3.scene.add(dl);
+  G3.camera=new T.PerspectiveCamera(45,1,0.1,500);
+  G3.board=new T.Group();G3.pieces=new T.Group();G3.marks=new T.Group();G3.anim=new T.Group();G3.scene.add(G3.board,G3.pieces,G3.marks,G3.anim);
+  G3.tex={};G3.ready=true;
+  document.getElementById('g3Style').value=G3.style;document.getElementById('g3Space').checked=G3.space;if(G3.space){R3.space(G3.scene,true);G3.scene.fog=null;}
+  const ptr=new Map();let dn=null,pin=null;
+  c3.addEventListener('pointerdown',e=>{ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});try{c3.setPointerCapture(e.pointerId);}catch(_){}
+    if(ptr.size===2){const[a,b]=[...ptr.values()];pin={d:Math.hypot(a.x-b.x,a.y-b.y),r:G3.cam.r,mx:(a.x+b.x)/2,my:(a.y+b.y)/2};dn=null;return;}
+    dn={x:e.clientX,y:e.clientY,moved:0,btn:e.button,shift:e.shiftKey};});
+  c3.addEventListener('pointermove',e=>{if(ptr.has(e.pointerId))ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pin&&ptr.size>=2){const[a,b]=[...ptr.values()];G3.cam.r=Math.max(5,Math.min(90,pin.r*pin.d/Math.max(1,Math.hypot(a.x-b.x,a.y-b.y))));
+      const mx2=(a.x+b.x)/2,my2=(a.y+b.y)/2;g3Pan(mx2-pin.mx,my2-pin.my);pin.mx=mx2;pin.my=my2;render();return;}
+    if(!dn)return;const dx=e.clientX-dn.x,dy=e.clientY-dn.y;dn.x=e.clientX;dn.y=e.clientY;dn.moved+=Math.abs(dx)+Math.abs(dy);if(dn.moved<=6)return;
+    if(dn.btn===2||dn.shift||e.pointerType==='touch'&&false)g3Pan(dx,dy);else{G3.cam.th+=dx*0.008;G3.cam.ph=Math.max(0.15,Math.min(1.45,G3.cam.ph-dy*0.006));}render();});
+  const up3=e=>{ptr.delete(e.pointerId);if(pin){if(ptr.size<2)pin=null;dn=null;return;}
+    if(e.type==='pointerup'&&dn&&dn.moved<=6&&!dn.btn){const c=g3Hit(e.clientX,e.clientY);if(c)clickCell(c);}dn=null;};
+  c3.addEventListener('pointerup',up3);c3.addEventListener('pointercancel',up3);c3.addEventListener('contextmenu',e=>e.preventDefault());
+  c3.addEventListener('wheel',e=>{e.preventDefault();G3.cam.r=Math.max(5,Math.min(90,G3.cam.r*(e.deltaY<0?0.9:1.1)));render();},{passive:false});
+  c3.addEventListener('dblclick',()=>{fitAll();G3.cam.r=Math.max(12,Math.min(60,900/V.s));render();});
+  addEventListener('resize',g3Resize);}
+function g3Resize(){if(!G3.ready)return;G3.R.setSize(innerWidth,innerHeight,false);G3.camera.aspect=innerWidth/innerHeight;G3.camera.updateProjectionMatrix();render();}
+const W3=(x,y,h)=>new THREE.Vector3(x,h||0,-y);   // Brett (x,y) → Welt (x,h,−y)
+function g3Pan(dx,dy){const th=G3.cam.th,k=G3.cam.r*0.0022,sn=Math.sin(th),cs=Math.cos(th);   // rechts = (sin,0,−cos), vorwärts = (−cos,0,−sin)
+  const wx=(-dx*sn-dy*cs)*k,wz=(dx*cs-dy*sn)*k;V.cx+=wx;V.cy-=wz;}
+function g3Hit(sx,sy){const T=THREE,ray=new T.Raycaster(),ndc=new T.Vector2(sx/innerWidth*2-1,-(sy/innerHeight)*2+1);ray.setFromCamera(ndc,G3.camera);
+  const o=ray.ray.origin,d=ray.ray.direction;if(Math.abs(d.y)<1e-6)return null;const t=-o.y/d.y;if(t<0)return null;return[Math.round(o.x+d.x*t),Math.round(-(o.z+d.z*t))];}
+function g3Sprite(p,t,op){const k=p+t+(KIT.symOn?'s':'');let tx=G3.tex[k];
+  if(!tx){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.beginPath();x.arc(64,64,58,0,7);x.fillStyle=PCOL[p];x.fill();x.lineWidth=6;x.strokeStyle='#101010';x.stroke();
+    x.font='84px "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",serif';x.textAlign='center';x.textBaseline='middle';x.lineWidth=7;x.strokeStyle='#000';x.strokeText(GLYPH[t],64,70);x.fillStyle='#fff';x.fillText(GLYPH[t],64,70);
+    if(KIT.symOn){x.font='bold 38px sans-serif';x.lineWidth=6;x.strokeText(KIT.SYM[p],28,30);x.fillText(KIT.SYM[p],28,30);}
+    tx=G3.tex[k]=new THREE.CanvasTexture(c);}
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,opacity:op==null?1:op}));sp.scale.set(0.82,0.82,1);return sp;}
+function g3Piece(p,t){if(G3.style==='sym'){const s=g3Sprite(p,t);s.position.y=0.45;const g=new THREE.Group();g.add(s);return g;}
+  const f=(LAY&&LAY.seats[p]||SEAT4[p]).f;return R3.object(G3.style,t,PCOL[p],[f[0],0,-f[1]]);}
+function g3Render(){if(!G3.ready)return;const T=THREE;
+  // Kamera folgt dem Blickpunkt und der Drehung des Bretts
+  if(G3.rotK!==ROTK){G3.cam.th+=(ROTK-G3.rotK)*Math.PI/2;G3.rotK=ROTK;}
+  const c=G3.cam,tg=W3(V.cx,V.cy),sp=Math.sin(c.ph);
+  G3.camera.position.set(tg.x+c.r*sp*Math.cos(c.th),c.r*Math.cos(c.ph),tg.z+c.r*sp*Math.sin(c.th));G3.camera.lookAt(tg);
+  if(G3.fog){G3.fog.near=c.r*1.1;G3.fog.far=c.r*2.6;}
+  // Felder rund um den Blickpunkt
+  G3.board.clear();const rad=Math.min(45,Math.ceil(c.r*1.9)),cx=Math.round(V.cx),cy=Math.round(V.cy),n=(2*rad+1)**2;
+  const geo=new T.BoxGeometry(1,0.12,1),im=new T.InstancedMesh(geo,new T.MeshLambertMaterial({color:0xffffff}),n),m4=new T.Matrix4(),col=new T.Color();let i=0;
+  for(let x=cx-rad;x<=cx+rad;x++)for(let y=cy-rad;y<=cy+rad;y++){if((x-cx)**2+(y-cy)**2>rad*rad)continue;
+    m4.makeTranslation(x,-0.06,-y);im.setMatrixAt(i,m4);const dark=(x+y)%2===0,z=zoneOf(x,y);col.set(dark?'#5a4a38':'#b8a27e');if(z)col.lerp(new T.Color(PCOL[z]),dark?0.3:0.25);
+    im.setColorAt(i,col);i++;}
+  im.count=i;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;G3.board.add(im);
+  // Figuren
+  G3.pieces.clear();const hide=ANIM?key(...ANIM.to):null;
+  for(const[k,pc]of S){if(k===hide)continue;const[x,y]=unkey(k);if((x-cx)**2+(y-cy)**2>(rad+2)**2)continue;const o=g3Piece(pc.p,pc.t);o.position.add(W3(x,y));G3.pieces.add(o);}
+  // Markierungen
+  G3.marks.clear();const box=(cc,color,op,sz,h)=>{const b=new T.Mesh(new T.BoxGeometry(sz||1,h||0.05,sz||1),new T.MeshBasicMaterial({color,transparent:true,opacity:op}));b.position.copy(W3(cc[0],cc[1],(h||0.05)/2+0.01));G3.marks.add(b);};
+  const lm=RPLM!==null?RPLM:GM?GM.lastMove:LASTMV;
+  if(lm&&lm.from){box(lm.from,PCOL[lm.p],0.45);box(lm.to,PCOL[lm.p],0.7);
+    const a=W3(lm.from[0],lm.from[1],0.08),b=W3(lm.to[0],lm.to[1],0.08),len=a.distanceTo(b);if(len>0.1){const cyl=new T.Mesh(new T.CylinderGeometry(0.05,0.05,len,8),new T.MeshBasicMaterial({color:PCOL[lm.p]}));
+      cyl.position.copy(a).add(b).multiplyScalar(0.5);cyl.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),b.clone().sub(a).normalize());G3.marks.add(cyl);}}
+  if(GM&&!GM.over)for(const q of alive()){if(!inCheck(q))continue;const k=kingOf(q);if(k)box(k,'#ff2a1a',0.35,1.05,1.2);}
+  if(sel)box(sel,'#ffdd00',0.8,1,0.06);if(HINT)box(HINT,'#ffd23f',0.6,1,0.06);
+  for(const t of targets){const m=new T.Mesh(new T.SphereGeometry(t.cap?0.32:0.16,14,10),new T.MeshBasicMaterial({color:t.view?(t.cap?'#ff9a3a':'#7fb8ff'):(t.cap?'#ff3322':t.castle?'#50c8ff':'#3ee05a'),transparent:true,opacity:0.9}));
+    m.position.copy(W3(t.c[0],t.c[1],t.cap?0.9:0.2));G3.marks.add(m);}
+  // Animation: Figur gleitet bzw. springt, geschlagene Figur fliegt davon
+  G3.anim.clear();if(ANIM){const now=performance.now(),e=Math.min(1,(now-ANIM.t0)/ANIM.dur),s2=e<0.5?2*e*e:1-Math.pow(-2*e+2,2)/2;
+    const o=g3Piece(ANIM.pc.p,ANIM.pc.t);o.position.copy(W3(ANIM.from[0]+(ANIM.to[0]-ANIM.from[0])*s2,ANIM.from[1]+(ANIM.to[1]-ANIM.from[1])*s2,Math.sin(Math.PI*s2)*(ANIM.pc.t==='N'?1.4:0.4)));G3.anim.add(o);
+    if(ANIM.cap){const k=Math.min(1,Math.max(0,(now-ANIM.t0-ANIM.dur*0.7)/700));if(k<1){const v=g3Piece(ANIM.cap.p,ANIM.cap.t),d=W3(ANIM.to[0]-ANIM.from[0],ANIM.to[1]-ANIM.from[1]).normalize();
+      v.position.copy(W3(ANIM.to[0],ANIM.to[1])).addScaledVector(d,k*3);v.position.y=Math.sin(k*Math.PI)*2.5;v.rotation.set(k*Math.PI*4,k*Math.PI*2,0);v.scale.setScalar(Math.max(0.01,1-0.8*k));G3.anim.add(v);}}}
+  G3.R.render(G3.scene,G3.camera);}
 // ================= Online: Spielstand auf dem Server =================
 let ON={};
 const QS=new URLSearchParams(location.search);
@@ -523,9 +625,10 @@ function varAI(){if(!GM||GM.over)return;const p=gCur();let ms=legalMoves(p);cons
 function showMove(f,t){select(f);HINT=t;render();}
 function tcText(r){if(!r||!(r.tcMove||r.tcGame))return'';return', '+[r.tcMove?(KIT.TC_MOVE.find(x=>x[0]===r.tcMove)||[0,r.tcMove+' s'])[1]+' pro Zug':'',r.tcGame?r.tcGame+' Min. pro Partie':''].filter(Boolean).join(', ');}
 KIT.init({game:'grenz',title:'Schach ohne Grenzen',descr:'normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler; bei 3 oder 4 Spielern stehen die Heere wie an einem Tisch, Bauern ziehen auf den gegenüberliegenden Spieler zu',
-  PCOL,PNAME,VAL,material,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,clockShow:()=>renderTurn(),onColors:()=>{render();},
+  PCOL,PNAME,VAL,material,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,clockShow:()=>renderTurn(),onColors:()=>{G3.tex={};render();},
   snap:snapGame,load:loadGame,moveList:()=>moves,replayShow,resume:()=>{if(GM&&!GM.over)turnStart();},poll:()=>onPoll(),varEnter,varExit,varUndo:()=>undo(),varAI,showMove});
-resumeUI();
+resumeUI();document.getElementById('rotSel').value=rotMode();
+try{if(localStorage.getItem('grenz.3d')==='1')set3D(true);}catch(e){}
 document.getElementById('tcBox').innerHTML=KIT.tcHTML();document.getElementById('kitBox').innerHTML=KIT.tbHTML()+KIT.monUI();
 // ---------- Einführung ----------
 function tourStart(){const ui=document.getElementById('ui');if(ui.classList.contains('min'))toggleUI();

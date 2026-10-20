@@ -1,0 +1,30 @@
+{
+  "name": "Schach ohne Grenzen",
+  "short_name": "Ohne Grenzen",
+  "description": "Schach auf einem unendlichen Brett für 2 bis 4 Spieler",
+  "lang": "de",
+  "start_url": "grenzenlos.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "background_color": "#1e1e1e",
+  "theme_color": "#1e1e1e",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "id": "grenzenlos.html"
+}

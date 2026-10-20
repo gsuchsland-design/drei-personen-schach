@@ -1,0 +1,30 @@
+{
+  "name": "Schach der 6 Reiche",
+  "short_name": "6 Reiche",
+  "description": "Schach im Würfel für 2 bis 6 Spieler",
+  "lang": "de",
+  "start_url": "raum.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "background_color": "#1e1e1e",
+  "theme_color": "#1e1e1e",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "id": "raum.html"
+}
