@@ -72,7 +72,7 @@ a { color:#8fb6ff; }
   <div class="row">Springer: <select id="oN" onchange="optChg()"><option value="1">2 + 1 in zwei Achsen (24 Ziele)</option><option value="2">zusätzlich 2 + 1 + 1 (48 Ziele)</option></select></div>
   <div class="row">Bauer schlägt: <select id="oP" onchange="optChg()"><option value="4">schräg vorwärts über Flächen (4)</option><option value="8">auch über Raumdiagonalen (8)</option></select></div>
   <div class="row">Bauer zieht: <select id="oS" onchange="optChg()"><option value="first">1 Feld, beim ersten Zug 2</option><option value="home" selected>im eigenen Quader immer bis zu 2</option><option value="always">immer bis zu 2 Felder</option></select></div>
-  <div class="row">Bauern je Spieler: <select id="oF" onchange="optChg(true)"><option value="1">eine Reihe (8)</option><option value="2">zwei Reihen (16)</option><option value="44" selected>Fläche 4 × 4 (16)</option><option value="88">8 × 8 Bauern + 64 Admiräle</option></select></div>
+  <div class="row">Bauern je Spieler: <select id="oF" onchange="optChg(true)"><option value="1">eine Reihe (8)</option><option value="2">zwei Reihen (16)</option><option value="44">Fläche 4 × 4 (16)</option><option value="88" selected>8 × 8 Bauern + 64 Admiräle</option></select></div>
   <div class="row">Umwandlung: <select id="oU" onchange="optChg()"><option value="in">beim Betreten des Quaders gegenüber</option><option value="end">auf der hintersten Ebene gegenüber</option></select></div>
   <div class="hint">Zusätzliche Figuren im Setzen-Werkzeug: Einhorn 🦄 (nur Raumdiagonalen, aus dem Raumschach von 1907), Herzogin ♜🦄 (Turm + Einhorn), Gouverneur ♝🦄 (Läufer + Einhorn), Erzbischof ♝♞ (Läufer + Springer), Kanzler ♜♞ (Turm + Springer), Amazone ♛♞ (Dame + Springer), Nachtreiter ♞» (mehrere Springersprünge in einer Linie).</div>
 
@@ -114,7 +114,7 @@ function cname(x,y,z){const r=region(x,y,z);return `${x+5}·${y+5}·${z+5}`+(r?`
 
 // ================= Zustand =================
 let S=new Map();          // "x,y,z" → {t,p,m}  m = schon gezogen
-let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'44'};let lastN=2;
+let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'88'};let lastN=2;
 const OK=['B','Q','K','N','P','U','S','F'];
 let hist=[],moves=[],sel=null,targets=[],tool='move',pal={p:'B',t:'Q'},slice={ax:-1,v:3};
 
