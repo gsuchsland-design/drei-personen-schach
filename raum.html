@@ -39,6 +39,11 @@ a { color:#8fb6ff; }
 <canvas id="cv"></canvas>
 <div id="tip"></div>
 <div id="turn"></div>
+<div id="chatBox" style="display:none;position:fixed;right:8px;bottom:8px;width:min(340px,94vw);max-height:46vh;z-index:12;background:rgba(28,30,38,.96);border:1px solid #444;border-radius:12px;flex-direction:column">
+ <div style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #333"><b>💬 Chat</b><span class="hint" style="margin-left:8px">wird bei Bedarf übersetzt</span><button style="margin-left:auto" onclick="chatToggle()">✕</button></div>
+ <div id="chatLog" style="flex:1;overflow:auto;padding:6px 10px;font-size:13px;min-height:80px"></div>
+ <div style="display:flex;gap:6px;padding:6px"><input type="text" id="chatIn" maxlength="200" placeholder="Nachricht …" style="flex:1" onkeydown="if(event.key==='Enter')chatSend()"><button onclick="chatSend()">➤</button></div>
+</div>
 <div id="joinBox" style="display:none;position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
  <div style="background:#1f2330;border:1px solid #444;border-radius:14px;padding:18px;max-width:360px;width:92%">
   <h3 style="margin-top:0">👑 Einladung zum Schach der 6 Reiche</h3>
@@ -72,6 +77,13 @@ a { color:#8fb6ff; }
     <div class="row"><input type="text" id="onLink" readonly style="flex:1" onclick="this.select()"><button onclick="onShare()">📤</button></div>
    </div>
    <div class="row"><button onclick="undo()" title="Zurück bis zu deinem letzten Zug">↶ Zug zurück</button><button onclick="gameStop()">■ Partie beenden</button></div>
+   <div class="row"><label><input type="checkbox" id="monChk" checked onchange="TB.monOn=this.checked;monDraw();draw()"> 🖥️ Monitore</label></div>
+   <div id="tbBox" style="display:none">
+    <div class="row"><button id="tbCamBtn" onclick="tbCam()">📷 Kamera</button><button id="tbMicBtn" onclick="tbMic()">🎤 Mikrofon</button><button onclick="chatToggle()">💬 Chat <span id="chatBadge"></span></button></div>
+    <div class="row"><label><input type="checkbox" id="subChk" onchange="subSet(this.checked)"> 🗣️ Gesprochenes als Untertitel</label></div>
+    <div class="row"><label><input type="checkbox" id="readChk" onchange="TB.readOn=this.checked"> 🔊 Übersetzungen vorlesen</label></div>
+    <div class="hint" id="tbState"></div>
+   </div>
   </div>
 
   <div class="row"><button onclick="location.href='spiel.html?lobby=1'+fernQS()">🌍 Offene Spiele (Lobby)</button></div>
@@ -505,7 +517,7 @@ function gameStart(){
   render();turnStart();
 }
 function gameStop(){if(GM&&!GM.over&&!confirm(GM.online?'Partie verlassen? Du kannst später über den Link zurückkehren.':'Partie beenden?'))return;
-  if(GM&&GM.online){clearInterval(ON.poll);try{history.replaceState(null,'',location.pathname+(QS.get('fernhost')?'?fernhost='+encodeURIComponent(QS.get('fernhost')):''));}catch(e){}document.getElementById('onBox').style.display='none';ON={};}
+  if(GM&&GM.online){try{TB.peer&&TB.peer.destroy();}catch(e){}TB.peer=null;TB.conns={};TB.calls={};clearInterval(TB.tick);document.getElementById('tbBox').style.display='none';clearInterval(ON.poll);try{history.replaceState(null,'',location.pathname+(QS.get('fernhost')?'?fernhost='+encodeURIComponent(QS.get('fernhost')):''));}catch(e){}document.getElementById('onBox').style.display='none';ON={};}
   GM=null;clearTimeout(aiT);
   document.getElementById('ui').classList.remove('ingame');
   document.getElementById('gameSetup').style.display='block';document.getElementById('gameRun').style.display='none';render();}
@@ -623,7 +635,7 @@ async function api(path,body){const b=await srvBase();
   const j=await r.json().catch(()=>({}));j._status=r.status;return j;}
 const optStr=()=>OK.map(k=>OPT[k]).join('.');
 function setOpts(str){const ov=String(str||'').split('.');OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});}
-function onLink(){return location.origin+location.pathname+'?g='+ON.code+fernQS();}
+function onLink(){return location.origin+location.pathname+'?g='+ON.code+fernQS()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'');}
 function onSnap(){const g=Object.assign({},GM);delete g.online;return JSON.stringify({pos:encode(),gm:g,moves});}
 async function onCreate(order,ctrl){
   const name=(document.getElementById('gName').value||'').trim().slice(0,18)||'Spieler';try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
@@ -639,7 +651,7 @@ async function onCreate(order,ctrl){
   try{localStorage.setItem('raum.t.'+j.code,j.token);}catch(e){}
   const n=order.length;setup(n);hist=[];
   GM={order,ctrl,end,idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:seat};
-  ON={code:j.code,token:j.token,seat,v:0,seats:j.state.seats};
+  ON={code:j.code,token:j.token,seat,v:0,seats:j.state.seats,rtc:j.state.rtc};
   onEnter();
   onPush(true);
 }
@@ -651,6 +663,7 @@ function onEnter(){
   document.getElementById('onBox').style.display='block';document.getElementById('onLink').value=onLink();
   onStateUI();render();turnStart();
   clearInterval(ON.poll);ON.poll=setInterval(()=>{if(document.visibilityState==='visible')onPoll();},2500);
+  setTimeout(tbStart,300);
 }
 function onStateUI(){const free=GM.order.filter(p=>ON.seats&&ON.seats[p]&&ON.seats[p].kind==='open');
   document.getElementById('onState').innerHTML=(ON.seat?`Du spielst <b style="color:${PCOL[ON.seat]}">${PNAME[ON.seat]}</b>. `:'Du schaust zu. ')+
@@ -671,9 +684,9 @@ function onPush(init){
 }
 async function onPoll(){if(!ON.code||pushing)return;
   try{const st=await api('/fern/g/'+ON.code+'/state'+(ON.token?'?t='+ON.token:''));if(st._status!==200)return;
-    ON.seats=st.seats;if(st.v>ON.v)onApply(st);else{onStateUI();renderTurn();}}catch(e){}}
+    ON.seats=st.seats;if(st.rtc)ON.rtc=st.rtc;if(st.v>ON.v)onApply(st);else{onStateUI();renderTurn();}tbTick();}catch(e){}}
 function onApply(st,force){
-  ON.seats=st.seats;ON.v=st.v;
+  ON.seats=st.seats;ON.v=st.v;if(st.rtc)ON.rtc=st.rtc;
   if(st.snap){try{const d=JSON.parse(st.snap);setOpts(st.rules&&st.rules.opts);const prevN=moves.length;decode(d.pos);const keepSeat=ON.seat;
       GM=Object.assign(d.gm,{online:true});moves=d.moves||[];ON.seat=keepSeat;
       if(moves.length===prevN+1&&GM.lastMove)animStart(GM.lastMove);}catch(e){}}
@@ -684,7 +697,7 @@ async function onOpen(code){
   code=String(code).toLowerCase().replace(/[^a-z0-9]/g,'');let tok='';try{tok=localStorage.getItem('raum.t.'+code)||'';}catch(e){}
   let st;try{st=await api('/fern/g/'+code+'/state'+(tok?'?t='+tok:''));}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
   if(st._status===404||st.game!=='raum'){alert('Diese Partie gibt es nicht (mehr).');return;}
-  ON={code,token:st.seat?tok:'',seat:st.seat||null,v:-1,seats:st.seats,st};
+  ON={code,token:st.seat?tok:'',seat:st.seat||null,v:-1,seats:st.seats,st,rtc:st.rtc};
   const free=st.order.filter(p=>st.seats[p].kind==='open');
   if(!st.seat&&free.length&&!st.over){
     const who=st.order.filter(p=>st.seats[p].kind==='human').map(p=>st.seats[p].name).join(' und ');
@@ -704,8 +717,144 @@ async function onJoin(){const name=(document.getElementById('joinName').value||'
   const j=await api('/fern/g/'+ON.code+'/join',{name});
   if(!j.seat){alert(j.error==='full'?'Inzwischen sind alle Plätze vergeben – du kannst zuschauen.':'Beitreten nicht möglich.');onWatch();return;}
   try{localStorage.setItem('raum.t.'+ON.code,j.token);}catch(e){}
-  ON.token=j.token;ON.seat=j.seat;document.getElementById('joinBox').style.display='none';onBegin(j.state);}
+  ON.token=j.token;ON.seat=j.seat;ON.rtc=j.state.rtc;document.getElementById('joinBox').style.display='none';onBegin(j.state);}
 function onWatch(){document.getElementById('joinBox').style.display='none';ON.seat=null;onBegin(ON.st);}
+
+// ================= Tisch: Monitore, Bild & Ton, Chat, Übersetzung =================
+const TB={peer:null,conns:{},calls:{},streams:{},vids:{},cam:null,mic:null,subs:{},names:{},langs:{},chat:[],unread:0,mons:{},monOn:true,readOn:false,subOn:false,recog:null};
+const myLang=()=>{try{return(localStorage.getItem('dreiSchach.lang')||navigator.language||'de').slice(0,2).toLowerCase();}catch(e){return'de';}};
+const myName=()=>{try{return localStorage.getItem('dreiSchach.name')||'Ich';}catch(e){return'Ich';}};
+const LVL_S={easy:'leicht',medium:'mittel',hard:'stark'};
+function seatName(p){if(GM&&GM.online&&ON.seats&&ON.seats[p]){const s=ON.seats[p];return s.kind==='human'?(s.name||PNAME[p]):s.kind==='ai'?'Computer · '+(LVL_S[s.lvl]||''):'frei';}
+  if(!GM)return PNAME[p];const c=GM.ctrl[p];return c==='human'?(p===GM.order.find(q=>GM.ctrl[q]==='human')?myName():'Mensch'):'Computer · '+(LVL_S[c]||'');}
+// ---------- Monitore: hinter jedem Reich, immer zur Kamera gedreht ----------
+const MON_W=6,MON_H=4.5,monGroup=new THREE.Group();scene.add(monGroup);
+function monPos(p){const[k,sg]=HOME[p];const c=new THREE.Vector3(3.5,3.5,3.5);c.setComponent(k,sg<0?LO-5:HI+5);return c;}
+function monEnsure(p){if(TB.mons[p])return TB.mons[p];const cv=document.createElement('canvas');cv.width=320;cv.height=240;const tex=new THREE.CanvasTexture(cv);
+  const scr=new THREE.Mesh(new THREE.PlaneGeometry(MON_W,MON_H),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));
+  const fr=new THREE.Mesh(new THREE.PlaneGeometry(MON_W+0.5,MON_H+0.5),new THREE.MeshBasicMaterial({color:PCOL[p],side:THREE.DoubleSide}));fr.position.z=-0.03;
+  const g=new THREE.Group();g.add(fr,scr);g.position.copy(monPos(p));monGroup.add(g);return TB.mons[p]={g,cv,tex,fr};}
+function wrap(x,text,w){const words=String(text).split(/\s+/),lines=[];let l='';for(const wd of words){const t=l?l+' '+wd:wd;if(x.measureText(t).width>w&&l){lines.push(l);l=wd;}else l=t;}if(l)lines.push(l);return lines.slice(-3);}
+function monDraw(){
+  if(!GM||!TB.monOn){monGroup.visible=false;return;}monGroup.visible=true;const now=Date.now();
+  for(const p of PL){const M=TB.mons[p];if(M)M.g.visible=GM.order.includes(p);}
+  for(const p of GM.order){const M=monEnsure(p),x=M.cv.getContext('2d'),out=GM.out.includes(p);M.g.lookAt(camera.position);
+    x.fillStyle='#14161c';x.fillRect(0,0,320,240);
+    const v=TB.vids[p],live=v&&v.readyState>=2&&v.videoWidth&&(p===ON.seat?!!TB.cam:TB.streams[p]&&TB.streams[p].getVideoTracks().some(t=>t.readyState==='live'&&!t.muted)&&!(TB.av[p]&&TB.av[p].cam===false));
+    if(live){const r=Math.max(320/v.videoWidth,240/v.videoHeight),w=v.videoWidth*r,h=v.videoHeight*r;x.save();if(p===ON.seat){x.translate(320,0);x.scale(-1,1);}x.drawImage(v,(320-w)/2,(240-h)/2,w,h);x.restore();}
+    else{const ai=GM.ctrl[p]&&GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'||(ON.seats&&ON.seats[p]&&ON.seats[p].kind==='ai');
+      const gr=x.createRadialGradient(160,105,10,160,105,120);gr.addColorStop(0,PCOL[p]);gr.addColorStop(1,'#14161c');x.fillStyle=gr;x.fillRect(0,0,320,240);
+      x.font='88px "Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';
+      x.fillText(ai?'🤖':(seatName(p)[0]||'?').toUpperCase(),160,105);}
+    if(out){x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,0,320,240);x.fillStyle='#ccc';x.font='bold 26px sans-serif';x.textAlign='center';x.fillText('ausgeschieden',160,110);}
+    // Name unten, „am Zug“ oben
+    x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,200,320,40);x.fillStyle=PCOL[p];x.font='bold 22px sans-serif';x.textAlign='left';x.textBaseline='middle';
+    x.fillText((PNAME[p]+' · '+seatName(p)).slice(0,26),10,220);
+    if(!GM.over&&gCur()===p){x.fillStyle=PCOL[p];x.fillRect(0,0,320,30);x.fillStyle='#000';x.font='bold 18px sans-serif';x.textAlign='center';x.fillText('am Zug',160,15);}
+    if(TB.av&&TB.av[p]&&TB.av[p].mic){x.font='22px sans-serif';x.textAlign='right';x.fillStyle='#fff';x.fillText('🎤',312,220);}
+    const sb=TB.subs[p];if(sb&&now-sb.t<7000){x.font='17px sans-serif';x.textAlign='center';const ls=wrap(x,sb.text,300);
+      x.fillStyle='rgba(0,0,0,.75)';x.fillRect(0,196-ls.length*22,320,ls.length*22+2);x.fillStyle='#fff';ls.forEach((l,i)=>x.fillText(l,160,196-(ls.length-i)*22+12));}
+    M.fr.material.color.set(!GM.over&&gCur()===p?'#ffffff':PCOL[p]);
+    M.tex.needsUpdate=true;}
+}
+setInterval(()=>{if(GM&&TB.monOn&&document.visibilityState==='visible'){monDraw();draw();}},150);
+// ---------- Übersetzen: zuerst im Browser (Chrome), sonst über den freien Dienst MyMemory ----------
+const trCache=new Map(),trApis={};
+async function translateIn(text,from,to){
+  if(!text||!from||from===to)return null;const key=from+'|'+to+'|'+text;if(trCache.has(key))return trCache.get(key);let out=null;
+  try{if(window.Translator&&Translator.create){const k=from+'>'+to,tmo=(pr,ms)=>Promise.race([pr,new Promise(r=>setTimeout(()=>r(null),ms))]);
+    if(trApis[k]===undefined){trApis[k]=false;const av=await tmo(Translator.availability({sourceLanguage:from,targetLanguage:to}),1500);if(av==='available')trApis[k]=await tmo(Translator.create({sourceLanguage:from,targetLanguage:to}),3000)||false;}
+    if(trApis[k])out=await tmo(trApis[k].translate(text),4000);}}catch(e){}
+  if(!out){try{const ctl=new AbortController(),tt=setTimeout(()=>ctl.abort(),6000);
+    const r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0,480))}&langpair=${from}|${to}`,{signal:ctl.signal});clearTimeout(tt);
+    if(r.ok){const j=await r.json();const t=j&&j.responseData&&j.responseData.translatedText;if(t&&!/MYMEMORY WARNING|INVALID/i.test(t))out=t.replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,'&');}}catch(e){}}
+  if(out)trCache.set(key,out);return out;}
+function speak(text,lang){try{if(!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance(text);u.lang=lang;speechSynthesis.speak(u);}catch(e){}}
+// ---------- Verbindungen zu den Mitspielern (PeerJS, Kennungen vom Server) ----------
+function loadPeerJS(){return window.Peer?Promise.resolve(true):new Promise(r=>{const sc=document.createElement('script');sc.src='lib/peerjs.min.js';sc.onload=()=>r(true);sc.onerror=()=>r(false);document.head.appendChild(sc);});}
+async function tbIce(){const list=[{urls:['stun:stun.l.google.com:19302','stun:stun.cloudflare.com:3478']}];
+  const ph=QS.get('peerhost'),base=ph?`http://${ph}:${QS.get('peerport')||9000}`:'https://dreischach.g-suchsland.workers.dev';
+  try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),4000);const r=await fetch(base+'/turn',{signal:ctl.signal,cache:'no-store'});clearTimeout(t);if(r.ok){const j=await r.json();list.push(...(j.iceServers||[]).filter(x=>x&&x.urls));}}catch(e){}
+  return list;}
+const seatOfId=id=>Object.keys(ON.rtc||{}).find(k=>ON.rtc[k]===id);
+function tbHumans(){return GM?GM.order.filter(q=>q!==ON.seat&&ON.seats&&ON.seats[q]&&ON.seats[q].kind==='human'):[];}
+async function tbStart(){
+  if(TB.peer||TB.starting||!GM||!GM.online||!ON.seat||!ON.rtc)return;TB.starting=true;
+  document.getElementById('tbBox').style.display='block';
+  if(!await loadPeerJS()){tbState('⚠️ Verbindungsbaustein nicht geladen.');TB.starting=false;return;}
+  const ice=await tbIce(),ph=QS.get('peerhost'),opts={config:{iceServers:ice},debug:0};
+  Object.assign(opts,ph?{host:ph,port:+(QS.get('peerport')||9000),path:'/',secure:QS.get('peersecure')==='1'}:{host:'dreischach.g-suchsland.workers.dev',port:443,path:'/',secure:true});
+  TB.peer=new Peer(ON.rtc[ON.seat],opts);TB.starting=false;
+  TB.peer.on('open',()=>{tbTick();tbUI();});
+  TB.peer.on('connection',c=>tbConn(c));
+  TB.peer.on('call',c=>{c.answer(tbOut());tbCall(c);});
+  TB.peer.on('disconnected',()=>{try{TB.peer.reconnect();}catch(e){}});
+  TB.peer.on('error',()=>{});
+  clearInterval(TB.tick);TB.tick=setInterval(tbTick,5000);
+}
+function tbTick(){if(!TB.peer||TB.peer.disconnected||!TB.peer.open)return;
+  for(const q of tbHumans()){const c=TB.conns[q];if(c&&(c.open||Date.now()-c._t<8000))continue;
+    if(ON.seat<q){try{c&&c.close();}catch(e){}const n=TB.peer.connect(ON.rtc[q],{reliable:true});n._t=Date.now();tbConn(n,q);}}
+  tbUI();}
+function tbConn(c,q){q=q||seatOfId(c.peer);if(!q)return;TB.conns[q]=c;c._t=c._t||Date.now();
+  c.on('open',()=>{c.send({t:'hi',name:myName(),lang:myLang(),av:tbAv()});if(ON.seat<q)tbDial(q);tbUI();});
+  c.on('data',d=>tbData(q,d));c.on('close',()=>{if(TB.conns[q]===c)delete TB.conns[q];tbUI();});c.on('error',()=>{});}
+function tbAv(){return{cam:!!TB.cam,mic:!!(TB.mic&&TB.mic.getAudioTracks().some(t=>t.enabled))};}
+let DUMMY=null;
+function tbOut(){if(!DUMMY){const c=document.createElement('canvas');c.width=64;c.height=48;c.getContext('2d').fillRect(0,0,64,48);DUMMY={v:c.captureStream(1).getVideoTracks()[0]};
+    try{const a=new (window.AudioContext||window.webkitAudioContext)();DUMMY.a=a.createMediaStreamDestination().stream.getAudioTracks()[0];}catch(e){}}
+  const v=TB.cam?TB.cam.getVideoTracks()[0]:DUMMY.v,a=TB.mic?TB.mic.getAudioTracks()[0]:DUMMY.a;return new MediaStream([v,a].filter(Boolean));}
+function tbDial(q){if(!TB.peer||!ON.rtc[q])return;try{TB.calls[q]&&TB.calls[q].close();}catch(e){}tbCall(TB.peer.call(ON.rtc[q],tbOut()),q);}
+function tbCall(call,q){q=q||seatOfId(call.peer);if(!q||!call)return;TB.calls[q]=call;
+  call.on('stream',st=>{TB.streams[q]=st;let v=TB.vids[q];if(!v){v=document.createElement('video');v.autoplay=true;v.playsInline=true;v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none';document.body.appendChild(v);TB.vids[q]=v;}
+    v.srcObject=st;v.play().catch(()=>{});tbUI();});
+  call.on('close',()=>{if(TB.calls[q]===call)delete TB.calls[q];});call.on('error',()=>{});}
+function tbBroadcast(m){for(const q in TB.conns){const c=TB.conns[q];try{if(c.open)c.send(m);}catch(e){}}}
+function tbRedial(){for(const q in TB.conns){const c=TB.conns[q];if(!c.open)continue;if(ON.seat<q)tbDial(q);else c.send({t:'recall'});}tbBroadcast({t:'av',av:tbAv()});}
+TB.av={};
+function tbData(q,d){if(!d||typeof d!=='object')return;
+  if(d.t==='hi'){TB.names[q]=String(d.name||'').slice(0,18);TB.langs[q]=d.lang;TB.av[q]=d.av||{};tbUI();}
+  else if(d.t==='av'){TB.av[q]=d.av||{};}
+  else if(d.t==='recall'){if(ON.seat<q)tbDial(q);}
+  else if(d.t==='chat')chatIn(q,d);
+  else if(d.t==='sub')subIn(q,d);}
+function tbState(t){const e=document.getElementById('tbState');if(e)e.textContent=t;}
+function tbUI(){const hs=tbHumans(),on=hs.filter(q=>TB.conns[q]&&TB.conns[q].open);
+  tbState(!hs.length?'Noch keine Mitspieler am Tisch.':on.length?'Verbunden mit: '+on.map(q=>PNAME[q]).join(', ')+'.':'Mitspieler sind gerade nicht online – Chat, Bild und Ton gehen, sobald jemand da ist.');
+  const cb=document.getElementById('tbCamBtn'),mb=document.getElementById('tbMicBtn');if(cb)cb.classList.toggle('on',!!TB.cam);if(mb)mb.classList.toggle('on',!!TB.mic);}
+async function tbCam(){if(TB.cam){TB.cam.getTracks().forEach(t=>t.stop());TB.cam=null;}
+  else{try{TB.cam=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240,facingMode:'user'}});}catch(e){alert('Die Kamera ist nicht verfügbar oder wurde nicht erlaubt.');return;}
+    let v=TB.vids[ON.seat];if(!v){v=document.createElement('video');v.muted=true;v.autoplay=true;v.playsInline=true;v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none';document.body.appendChild(v);TB.vids[ON.seat]=v;}
+    v.srcObject=TB.cam;v.play().catch(()=>{});}
+  tbRedial();tbUI();}
+async function tbMic(){if(TB.mic){TB.mic.getTracks().forEach(t=>t.stop());TB.mic=null;}
+  else{try{TB.mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});}catch(e){alert('Das Mikrofon ist nicht verfügbar oder wurde nicht erlaubt.');return;}}
+  tbRedial();tbUI();}
+// ---------- Chat ----------
+function chatToggle(){const b=document.getElementById('chatBox');const on=b.style.display==='none';b.style.display=on?'flex':'none';if(on){TB.unread=0;chatBadge();setTimeout(()=>document.getElementById('chatIn').focus(),50);}}
+function chatBadge(){const e=document.getElementById('chatBadge');if(e)e.textContent=TB.unread?'('+TB.unread+')':'';}
+function chatSend(){const i=document.getElementById('chatIn'),text=(i.value||'').trim().slice(0,200);if(!text)return;i.value='';
+  const m={t:'chat',text,lang:myLang(),name:myName(),id:Date.now()};tbBroadcast(m);chatIn(ON.seat,m);}
+async function chatIn(q,m){
+  const line={q,name:q===ON.seat?myName():(TB.names[q]||seatName(q)),text:String(m.text||'').slice(0,200),tr:null};TB.chat.push(line);if(TB.chat.length>200)TB.chat.shift();
+  if(q!==ON.seat){TB.subs[q]={text:line.text,t:Date.now()};if(document.getElementById('chatBox').style.display==='none'){TB.unread++;chatBadge();}}
+  chatRender();
+  if(q!==ON.seat&&m.lang&&m.lang!==myLang()){const t=await translateIn(line.text,m.lang,myLang());if(t){line.tr=t;TB.subs[q]={text:t,t:Date.now()};chatRender();if(TB.readOn)speak(t,myLang());}}
+}
+function chatRender(){const el=document.getElementById('chatLog');
+  el.innerHTML=TB.chat.map(l=>`<div><b style="color:${PCOL[l.q]||'#ccc'}">${esc(l.name)}:</b> ${esc(l.text)}${l.tr?`<br><i style="color:#9fd09f">🌐 ${esc(l.tr)}</i>`:''}</div>`).join('');el.scrollTop=el.scrollHeight;}
+// ---------- Gesprochenes als Untertitel (Spracherkennung im Browser), bei Bedarf übersetzt ----------
+const LOCALE={de:'de-DE',en:'en-US',fr:'fr-FR',es:'es-ES',it:'it-IT',pt:'pt-PT',nl:'nl-NL',pl:'pl-PL',ru:'ru-RU',tr:'tr-TR',uk:'uk-UA',zh:'zh-CN'};
+function subSet(on){TB.subOn=on;const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(on&&!SR){alert('Dein Browser kann Gesprochenes nicht in Text umwandeln (am besten Chrome verwenden).');document.getElementById('subChk').checked=false;TB.subOn=false;return;}
+  if(!on){try{TB.recog&&TB.recog.stop();}catch(e){}TB.recog=null;return;}
+  const r=new SR();r.lang=LOCALE[myLang()]||'de-DE';r.continuous=true;r.interimResults=false;
+  r.onresult=ev=>{for(let i=ev.resultIndex;i<ev.results.length;i++)if(ev.results[i].isFinal){const text=ev.results[i][0].transcript.trim();if(!text)continue;
+    TB.subs[ON.seat]={text,t:Date.now()};tbBroadcast({t:'sub',text,lang:myLang()});}};
+  r.onend=()=>{if(TB.subOn&&TB.recog===r)try{r.start();}catch(e){}};r.onerror=()=>{};
+  TB.recog=r;try{r.start();}catch(e){}}
+async function subIn(q,m){const text=String(m.text||'').slice(0,300);TB.subs[q]={text,t:Date.now()};
+  if(m.lang&&m.lang!==myLang()){const t=await translateIn(text,m.lang,myLang());if(t){TB.subs[q]={text:t,t:Date.now()};if(TB.readOn)speak(t,myLang());}}}
 // Maus / Touch: drehen, zoomen, antippen
 const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),ptrs=new Map();let down=null,pinch=null;
 function hit(e){ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(ndc,camera);
