@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Raumschach – Analysebrett</title>
+<meta name="description" content="Analysebrett für Raumschach: ein Würfel aus 8 × 8 × 8 Feldern mit sechs Heimatquadern. Figuren setzen, Zugmöglichkeiten ansehen, Regeln ausprobieren, Stellung teilen.">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#16181d">
+<style>
+:root { --bg:#16181d; --panel:rgba(28,30,38,.94); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
+* { box-sizing:border-box; }
+html,body { margin:0; height:100%; background:var(--bg); color:var(--text); font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; overflow:hidden; }
+#cv { position:fixed; inset:0; width:100%; height:100%; touch-action:none; display:block; }
+#ui { position:fixed; left:8px; top:8px; bottom:8px; width:300px; overflow:auto; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px 12px; z-index:5; }
+#ui.min { bottom:auto; width:auto; }
+#ui.min .body { display:none; }
+#ui h1 { font-size:16px; margin:0 0 2px; display:flex; align-items:center; gap:8px; }
+#ui h1 button { margin-left:auto; }
+#ui h2 { font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:14px 0 6px; }
+.row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:4px 0; }
+button, select, input[type=text] { background:#2a2e38; color:var(--text); border:1px solid #4a5060; border-radius:8px; padding:5px 9px; font-size:13px; cursor:pointer; }
+button:hover { background:#353a47; }
+button.on { background:#2a9d4a; border-color:#3cc463; }
+select { padding:4px 6px; }
+input[type=range] { flex:1; }
+.pal button { font-size:20px; padding:2px 7px; min-width:38px; line-height:1.2; }
+.pl { width:24px; height:24px; border-radius:50%; border:2px solid #111; padding:0; min-width:0; }
+.pl.on { outline:3px solid #fff; }
+.hint { color:var(--muted); font-size:12px; }
+#info { min-height:2.6em; background:#1d2130; border-radius:8px; padding:6px 8px; margin-top:6px; font-size:13px; }
+#tip { position:fixed; pointer-events:none; background:rgba(0,0,0,.85); color:#fff; padding:3px 7px; border-radius:6px; font-size:12px; display:none; z-index:9; }
+#log { max-height:110px; overflow:auto; font:12px/1.4 ui-monospace,monospace; background:#1d2130; border-radius:8px; padding:4px 8px; }
+a { color:#8fb6ff; }
+@media (max-width:700px){ #ui { width:auto; right:8px; bottom:auto; max-height:52vh; } }
+</style>
+</head><body>
+<canvas id="cv"></canvas>
+<div id="tip"></div>
+<div id="ui">
+ <h1>🧊 Raumschach <span class="hint">Analysebrett · Entwurf</span><button id="minBtn" onclick="toggleUI()" title="Leiste ein-/ausklappen">▴</button></h1>
+ <div class="body">
+  <div class="hint">Würfel aus 8 × 8 × 8 Feldern, an jeder Seite ein Heimatquader mit 8 × 8 × 4 Feldern. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom.</div>
+
+  <h2>Aufstellung</h2>
+  <div class="row">
+   <button onclick="setup(2)">2 Spieler</button><button onclick="setup(3)">3</button><button onclick="setup(4)">4</button><button onclick="setup(6)">6</button><button onclick="setup(0)">Leer</button>
+  </div>
+
+  <h2>Ebene</h2>
+  <div class="row">
+   <select id="axSel" onchange="setSlice()">
+    <option value="-1">alle Ebenen</option>
+    <option value="1">waagerecht (oben ↔ unten)</option>
+    <option value="0">senkrecht links ↔ rechts</option>
+    <option value="2">senkrecht vorne ↔ hinten</option>
+   </select>
+  </div>
+  <div class="row"><input type="range" id="slSel" min="-4" max="11" value="3" oninput="setSlice()"><span id="slLbl" style="min-width:4.5em"></span></div>
+  <div class="hint">Zum Setzen von Figuren eine Ebene wählen – dann sind ihre Felder anklickbar.</div>
+
+  <h2>Werkzeug</h2>
+  <div class="row"><button id="tMove" class="on" onclick="setTool('move')">♟ Ziehen</button><button id="tSet" onclick="setTool('set')">✎ Figur setzen</button><button onclick="undo()" title="Letzten Schritt zurücknehmen">↶ Zurück</button></div>
+  <div id="palette" style="display:none">
+   <div class="row" id="plRow"></div>
+   <div class="row pal" id="pcRow"></div>
+  </div>
+
+  <h2>Zugregeln zum Ausprobieren</h2>
+  <div class="row">Läufer: <select id="oB" onchange="optChg()"><option value="f">Flächendiagonalen (12 Richtungen)</option><option value="r">Flächen- und Raumdiagonalen (20)</option></select></div>
+  <div class="row">Dame: <select id="oQ" onchange="optChg()"><option value="1">Turm + Läufer + Raumdiagonalen (26)</option><option value="0">Turm + Läufer</option></select></div>
+  <div class="row">König: <select id="oK" onchange="optChg()"><option value="26">alle 26 Nachbarfelder</option><option value="18">ohne Raumdiagonalen (18)</option></select></div>
+  <div class="row">Springer: <select id="oN" onchange="optChg()"><option value="1">2 + 1 in zwei Achsen (24 Ziele)</option><option value="2">zusätzlich 2 + 1 + 1 (48 Ziele)</option></select></div>
+  <div class="row">Bauer schlägt: <select id="oP" onchange="optChg()"><option value="4">schräg vorwärts über Flächen (4)</option><option value="8">auch über Raumdiagonalen (8)</option></select></div>
+  <div class="row">Umwandlung: <select id="oU" onchange="optChg()"><option value="in">beim Betreten des Quaders gegenüber</option><option value="end">auf der hintersten Ebene gegenüber</option></select></div>
+  <div class="hint">Einhorn 🦄 (aus dem Raumschach von 1907): zieht nur über die Raumdiagonalen. Im Setzen-Werkzeug verfügbar.</div>
+
+  <h2>Auswahl</h2>
+  <div id="info">Noch nichts ausgewählt.</div>
+
+  <h2>Stellung teilen</h2>
+  <div class="row"><button onclick="share()">🔗 Link kopieren</button><span id="shareOk" class="hint"></span></div>
+  <input type="text" id="shareTxt" readonly style="width:100%;display:none">
+
+  <h2>Züge</h2>
+  <div id="log"></div>
+  <p class="hint" style="margin-top:12px"><a href="spiel.html">← zum Drei-Personen-Schach</a> · <a href="index.html#start">Startseite</a></p>
+ </div>
+</div>
+<script src="lib/three.min.js"></script>
+<script>
+'use strict';
+// ================= Spielfeld =================
+const N=8,D=4,LO=-D,HI=N-1+D;                      // Koordinaten -4 … 11 je Achse
+const PL=['B','G','R','Y','L','T'];
+const PNAME={B:'Blau',G:'Grün',R:'Rot',Y:'Gelb',L:'Lila',T:'Türkis'};
+const PCOL={B:'#3b7bff',G:'#35c935',R:'#ff4a33',Y:'#f2c418',L:'#b05cff',T:'#1fc9c9'};
+// Heimatquader: Achse k (0=x,1=y oben,2=z), Seite s (−1/+1)
+const HOME={B:[0,-1],G:[0,1],R:[2,-1],Y:[2,1],L:[1,-1],T:[1,1]};
+const SETS={2:['B','G'],3:['B','R','L'],4:['B','G','R','Y'],6:PL};
+const GLYPH={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟',U:'🦄'};
+const PNAMES={K:'König',Q:'Dame',R:'Turm',B:'Läufer',N:'Springer',P:'Bauer',U:'Einhorn'};
+const inCube=v=>v>=0&&v<N;
+function valid(x,y,z){const o=[x,y,z].filter(v=>!inCube(v));
+  if(o.length===0)return true;if(o.length>1)return false;const v=o[0];return v>=LO&&v<=HI;}
+function region(x,y,z){const c=[x,y,z];for(let k=0;k<3;k++)if(!inCube(c[k])){const s=c[k]<0?-1:1;return PL.find(p=>HOME[p][0]===k&&HOME[p][1]===s);}return null;}
+const key=(x,y,z)=>x+','+y+','+z;
+const unkey=k=>k.split(',').map(Number);
+function cname(x,y,z){const r=region(x,y,z);return `${x+5}·${y+5}·${z+5}`+(r?` (Quader ${PNAME[r]})`:' (Würfel)');}
+
+// ================= Zustand =================
+let S=new Map();          // "x,y,z" → {t,p,m}  m = schon gezogen
+let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in'};
+let hist=[],moves=[],sel=null,targets=[],tool='move',pal={p:'B',t:'Q'},slice={ax:-1,v:3};
+
+function fwd(p){const[k,s]=HOME[p];const f=[0,0,0];f[k]=-s;return f;}
+function setup(n){
+  pushHist();S=new Map();moves=[];sel=null;targets=[];
+  for(const p of(SETS[n]||[])){
+    const[k,s]=HOME[p],o=[0,1,2].filter(a=>a!==k);
+    // Achsen im Querschnitt: die waagerechte Achse für die Grundreihe, Höhe 3 bei senkrechten Quadern
+    let u=o[0],v=o[1];if(k!==1){u=o.find(a=>a!==1);v=1;}
+    const layer=d=>s<0?LO+d:HI-d;   // d=0 äußerste Ebene
+    'RNBQKBNR'.split('').forEach((t,i)=>{const c=[0,0,0];c[k]=layer(0);c[u]=i;c[v]=3;S.set(key(...c),{t,p,m:false});
+      const q=[0,0,0];q[k]=layer(1);q[u]=i;q[v]=3;S.set(key(...q),{t:'P',p,m:false});});
+  }
+  render();
+}
+
+// ================= Zugregeln =================
+function dirs(type){const out=[];
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){const n=(dx!==0)+(dy!==0)+(dz!==0);if(!n)continue;
+    if(type==='ax'&&n===1)out.push([dx,dy,dz]);if(type==='fd'&&n===2)out.push([dx,dy,dz]);if(type==='rd'&&n===3)out.push([dx,dy,dz]);}
+  return out;}
+function slides(x,y,z,ds,p,max){const out=[];
+  for(const d of ds){let a=x,b=y,c=z;for(let i=0;i<(max||99);i++){a+=d[0];b+=d[1];c+=d[2];if(!valid(a,b,c))break;const o=S.get(key(a,b,c));
+    if(o){if(o.p!==p)out.push({c:[a,b,c],cap:true});break;}out.push({c:[a,b,c],cap:false});}}
+  return out;}
+function genMoves(x,y,z){
+  const pc=S.get(key(x,y,z));if(!pc)return[];const p=pc.p;
+  const ax=dirs('ax'),fd=dirs('fd'),rd=dirs('rd');
+  switch(pc.t){
+    case'R':return slides(x,y,z,ax,p);
+    case'B':return slides(x,y,z,OPT.B==='r'?fd.concat(rd):fd,p);
+    case'U':return slides(x,y,z,rd,p);
+    case'Q':return slides(x,y,z,ax.concat(fd,OPT.Q==='1'?rd:[]),p);
+    case'K':return slides(x,y,z,ax.concat(fd,OPT.K==='26'?rd:[]),p,1);
+    case'N':{const out=[],seen=new Set();
+      const jumps=[];for(const a of[-2,2])for(const b of[-1,1]){for(const[i,j]of[[0,1],[0,2],[1,0],[1,2],[2,0],[2,1]]){const v=[0,0,0];v[i]=a;v[j]=b;jumps.push(v);
+        if(OPT.N==='2')for(const c of[-1,1]){const w=v.slice();const k=3-i-j;w[k]=c;jumps.push(w);}}}
+      for(const v of jumps){const a=x+v[0],b=y+v[1],c=z+v[2],k=key(a,b,c);if(seen.has(k)||!valid(a,b,c))continue;seen.add(k);const o=S.get(k);
+        if(!o)out.push({c:[a,b,c],cap:false});else if(o.p!==p)out.push({c:[a,b,c],cap:true});}
+      return out;}
+    case'P':{const out=[],f=fwd(p),fk=f.findIndex(v=>v),side=[0,1,2].filter(k=>k!==fk);
+      const s1=[x+f[0],y+f[1],z+f[2]];
+      if(valid(...s1)&&!S.get(key(...s1))){out.push({c:s1,cap:false});
+        const s2=[s1[0]+f[0],s1[1]+f[1],s1[2]+f[2]];if(!pc.m&&valid(...s2)&&!S.get(key(...s2)))out.push({c:s2,cap:false});}
+      const caps=[];for(const k of side)for(const sg of[-1,1]){const v=f.slice();v[k]=sg;caps.push(v);}
+      if(OPT.P==='8')for(const a of[-1,1])for(const b of[-1,1]){const v=f.slice();v[side[0]]=a;v[side[1]]=b;caps.push(v);}
+      for(const v of caps){const c=[x+v[0],y+v[1],z+v[2]];if(!valid(...c))continue;const o=S.get(key(...c));if(o&&o.p!==p)out.push({c,cap:true});}
+      return out;}
+  }
+  return[];
+}
+function promoZone(p,c){const[k,s]=HOME[p];const v=c[k];   // Quader gegenüber
+  if(OPT.U==='end')return -s<0?v===LO:v===HI;
+  return -s<0?v<0:v>=N;}
+
+// ================= Darstellung =================
+const cv=document.getElementById('cv');
+const R=new THREE.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio||1,2));
+const scene=new THREE.Scene();scene.background=new THREE.Color('#16181d');
+const camera=new THREE.PerspectiveCamera(45,1,0.1,400);
+const C0=new THREE.Vector3(3.5,3.5,3.5);
+const cam={th:0.7,ph:1.05,r:34};
+function applyCam(){const sp=Math.sin(cam.ph);camera.position.set(C0.x+cam.r*sp*Math.cos(cam.th),C0.y+cam.r*Math.cos(cam.ph),C0.z+cam.r*sp*Math.sin(cam.th));camera.lookAt(C0);}
+function resize(){R.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();draw();}
+// Gitterlinien eines Quaders [x0,x1]×[y0,y1]×[z0,z1] (Zellgrenzen)
+function lattice(x0,x1,y0,y1,z0,z1,col,op){
+  const P=[];const X0=x0-0.5,X1=x1+0.5,Y0=y0-0.5,Y1=y1+0.5,Z0=z0-0.5,Z1=z1+0.5;
+  for(let y=Y0;y<=Y1+1e-6;y++)for(let z=Z0;z<=Z1+1e-6;z++)P.push(X0,y,z,X1,y,z);
+  for(let x=X0;x<=X1+1e-6;x++)for(let z=Z0;z<=Z1+1e-6;z++)P.push(x,Y0,z,x,Y1,z);
+  for(let x=X0;x<=X1+1e-6;x++)for(let y=Y0;y<=Y1+1e-6;y++)P.push(x,y,Z0,x,y,Z1);
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));
+  return new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false}));
+}
+const gridGroup=new THREE.Group(),sliceGroup=new THREE.Group(),pieceGroup=new THREE.Group(),markGroup=new THREE.Group();
+scene.add(gridGroup,sliceGroup,pieceGroup,markGroup);
+gridGroup.add(lattice(0,7,0,7,0,7,'#8090b0',0.16));
+for(const p of PL){const[k,s]=HOME[p],r=[[0,7],[0,7],[0,7]];r[k]=s<0?[LO,-1]:[N,HI];
+  gridGroup.add(lattice(r[0][0],r[0][1],r[1][0],r[1][1],r[2][0],r[2][1],PCOL[p],0.22));
+  const bx=new THREE.Mesh(new THREE.BoxGeometry(r[0][1]-r[0][0]+1,r[1][1]-r[1][0]+1,r[2][1]-r[2][0]+1),
+    new THREE.MeshBasicMaterial({color:PCOL[p],transparent:true,opacity:0.05,depthWrite:false}));
+  bx.position.set((r[0][0]+r[0][1])/2,(r[1][0]+r[1][1])/2,(r[2][0]+r[2][1])/2);gridGroup.add(bx);}
+{const bx=new THREE.Mesh(new THREE.BoxGeometry(8,8,8),new THREE.MeshBasicMaterial({color:'#c8d4ff',transparent:true,opacity:0.035,depthWrite:false}));bx.position.copy(C0);gridGroup.add(bx);}
+
+// Figuren als Plaketten (immer zur Kamera gedreht)
+const TEX={};
+function pieceTex(p,t){const k=p+t;if(TEX[k])return TEX[k];
+  const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+  x.beginPath();x.arc(64,64,58,0,7);x.fillStyle=PCOL[p];x.fill();x.lineWidth=6;x.strokeStyle='#101010';x.stroke();
+  x.font=(t==='U'?'64px':'84px')+' "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif';x.textAlign='center';x.textBaseline='middle';
+  x.lineWidth=7;x.strokeStyle='#000';if(t!=='U')x.strokeText(GLYPH[t],64,70);x.fillStyle='#fff';x.fillText(GLYPH[t],64,t==='U'?68:70);
+  const tx=new THREE.CanvasTexture(c);TEX[k]=tx;return tx;}
+function sprite(p,t,op){const m=new THREE.SpriteMaterial({map:pieceTex(p,t),transparent:true,opacity:op,depthWrite:op>0.9});const s=new THREE.Sprite(m);s.scale.set(0.82,0.82,1);return s;}
+const inSlice=c=>slice.ax<0||c[slice.ax]===slice.v;
+
+function render(){
+  // Ebene
+  sliceGroup.clear();
+  if(slice.ax>=0){
+    const g=new THREE.BoxGeometry(0.94,0.94,0.94);
+    for(let a=LO;a<=HI;a++)for(let b=LO;b<=HI;b++){const c=[0,0,0];const o=[0,1,2].filter(k=>k!==slice.ax);c[slice.ax]=slice.v;c[o[0]]=a;c[o[1]]=b;
+      if(!valid(...c))continue;const r=region(...c),light=(c[0]+c[1]+c[2])%2===0;
+      let col=r?PCOL[r]:'#9aa6c0';const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:new THREE.Color(col).multiplyScalar(light?0.55:0.3),transparent:true,opacity:0.5,depthWrite:false}));
+      m.scale.set(slice.ax===0?0.08:1,slice.ax===1?0.08:1,slice.ax===2?0.08:1);m.position.set(...c);m.userData.cell=c;sliceGroup.add(m);}
+  }
+  // Figuren
+  pieceGroup.clear();
+  for(const[k,pc]of S){const c=unkey(k),s=sprite(pc.p,pc.t,inSlice(c)?1:0.22);s.position.set(...c);s.userData.cell=c;s.userData.piece=true;pieceGroup.add(s);}
+  // Auswahl und Ziele
+  markGroup.clear();
+  if(sel){const b=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1,1,1)),new THREE.LineBasicMaterial({color:'#ffdd00'}));b.position.set(...sel);markGroup.add(b);
+    const gs=new THREE.SphereGeometry(0.17,14,10);
+    for(const t of targets){const m=new THREE.Mesh(gs,new THREE.MeshBasicMaterial({color:t.cap?'#ff3322':'#3ee05a',transparent:true,opacity:inSlice(t.c)?0.95:0.55}));
+      if(t.cap)m.scale.setScalar(2.4);m.position.set(...t.c);m.userData.cell=t.c;m.userData.target=t;markGroup.add(m);}
+  }
+  document.getElementById('slLbl').textContent=slice.ax<0?'':('Ebene '+(slice.v+5));
+  updInfo();updLog();draw();
+}
+function updInfo(){const el=document.getElementById('info');
+  if(!sel){el.textContent='Noch nichts ausgewählt.';return;}
+  const pc=S.get(key(...sel));if(!pc){el.textContent='';return;}
+  const n=targets.length,c=targets.filter(t=>t.cap).length;
+  el.innerHTML=`<b style="color:${PCOL[pc.p]}">${PNAMES[pc.t]} ${PNAME[pc.p]}</b> auf ${cname(...sel)}<br>${n} Zugmöglichkeiten`+(c?`, davon ${c} mit Schlagen`:'');}
+function updLog(){document.getElementById('log').innerHTML=moves.map((m,i)=>`${i+1}. ${m}`).join('<br>')||'<span class="hint">noch keine</span>';
+  const l=document.getElementById('log');l.scrollTop=l.scrollHeight;}
+let raf=0;function draw(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;applyCam();R.render(scene,camera);});}
+
+// ================= Bedienung =================
+function pushHist(){hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice()});if(hist.length>200)hist.shift();}
+function undo(){const h=hist.pop();if(!h)return;S=h.S;moves=h.moves;sel=null;targets=[];render();}
+function select(c){const pc=S.get(key(...c));if(!pc){sel=null;targets=[];render();return;}sel=c;targets=genMoves(...c);render();}
+function doMove(t){const from=sel,pc=S.get(key(...from)),cap=S.get(key(...t.c));pushHist();
+  S.delete(key(...from));const np={t:pc.t,p:pc.p,m:true};let promo='';
+  if(pc.t==='P'&&promoZone(pc.p,t.c)){np.t='Q';promo=' = Dame';}
+  S.set(key(...t.c),np);
+  moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+5).join('·')} ${cap?'×':'–'} ${t.c.map(v=>v+5).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
+  sel=t.c;targets=genMoves(...t.c);render();}
+function place(c){pushHist();if(pal.t==='x')S.delete(key(...c));else S.set(key(...c),{t:pal.t,p:pal.p,m:false});sel=null;targets=[];render();}
+function setTool(t){tool=t;document.getElementById('tMove').classList.toggle('on',t==='move');document.getElementById('tSet').classList.toggle('on',t==='set');
+  document.getElementById('palette').style.display=t==='set'?'block':'none';
+  if(t==='set'&&slice.ax<0){document.getElementById('axSel').value='1';setSlice();}}
+function setSlice(){slice.ax=+document.getElementById('axSel').value;slice.v=+document.getElementById('slSel').value;render();}
+function optChg(){for(const k of['B','Q','K','N','P','U'])OPT[k]=document.getElementById('o'+k).value;if(sel)targets=genMoves(...sel);render();}
+function toggleUI(){const u=document.getElementById('ui');u.classList.toggle('min');document.getElementById('minBtn').textContent=u.classList.contains('min')?'▾':'▴';}
+function buildPalette(){
+  const pr=document.getElementById('plRow');pr.innerHTML='';
+  for(const p of PL){const b=document.createElement('button');b.className='pl'+(pal.p===p?' on':'');b.style.background=PCOL[p];b.title=PNAME[p];b.onclick=()=>{pal.p=p;buildPalette();};pr.appendChild(b);}
+  const cr=document.getElementById('pcRow');cr.innerHTML='';
+  for(const t of['K','Q','R','B','N','P','U','x']){const b=document.createElement('button');b.textContent=t==='x'?'✕':GLYPH[t];b.title=t==='x'?'Figur entfernen':PNAMES[t];
+    if(pal.t===t)b.classList.add('on');b.onclick=()=>{pal.t=t;buildPalette();};cr.appendChild(b);}
+}
+// Teilen: Optionen + Figuren (Spieler, Typ, x,y,z hexadezimal ab −4)
+function encode(){const o=['B','Q','K','N','P','U'].map(k=>OPT[k]).join('.');
+  const ps=[...S].map(([k,v])=>v.p+v.t+unkey(k).map(n=>(n+4).toString(16)).join('')+(v.m?'m':'')).join('-');
+  return 'r1_'+o+'_'+ps;}
+function decode(s){try{const[ver,o,ps]=s.split('_');if(ver!=='r1')return false;
+  const ov=o.split('.');['B','Q','K','N','P','U'].forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];document.getElementById('o'+k).value=ov[i];}});
+  S=new Map();for(const e of(ps||'').split('-').filter(Boolean)){const p=e[0],t=e[1],c=[2,3,4].map(i=>parseInt(e[i],16)-4);if(PL.includes(p)&&GLYPH[t]&&valid(...c))S.set(key(...c),{p,t,m:e[5]==='m'});}
+  return true;}catch(e){return false;}}
+function share(){const u=location.origin+location.pathname+'?r='+encode();const f=document.getElementById('shareTxt');f.style.display='block';f.value=u;
+  const ok=()=>{document.getElementById('shareOk').textContent='✓ kopiert';setTimeout(()=>document.getElementById('shareOk').textContent='',2500);};
+  if(navigator.share&&/Mobi|Android/i.test(navigator.userAgent)){navigator.share({title:'Raumschach-Stellung',url:u}).catch(()=>{});return;}
+  if(navigator.clipboard)navigator.clipboard.writeText(u).then(ok,()=>{f.select();});else f.select();}
+
+// Maus / Touch: drehen, zoomen, antippen
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),ptrs=new Map();let down=null,pinch=null;
+function hit(e){ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(ndc,camera);
+  for(const grp of[markGroup,pieceGroup,sliceGroup]){const hs=ray.intersectObjects(grp.children,false).filter(h=>h.object.userData.cell&&(grp!==pieceGroup||h.object.material.opacity>0.5||slice.ax<0));
+    if(hs.length)return hs[0].object.userData;}
+  return null;}
+cv.addEventListener('pointerdown',e=>{ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),r:cam.r};down=null;return;}
+  down={x:e.clientX,y:e.clientY,moved:0};});
+cv.addEventListener('pointermove',e=>{const tip=document.getElementById('tip');
+  if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pinch&&ptrs.size>=2){const[a,b]=[...ptrs.values()];cam.r=Math.max(8,Math.min(90,pinch.r*pinch.d/Math.max(1,Math.hypot(a.x-b.x,a.y-b.y))));draw();return;}
+  if(down){const dx=e.clientX-down.x,dy=e.clientY-down.y;down.x=e.clientX;down.y=e.clientY;down.moved+=Math.abs(dx)+Math.abs(dy);
+    if(down.moved>6){cam.th+=dx*0.008;cam.ph=Math.max(0.05,Math.min(Math.PI-0.05,cam.ph-dy*0.008));tip.style.display='none';draw();}return;}
+  if(e.pointerType==='touch')return;
+  const h=hit(e);if(h){const pc=S.get(key(...h.cell));tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
+    tip.textContent=cname(...h.cell)+(pc?' | '+PNAMES[pc.t]+' '+PNAME[pc.p]:'');}else tip.style.display='none';});
+const up=e=>{ptrs.delete(e.pointerId);if(pinch){if(ptrs.size<2)pinch=null;down=null;return;}
+  if(e.type==='pointerup'&&down&&down.moved<=6){const h=hit(e);
+    if(tool==='set'){if(h)place(h.cell);}
+    else if(h&&h.target)doMove(h.target);
+    else if(h&&S.get(key(...h.cell)))select(h.cell);
+    else{sel=null;targets=[];render();}}
+  down=null;};
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('wheel',e=>{e.preventDefault();cam.r=Math.max(8,Math.min(90,cam.r*(e.deltaY<0?0.9:1.1)));draw();},{passive:false});
+addEventListener('resize',resize);
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+
+// ================= Start =================
+buildPalette();
+const qs=new URLSearchParams(location.search);
+if(!(qs.get('r')&&decode(qs.get('r'))))setup(2);
+resize();render();
+window.RS={S,genMoves,setup,decode,encode,select,OPT,get state(){return S;}};
+</script>
+</body></html>
