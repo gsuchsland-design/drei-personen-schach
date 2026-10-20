@@ -415,7 +415,7 @@ async function api(path,body){const b=await srvBase();const r=await fetch(b+path
   const j=await r.json().catch(()=>({}));j._status=r.status;return j;}
 function encodePos(){return JSON.stringify([...S].map(([k,v])=>[...unkey(k),v.p,v.t,v.m?1:0]));}
 function decodePos(s){S=new Map();for(const[x,y,p,t,m]of JSON.parse(s))S.set(key(x,y),{p,t,m:!!m});}
-function onLink(){return location.origin+location.pathname+'?g='+ON.code+fernQS();}
+function onLink(){return location.origin+location.pathname+'?g='+ON.code+fernQS()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'');}
 async function onCreate(order,ctrl){
   const name=(document.getElementById('gName').value||'').trim().slice(0,18)||'Spieler';try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
   const seat=order.find(p=>ctrl[p]==='human');if(!seat){alert('Mindestens ein Platz muss „Mensch (an diesem Gerät)“ sein – das bist du.');return;}
