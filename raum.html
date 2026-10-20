@@ -9,6 +9,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16181d">
+<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102012"><\/script>');})();</script>
 <style>
 :root { --bg:#16181d; --panel:rgba(28,30,38,.94); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
 * { box-sizing:border-box; }
@@ -106,7 +107,7 @@ a { color:#8fb6ff; }
     <option value="2">senkrecht vorne ↔ hinten</option>
    </select>
   </div>
-  <div class="row"><input type="range" id="slSel" min="-4" max="11" value="3" oninput="setSlice()"><span id="slLbl" style="min-width:4.5em"></span></div>
+  <div class="row" id="slRow" style="display:none"><input type="range" id="slSel" min="-4" max="11" value="3" oninput="setSlice()"><span id="slLbl" style="min-width:4.5em"></span></div>
   <div class="hint">Zum Setzen von Figuren eine Ebene wählen – dann sind ihre Felder anklickbar.</div>
 
   <h2>Werkzeug</h2>
@@ -449,7 +450,7 @@ function place(c){pushHist();if(pal.t==='x')S.delete(key(...c));else S.set(key(.
 function setTool(t){tool=t;document.getElementById('tMove').classList.toggle('on',t==='move');document.getElementById('tSet').classList.toggle('on',t==='set');
   document.getElementById('palette').style.display=t==='set'?'block':'none';
   if(t==='set'&&slice.ax<0){document.getElementById('axSel').value='1';setSlice();}}
-function setSlice(){slice.ax=+document.getElementById('axSel').value;slice.v=+document.getElementById('slSel').value;render();}
+function setSlice(){slice.ax=+document.getElementById('axSel').value;slice.v=+document.getElementById('slSel').value;document.getElementById('slRow').style.display=slice.ax<0?'none':'flex';render();}
 function optChg(re){for(const k of OK)OPT[k]=document.getElementById('o'+k).value;if(re&&!moves.length){setup(lastN);return;}if(sel)targets=genMoves(...sel);render();}
 function toggleUI(){const u=document.getElementById('ui');u.classList.toggle('min');document.getElementById('minBtn').textContent=u.classList.contains('min')?'▾':'▴';}
 function buildPalette(){
