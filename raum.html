@@ -83,6 +83,8 @@ a { color:#8fb6ff; }
 
   <h2>Ansicht</h2>
   <div class="row"><button onclick="viewArmy()">🎯 Meine Armee</button><button onclick="viewReset()">⟲ Ganzer Würfel</button></div>
+  <div class="row">Figuren: <select id="styleSel" onchange="setStyle(this.value)"><option value="sym">Symbole</option><option value="chess">Schachfiguren 3D</option><option value="star">Sternfiguren</option><option value="ship">Raumschiffe</option></select>
+   <label><input type="checkbox" id="spaceChk" onchange="setSpace(this.checked)"> 🌌 Weltall</label></div>
   <div class="row">Farben: <span id="visRow" class="row" style="margin:0"></span></div>
   <div class="hint">Farbe antippen: ● sichtbar → ◐ blass → ○ ausgeblendet. Verschieben: Rechtsklick/Shift + Ziehen oder mit zwei Fingern. Doppelklick = ganzer Würfel.</div>
 
@@ -129,6 +131,7 @@ a { color:#8fb6ff; }
  </div>
 </div>
 <script src="lib/three.min.js"></script>
+<script src="lib/reiche3d.js"></script>
 <script>
 'use strict';
 // ================= Spielfeld =================
@@ -233,6 +236,11 @@ function promoZone(p,c){const[k,s]=HOME[p];const v=c[k];   // Quader gegenüber
 const cv=document.getElementById('cv');
 const R=new THREE.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio||1,2));
 const scene=new THREE.Scene();scene.background=new THREE.Color('#16181d');
+scene.add(new THREE.HemisphereLight(0xffffff,0x2a2f45,0.85));{const dl=new THREE.DirectionalLight(0xffffff,0.9);dl.position.set(12,22,16);scene.add(dl);const d2=new THREE.DirectionalLight(0x99b8ff,0.35);d2.position.set(-14,-6,-10);scene.add(d2);}
+// Figurenstil: sym = Symbole, chess = 3D-Schachfiguren, star = Sternfiguren, ship = Raumschiffe; Weltall im Hintergrund
+let STYLE='sym',SPACE_ON=false;try{STYLE=localStorage.getItem('reiche.style')||'sym';SPACE_ON=localStorage.getItem('reiche.space')==='1';}catch(e){}
+function setStyle(v){STYLE=v;try{localStorage.setItem('reiche.style',v);}catch(e){}if(v==='ship'&&!SPACE_ON){setSpace(true);document.getElementById('spaceChk').checked=true;}render();}
+function setSpace(on){SPACE_ON=on;try{localStorage.setItem('reiche.space',on?'1':'0');}catch(e){}R3.space(scene,on);gridOp();draw();}
 const camera=new THREE.PerspectiveCamera(45,1,0.1,400);
 const C0=new THREE.Vector3(3.5,3.5,3.5);
 const cam={th:0.7,ph:1.05,r:34},TGT=C0.clone();   // TGT = Blickpunkt (verschiebbar)
@@ -271,32 +279,49 @@ function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
   const d=[0,1,2].map(i=>Math.abs(mv.to[i]-mv.from[i])).sort((x,y)=>y-x),leap='NWACM'.includes(mv.t)&&!(d[1]===0||d[0]===d[1]);
   const pts=[mv.from].concat(mv.hops||[],[mv.to]).map(c=>new THREE.Vector3(...c));
   const dur=pts.length>2?Math.min(1600,260*(pts.length-1)):Math.min(900,280+len*45);
-  ANIM={mv,a,b,len,pts,hop:pts.length>2?0.9:(leap?1.1:0)+Math.min(1.6,len*0.12),dur,t0:performance.now(),kick:null};
+  const ship=STYLE==='ship';
+  ANIM={mv,a,b,len,pts,hop:ship?Math.min(1.2,len*0.08):pts.length>2?0.9:(leap?1.1:0)+Math.min(1.6,len*0.12),dur:ship&&mv.cap?Math.max(1200,dur):dur,t0:performance.now(),kick:null,ship};
+  if(ship&&mv.cap){   // Raumschiff: anfliegen, feuern, Ziel explodiert
+    animGroup.clear();ANIM.sp=R3.object('ship',mv.t,PCOL[mv.p],fwd(mv.p));animGroup.add(ANIM.sp);
+    ANIM.victim=R3.object('ship',mv.cap.t,PCOL[mv.cap.p],fwd(mv.cap.p));ANIM.victim.position.copy(b);animGroup.add(ANIM.victim);
+    ANIM.laser=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,1,6),new THREE.MeshBasicMaterial({color:PCOL[mv.p],transparent:true,opacity:0.9,blending:THREE.AdditiveBlending}));
+    ANIM.laser.visible=false;animGroup.add(ANIM.laser);
+    animStep();return;}
   if(mv.cap){   // Ziel des Flugs: hinter dem Quader dessen, der geschlagen hat
     const[k,sg]=HOME[mv.p]||[0,-1],tg=new THREE.Vector3(3.5,3.5,3.5);tg.setComponent(k,sg<0?LO-2.5:HI+2.5);
     tg.x+=(Math.random()-0.5)*6;tg.z+=(Math.random()-0.5)*6;tg.y+=(Math.random()-0.5)*4;
     ANIM.kick={p:mv.cap.p,t:mv.cap.t,from:b.clone(),to:tg,dir:b.clone().sub(a).normalize(),t0:ANIM.t0+dur*0.75,dur:1000};}
-  animGroup.clear();ANIM.sp=sprite(mv.p,mv.t,1);animGroup.add(ANIM.sp);
-  if(ANIM.kick){ANIM.ksp=sprite(ANIM.kick.p,ANIM.kick.t,1);ANIM.ksp.visible=false;animGroup.add(ANIM.ksp);}
+  const mk=(p,t)=>STYLE==='sym'?sprite(p,t,1):R3.object(STYLE,t,PCOL[p],fwd(p));
+  animGroup.clear();ANIM.sp=mk(mv.p,mv.t);animGroup.add(ANIM.sp);
+  if(ANIM.kick){ANIM.ksp=mk(ANIM.kick.p,ANIM.kick.t);ANIM.ksp.visible=false;animGroup.add(ANIM.ksp);}
   animStep();
 }
 const animBusy=()=>!!ANIM;
-const animLeft=()=>ANIM?Math.max(0,(ANIM.kick?ANIM.kick.t0+ANIM.kick.dur:ANIM.t0+ANIM.dur)-performance.now()):0;
+const animLeft=()=>ANIM?Math.max(0,(ANIM.kick?ANIM.kick.t0+ANIM.kick.dur:ANIM.t0+ANIM.dur+(ANIM.ship&&ANIM.mv.cap?700:0))-performance.now()):0;
 function animStep(){if(!ANIM)return;const now=performance.now();
   let e=Math.min(1,(now-ANIM.t0)/ANIM.dur);const s=e<0.5?2*e*e:1-Math.pow(-2*e+2,2)/2;
   let P;
   if(ANIM.pts.length>2){const n=ANIM.pts.length-1,f=Math.min(n-1e-6,e*n),i=Math.floor(f),u=f-i;   // Sprung für Sprung
     P=ANIM.pts[i].clone().lerp(ANIM.pts[i+1],u);P.y+=Math.sin(Math.PI*u)*ANIM.hop;}
   else{P=ANIM.a.clone().lerp(ANIM.b,s);P.y+=Math.sin(Math.PI*s)*ANIM.hop;}
-  ANIM.sp.position.copy(P);
+  if(ANIM.ship){const prev=ANIM.sp.position.clone();ANIM.sp.position.copy(P);   // Raumschiff: Nase in Flugrichtung
+    if(P.distanceTo(prev)>1e-4&&e<1){const look=P.clone().add(P.clone().sub(prev));ANIM.sp.lookAt(look);}
+    if(ANIM.mv.cap){const tgt=ANIM.b;
+      if(e>0.45&&!ANIM.expl){const from=P.clone(),dist=from.distanceTo(tgt);ANIM.laser.visible=dist>0.3&&((now/60|0)%2===0);
+        if(dist>0.3){ANIM.laser.scale.set(1,dist,1);ANIM.laser.position.copy(from).add(tgt).multiplyScalar(0.5);ANIM.laser.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tgt.clone().sub(from).normalize());}}
+      if(e>0.7&&!ANIM.expl){ANIM.expl=R3.explosion(animGroup,tgt.clone(),PCOL[ANIM.mv.cap.p]);ANIM.victim.visible=false;ANIM.laser.visible=false;}
+      if(ANIM.expl&&!ANIM.expl.update(now))ANIM.expl.done=true;}}
+  else ANIM.sp.position.copy(P);
   if(ANIM.kick&&now>=ANIM.kick.t0){const K=ANIM.kick,k=Math.min(1,(now-K.t0)/K.dur),u=1-Math.pow(1-k,2);
     ANIM.ksp.visible=true;
     // Stoß in Zugrichtung, hoher Bogen, Überschlag, wird kleiner und verblasst
     const c=K.from.clone().addScaledVector(K.dir,2.2).add(new THREE.Vector3(0,3,0));
     const Q=K.from.clone().multiplyScalar((1-u)*(1-u)).addScaledVector(c,2*u*(1-u)).addScaledVector(K.to,u*u);
-    ANIM.ksp.position.copy(Q);ANIM.ksp.material.rotation=u*Math.PI*4;const sc=0.82*(1-0.6*u);ANIM.ksp.scale.set(sc,sc,1);ANIM.ksp.material.opacity=k<0.7?1:1-(k-0.7)/0.3;}
+    ANIM.ksp.position.copy(Q);
+    if(ANIM.ksp.isSprite){ANIM.ksp.material.rotation=u*Math.PI*4;const sc=0.82*(1-0.6*u);ANIM.ksp.scale.set(sc,sc,1);ANIM.ksp.material.opacity=k<0.7?1:1-(k-0.7)/0.3;}
+    else{ANIM.ksp.rotation.set(u*Math.PI*4,u*Math.PI*2,0);ANIM.ksp.scale.setScalar(Math.max(0.01,1-0.85*u));}}
   draw();
-  const done=e>=1&&(!ANIM.kick||now>=ANIM.kick.t0+ANIM.kick.dur);
+  const done=e>=1&&(!ANIM.kick||now>=ANIM.kick.t0+ANIM.kick.dur)&&(!ANIM.ship||!ANIM.mv.cap||(ANIM.expl&&ANIM.expl.done));
   if(done){ANIM=null;animGroup.clear();render();}else requestAnimationFrame(animStep);
 }
 gridGroup.add(lattice(0,7,0,7,0,7,'#8090b0',0.16));
@@ -334,7 +359,18 @@ function render(){
   // Figuren
   pieceGroup.clear();
   const hideK=ANIM?key(...ANIM.mv.to):null;
+  if(STYLE==='sym'){
   for(const[k,pc]of S){const v=VIS[pc.p]??2;if(!v||k===hideK)continue;const c=unkey(k),s=sprite(pc.p,pc.t,v===1?0.13:inSlice(c)?1:0.22);s.position.set(...c);s.userData.cell=c;s.userData.piece=true;pieceGroup.add(s);}
+  }else{   // 3D: gleiche Figuren derselben Farbe gebündelt zeichnen
+    const groups={};
+    for(const[k,pc]of S){const v=VIS[pc.p]??2;if(!v||k===hideK)continue;const c=unkey(k),f=v===1||!inSlice(c)?1:0;(groups[pc.t+'|'+pc.p+'|'+f]=groups[pc.t+'|'+pc.p+'|'+f]||[]).push(c);}
+    const m4=new THREE.Matrix4(),q=new THREE.Quaternion(),one=new THREE.Vector3(1,1,1),Z=new THREE.Vector3(0,0,1);
+    for(const gk in groups){const[t,p,f]=gk.split('|'),cells=groups[gk],parts=R3.geo(STYLE,t);
+      if(STYLE==='ship')q.setFromUnitVectors(Z,new THREE.Vector3(...fwd(p)));else q.identity();
+      for(const kind in parts){const im=new THREE.InstancedMesh(parts[kind],R3.mat(PCOL[p],kind,f==='1'),cells.length);
+        cells.forEach((c,i)=>{m4.compose(new THREE.Vector3(...c),q,one);im.setMatrixAt(i,m4);});
+        im.userData.cells=cells;im.userData.piece=true;pieceGroup.add(im);}}
+  }
   visUI();
   // Auswahl und Ziele
   markGroup.clear();
@@ -673,8 +709,8 @@ function onWatch(){document.getElementById('joinBox').style.display='none';ON.se
 // Maus / Touch: drehen, zoomen, antippen
 const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),ptrs=new Map();let down=null,pinch=null;
 function hit(e){ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(ndc,camera);
-  for(const grp of[markGroup,pieceGroup,sliceGroup]){const hs=ray.intersectObjects(grp.children,false).filter(h=>h.object.userData.cell&&(grp!==pieceGroup||h.object.material.opacity>0.5||slice.ax<0));
-    if(hs.length)return hs[0].object.userData;}
+  for(const grp of[markGroup,pieceGroup,sliceGroup]){const hs=ray.intersectObjects(grp.children,false).filter(h=>(h.object.userData.cell||h.object.userData.cells)&&(grp!==pieceGroup||h.object.material.opacity>0.5||slice.ax<0));
+    if(hs.length){const u=hs[0].object.userData;return u.cells?{cell:u.cells[hs[0].instanceId],piece:true}:u;}}
   return null;}
 cv.addEventListener('pointerdown',e=>{ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});try{cv.setPointerCapture(e.pointerId);}catch(_){}
   if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),r:cam.r,mx:(a.x+b.x)/2,my:(a.y+b.y)/2};down=null;return;}
@@ -708,7 +744,9 @@ addEventListener('resize',resize);
 addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
 
 // ================= Start =================
+function gridOp(){gridGroup.traverse(o=>{if(o.material&&o.material.opacity!==undefined){if(o.userData.op0===undefined)o.userData.op0=o.material.opacity;o.material.opacity=o.userData.op0*(SPACE_ON?0.7:1);}});}
 buildPalette();gSeats();
+document.getElementById('styleSel').value=STYLE;document.getElementById('spaceChk').checked=SPACE_ON;R3.space(scene,SPACE_ON);
 const qs=new URLSearchParams(location.search);
 if(!(qs.get('r')&&decode(qs.get('r'))))setup(2);
 resize();render();
