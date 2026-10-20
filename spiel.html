@@ -602,7 +602,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie aus Datei laden</button>
     <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
     <button onclick="aboardOpen()" style="background:#355f8a" title="Stellungen aufbauen, Züge prüfen und teilen – unabhängig von einer Partie">🔬 Analysebrett</button>
-    <button onclick="location.href='raum.html'" style="background:#5a3f8a" title="Schach im Würfel: 8 × 8 × 8 Felder mit sechs Heimatquadern – Analysebrett zum Ausprobieren der Regeln">🧊 Raumschach (Entwurf)</button>
+    <button onclick="location.href='raum.html?v='+Date.now()" style="background:#5a3f8a" title="Schach im Würfel: 8 × 8 × 8 Felder mit sechs Heimatquadern – Analysebrett zum Ausprobieren der Regeln">🧊 Raumschach (Entwurf)</button>
     <button onclick="tourFromSetup()" style="background:#7a6420" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
     <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · <a href="index.html#start" style="color:#8fb6ff">Startseite</a> · <a href="regeln.html" style="color:#8fb6ff">Regeln</a> · <a href="strategie.html" style="color:#8fb6ff">Strategie</a> · <a href="impressum.html" style="color:#8fb6ff">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
   </div>
@@ -765,7 +765,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102002"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102003"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -797,7 +797,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-20 03:10';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-20 03:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
