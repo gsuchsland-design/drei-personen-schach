@@ -80,7 +80,8 @@ async function aiMonster(req, env) {
   if (!env.AI) return json({ error: 'KI ist auf diesem Server nicht eingerichtet' }, 501);
   let b; try { b = await req.json(); } catch (e) { return json({ error: 'bad json' }, 400); }
   const lang = LANGNAME[b.lang] ? b.lang : 'de', cut = (x, n) => String(x || '').slice(0, n);
-  const system = `Du bist ${cut(b.monster, 20)}, ein Monster-Computergegner im Spiel Drei-Personen-Schach. Charakter: ${cut(b.persona, 300)}. ` +
+  const GN = { raum: 'Schach der 6 Reiche', grenz: 'Schach ohne Grenzen' };
+  const system = `Du bist ${cut(b.monster, 20)}, ein Monster-Computergegner im Spiel ${GN[b.game] || 'Drei-Personen-Schach'}. Charakter: ${cut(b.persona, 300)}. ` +
     `Antworte immer in dieser Sprache: ${LANGNAME[lang]}. Antworte kurz (höchstens 2 Sätze), witzig und im Charakter, ohne Beleidigungen und ohne Gewalt. ` +
     'Du darfst bluffen und verhandeln. Wenn dir jemand ein Bündnis gegen einen anderen Spieler vorschlägt, entscheide nach deinem Charakter und der Spielsituation (gegen den Führenden lohnt es sich eher). ' +
     'Gib NUR ein JSON-Objekt zurück, ohne weiteren Text: {"reply":"…","deal":"accept"|"decline"|"none","target":"<Name des Spielers, gegen den sich das Bündnis richtet, oder leer>"}. ' +

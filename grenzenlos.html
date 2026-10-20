@@ -77,7 +77,8 @@ a { color:#8fb6ff; }
   <p class="hint" style="margin-top:12px"><a href="grenzenlos-regeln.html" target="_blank">📖 Regeln</a> · <a href="spiel.html">← Drei-Personen-Schach</a> · <a href="raum.html">👑 Schach der 6 Reiche</a></p>
  </div>
 </div>
-<script src="lib/kit.js?v=2026102009"></script>
+<script src="lib/monsters.js?v=2026102010"></script>
+<script src="lib/kit.js?v=2026102010"></script>
 <script>
 'use strict';
 // ================= Spieler, Aufstellung =================
@@ -285,7 +286,7 @@ function undo(){if(!GM)return;if(GM.online){alert('In Online-Partien kann man ni
 function aiEval(p,lvl,ms,noise){
   const foes=alive().filter(q=>q!==p),kings=foes.map(q=>kingOf(q)).filter(Boolean);
   const kd=c=>{let m=99;for(const k of kings)m=Math.min(m,Math.max(Math.abs(c[0]-k[0]),Math.abs(c[1]-k[1])));return m;};
-  const out=[];
+  const out=[],THR=noise?KIT.oppThreat(p):1,DIP=noise&&KIT.dipBoss();
   for(const m of ms){const tg=m.ep?S.get(key(...m.ep)):S.get(key(...m.c));
     let sc=noise?Math.random()*(lvl==='easy'?6:lvl==='medium'?0.8:0.3):0;
     if(tg)sc+=tg.t==='K'?1000:VAL[tg.t]*10;
@@ -296,11 +297,12 @@ function aiEval(p,lvl,ms,noise){
         if(enemy){const def=attackers(m.c,q=>q===p,true).length;v-=VAL[a.t]*(def?5:10)+(a.t==='K'?100:0);}
         for(const q of foes)if(inCheck(q)){v+=lvl==='medium'?1.5:3;if(!legalMoves(q).length)v+=5000;}
         if(a.t==='P'){v+=0.5;if(promotes(p,m.c))v+=80;}
+        if(DIP)v+=KIT.dipBias(p,tg&&tg.p,tg?VAL[tg.t]:0,foes.filter(q=>inCheck(q)));
         if(a.t!=='K'&&a.t!=='P')v+=(kd(m.from)-kd(m.c))*(lvl==='medium'?0.25:0.35);
         if(a.t==='K'&&!GM.capt)v-=1.5;
         const dc=Math.abs(m.c[0]-LAY.M[0])+Math.abs(m.c[1]-LAY.M[1]);v+=Math.max(0,10-dc)*0.04;
         if(lvl==='hard'||lvl==='master'){let hang=0;for(const[k,o]of S){if(o.p!==p||o.t==='P')continue;const c=unkey(k);if(Math.abs(c[0]-m.c[0])+Math.abs(c[1]-m.c[1])>8)continue;
-          if(attackers(c,q=>q!==p&&!GM.out.includes(q),true).length&&!attackers(c,q=>q===p,true).length)hang+=VAL[o.t];}v-=hang*3;}
+          if(attackers(c,q=>q!==p&&!GM.out.includes(q),true).length&&!attackers(c,q=>q===p,true).length)hang+=VAL[o.t];}v-=hang*3*THR;}
         return v;});}
     out.push({m,v:sc});}
   // Meister: die besten Züge eine Ebene tiefer prüfen – was kann der nächste Gegner darauf schlagen oder matt setzen?
@@ -311,7 +313,7 @@ function aiEval(p,lvl,ms,noise){
           let g=t.t==='K'?500:VAL[t.t]*10;const capT=S.get(key(...r.from)).t;const back=tryMove(r,r.from,()=>attackers(r.c,x=>x===p,true).length>0);if(back&&t.t!=='K')g-=VAL[capT]*8;if(g>worst)worst=g;}}
         return worst*0.85;});}}
   return out;}
-function aiMove(p){if(!GM||GM.over||gCur()!==p||GM.paused||KIT.busy())return;
+function aiMove(p){if(!GM||GM.over||gCur()!==p||GM.paused||KIT.busy())return;KIT.dipTurn(p);
   const lvl=GM.ctrl[p];let ms=legalMoves(p);if(!ms.length){advance();return;}const fm=ms.filter(dutyOk);if(fm.length)ms=fm;
   let best=null,bs=-1e9;for(const o of aiEval(p,lvl,ms,true))if(o.v>bs){bs=o.v;best=o.m;}
   gameMove(best.from,best);
@@ -397,8 +399,8 @@ function renderTurn(){const el=document.getElementById('turn');if(!GM){el.style.
   document.getElementById('seats').innerHTML=GM.order.map(p=>`<div class="pc${!GM.over&&gCur()===p?' act':''}"><span style="color:${PCOL[p]};font-weight:700">● ${PNAME[p]}</span><span class="hint">${esc(seatName(p))}</span>${GM.out.includes(p)?'':KIT.clockHTML(p)}<span style="margin-left:auto">${GM.out.includes(p)?'ausgeschieden':material(p)}</span></div>`).join('')
     +(GM.quiet>QUIET*alive().length/2&&!GM.over?`<div class="hint">ruhige Züge ${GM.quiet}/${QUIET*alive().length}</div>`:'');
   const l=document.getElementById('log');l.innerHTML=moves.map((m,i)=>`${i+1}. ${esc(m)}`).join('<br>')||'<span class="hint">noch keine</span>';l.scrollTop=l.scrollHeight;}
-function seatName(p){if(!GM)return PNAME[p];if(GM.online&&ON.seats&&ON.seats[p]){const s=ON.seats[p];return s.kind==='human'?(p===ON.seat?KIT.myName():s.name||PNAME[p]):s.kind==='ai'?'Computer · '+(KIT.LVL[s.lvl]||''):'frei';}
-  const c=GM.ctrl[p];return c==='human'?(GM.order.filter(q=>GM.ctrl[q]==='human').length===1?KIT.myName():'Mensch'):'Computer · '+(KIT.LVL[c]||'');}
+function seatName(p){if(!GM)return PNAME[p];if(GM.online&&ON.seats&&ON.seats[p]){const s=ON.seats[p];return s.kind==='human'?(p===ON.seat?KIT.myName():s.name||PNAME[p]):s.kind==='ai'?KIT.monName(p)+' · '+(KIT.LVL[s.lvl]||''):'frei';}
+  const c=GM.ctrl[p];return c==='human'?(GM.order.filter(q=>GM.ctrl[q]==='human').length===1?KIT.myName():'Mensch'):KIT.monName(p)+' · '+(KIT.LVL[c]||'');}
 // ---------- Animation ----------
 let ANIM=null;
 function animStart(from,to,pc,cap){ANIM={from,to,pc:{t:pc.t,p:pc.p},cap:cap?{t:cap.t,p:cap.p}:null,t0:performance.now(),dur:Math.min(700,220+Math.hypot(to[0]-from[0],to[1]-from[1])*40)};animStep();}
@@ -521,10 +523,10 @@ function varAI(){if(!GM||GM.over)return;const p=gCur();let ms=legalMoves(p);cons
 function showMove(f,t){select(f);HINT=t;render();}
 function tcText(r){if(!r||!(r.tcMove||r.tcGame))return'';return', '+[r.tcMove?(KIT.TC_MOVE.find(x=>x[0]===r.tcMove)||[0,r.tcMove+' s'])[1]+' pro Zug':'',r.tcGame?r.tcGame+' Min. pro Partie':''].filter(Boolean).join(', ');}
 KIT.init({game:'grenz',title:'Schach ohne Grenzen',descr:'normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler; bei 3 oder 4 Spielern stehen die Heere wie an einem Tisch, Bauern ziehen auf den gegenüberliegenden Spieler zu',
-  PCOL,PNAME,VAL,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,clockShow:()=>renderTurn(),onColors:()=>{render();},
+  PCOL,PNAME,VAL,material,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,clockShow:()=>renderTurn(),onColors:()=>{render();},
   snap:snapGame,load:loadGame,moveList:()=>moves,replayShow,resume:()=>{if(GM&&!GM.over)turnStart();},poll:()=>onPoll(),varEnter,varExit,varUndo:()=>undo(),varAI,showMove});
 resumeUI();
-document.getElementById('tcBox').innerHTML=KIT.tcHTML();document.getElementById('kitBox').innerHTML=KIT.tbHTML();
+document.getElementById('tcBox').innerHTML=KIT.tcHTML();document.getElementById('kitBox').innerHTML=KIT.tbHTML()+KIT.monUI();
 // ---------- Einführung ----------
 function tourStart(){const ui=document.getElementById('ui');if(ui.classList.contains('min'))toggleUI();
   KIT.tour([

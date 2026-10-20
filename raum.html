@@ -138,7 +138,8 @@ a { color:#8fb6ff; }
 </div>
 <script src="lib/three.min.js"></script>
 <script src="lib/reiche3d.js"></script>
-<script src="lib/kit.js?v=2026102009"></script>
+<script src="lib/monsters.js?v=2026102010"></script>
+<script src="lib/kit.js?v=2026102010"></script>
 <script>
 'use strict';
 // ================= Spielfeld =================
@@ -629,7 +630,7 @@ function timeout(p,kind){if(!GM||GM.over||gCur()!==p)return;clearTimeout(aiT);
 function aiEval(p,lvl,ms,noise){
   const foes=alive().filter(q=>q!==p),kings=foes.map(q=>[q,kingOf(q)]).filter(x=>x[1]);
   const kd=c=>{let m=99;for(const[,k]of kings)m=Math.min(m,Math.max(Math.abs(c[0]-k[0]),Math.abs(c[1]-k[1]),Math.abs(c[2]-k[2])));return m;};
-  const strong=lvl==='hard'||lvl==='master',out=[];
+  const strong=lvl==='hard'||lvl==='master',out=[],THR=noise?KIT.oppThreat(p):1,DIP=noise&&KIT.dipBoss();
   for(const m of ms){
     const tg=S.get(key(...m.to));
     let sc=noise?Math.random()*(lvl==='easy'?6:lvl==='medium'?0.8:0.3):0;
@@ -642,12 +643,13 @@ function aiEval(p,lvl,ms,noise){
           if(!legalMoves(q).length)v+=5000;}   // setzt matt
         if(a.t!=='K'&&a.t!=='P')v+=(kd(m.from)-kd(m.to))*(strong?0.35:0.25);   // Richtung gegnerischer König
         if(a.t==='P'){v+=0.4;if(promoZone(p,m.to))v+=60;}
+        if(DIP)v+=KIT.dipBias(p,tg&&tg.p,tg?VAL[tg.t]:0,foes.filter(q=>inCheck(q)));
         const dc=Math.abs(m.to[0]-3.5)+Math.abs(m.to[1]-3.5)+Math.abs(m.to[2]-3.5);v+=Math.max(0,12-dc)*0.05;
         if(strong){   // eigene bedrohte Figuren, die nach dem Zug noch hängen
           let hang=0;for(const[k,o]of S){if(o.p!==p||o.t==='P')continue;const c=unkey(k);
             if(Math.abs(c[0]-m.to[0])+Math.abs(c[1]-m.to[1])+Math.abs(c[2]-m.to[2])>6)continue;
             if(attackers(c,q=>q!==p&&!GM.out.includes(q),true).length&&!attackers(c,q=>q===p,true).length)hang+=VAL[o.t];}
-          v-=hang*3;}
+          v-=hang*3*THR;}
         return v;});
     }
     out.push({m,v:sc});
@@ -664,7 +666,7 @@ function aiEval(p,lvl,ms,noise){
         return worst*0.85;});}}
   return out;
 }
-function aiMove(p){if(!GM||GM.over||gCur()!==p||GM.paused||KIT.busy())return;
+function aiMove(p){if(!GM||GM.over||gCur()!==p||GM.paused||KIT.busy())return;KIT.dipTurn(p);
   const lvl=GM.ctrl[p];let ms=legalMoves(p);if(!ms.length){advance();return;}const fm=ms.filter(dutyOk);if(fm.length)ms=fm;
   let best=null,bs=-1e9;for(const o of aiEval(p,lvl,ms,true))if(o.v>bs){bs=o.v;best=o.m;}
   gameMove(best.from,best.to);
@@ -800,8 +802,8 @@ function onWatch(){document.getElementById('joinBox').style.display='none';ON.se
 
 // ================= Tisch: Monitore (Bild & Ton, Chat, Übersetzung kommen aus lib/kit.js) =================
 const TB=KIT.TB;
-function seatName(p){if(!GM)return PNAME[p];if(GM.online&&ON.seats&&ON.seats[p]){const s=ON.seats[p];return s.kind==='human'?(p===ON.seat?KIT.myName():s.name||PNAME[p]):s.kind==='ai'?'Computer · '+(KIT.LVL[s.lvl]||''):'frei';}
-  const c=GM.ctrl[p];return c==='human'?(GM.order.filter(q=>GM.ctrl[q]==='human').length===1?KIT.myName():'Mensch'):'Computer · '+(KIT.LVL[c]||'');}
+function seatName(p){if(!GM)return PNAME[p];if(GM.online&&ON.seats&&ON.seats[p]){const s=ON.seats[p];return s.kind==='human'?(p===ON.seat?KIT.myName():s.name||PNAME[p]):s.kind==='ai'?KIT.monName(p)+' · '+(KIT.LVL[s.lvl]||''):'frei';}
+  const c=GM.ctrl[p];return c==='human'?(GM.order.filter(q=>GM.ctrl[q]==='human').length===1?KIT.myName():'Mensch'):KIT.monName(p)+' · '+(KIT.LVL[c]||'');}
 // ---------- Monitore: hinter jedem Reich, immer zur Kamera gedreht ----------
 const MON_W=6,MON_H=4.5,monGroup=new THREE.Group(),MONS={};scene.add(monGroup);
 function monPos(p){const[k,sg]=HOME[p];const c=new THREE.Vector3(3.5,3.5,3.5);c.setComponent(k,sg<0?LO-5:HI+5);return c;}
@@ -874,11 +876,11 @@ addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.prevent
 // ================= Start =================
 function gridOp(){gridGroup.traverse(o=>{if(o.material&&o.material.opacity!==undefined){if(o.userData.op0===undefined)o.userData.op0=o.material.opacity;o.material.opacity=o.userData.op0*(SPACE_ON?0.7:1);}});}
 KIT.init({game:'raum',title:'Schach der 6 Reiche',descr:'Schach im Würfel aus 8 × 8 × 8 Feldern mit sechs Heimatquadern, 2 bis 6 Spieler, viele Märchenfiguren wie Einhorn, Nachtreiter und Amazone',
-  PCOL,PNAME,VAL,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,mon3d:monDraw,clockShow:()=>renderTurn(),
+  PCOL,PNAME,VAL,material,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,mon3d:monDraw,clockShow:()=>renderTurn(),
   onColors:()=>{for(const k in TEX)delete TEX[k];buildGrid();buildPalette();render();},
   snap:snapGame,load:loadGame,moveList:()=>moves,replayShow,resume:()=>{if(GM&&!GM.over)turnStart();},poll:()=>onPoll(),varEnter,varExit,varUndo:()=>undo(),varAI,showMove});
 resumeUI();
-document.getElementById('tcBox').innerHTML=KIT.tcHTML();document.getElementById('kitBox').innerHTML=KIT.tbHTML();
+document.getElementById('tcBox').innerHTML=KIT.tcHTML();document.getElementById('kitBox').innerHTML=KIT.tbHTML()+KIT.monUI();
 for(const k in TEX)delete TEX[k];buildGrid();
 // ---------- Einführung ----------
 function tourStart(){const ui=document.getElementById('ui');if(ui.classList.contains('min'))toggleUI();
