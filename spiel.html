@@ -1893,11 +1893,11 @@ function pubRender(){
   el.innerHTML=L.map(e=>{
     const seats=e.seats.map(s=>`<span class="pubSeat" style="border-color:${PCOLOR[s.p]||RCOL[s.p]}">${s.kind==='human'?esc(s.name):s.kind==='ai'?'🤖 '+T(PUB_LVL[s.lvl]||'Computer'):'<i>'+T('frei')+'</i>'}</span>`).join('');
     const r=e.rules||{},raum=e.game==='raum'||e.game==='grenz',grenz=e.game==='grenz',parts=raum?[T('{0} Spieler',[e.seats.length]),r.end==='last'?T('wer matt ist, scheidet aus'):T('erstes Matt entscheidet')]:[r.help===false?T('ohne Hilfspflicht'):T('mit Hilfspflicht')];
-    if(raum){parts.push(r.live===false?T('Fernpartie'):T('Live'));if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));}
+    if(raum){if(r.help&&e.seats.length>=3)parts.push(T('mit Hilfspflicht'));parts.push(r.live===false?T('Fernpartie'):T('Live'));if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));}
     if(e.kind==='live'){if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));if(!r.tcMove&&!r.tcGame)parts.push(T('ohne Zeitlimit'));
       parts.push(r.cam?T('mit Kamera'):T('ohne Kamera'));}
     const lg=r.lang&&r.lang!=='de'?' '+((LANGS.find(l=>l[0]===r.lang)||[])[2]||''):'';
-    const canPlay=e.open>0&&(e.kind==='fern'||!e.started),canWatch=e.kind==='fern'?e.started||!e.open:r.spec!=='never'&&(e.started||!e.open);
+    const canPlay=e.open>0&&(e.kind==='fern'||!e.started),canWatch=raum&&r.spec==='never'?false:e.kind==='fern'?e.started||!e.open:r.spec!=='never'&&(e.started||!e.open);
     const st=e.started?(e.kind==='fern'&&e.open?T('läuft – freie Plätze können noch besetzt werden'):T('läuft')):T('wartet auf Mitspieler');
     const code=String(e.code).replace(/[^a-z0-9]/g,''),kind=e.kind==='fern'?'fern':'live';
     return `<div class="pubCard"><div class="pubHead">${grenz?'♾️ '+T('Schach ohne Grenzen'):raum?'👑 '+T('Schach der 6 Reiche'):kind==='fern'?'✉️ '+T('Fernpartie'):'🌐 '+T('Live')} · <b>${T('Partie von {0}',[esc(e.host)])}</b>${lg}<span class="pubAge">${pubAge(e.age)}</span></div>

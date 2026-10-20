@@ -48,15 +48,18 @@ a { color:#8fb6ff; }
   <div class="hint">Normales Schach auf einem unendlichen Brett. Ziehen = verschieben, Rad/zwei Finger = Zoom, Doppelklick = alle Figuren einpassen. Die Übersicht unten rechts zeigt das ganze Geschehen.</div>
   <h2>Partie</h2>
   <div id="gameSetup">
+   <div id="resumeBox"></div>
    <div class="row">Spieler: <select id="gN" onchange="gSeats()"><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
    <div id="gSeatRows"></div>
    <div class="row" id="promoRow">Umwandlung: <select id="gPromo"><option value="zone">beim Erreichen einer fremden Startzone</option><option value="rank">erst auf der Grundreihe der Admiräle</option></select></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
+   <div class="row" id="helpRow"><label title="Steht ein Spieler im Schach, muss jeder, der vor ihm zieht, ihm helfen: Ist er matt, muss der Zug ihn befreien – ist er nicht matt, darf der Zug ihn nicht mattsetzen."><input type="checkbox" id="gHelp"> 🆘 Hilfspflicht (ab 3 Spielern)</label></div>
    <div id="tcBox"></div>
    <div id="gOnline" style="display:none">
     <div class="row">Art: <select id="gMode" onchange="gOnlineUI()"><option value="live">🌐 Live – alle spielen gleichzeitig</option><option value="fern">✉️ Fernpartie – ziehen, wann man Zeit hat</option></select></div>
     <div class="row">Dein Name: <input type="text" id="gName" maxlength="18" placeholder="Name" style="flex:1"></div>
     <div class="row"><label><input type="checkbox" id="gPub"> 🌍 In der öffentlichen Lobby anbieten</label></div>
+    <div class="row">Zuschauer: <select id="gSpec"><option value="always">erlaubt</option><option value="never">nicht erlaubt</option></select></div>
     <div class="hint">Eingeladene bekommen einen Link. Der Spielstand liegt auf dem Server – gleichzeitig spielen oder ziehen, wann man Zeit hat.</div>
    </div>
    <div class="row"><button class="on" onclick="gameStart()">▶ Partie starten</button></div>
@@ -74,7 +77,7 @@ a { color:#8fb6ff; }
   <p class="hint" style="margin-top:12px"><a href="grenzenlos-regeln.html" target="_blank">📖 Regeln</a> · <a href="spiel.html">← Drei-Personen-Schach</a> · <a href="raum.html">👑 Schach der 6 Reiche</a></p>
  </div>
 </div>
-<script src="lib/kit.js?v=2026102008"></script>
+<script src="lib/kit.js?v=2026102009"></script>
 <script>
 'use strict';
 // ================= Spieler, Aufstellung =================
@@ -173,7 +176,7 @@ function gSeats(){const n=+document.getElementById('gN').value,box=document.getE
     box.appendChild(r);r.querySelector('select').onchange=gOnlineUI;});
   document.getElementById('promoRow').style.display=n>2?'flex':'none';gOnlineUI();}
 function onMode(){const m=document.getElementById('gMode');return m&&document.getElementById('gOnline').style.display!=='none'?m.value:'local';}
-function gOnlineUI(){const n=+document.getElementById('gN').value,on=TURNS[n].some(p=>(document.getElementById('gS'+p)||{}).value==='open');
+function gOnlineUI(){document.getElementById('helpRow').style.display=+document.getElementById('gN').value>=3?'flex':'none';const n=+document.getElementById('gN').value,on=TURNS[n].some(p=>(document.getElementById('gS'+p)||{}).value==='open');
   document.getElementById('gOnline').style.display=on?'block':'none';
   document.getElementById('tcBox').style.display=on&&document.getElementById('gMode').value==='fern'?'none':'block';
   if(on&&!document.getElementById('gName').value){try{document.getElementById('gName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}}}
@@ -182,14 +185,15 @@ function gameStart(){
   for(const p of order)ctrl[p]=document.getElementById('gS'+p).value;
   if(order.some(p=>ctrl[p]==='open')){onCreate(order,ctrl);return;}
   setup(n);hist=[];moves=[];EP=null;LASTMV=null;
-  GM={order,ctrl,end:document.getElementById('gEnd').value,promo:document.getElementById('gPromo').value,idx:0,out:[],over:false,winner:null,note:'',quiet:0,rec:[],tc:KIT.tcRead()};
-  KIT.clockInit(GM);enterGame();
+  GM={order,ctrl,end:document.getElementById('gEnd').value,promo:document.getElementById('gPromo').value,idx:0,out:[],over:false,winner:null,note:'',quiet:0,rec:[],tc:KIT.tcRead(),help:order.length>=3&&document.getElementById('gHelp').checked};
+  KIT.clockInit(GM);enterGame();KIT.autosave();
 }
 function enterGame(){sel=null;targets=[];REP=null;document.getElementById('ui').classList.add('ingame');
   document.getElementById('gameSetup').style.display='none';document.getElementById('gameRun').style.display='block';fitAll();render();turnStart();}
 function gameStop(){if(GM&&!GM.over&&!confirm(GM.online?'Partie verlassen? Du kannst später über den Link zurückkehren.':'Partie beenden?'))return;
   if(GM&&GM.online){KIT.tbStop();clearInterval(ON.poll);try{history.replaceState(null,'',location.pathname+(QS.get('fernhost')?'?fernhost='+encodeURIComponent(QS.get('fernhost')):''));}catch(e){}document.getElementById('onBox').style.display='none';ON={};}
-  GM=null;clearTimeout(aiT);document.getElementById('ui').classList.remove('ingame');
+  if(KIT.varOn())KIT.varEnd();if(KIT.busy())KIT.replayEnd();if(GM&&!GM.online)KIT.autoClear();
+  GM=null;clearTimeout(aiT);document.getElementById('ui').classList.remove('ingame');resumeUI();
   document.getElementById('gameSetup').style.display='block';document.getElementById('gameRun').style.display='none';setup(+document.getElementById('gN').value);render();}
 function afterMove(mover){let note='';
   for(const q of alive()){if(q===mover)continue;const k=kingOf(q);
@@ -197,7 +201,8 @@ function afterMove(mover){let note='';
     const bare=![...S.values()].some(v=>v.p===q&&v.t!=='K');
     if(bare){if(GM.end==='first'){GM.over=true;GM.winner=mover;note+=`${PNAME[q]} hat nur noch den König. `;break;}note+=`${PNAME[q]} hat nur noch den König und scheidet aus. `;eliminate(q,mover);if(GM.over)break;continue;}
     const att=attackers(k,x=>x!==q&&!GM.out.includes(x));
-    if(att.length&&!legalMoves(q).length){if(GM.end==='first'){GM.over=true;GM.winner=att.includes(mover)?mover:att[0];note+=`${PNAME[q]} ist schachmatt! `;break;}
+    if(att.length&&!legalMoves(q).length){if(helpOn()&&nextAlive(mover)!==q){note+=`${PNAME[q]} steht matt – wer vorher zieht, muss helfen (Hilfspflicht). `;continue;}
+      if(GM.end==='first'){GM.over=true;GM.winner=att.includes(mover)?mover:att[0];note+=`${PNAME[q]} ist schachmatt! `;break;}
       note+=`${PNAME[q]} ist schachmatt und scheidet aus. `;eliminate(q,mover);if(GM.over)break;}}
   GM.note=note;
   if(!GM.over&&GM.quiet>=QUIET*alive().length){const a=alive();let best=a[0];for(const q of a)if(material(q)>material(best))best=q;GM.over=true;GM.winner=best;GM.note+=`${QUIET} Runden ohne Schlagen und ohne Bauernzug – es entscheidet das Material. `;}
@@ -205,11 +210,35 @@ function afterMove(mover){let note='';
 function eliminate(q){if(!GM.out.includes(q))GM.out.push(q);for(const[k,v]of[...S])if(v.p===q)S.delete(k);const a=alive();if(a.length===1){GM.over=true;GM.winner=a[0];}}
 function advance(){for(let i=0;i<GM.order.length;i++){GM.idx=(GM.idx+1)%GM.order.length;const p=gCur();if(GM.out.includes(p))continue;
     if(EP&&EP.p===p)EP=null;   // en passant gilt, bis der Spieler mit dem Doppelschritt wieder zieht
-    if(legalMoves(p).length){KIT.clockTurn();turnStart();return;}GM.note+=`${PNAME[p]} kann nicht ziehen und setzt aus. `;}
+    if(legalMoves(p).length){KIT.clockTurn();turnStart();return;}
+    if(inCheck(p)){mateFinal(p,'');if(GM.over){render();return;}continue;}
+    GM.note+=`${PNAME[p]} kann nicht ziehen und setzt aus. `;}
   const a=alive();let best=a[0];for(const p of a)if(material(p)>material(best))best=p;GM.over=true;GM.winner=best;GM.note+='Niemand kann mehr ziehen – es entscheidet das Material. ';render();}
-let aiT=0;
+let aiT=0,DUTY=null;
+function dutyTxt(){if(!DUTY||!GM||GM.over)return'';const p=gCur();
+  return `<div class="hint" style="color:#ffcf5a;font-weight:400">🆘 Hilfspflicht für ${PNAME[p]}: ${DUTY.mated.length?DUTY.mated.map(q=>PNAME[q]).join(', ')+' steht matt – der Zug muss befreien.':'Züge, die '+DUTY.vic.map(q=>PNAME[q]).join(', ')+' mattsetzen würden, sind gesperrt.'}</div>`;}
+// ---------- Hilfspflicht ----------
+const helpOn=()=>!!(GM&&GM.help&&alive().length>=3);
+function nextAlive(m){const n=GM.order.length,i0=GM.order.indexOf(m);for(let i=1;i<=n;i++){const q=GM.order[(i0+i)%n];if(!GM.out.includes(q))return q;}return m;}
+function hasMoves(q){const ks=kingOf(q);if(!ks)return false;   // bricht beim ersten erlaubten Zug ab; König und Nahe zuerst
+  const L=[];for(const[k,v]of S)if(v.p===q){const c=unkey(k);L.push([c,v,c.reduce((s,x,i)=>s+Math.abs(x-ks[i]),0)]);}L.sort((a,b)=>a[2]-b[2]);
+  const foe=x=>x!==q&&!GM.out.includes(x);
+  for(const[c,v]of L)for(const m of genMoves(...c,true))if(tryMove(m,c,()=>attackers(v.t==='K'?m.c:ks,foe,true).length===0))return true;
+  return false;}
+function dutyFor(p){const ms=legalMoves(p);
+  return KIT.helpDuty(p,{alive:alive(),inCheck,hasMoves,moves:ms.map(m=>({m,k:key(...m.from)+'>'+key(...m.c)})),tryM:(m,fn)=>tryMove(m,m.from,fn)});}
+const dutyOk=m=>!DUTY||!DUTY.allowed||DUTY.allowed.has(key(...m.from)+'>'+key(...m.c));
+function mateFinal(q,extra){const k=kingOf(q),att=k?attackers(k,x=>x!==q&&!GM.out.includes(x)):[];
+  if(GM.end==='first'){GM.over=true;GM.winner=att.includes(GM.lastMoverSeat)?GM.lastMoverSeat:(att[0]||GM.lastMoverSeat);GM.note+=(extra||'')+`${PNAME[q]} ist schachmatt! `;return;}
+  GM.note+=(extra||'')+`${PNAME[q]} ist schachmatt und scheidet aus. `;eliminate(q);}
 function myTurn(){const p=gCur();return GM&&(GM.online?p===ON.seat:GM.ctrl[p]==='human');}
-function turnStart(){sel=null;targets=[];render();const p=gCur();
+function turnStart(){sel=null;targets=[];DUTY=null;
+  if(GM&&!GM.over&&helpOn()){const p0=gCur(),d=dutyFor(p0);
+    if(d&&d.fail.length){let elim=false;for(const q of d.fail){if(GM.out.includes(q))continue;mateFinal(q,`${PNAME[p0]} kann ${PNAME[q]} nicht helfen. `);elim=true;if(GM.over)break;}
+      if(GM.online&&(p0===ON.seat||(KIT.isAI(p0)&&GM.lastBy===ON.seat))){GM.lastMoverSeat=p0;onPush();}
+      if(GM.over){render();return;}if(elim){if(!legalMoves(p0).length){advance();return;}return turnStart();}}
+    if(d&&(d.allowed||d.mated.length))DUTY=d;}
+  render();const p=gCur();
   if(GM&&!GM.over&&GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'&&(!GM.online||GM.lastBy===ON.seat)){clearTimeout(aiT);aiT=setTimeout(()=>aiMove(p),(GM.order.every(q=>GM.ctrl[q]!=='human')?120:420)+animLeft());}}
 function gameMove(from,m){
   const fk=key(...from),tk=key(...m.c),pc=S.get(fk);if(!pc)return;let cap=S.get(tk);
@@ -233,6 +262,7 @@ function gameMove(from,m){
   if(cap&&cap.t==='K'){if(GM.end==='first'){GM.over=true;GM.winner=pc.p;GM.note=`${PNAME[cap.p]}s König wurde geschlagen. `;render();}else{eliminate(cap.p);GM.note=`${PNAME[cap.p]} scheidet aus. `;if(GM.over)render();else afterMove(pc.p);}}
   else afterMove(pc.p);
   e.elim=GM.out.filter(q=>!outB.includes(q));e.mat={};for(const q of GM.order)e.mat[q]=material(q);
+  KIT.fx(e);KIT.autosave();
   if(GM&&GM.online)onPush();
 }
 // Zeit abgelaufen: Zugzeit → Zug verfällt; Partiezeit → Spieler scheidet aus
@@ -244,6 +274,7 @@ function timeout(p,kind){if(!GM||GM.over||gCur()!==p)return;clearTimeout(aiT);
   const e={p,to:kind,elim:GM.out.filter(q=>!outB.includes(q)),mat:{}};for(const q of GM.order)e.mat[q]=material(q);GM.rec.push(e);
   moves.push('⏱ '+note.trim());GM.note=note;GM.lastText=note;GM.lastMoverSeat=p;GM.lastBy=GM.online?ON.seat:null;sel=null;targets=[];
   if(!GM.over)advance();else render();
+  KIT.fx(e);KIT.autosave();
   if(GM.online)onPush(true);
 }
 function undo(){if(!GM)return;if(GM.online){alert('In Online-Partien kann man nicht zurücknehmen.');return;}clearTimeout(aiT);
@@ -280,8 +311,8 @@ function aiEval(p,lvl,ms,noise){
           let g=t.t==='K'?500:VAL[t.t]*10;const capT=S.get(key(...r.from)).t;const back=tryMove(r,r.from,()=>attackers(r.c,x=>x===p,true).length>0);if(back&&t.t!=='K')g-=VAL[capT]*8;if(g>worst)worst=g;}}
         return worst*0.85;});}}
   return out;}
-function aiMove(p){if(!GM||GM.over||gCur()!==p)return;
-  const lvl=GM.ctrl[p],ms=legalMoves(p);if(!ms.length){advance();return;}
+function aiMove(p){if(!GM||GM.over||gCur()!==p||GM.paused||KIT.busy())return;
+  const lvl=GM.ctrl[p];let ms=legalMoves(p);if(!ms.length){advance();return;}const fm=ms.filter(dutyOk);if(fm.length)ms=fm;
   let best=null,bs=-1e9;for(const o of aiEval(p,lvl,ms,true))if(o.v>bs){bs=o.v;best=o.m;}
   gameMove(best.from,best);
 }
@@ -319,7 +350,7 @@ function paint(){
     ctx.fillStyle=dark?'#6b5a45':'#d9c6a3';ctx.fillRect(sx-s/2,sy-s/2,s+0.5,s+0.5);
     if(z){ctx.fillStyle=PCOL[z]+(dark?'40':'38');ctx.fillRect(sx-s/2,sy-s/2,s+0.5,s+0.5);}}
   // letzter Zug
-  const lm=GM?GM.lastMove:LASTMV;
+  const lm=RPLM!==null?RPLM:GM?GM.lastMove:LASTMV;
   if(lm){for(const c of[lm.from,lm.to]){const[sx,sy]=toScr(...c);ctx.fillStyle=PCOL[lm.p]+'66';ctx.fillRect(sx-s/2,sy-s/2,s,s);}
     const[a,b]=toScr(...lm.from),[c,d]=toScr(...lm.to);ctx.strokeStyle=PCOL[lm.p];ctx.lineWidth=Math.max(2,s*0.06);ctx.globalAlpha=0.8;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();ctx.globalAlpha=1;}
   // Schach
@@ -327,6 +358,7 @@ function paint(){
     const g=ctx.createRadialGradient(sx,sy,2,sx,sy,s*0.7);g.addColorStop(0,'rgba(255,40,20,.85)');g.addColorStop(1,'rgba(255,40,20,0)');ctx.fillStyle=g;ctx.fillRect(sx-s,sy-s,2*s,2*s);}
   // Auswahl
   if(sel){const[sx,sy]=toScr(...sel);ctx.strokeStyle='#ffdd00';ctx.lineWidth=3;ctx.strokeRect(sx-s/2+1.5,sy-s/2+1.5,s-3,s-3);}
+  if(HINT){const[sx,sy]=toScr(...HINT);ctx.strokeStyle='#ffd23f';ctx.lineWidth=4;ctx.setLineDash([6,4]);ctx.strokeRect(sx-s/2+3,sy-s/2+3,s-6,s-6);ctx.setLineDash([]);}
   // Figuren
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`${Math.round(s*0.82)}px "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",serif`;
   const hide=ANIM?key(...ANIM.to):null;
@@ -343,7 +375,8 @@ function paint(){
   paintMini();renderTurn();
 }
 function drawPiece(sx,sy,pc,scale){const s=V.s*(scale||1);ctx.font=`${Math.round(s*0.82)}px "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",serif`;
-  ctx.lineWidth=Math.max(2,s*0.07);ctx.strokeStyle='#0d0d0d';ctx.strokeText(GLYPH[pc.t],sx,sy+s*0.04);ctx.fillStyle=PCOL[pc.p];ctx.fillText(GLYPH[pc.t],sx,sy+s*0.04);}
+  ctx.lineWidth=Math.max(2,s*0.07);ctx.strokeStyle='#0d0d0d';ctx.strokeText(GLYPH[pc.t],sx,sy+s*0.04);ctx.fillStyle=PCOL[pc.p];ctx.fillText(GLYPH[pc.t],sx,sy+s*0.04);
+  if(KIT.symOn&&s>=20){ctx.save();ctx.font=`bold ${Math.round(s*0.3)}px sans-serif`;ctx.lineWidth=3;ctx.strokeStyle='#000';const a=sx+s*0.3,b=sy+s*0.3;ctx.strokeText(KIT.SYM[pc.p],a,b);ctx.fillStyle='#fff';ctx.fillText(KIT.SYM[pc.p],a,b);ctx.restore();}}
 function paintMini(){if(!S.size)return;bbox();const pad=4,b=BB,w=Math.max(b.x1-b.x0,b.y1-b.y0,16)+pad*2,cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2,k=300/w;
   mx.fillStyle='#0c0e12';mx.fillRect(0,0,300,300);
   const ms=(x,y)=>[150+(x-cx)*k,150-(y-cy)*k];
@@ -360,7 +393,7 @@ function renderTurn(){const el=document.getElementById('turn');if(!GM){el.style.
   let h;if(GM.over)h=`🏁 <span style="color:${PCOL[GM.winner]}">${PNAME[GM.winner]}</span> gewinnt!`;
   else{const p=gCur(),nm=GM.online&&ON.seats&&ON.seats[p]&&ON.seats[p].name?' ('+esc(ON.seats[p].name)+')':'',wait=GM.online&&ON.seats&&ON.seats[p]&&ON.seats[p].kind==='open';
     h=`<span style="color:${PCOL[p]}">●</span> ${PNAME[p]}${nm} ${wait?'– Platz frei, warte auf Mitspieler':'ist am Zug'}${GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'?' 🤖':''}${GM.online&&p===ON.seat?' – <b>du</b>':''}${inCheck(p)?' – <span style="color:#ff6a50">Schach!</span>':''}${KIT.clockHTML(p)}`;}
-  el.innerHTML=h+(GM.note?`<div class="hint" style="font-weight:400">${GM.note}</div>`:'');el.style.display='block';el.style.borderColor=GM.over?PCOL[GM.winner]:PCOL[gCur()];
+  el.innerHTML=h+(GM.note?`<div class="hint" style="font-weight:400">${GM.note}</div>`:'')+dutyTxt();el.style.display='block';el.style.borderColor=GM.over?PCOL[GM.winner]:PCOL[gCur()];
   document.getElementById('seats').innerHTML=GM.order.map(p=>`<div class="pc${!GM.over&&gCur()===p?' act':''}"><span style="color:${PCOL[p]};font-weight:700">● ${PNAME[p]}</span><span class="hint">${esc(seatName(p))}</span>${GM.out.includes(p)?'':KIT.clockHTML(p)}<span style="margin-left:auto">${GM.out.includes(p)?'ausgeschieden':material(p)}</span></div>`).join('')
     +(GM.quiet>QUIET*alive().length/2&&!GM.over?`<div class="hint">ruhige Züge ${GM.quiet}/${QUIET*alive().length}</div>`:'');
   const l=document.getElementById('log');l.innerHTML=moves.map((m,i)=>`${i+1}. ${esc(m)}`).join('<br>')||'<span class="hint">noch keine</span>';l.scrollTop=l.scrollHeight;}
@@ -380,8 +413,9 @@ function animPaint(){const now=performance.now(),e=Math.min(1,(now-ANIM.t0)/ANIM
   drawPiece(sx,sy-(knight?Math.sin(Math.PI*s)*V.s*0.6:0),ANIM.pc,1+(knight?0.15*Math.sin(Math.PI*s):0));}
 // ================= Bedienung =================
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function select(c){const pc=S.get(key(...c));if(!pc){sel=null;targets=[];render();return;}sel=c;
-  targets=GM?(GM.out.includes(pc.p)?[]:legalFrom(c)):(bbox(),genMoves(...c));const mine=!GM||(!GM.over&&pc.p===gCur()&&myTurn());for(const t of targets)t.view=!mine;render();}
+function select(c){HINT=null;const pc=S.get(key(...c));if(!pc){sel=null;targets=[];render();return;}sel=c;
+  targets=GM?(GM.out.includes(pc.p)?[]:legalFrom(c)):(bbox(),genMoves(...c));const mine=!KIT.busy()&&(!GM||(!GM.over&&pc.p===gCur()&&myTurn()));for(const t of targets)t.view=!mine;
+  if(mine&&DUTY&&DUTY.allowed)targets=targets.filter(t=>DUTY.allowed.has(key(...c)+'>'+key(...t.c)));render();}
 function toggleUI(){const u=document.getElementById('ui');u.classList.toggle('min');document.getElementById('minBtn').textContent=u.classList.contains('min')?'▾':'▴';}
 const ptrs=new Map();let down=null,pinch=null;
 cv.addEventListener('pointerdown',e=>{ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});try{cv.setPointerCapture(e.pointerId);}catch(_){}
@@ -422,11 +456,11 @@ async function onCreate(order,ctrl){
   const ai={};for(const p of order)if(!['human','open'].includes(ctrl[p]))ai[p]=ctrl[p];
   for(const p of order)if(ctrl[p]==='human'&&p!==seat)ctrl[p]='open';
   const end=document.getElementById('gEnd').value,promo=document.getElementById('gPromo').value,live=document.getElementById('gMode').value==='live',tc=live?KIT.tcRead():null;
-  let j;try{j=await api('/fern/new',{game:'grenz',order,seat,name,ai,rules:{end,opts:promo,live,tcMove:tc?tc.move:0,tcGame:tc?tc.game:0},public:document.getElementById('gPub').checked,lang:KIT.myLang()});}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
+  let j;try{j=await api('/fern/new',{game:'grenz',order,seat,name,ai,rules:{spec:document.getElementById('gSpec').value,help:order.length>=3&&document.getElementById('gHelp').checked,end,opts:promo,live,tcMove:tc?tc.move:0,tcGame:tc?tc.game:0},public:document.getElementById('gPub').checked,lang:KIT.myLang()});}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
   if(!j.code){alert('⚠️ '+(j.error||'Fehler beim Anlegen'));return;}
   try{localStorage.setItem('grenz.t.'+j.code,j.token);}catch(e){}
   setup(order.length);hist=[];moves=[];EP=null;
-  GM={order,ctrl,end,promo,idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:seat,rec:[],tc};KIT.clockInit(GM);
+  GM={order,ctrl,end,promo,idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:seat,rec:[],tc,help:order.length>=3&&document.getElementById('gHelp').checked};KIT.clockInit(GM);
   ON={code:j.code,token:j.token,seat,v:0,seats:j.state.seats,rtc:j.state.rtc};onEnter();
 }
 function onEnter(){try{history.replaceState(null,'',location.pathname+'?g='+ON.code+fernQS());}catch(e){}
@@ -440,24 +474,26 @@ function onPush(isTimeout){if(!ON.code)return;const g=Object.assign({},GM);delet
   const body={t:ON.token,mover:GM.lastMoverSeat,snap:JSON.stringify({pos:encodePos(),gm:g,moves,ep:EP}),next:GM.over?null:gCur(),over:GM.over,last:{text:GM.lastText||''},hint:ON.seat,timeout:!!isTimeout,result:GM.over?`${PNAME[GM.winner]} gewinnt.`:''};
   pushing++;ON.chain=(ON.chain||Promise.resolve()).then(async()=>{try{body.v=ON.v;const j=await api('/fern/g/'+ON.code+'/move',body);if(j.ok)ON.v=j.v;else if(j.state){clearTimeout(aiT);onApply(j.state);}}catch(e){}finally{pushing--;}});}
 async function onPoll(){if(!ON.code||pushing)return;try{const st=await api('/fern/g/'+ON.code+'/state'+(ON.token?'?t='+ON.token:''));if(st._status!==200)return;ON.seats=st.seats;if(st.rtc)ON.rtc=st.rtc;if(st.v>ON.v)onApply(st);else{onStateUI();renderTurn();}KIT.tbTick();}catch(e){}}
-function onApply(st){ON.seats=st.seats;ON.v=st.v;if(st.rtc)ON.rtc=st.rtc;
+function onApply(st){if(KIT.busy())return;ON.seats=st.seats;ON.v=st.v;if(st.rtc)ON.rtc=st.rtc;
   if(st.snap){try{const d=JSON.parse(st.snap);const prev=moves.length;decodePos(d.pos);EP=d.ep||null;const keep=ON.seat;GM=Object.assign(d.gm,{online:true});GM.rec=GM.rec||[];moves=d.moves||[];ON.seat=keep;
-    if(moves.length===prev+1&&GM.lastMove){const pc=S.get(key(...GM.lastMove.to));if(pc)animStart(GM.lastMove.from,GM.lastMove.to,pc,null);}}catch(e){}}
+    if(moves.length===prev+1&&GM.lastMove){const pc=S.get(key(...GM.lastMove.to));if(pc)animStart(GM.lastMove.from,GM.lastMove.to,pc,null);}
+    if(moves.length>prev&&prev>0)KIT.fx(GM.rec[GM.rec.length-1]);}catch(e){}}
   clearTimeout(aiT);sel=null;targets=[];onStateUI();render();turnStart();}
 async function onOpen(code){code=String(code).toLowerCase().replace(/[^a-z0-9]/g,'');let tok='';try{tok=localStorage.getItem('grenz.t.'+code)||'';}catch(e){}
   let st;try{st=await api('/fern/g/'+code+'/state'+(tok?'?t='+tok:''));}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
   if(st._status===404||st.game!=='grenz'){alert('Diese Partie gibt es nicht (mehr).');return;}
   ON={code,token:st.seat?tok:'',seat:st.seat||null,v:-1,seats:st.seats,st,rtc:st.rtc};
   const free=st.order.filter(p=>st.seats[p].kind==='open');
+  if(!st.seat&&!free.length&&st.rules&&st.rules.spec==='never'&&!st.over){alert('Bei dieser Partie ist Zuschauen nicht erlaubt.');ON={};return;}
   if(!st.seat&&free.length&&!st.over){const who=st.order.filter(p=>st.seats[p].kind==='human').map(p=>st.seats[p].name).join(' und ');
-    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Schach ohne Grenzen ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}${tcText(st.rules)}${st.rules&&st.rules.live===false?', Fernpartie':''}). Du spielst ${PNAME[free[0]]}.`;
+    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Schach ohne Grenzen ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}${tcText(st.rules)}${st.rules&&st.rules.live===false?', Fernpartie':''}${st.rules&&st.rules.help&&st.order.length>=3?', mit Hilfspflicht':''}). Du spielst ${PNAME[free[0]]}.`;
     try{document.getElementById('joinName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
     document.getElementById('joinBox').style.display='flex';return;}
   onBegin(st);}
 function onBegin(st){const ctrl={};for(const p of st.order)ctrl[p]=st.seats[p].kind==='ai'?(st.seats[p].lvl||'medium'):'open';
   setup(st.order.length);hist=[];moves=[];EP=null;
   const r=st.rules||{},tc=r.tcMove||r.tcGame?{move:r.tcMove||0,game:r.tcGame||0}:null;
-  GM={order:st.order,ctrl,end:r.end==='last'?'last':'first',promo:r.opts==='rank'?'rank':'zone',idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:st.order.find(p=>st.seats[p].kind==='human'),rec:[],tc};KIT.clockInit(GM);
+  GM={order:st.order,ctrl,end:r.end==='last'?'last':'first',promo:r.opts==='rank'?'rank':'zone',idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:st.order.find(p=>st.seats[p].kind==='human'),rec:[],tc,help:st.order.length>=3&&r.help===true};KIT.clockInit(GM);
   ON.v=-1;onEnter();if(st.snap||st.v>0)onApply(st);else ON.v=st.v;}
 async function onJoin(){const name=(document.getElementById('joinName').value||'').trim().slice(0,18)||'Gast';try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
   const j=await api('/fern/g/'+ON.code+'/join',{name});
@@ -465,9 +501,29 @@ async function onJoin(){const name=(document.getElementById('joinName').value||'
   try{localStorage.setItem('grenz.t.'+ON.code,j.token);}catch(e){}ON.token=j.token;ON.seat=j.seat;ON.rtc=j.state.rtc;document.getElementById('joinBox').style.display='none';onBegin(j.state);if(GM)GM.turnAt=Date.now();}
 function onWatch(){document.getElementById('joinBox').style.display='none';ON.seat=null;onBegin(ON.st);}
 // ================= Start =================
+let RPLM=null,HINT=null,VSAVE=null;
+function snapGame(){const g=Object.assign({},GM);delete g.online;return{pos:encodePos(),gm:JSON.parse(JSON.stringify(g)),moves:moves.slice(),ep:EP};}
+function loadGame(d){if(GM&&GM.online){alert('Erst die Online-Partie verlassen.');return;}clearTimeout(aiT);
+  setup(d.gm.order.length);decodePos(d.pos);GM=Object.assign(d.gm,{online:false,paused:false});GM.rec=GM.rec||[];GM.turnAt=Date.now();moves=d.moves||[];EP=d.ep||null;hist=[];
+  document.getElementById('gN').value=String(GM.order.length);enterGame();}
+function resumeUI(){const d=KIT.autoData(),b=document.getElementById('resumeBox');if(!b)return;
+  b.innerHTML=(d&&d.gm&&!d.gm.over?`<div class="row"><button class="on" onclick="KIT.resume()">▶ Letzte Partie fortsetzen (${d.gm.order.length} Spieler, ${(d.moves||[]).length} Züge)</button></div>`:'')+'<div class="row"><button onclick="KIT.loadFile()">📂 Partie laden</button><button onclick="KIT.myGames()">📋 Meine Partien</button></div>';}
+function replayShow(i){sel=null;targets=[];HINT=null;if(i==null){RPLM=null;render();return;}const e=GM.rec[i-1];RPLM=e&&e.f?{from:e.f,to:e.t,p:e.p}:{};render();}
+function varEnter(i){clearTimeout(aiT);VSAVE={S,GM,moves,hist,EP,ON};REP=null;anaPos(i);
+  const S2=new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),out=GM.out.slice(),ep=EP?JSON.parse(JSON.stringify(EP)):null;anaRestore();REP=null;
+  const g=JSON.parse(JSON.stringify(Object.assign({},VSAVE.GM,{online:false})));const n=g.rec.length;
+  g.rec=g.rec.slice(0,i);g.out=out;g.over=false;g.winner=null;g.tc=null;g.paused=false;g.note='🔬 Analysebrett';for(const p of g.order)g.ctrl[p]='human';
+  if(i<n)g.idx=g.order.indexOf(VSAVE.GM.rec[i].p);const e=g.rec[i-1];g.lastMove=e&&e.f?{from:e.f,to:e.t,p:e.p}:null;
+  S=S2;GM=g;moves=VSAVE.moves.slice(0,i);hist=[];EP=ep;ON={};sel=null;targets=[];render();turnStart();}
+function varExit(){if(!VSAVE)return;({S,GM,moves,hist,EP,ON}=VSAVE);VSAVE=null;REP=null;sel=null;targets=[];HINT=null;render();turnStart();}
+function varAI(){if(!GM||GM.over)return;const p=gCur();let ms=legalMoves(p);const fm=ms.filter(dutyOk);if(fm.length)ms=fm;if(!ms.length)return;
+  let best=null,bs=-1e9;for(const o of aiEval(p,'hard',ms,true))if(o.v>bs){bs=o.v;best=o.m;}gameMove(best.from,best);}
+function showMove(f,t){select(f);HINT=t;render();}
 function tcText(r){if(!r||!(r.tcMove||r.tcGame))return'';return', '+[r.tcMove?(KIT.TC_MOVE.find(x=>x[0]===r.tcMove)||[0,r.tcMove+' s'])[1]+' pro Zug':'',r.tcGame?r.tcGame+' Min. pro Partie':''].filter(Boolean).join(', ');}
 KIT.init({game:'grenz',title:'Schach ohne Grenzen',descr:'normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler; bei 3 oder 4 Spielern stehen die Heere wie an einem Tisch, Bauern ziehen auf den gegenüberliegenden Spieler zu',
-  PCOL,PNAME,VAL,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,clockShow:()=>renderTurn(),onColors:()=>{render();}});
+  PCOL,PNAME,VAL,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,clockShow:()=>renderTurn(),onColors:()=>{render();},
+  snap:snapGame,load:loadGame,moveList:()=>moves,replayShow,resume:()=>{if(GM&&!GM.over)turnStart();},poll:()=>onPoll(),varEnter,varExit,varUndo:()=>undo(),varAI,showMove});
+resumeUI();
 document.getElementById('tcBox').innerHTML=KIT.tcHTML();document.getElementById('kitBox').innerHTML=KIT.tbHTML();
 // ---------- Einführung ----------
 function tourStart(){const ui=document.getElementById('ui');if(ui.classList.contains('min'))toggleUI();

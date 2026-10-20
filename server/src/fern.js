@@ -161,7 +161,8 @@ export class Fern {
       if (!g.rtc) { g.rtc = randStr(12, '0123456789abcdef'); await this.state.storage.put('g', g); }
       rtc = {}; for (const p of ord(g)) rtc[p] = `dsf-${g.code}-${p}-${g.rtc}`;
     }
-    return { code: g.code, v: g.v, snap: g.snap, next: g.next, over: g.over, last: g.last, used: g.used,
+    const hide = !me && g.rules && g.rules.spec === 'never' && !g.over;   // Zuschauen nicht erlaubt
+    return { code: g.code, v: g.v, snap: hide ? null : g.snap, next: g.next, over: g.over, last: g.last, used: g.used,
       created: g.created, updated: g.updated, age: Date.now() - g.updated, seats, seat: me, rtc, rules: g.rules || { help: true }, pub: !!g.lobby,
       game: g.game || 'dps', order: ord(g) };
   }
@@ -193,7 +194,7 @@ export class Fern {
     if (game !== 'dps') {
       const r = b.rules || {}, n = (v, hi) => Math.max(0, Math.min(hi, Math.round(+v || 0)));
       rules.end = r.end === 'last' ? 'last' : 'first'; rules.opts = clean(r.opts, 80);
-      rules.live = r.live !== false; rules.tcMove = rules.live ? n(r.tcMove, 3600) : 0; rules.tcGame = rules.live ? n(r.tcGame, 600) : 0;
+      rules.spec = r.spec === 'never' ? 'never' : 'always'; rules.live = r.live !== false; rules.tcMove = rules.live ? n(r.tcMove, 3600) : 0; rules.tcGame = rules.live ? n(r.tcGame, 600) : 0;
     }
     const used = {}; for (const p of order) used[p] = 0;
     const g = { code: b.code, created: now, updated: now, v: 0, snap: null, next: order[0], over: false, last: null, used, seats, rules, game };
@@ -201,7 +202,7 @@ export class Fern {
     if (b.public) {   // in der öffentlichen Lobby anbieten
       seats[me].name = safeName(seats[me].name, 'Spieler');
       const r = await lobbyCall(this.env, 'offer', { kind: 'fern', game, code: b.code, host: seats[me].name, seats: this.lobbySeats(g), order: ord(g),
-        rules: { help: rules.help, lvl: null, lang: b.lang, end: rules.end, opts: rules.opts, live: rules.live, tcMove: rules.tcMove, tcGame: rules.tcGame }, _ip: b._ip });
+        rules: { help: rules.help, spec: rules.spec, lvl: null, lang: b.lang, end: rules.end, opts: rules.opts, live: rules.live, tcMove: rules.tcMove, tcGame: rules.tcGame }, _ip: b._ip });
       if (r && r.id) g.lobby = { id: r.id, key: r.key };
     }
     await this.save(g);
