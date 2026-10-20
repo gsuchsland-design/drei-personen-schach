@@ -192,8 +192,8 @@ function knightVecs(){const jumps=[],seen=new Set();
   return jumps.filter(v=>{const k=v.join();if(seen.has(k))return false;seen.add(k);return true;});}
 // Springersprünge; max>1 = Nachtreiter (mehrere gleiche Sprünge hintereinander, bis etwas im Weg steht)
 function leaps(x,y,z,p,max){const out=[];
-  for(const v of knightVecs()){let a=x,b=y,c=z;for(let i=0;i<max;i++){a+=v[0];b+=v[1];c+=v[2];if(!valid(a,b,c))break;const o=S.get(key(a,b,c));
-    if(o){if(o.p!==p)out.push({c:[a,b,c],cap:true});break;}out.push({c:[a,b,c],cap:false});}}
+  for(const v of knightVecs()){let a=x,b=y,c=z;const hops=[];for(let i=0;i<max;i++){a+=v[0];b+=v[1];c+=v[2];if(!valid(a,b,c))break;const o=S.get(key(a,b,c));
+    if(o){if(o.p!==p)out.push({c:[a,b,c],cap:true,hops:hops.slice(),jump:1});break;}out.push({c:[a,b,c],cap:false,hops:hops.slice(),jump:1});hops.push([a,b,c]);}}
   return out;}
 function uniq(l){const seen=new Set();return l.filter(m=>{const k=m.c.join();if(seen.has(k))return false;seen.add(k);return true;});}
 function pawnCaps(p){const f=fwd(p),fk=f.findIndex(v=>v),side=[0,1,2].filter(k=>k!==fk),caps=[];
@@ -269,8 +269,9 @@ function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
   if(!mv||!mv.from||!mv.to)return;
   const a=new THREE.Vector3(...mv.from),b=new THREE.Vector3(...mv.to),len=a.distanceTo(b);
   const d=[0,1,2].map(i=>Math.abs(mv.to[i]-mv.from[i])).sort((x,y)=>y-x),leap='NWACM'.includes(mv.t)&&!(d[1]===0||d[0]===d[1]);
-  const dur=Math.min(900,280+len*45);
-  ANIM={mv,a,b,len,hop:(leap?1.1:0)+Math.min(1.6,len*0.12),dur,t0:performance.now(),kick:null};
+  const pts=[mv.from].concat(mv.hops||[],[mv.to]).map(c=>new THREE.Vector3(...c));
+  const dur=pts.length>2?Math.min(1600,260*(pts.length-1)):Math.min(900,280+len*45);
+  ANIM={mv,a,b,len,pts,hop:pts.length>2?0.9:(leap?1.1:0)+Math.min(1.6,len*0.12),dur,t0:performance.now(),kick:null};
   if(mv.cap){   // Ziel des Flugs: hinter dem Quader dessen, der geschlagen hat
     const[k,sg]=HOME[mv.p]||[0,-1],tg=new THREE.Vector3(3.5,3.5,3.5);tg.setComponent(k,sg<0?LO-2.5:HI+2.5);
     tg.x+=(Math.random()-0.5)*6;tg.z+=(Math.random()-0.5)*6;tg.y+=(Math.random()-0.5)*4;
@@ -283,7 +284,11 @@ const animBusy=()=>!!ANIM;
 const animLeft=()=>ANIM?Math.max(0,(ANIM.kick?ANIM.kick.t0+ANIM.kick.dur:ANIM.t0+ANIM.dur)-performance.now()):0;
 function animStep(){if(!ANIM)return;const now=performance.now();
   let e=Math.min(1,(now-ANIM.t0)/ANIM.dur);const s=e<0.5?2*e*e:1-Math.pow(-2*e+2,2)/2;
-  const P=ANIM.a.clone().lerp(ANIM.b,s);P.y+=Math.sin(Math.PI*s)*ANIM.hop;ANIM.sp.position.copy(P);
+  let P;
+  if(ANIM.pts.length>2){const n=ANIM.pts.length-1,f=Math.min(n-1e-6,e*n),i=Math.floor(f),u=f-i;   // Sprung für Sprung
+    P=ANIM.pts[i].clone().lerp(ANIM.pts[i+1],u);P.y+=Math.sin(Math.PI*u)*ANIM.hop;}
+  else{P=ANIM.a.clone().lerp(ANIM.b,s);P.y+=Math.sin(Math.PI*s)*ANIM.hop;}
+  ANIM.sp.position.copy(P);
   if(ANIM.kick&&now>=ANIM.kick.t0){const K=ANIM.kick,k=Math.min(1,(now-K.t0)/K.dur),u=1-Math.pow(1-k,2);
     ANIM.ksp.visible=true;
     // Stoß in Zugrichtung, hoher Bogen, Überschlag, wird kleiner und verblasst
@@ -335,17 +340,22 @@ function render(){
   markGroup.clear();
   if(sel){const b=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1,1,1)),new THREE.LineBasicMaterial({color:'#ffdd00'}));b.position.set(...sel);markGroup.add(b);
     const gs=new THREE.SphereGeometry(0.17,14,10);
-    for(const t of targets){const m=new THREE.Mesh(gs,new THREE.MeshBasicMaterial({color:t.cap?'#ff3322':'#3ee05a',transparent:true,opacity:inSlice(t.c)?0.95:0.55}));
+    const segs=[];
+    for(const t of targets)if(t.jump){const pts=[sel].concat(t.hops||[]);segs.push(pts[pts.length-1],t.c);}
+    if(segs.length){const g=new THREE.BufferGeometry().setFromPoints(segs.map(c=>new THREE.Vector3(...c)));
+      markGroup.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:targets[0]&&targets[0].view?'#9fc4ff':'#c8ffd0',transparent:true,opacity:0.45})));}
+    for(const t of targets){const m=new THREE.Mesh(gs,new THREE.MeshBasicMaterial({color:t.view?(t.cap?'#ff9a3a':'#7fb8ff'):(t.cap?'#ff3322':'#3ee05a'),transparent:true,opacity:inSlice(t.c)?0.95:0.55}));
       if(t.cap)m.scale.setScalar(2.4);m.position.set(...t.c);m.userData.cell=t.c;m.userData.target=t;markGroup.add(m);}
   }
   // letzter Zug: Start- und Zielfeld in der Farbe des Ziehenden, dazwischen eine Linie
   const lm=GM?GM.lastMove:LASTMV;
   if(lm&&lm.from&&lm.to){const col=PCOL[lm.p]||'#ffdd00';
     for(const[c,op]of[[lm.from,0.45],[lm.to,1]]){const b=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.04,1.04,1.04)),new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op}));b.position.set(...c);markGroup.add(b);}
-    const a=new THREE.Vector3(...lm.from),z=new THREE.Vector3(...lm.to),len=a.distanceTo(z);
-    if(len>0.1){const cyl=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,len,8),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.75}));
+    const chain=[lm.from].concat(lm.hops||[],[lm.to]).map(c=>new THREE.Vector3(...c));
+    for(let i=0;i<chain.length-1;i++){const a=chain[i],z=chain[i+1],len=a.distanceTo(z);if(len<0.1)continue;
+      const cyl=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,len,8),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.75}));
       cyl.position.copy(a).add(z).multiplyScalar(0.5);cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),z.clone().sub(a).normalize());markGroup.add(cyl);}
-    const dot=new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.6}));dot.position.copy(a);markGroup.add(dot);}
+    for(const c of chain.slice(0,-1)){const dot=new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.6}));dot.position.copy(c);markGroup.add(dot);}}
   // Schach: König rot umrahmt
   if(GM&&!GM.over)for(const q of alive()){const k=kingOf(q);if(!k||!attackers(k,x=>x!==q&&!GM.out.includes(x),true).length)continue;
     const b=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.1,1.1),new THREE.MeshBasicMaterial({color:'#ff2a1a',transparent:true,opacity:0.28,depthWrite:false}));b.position.set(...k);markGroup.add(b);
@@ -357,7 +367,8 @@ function updInfo(){const el=document.getElementById('info');
   if(!sel){el.textContent='Noch nichts ausgewählt.';return;}
   const pc=S.get(key(...sel));if(!pc){el.textContent='';return;}
   const n=targets.length,c=targets.filter(t=>t.cap).length;
-  el.innerHTML=`<b style="color:${PCOL[pc.p]}">${PNAMES[pc.t]} ${PNAME[pc.p]}</b>${PDESC[pc.t]?' <span class=hint>('+PDESC[pc.t]+')</span>':''} auf ${cname(...sel)}<br>${n} Zugmöglichkeiten`+(c?`, davon ${c} mit Schlagen`:'');}
+  const view=targets.length&&targets[0].view;
+  el.innerHTML=(view&&GM?'<span class="hint">👁 Nur zur Ansicht – so könnte diese Figur ziehen.</span><br>':'')+`<b style="color:${PCOL[pc.p]}">${PNAMES[pc.t]} ${PNAME[pc.p]}</b>${PDESC[pc.t]?' <span class=hint>('+PDESC[pc.t]+')</span>':''} auf ${cname(...sel)}<br>${n} Zugmöglichkeiten`+(c?`, davon ${c} mit Schlagen`:'');}
 function updLog(){document.getElementById('log').innerHTML=moves.map((m,i)=>`${i+1}. ${m}`).join('<br>')||'<span class="hint">noch keine</span>';
   const l=document.getElementById('log');l.scrollTop=l.scrollHeight;}
 let raf=0;function draw(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;applyCam();R.render(scene,camera);});}
@@ -369,12 +380,14 @@ function undo(){
   if(GM){clearTimeout(aiT);let h;do{h=hist.pop();}while(h&&h.GM&&hist.length&&h.GM.ctrl[h.GM.order[h.GM.idx]]!=='human');
     if(!h||!h.GM)return;S=h.S;moves=h.moves;GM=h.GM;sel=null;targets=[];render();turnStart();return;}
   const h=hist.pop();if(!h)return;S=h.S;moves=h.moves;sel=null;targets=[];render();}
-function select(c){const pc=S.get(key(...c));if(!pc){sel=null;targets=[];render();return;}sel=c;targets=GM?(pc.p===gCur()&&!GM.over&&myTurn()?legalFrom(c):[]):genMoves(...c);render();}
+function select(c){const pc=S.get(key(...c));if(!pc){sel=null;targets=[];render();return;}sel=c;
+  targets=GM?(GM.out.includes(pc.p)?[]:legalFrom(c)):genMoves(...c);
+  const mine=!GM||(!GM.over&&pc.p===gCur()&&myTurn());for(const t of targets)t.view=!mine;render();}
 function doMove(t){const from=sel,pc=S.get(key(...from)),cap=S.get(key(...t.c));pushHist();
-  animStart({from:from.slice(),to:t.c.slice(),p:pc.p,t:pc.t,cap:cap?{p:cap.p,t:cap.t}:null});
+  animStart({from:from.slice(),to:t.c.slice(),p:pc.p,t:pc.t,cap:cap?{p:cap.p,t:cap.t}:null,hops:t.hops||[]});
   S.delete(key(...from));const np={t:pc.t,p:pc.p,m:true};let promo='';
   if(pc.t==='P'&&promoZone(pc.p,t.c)){np.t='Q';promo=' = Dame';}
-  S.set(key(...t.c),np);LASTMV={from:from.slice(),to:t.c.slice(),p:pc.p};
+  S.set(key(...t.c),np);LASTMV={from:from.slice(),to:t.c.slice(),p:pc.p,hops:t.hops||[]};
   moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+5).join('·')} ${cap?'×':'–'} ${t.c.map(v=>v+5).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
   sel=t.c;targets=genMoves(...t.c);render();}
 function place(c){pushHist();if(pal.t==='x')S.delete(key(...c));else S.set(key(...c),{t:pal.t,p:pal.p,m:false});sel=null;targets=[];render();}
@@ -500,9 +513,11 @@ function gameMove(from,to){
   const fk=key(...from),tk=key(...to),pc=S.get(fk),cap=S.get(tk);if(!pc)return;
   hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice(),GM:snapGM()});
   S.delete(fk);const np={t:pc.t,p:pc.p,m:true};let promo='';
-  GM.lastCap=cap?{p:cap.p,t:cap.t}:null;animStart({from,to,p:pc.p,t:pc.t,cap:GM.lastCap});
+  GM.lastCap=cap?{p:cap.p,t:cap.t}:null;
+  S.set(fk,pc);const gm=genMoves(...from).find(m=>key(...m.c)===tk);S.delete(fk);GM.lastHops=gm&&gm.hops||[];
+  animStart({from,to,p:pc.p,t:pc.t,cap:GM.lastCap,hops:GM.lastHops});
   if(pc.t==='P'&&promoZone(pc.p,to)){np.t='Q';promo=' = Dame';}
-  S.set(tk,np);if(cap)GM.capt=true;GM.lastMove={from,to,p:pc.p,t:pc.t,cap:GM.lastCap};
+  S.set(tk,np);if(cap)GM.capt=true;GM.lastMove={from,to,p:pc.p,t:pc.t,cap:GM.lastCap,hops:GM.lastHops};
   GM.lastBy=GM.ctrl[pc.p]==='human'||GM.ctrl[pc.p]==='open'?pc.p:(GM.online?ON.seat:null);GM.lastMoverSeat=pc.p;GM.lastText=`${PNAME[pc.p]}: ${PNAMES[pc.t]} ${to.map(v=>v+5).join('·')}`;GM.quiet=cap||pc.t==='P'||!GM.capt?0:(GM.quiet||0)+1;
   moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+5).join('·')} ${cap?'×':'–'} ${to.map(v=>v+5).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
   sel=null;targets=[];
