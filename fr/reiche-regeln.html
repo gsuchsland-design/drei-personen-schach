@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Échecs des 6 Royaumes – Règles</title>
+<meta name="description" content="Règles des Échecs des 6 Royaumes (Sd6R) : des échecs dans un cube de 8 × 8 × 8 cases pour 2 à 6 joueurs, avec licorne, noctambule, amazone et bien plus.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="Échecs des 6 Royaumes – Règles">
+<meta property="og:description" content="Règles des Échecs des 6 Royaumes (Sd6R) : des échecs dans un cube de 8 × 8 × 8 cases pour 2 à 6 joueurs, avec licorne, noctambule, amazone et bien plus.">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">Échecs à trois</a>
+<nav class="main"><a href="../index.html#start">Accueil</a><a href="regeln.html">Règles</a><a href="../strategie.html">Stratégie</a><a href="reiche-regeln.html" class=on>6 Royaumes</a><a href="grenzenlos-regeln.html">Sans frontières</a><a href="../ueber.html">À propos du jeu</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../reiche-regeln.html">Deutsch</option><option value="../en/reiche-regeln.html">English</option><option value="reiche-regeln.html" selected>Français</option><option value="../es/reiche-regeln.html">Español</option><option value="../it/reiche-regeln.html">Italiano</option><option value="../pt/reiche-regeln.html">Português</option><option value="../nl/reiche-regeln.html">Nederlands</option><option value="../pl/reiche-regeln.html">Polski</option><option value="../tr/reiche-regeln.html">Türkçe</option><option value="../ja/reiche-regeln.html">日本語</option><option value="../ko/reiche-regeln.html">한국어</option><option value="../th/reiche-regeln.html">ไทย</option><option value="../ar/reiche-regeln.html">العربية</option><option value="../is/reiche-regeln.html">Íslenska</option><option value="../da/reiche-regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ Jouer</a>
+</div></header>
+<main>
+<article>
+<h1>Échecs des 6 Royaumes</h1>
+<p class="lead">Un cube de 8 × 8 × 8 cases et, sur chacune de ses six faces, un royaume : le bloc d’origine d’un joueur. Jusqu’à six armées entrent dans le cube de tous les côtés – dessus, dessous, gauche, droite, devant, derrière. En bref : <b>Sd6R</b>.</p>
+<p style="text-align:center"><a class="cta go" href="../raum.html">▶ Jouer aux Échecs des 6 Royaumes</a></p>
+<figure><img src="../img/reiche-brett.webp" alt="Le cube avec six blocs d’origine en six couleurs" loading="lazy"><figcaption>Six royaumes, six couleurs : bleu, vert, rouge, jaune, violet et turquoise.</figcaption></figure>
+<h2>Le terrain de jeu</h2>
+<ul>
+<li><b>Le cube</b> central compte 8 × 8 × 8 = 512 cases. Il est vide au départ – c’est là qu’on se bat.</li>
+<li>Sur chaque face se trouve un <b>bloc d’origine</b> de 8 × 8 × 4 cases. Les pièces d’un joueur y sont placées au départ.</li>
+<li>Au total, cela fait 2.048 cases. Les coins et arêtes en dehors du cube ne font pas partie du terrain.</li>
+<li>Les cases sont désignées par trois nombres de 1 à 16, par exemple <b>8·8·8</b> – le jeu affiche le nom de chaque case touchée.</li>
+</ul>
+<h2>Joueurs et ordre</h2>
+<p>On joue à deux, trois, quatre ou six ; l’ordinateur prend les places libres si on le souhaite. À deux, Bleu et Vert se font face ; à quatre, Bleu, Rouge, Vert et Jaune sont assis en cercle autour du cube ; à six, Violet (en bas) et Turquoise (en haut) les rejoignent. On joue à tour de rôle. Celui qui invite décide du nombre de joueurs, de qui est l’ordinateur et de la fin de la partie.</p>
+<h2>La position de départ</h2>
+<figure><img src="../img/reiche-armee.webp" alt="L’armée bleue dans son bloc d’origine" loading="lazy"><figcaption>Standard : 64 amiraux sur la couche extérieure, 64 pions devant eux.</figcaption></figure>
+<p>Le standard est la grande position : sur la couche extérieure du bloc d’origine se tiennent 64 amiraux – huit rangées, dans celle du milieu le roi avec dame, tours, fous et cavaliers, autour les pièces spéciales. Devant eux, 64 pions remplissent toute une couche. Deux couches restent libres jusqu’au cube. Pour plus petit, choisissez dans le jeu une rangée de 8 pions, deux rangées ou un bloc de 4 × 4 pions.</p>
+<h2>Directions dans l’espace</h2>
+<p>Dans le cube, chaque case offre trois sortes de directions :</p>
+<ul><li><b>Axes</b> (6) : un pas à gauche/droite, en avant/arrière ou en haut/bas.</li>
+<li><b>Diagonales de face</b> (12) : deux axes à la fois – comme la diagonale d’un échiquier.</li>
+<li><b>Diagonales spatiales</b> (8) : les trois axes à la fois – à travers un petit cube d’un coin à l’autre.</li></ul>
+<p>Les images montrent chaque pièce au milieu du cube vide ; les points verts sont les cases qu’elle peut atteindre. Les pièces avec un signe supplémentaire en bas à droite sont composées.</p>
+<h2>Les pièces</h2>
+<div class="grid"><div class="card"><h3>Tour</h3><figure><img src="../img/reiche-fig-R.webp" alt="Tour : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>En ligne droite le long des trois axes : gauche/droite, avant/arrière, haut/bas – 6 directions. Depuis le centre du cube, jusqu’à 45 cases.</p></div><div class="card"><h3>Fou</h3><figure><img src="../img/reiche-fig-B.webp" alt="Fou : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Le long des diagonales de face – deux axes à la fois, comme le fou sur un échiquier, mais dans les trois plans : 12 directions. En option, aussi le long des diagonales spatiales (20 directions).</p></div><div class="card"><h3>Licorne</h3><figure><img src="../img/reiche-fig-U.webp" alt="Licorne : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Uniquement le long des diagonales spatiales – les trois axes à la fois, d’un coin du cube au coin opposé : 8 directions. La pièce vient du Raumschach de Ferdinand Maack (1907).</p></div><div class="card"><h3>Dame</h3><figure><img src="../img/reiche-fig-Q.webp" alt="Dame : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Tour, fou et licorne en une seule pièce : les 26 directions (en option sans diagonales spatiales : 18). Depuis le centre, jusqu’à 118 cases – la plus forte pièce classique.</p></div><div class="card"><h3>Roi</h3><figure><img src="../img/reiche-fig-K.webp" alt="Roi : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Une case dans chacune des 26 directions (en option sans diagonales spatiales : 18). Chaque joueur a exactement un roi.</p></div><div class="card"><h3>Cavalier</h3><figure><img src="../img/reiche-fig-N.webp" alt="Cavalier : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Deux cases sur un axe et une sur un second – 24 cases cibles, en sautant par-dessus tout. En option, en plus « 2 + 1 + 1 » sur trois axes (48 cibles).</p></div><div class="card"><h3>Noctambule</h3><figure><img src="../img/reiche-fig-W.webp" alt="Noctambule : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Un saut de cavalier que l’on peut répéter dans la même direction autant qu’on veut, tant que chaque case d’atterrissage est libre. Dans le cube vide, il va très loin – le jeu affiche les cases d’atterrissage intermédiaires sous forme de points.</p></div><div class="card"><h3>Duchesse</h3><figure><img src="../img/reiche-fig-H.webp" alt="Duchesse : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Tour + licorne : axes et diagonales spatiales.</p></div><div class="card"><h3>Gouverneur</h3><figure><img src="../img/reiche-fig-V.webp" alt="Gouverneur : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Fou + licorne : diagonales de face et spatiales.</p></div><div class="card"><h3>Archevêque</h3><figure><img src="../img/reiche-fig-A.webp" alt="Archevêque : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Fou + cavalier.</p></div><div class="card"><h3>Chancelier</h3><figure><img src="../img/reiche-fig-C.webp" alt="Chancelier : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Tour + cavalier.</p></div><div class="card"><h3>Amazone</h3><figure><img src="../img/reiche-fig-M.webp" alt="Amazone : coups possibles depuis le centre du cube" loading="lazy"><figcaption></figcaption></figure><p>Dame + cavalier – la pièce la plus forte du jeu, jusqu’à 142 cibles depuis le centre du cube.</p></div></div>
+<h2>Les pions</h2>
+<figure><img src="../img/reiche-fig-P.webp" alt="Un pion bleu avec deux possibilités de prise" loading="lazy"><figcaption>Le pion avance tout droit vers le cube et prend en diagonale vers l’avant (cases rouges).</figcaption></figure>
+<ul>
+<li>Les pions avancent d’une case tout droit – toujours vers le royaume opposé.</li>
+<li>Dans leur bloc d’origine, ils peuvent avancer jusqu’à deux cases à chaque fois (réglable : seulement au premier coup ou toujours).</li>
+<li>On prend en diagonale vers l’avant : avant-gauche, avant-droite, avant-haut, avant-bas – 4 directions (réglable : aussi le long des diagonales spatiales, 8).</li>
+<li><b>Promotion :</b> quand un pion atteint le bloc d’origine opposé, il devient dame (réglable : seulement sur sa couche la plus éloignée).</li>
+</ul>
+<h2>Échec, mat et fin de partie</h2>
+<figure><img src="../img/reiche-schach.webp" alt="Un roi en échec, encadré de rouge" loading="lazy"><figcaption>Un roi en échec est encadré de rouge ; le dernier coup est marqué en couleur.</figcaption></figure>
+<ul>
+<li>Un joueur en échec doit le parer. Aucun coup ne peut laisser son propre roi en échec.</li>
+<li>Qui ne peut pas jouer sans être en échec passe son tour.</li>
+<li><b>Fin de partie – choisie par l’hôte :</b><br>
+« Le premier mat décide » : dès qu’un joueur est mat, la partie s’arrête ; gagne celui qui a donné l’échec.<br>
+« Élimination » : qui est mat est éliminé et ses pièces disparaissent ; on continue jusqu’à ce qu’il n’en reste qu’un.</li>
+<li>Qui n’a plus que son roi est battu.</li>
+<li>Dès qu’une prise a eu lieu : après 30 tours sans prise ni coup de pion, le matériel décide (pion 1, cavalier, fou et licorne 3, tour et noctambule 5, gouverneur 5, archevêque 6, duchesse et chancelier 7, dame 9, amazone 11).</li>
+</ul>
+<h2>Garder la vue d’ensemble</h2>
+<figure><img src="../img/reiche-nachtreiter.webp" alt="Le trajet d’un noctambule avec toutes les cases intermédiaires" loading="lazy"><figcaption>Le dernier coup avec tous les atterrissages intermédiaires du noctambule.</figcaption></figure>
+<ul>
+<li>Toucher une pièce : ses coups s’allument en vert, les prises en rouge. On peut aussi toucher les pièces adverses – leurs coups apparaissent en bleu clair et orange, à titre indicatif seulement.</li>
+<li>Le dernier coup est marqué dans la couleur de celui qui a joué, avec une ligne et tous les atterrissages intermédiaires.</li>
+<li>« 🎯 Mon armée » montre sa propre armée, « Couleurs » estompe ou masque des royaumes, « Couche » isole une seule tranche.</li>
+<li>Tourner : glisser. Zoomer : molette ou deux doigts. Déplacer : clic droit ou deux doigts.</li>
+</ul>
+<h2>Ce que toutes les variantes ont en commun</h2>
+<ul>
+<li><b>Adversaires :</b> chaque place peut être un humain sur cet appareil, un humain invité en ligne ou un ordinateur – en quatre niveaux : facile, moyen, fort et maître. Le maître anticipe aussi la réponse des adversaires.</li>
+<li><b>Des monstres avec du caractère :</b> les adversaires ordinateur s’appellent Blubbo, Grumbo, Flammo, Zappo, Spuki et Kraki. Ils se réjouissent et s’énervent sur les écrans, forgent des alliances contre le meneur, les trahissent parfois, se vengent – et parlent si on le souhaite. On peut négocier avec eux dans le chat (« Grumbo, attaquons Rouge ensemble ! »). Ils retiennent aussi la façon de jouer des humains.</li>
+<li><b>Devoir d’aide (option à partir de trois joueurs) :</b> si un joueur est en échec, chacun de ceux qui jouent avant lui doit l’aider : s’il est mat, le coup doit le libérer ; s’il n’est pas mat, le coup ne doit pas le mettre mat. Qui ne peut pas aider scelle le mat.</li>
+<li><b>Pendule :</b> temps par coup, temps par partie ou sans pendule. Si le temps par coup s’écoule, le coup est perdu ; si le temps de partie est épuisé, on est éliminé.</li>
+<li><b>En ligne :</b> en direct avec écrans, caméra, micro, chat, réactions emoji, sous-titres et traduction automatique – ou en partie par correspondance, où chacun joue quand il a le temps (avec notification quand c’est son tour). Les parties peuvent être proposées dans le salon public ; l’hôte décide si l’on peut regarder.</li>
+<li><b>Après la partie :</b> rejouer coup par coup, échiquier d’analyse avec suggestions de l’ordinateur, analyse avec moments clés, évaluation psychologique (vengeance, nervosité après des pertes, alliances tacites, paroles et actes) et, sur demande, un rapport professionnel rédigé par une IA.</li>
+<li><b>Et aussi :</b> couleurs au choix (avec signes pour les daltoniens), sons, pause, enregistrer et charger, « Mes parties », introduction pour débutants, installable comme application, plein écran.</li>
+</ul>
+<p class="note">Les Échecs des 6 Royaumes sont une ébauche et continuent d’évoluer. Les règles de déplacement peuvent être modifiées dans le jeu sous « Règles de déplacement à essayer ».</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../raum.html">▶ Jouer aux Échecs des 6 Royaumes</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">Mentions légales</a><a href="../datenschutz.html">Confidentialité</a><a href="../ueber.html#kontakt">Contact</a><a href="regeln.html">Règles</a><a href="../strategie.html">Stratégie</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','fr')}catch(_){}});</script>
+</body></html>

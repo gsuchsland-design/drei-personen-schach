@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regole – Scacchi a tre</title>
+<meta name="description" content="Le regole complete degli scacchi a tre: scacchiera, mosse attraverso il centro, pedoni, arrocco, obbligo di aiuto, scacco matto, controllo del tempo e punteggio.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="Regole – Scacchi a tre">
+<meta property="og:description" content="Le regole complete degli scacchi a tre: scacchiera, mosse attraverso il centro, pedoni, arrocco, obbligo di aiuto, scacco matto, controllo del tempo e punteggio.">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">Scacchi a tre</a>
+<nav class="main"><a href="../index.html#start">Home</a><a href="regeln.html" class=on>Regole</a><a href="../strategie.html">Strategia</a><a href="reiche-regeln.html">6 Regni</a><a href="grenzenlos-regeln.html">Senza confini</a><a href="../ueber.html">Il gioco</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../regeln.html">Deutsch</option><option value="../en/regeln.html">English</option><option value="../fr/regeln.html">Français</option><option value="../es/regeln.html">Español</option><option value="regeln.html" selected>Italiano</option><option value="../pt/regeln.html">Português</option><option value="../nl/regeln.html">Nederlands</option><option value="../pl/regeln.html">Polski</option><option value="../tr/regeln.html">Türkçe</option><option value="../ja/regeln.html">日本語</option><option value="../ko/regeln.html">한국어</option><option value="../th/regeln.html">ไทย</option><option value="../ar/regeln.html">العربية</option><option value="../is/regeln.html">Íslenska</option><option value="../da/regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ Gioca ora</a>
+</div></header>
+<main>
+<article>
+<h1>Regole del gioco</h1>
+<p class="lead">Chi conosce gli scacchi normali può iniziare dopo cinque minuti. Qui trovi tutte le regole complete – dalla scacchiera e dalle mosse attraverso il centro fino all’obbligo di aiuto, che rende davvero equo il gioco a tre.</p>
+<figure><img src="../img/brett-2d.webp" width="382" height="354" alt="La scacchiera a stella vista dall’alto" style="max-width:420px;display:block;margin:0 auto"><figcaption>La scacchiera: tre sezioni di 4 × 8 case, traverse da A a D, colonne da 1 a 8.</figcaption></figure>
+
+   
+   <h2>Giocatori e scacchiera</h2>
+   <ul>
+    <li>Tre giocatori: <b style="color:#5599ff">Blu</b>, <b style="color:#44ee22">Verde</b>, <b style="color:#ff5533">Rosso</b>. Si muove a turno: Blu → Verde → Rosso.</li>
+    <li>La scacchiera è una stella di David formata da tre sezioni di 4 × 8 case: traverse <b>A–D</b>, colonne <b>1–8</b>. La traversa A è la propria traversa di base, la traversa D si trova al centro della scacchiera.</li>
+    <li>Ogni giocatore ha 16 pezzi come negli scacchi normali. Il re sta in A5, la donna in A4.</li>
+   </ul>
+   <h2>Mosse attraverso il centro</h2>
+   <ul>
+    <li>Chi muove oltre la propria traversa D entra in una <b>sezione vicina</b> – sulla sua traversa D – e prosegue lì verso la sua traversa A.</li>
+    <li>La colonna viene specchiata: la colonna c diventa la colonna <b>9 − c</b>.</li>
+    <li><b>Torre e donna (in linea retta):</b> dalle colonne 1–3 si raggiunge una sezione vicina, dalle 6–8 l’altra. Dalle colonne centrali 4 e 5 si raggiungono <b>entrambe</b> le sezioni.</li>
+    <li><b>Alfiere e donna (in diagonale):</b> anche un alfiere passa in una sezione vicina, sulla punta del centro in entrambe.</li>
+    <li><b>Cavallo:</b> due passi avanti/indietro e uno di lato (o viceversa), anche attraverso il centro. Alcuni passaggi ai confini sono esclusi.</li>
+    <li><b>Re:</b> una casa in ogni direzione, anche nelle sezioni vicine.</li>
+    <li>Nel gioco puoi provare ogni pezzo su una scacchiera di prova in «📖 Regole».</li>
+   </ul>
+   <h2>Pedoni</h2>
+   <ul>
+    <li>Nella propria sezione i pedoni avanzano verso il centro (A → D), dalla traversa B anche di due case.</li>
+    <li>Attraverso il centro entrano in una sezione vicina e proseguono verso la sua traversa A. Catturano in diagonale in avanti, anche attraverso il centro.</li>
+    <li><b>Promozione:</b> sulla traversa A di una sezione altrui.</li>
+    <li><b>En passant:</b> dopo un passo doppio <b>entrambi</b> gli avversari possono catturare en passant finché il giocatore del passo doppio non muove di nuovo.</li>
+   </ul>
+   <h2>Arrocco</h2>
+   <ul><li>Re (A5) e torre non mossi, case intermedie libere e non attaccate. Corto: re in A7, torre A8 → A6. Lungo: re in A3, torre A1 → A4.</li></ul>
+   <h2 id="hilfspflicht">Scacco, obbligo di aiuto e matto</h2>
+   <ul>
+    <li>Chi è sotto scacco deve pararlo. Nessuna mossa può lasciare il proprio re sotto scacco.</li>
+    <li><b>Obbligo di aiuto:</b> se un giocatore è sotto scacco e il terzo giocatore muove <i>prima</i> di lui, quest’ultimo non può fare una mossa dopo la quale il minacciato sarebbe matto. Se il minacciato è già matto, il terzo deve liberarlo – se non può, il matto resta. Se il minacciato può salvarsi da solo comunque muova il terzo, non c’è alcuna restrizione.</li>
+    <li><b>Lo scacco matto termina la partita.</b> Vince <b>chi dà scacco al re</b> – non chi toglie soltanto case di fuga. Gli altri due perdono.</li>
+   </ul>
+   <h2>Nessuna mossa possibile</h2>
+   <ul><li>Chi non può muovere senza finire sotto scacco salta il turno. Se nessuno può più muovere, decidono i punti.</li></ul>
+   <h2>Tempo e punti</h2>
+   <ul>
+    <li>A scelta, tempo per mossa (scaduto → la mossa decade) e/o per partita (esaurito → niente più mosse, i pezzi possono ancora essere catturati).</li>
+    <li>Punti: propri pezzi sulla scacchiera + pezzi avversari catturati. Pedone 1, cavallo e alfiere 3, torre 4, donna 6. In caso di parità vince chi ha usato meno tempo.</li>
+   </ul>
+   <h2>Comandi</h2>
+   <ul>
+    <li>Clicca su un pezzo → le mosse possibili si illuminano → clicca sulla casa di arrivo. «↶ Indietro» o Ctrl+Z annulla le mosse.</li>
+    <li>☰ Menu · Vista 3D · 💾 Salva / 📂 Carica · ⏸ Pausa · 🔊 Audio · ⛶ Schermo intero · 👥 Finestre dei giocatori sì/no.</li>
+    <li><b>Gli avversari computer</b> hanno un loro carattere: <b style="color:#5599ff">Blubbo</b> (bonaccione, esuberante), <b style="color:#44ee22">Grumbo</b> (brontolone, forte) e <b style="color:#ff5533">Flammo</b> (testa calda, irrequieto). Si rallegrano, si arrabbiano, hanno paura, esultano e piangono – a seconda di come va la partita.</li>
+   </ul>
+  
+<h2>La notazione</h2>
+<p>Ogni casa ha un nome di tre caratteri: sezione (B, G o R per Blu, Verde, Rosso), traversa (da A a D) e colonna (da 1 a 8). <b>BA5</b> è quindi la casa A5 della sezione blu – dove all’inizio sta il re blu. Una mossa si annota con casa di partenza e di arrivo, per esempio <b>BB4–BD4</b> per il passo doppio di un pedone; una cattura con «×», come <b>GC3×RD6</b>.</p>
+<p class="note">Suggerimento: nel gioco le coordinate si mostrano dal menu ☰. La lista delle mosse in alto a destra mostra ogni mossa in questa notazione, e con 📼 puoi rigiocare qualsiasi partita mossa per mossa.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../spiel.html">▶ Prova subito le regole</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">Note legali</a><a href="../datenschutz.html">Privacy</a><a href="../ueber.html#kontakt">Contatti</a><a href="regeln.html">Regole</a><a href="../strategie.html">Strategia</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','it')}catch(_){}});</script>
+</body></html>

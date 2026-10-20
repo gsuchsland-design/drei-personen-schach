@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reglas – Ajedrez a tres</title>
+<meta name="description" content="Las reglas completas del ajedrez a tres: tablero, jugadas por el centro, peones, enroque, deber de ayuda, jaque mate, control de tiempo y puntuación.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="Reglas – Ajedrez a tres">
+<meta property="og:description" content="Las reglas completas del ajedrez a tres: tablero, jugadas por el centro, peones, enroque, deber de ayuda, jaque mate, control de tiempo y puntuación.">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">Ajedrez a tres</a>
+<nav class="main"><a href="../index.html#start">Inicio</a><a href="regeln.html" class=on>Reglas</a><a href="../strategie.html">Estrategia</a><a href="reiche-regeln.html">6 Reinos</a><a href="grenzenlos-regeln.html">Sin fronteras</a><a href="../ueber.html">Sobre el juego</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../regeln.html">Deutsch</option><option value="../en/regeln.html">English</option><option value="../fr/regeln.html">Français</option><option value="regeln.html" selected>Español</option><option value="../it/regeln.html">Italiano</option><option value="../pt/regeln.html">Português</option><option value="../nl/regeln.html">Nederlands</option><option value="../pl/regeln.html">Polski</option><option value="../tr/regeln.html">Türkçe</option><option value="../ja/regeln.html">日本語</option><option value="../ko/regeln.html">한국어</option><option value="../th/regeln.html">ไทย</option><option value="../ar/regeln.html">العربية</option><option value="../is/regeln.html">Íslenska</option><option value="../da/regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ Jugar ahora</a>
+</div></header>
+<main>
+<article>
+<h1>Reglas del juego</h1>
+<p class="lead">Si conoces el ajedrez normal, puedes empezar en cinco minutos. Aquí están todas las reglas completas – desde el tablero y las jugadas por el centro hasta el deber de ayuda, que es lo que hace justo el juego a tres.</p>
+<figure><img src="../img/brett-2d.webp" width="382" height="354" alt="El tablero en forma de estrella visto desde arriba" style="max-width:420px;display:block;margin:0 auto"><figcaption>El tablero: tres secciones de 4 × 8 casillas, filas A a D, columnas 1 a 8.</figcaption></figure>
+
+   
+   <h2>Jugadores y tablero</h2>
+   <ul>
+    <li>Tres jugadores: <b style="color:#5599ff">Azul</b>, <b style="color:#44ee22">Verde</b>, <b style="color:#ff5533">Rojo</b>. Se juega por turnos: Azul → Verde → Rojo.</li>
+    <li>El tablero es una estrella de David formada por tres secciones de 4 × 8 casillas: filas <b>A–D</b>, columnas <b>1–8</b>. La fila A es tu propia fila de base, la fila D está junto al centro del tablero.</li>
+    <li>Cada jugador tiene 16 piezas como en el ajedrez normal. El rey está en A5, la dama en A4.</li>
+   </ul>
+   <h2>Jugadas por el centro</h2>
+   <ul>
+    <li>Quien avanza más allá de su propia fila D entra en una <b>sección vecina</b> – en su fila D – y sigue allí hacia su fila A.</li>
+    <li>La columna se refleja: la columna c pasa a ser la columna <b>9 − c</b>.</li>
+    <li><b>Torre y dama (en línea recta):</b> desde las columnas 1–3 se llega a una sección vecina, desde las 6–8 a la otra. Desde las columnas centrales 4 y 5 se alcanzan <b>ambas</b> secciones.</li>
+    <li><b>Alfil y dama (en diagonal):</b> un alfil también cruza a una sección vecina, y en la punta del centro a ambas.</li>
+    <li><b>Caballo:</b> dos pasos adelante/atrás y uno de lado (o al revés), también por el centro. Algunos pasos en las fronteras están excluidos.</li>
+    <li><b>Rey:</b> una casilla en cualquier dirección, también hacia las secciones vecinas.</li>
+    <li>En el juego puedes probar cada pieza en un tablero de práctica en «📖 Reglas».</li>
+   </ul>
+   <h2>Peones</h2>
+   <ul>
+    <li>En su propia sección, los peones avanzan hacia el centro (A → D); desde la fila B también dos casillas.</li>
+    <li>Por el centro entran en una sección vecina y siguen hacia su fila A. Capturan en diagonal hacia delante, también por el centro.</li>
+    <li><b>Coronación:</b> en la fila A de una sección ajena.</li>
+    <li><b>Al paso:</b> tras un doble paso, <b>ambos</b> rivales pueden capturar al paso hasta que el jugador del doble paso vuelva a mover.</li>
+   </ul>
+   <h2>Enroque</h2>
+   <ul><li>Rey (A5) y torre sin mover, casillas intermedias libres y no atacadas. Corto: rey a A7, torre A8 → A6. Largo: rey a A3, torre A1 → A4.</li></ul>
+   <h2 id="hilfspflicht">Jaque, deber de ayuda y mate</h2>
+   <ul>
+    <li>Quien está en jaque debe salir de él. Ninguna jugada puede dejar al propio rey en jaque.</li>
+    <li><b>Deber de ayuda:</b> si un jugador está en jaque y el tercer jugador mueve <i>antes</i> que él, este no puede hacer una jugada tras la cual el amenazado quedaría mate. Si el amenazado ya está mate, el tercero debe liberarlo – si no puede, el mate se mantiene. Si el amenazado puede salvarse solo, juegue lo que juegue el tercero, no hay ninguna restricción.</li>
+    <li><b>El jaque mate termina la partida.</b> Gana <b>quien da jaque al rey</b> – no quien solo quita casillas de escape. Los otros dos pierden.</li>
+   </ul>
+   <h2>Ninguna jugada posible</h2>
+   <ul><li>Quien no puede mover sin quedar en jaque pasa turno. Si ya nadie puede mover, deciden los puntos.</li></ul>
+   <h2>Tiempo y puntos</h2>
+   <ul>
+    <li>Opcionalmente, tiempo por jugada (agotado → la jugada se pierde) y/o por partida (agotado → no hay más jugadas, las piezas aún pueden ser capturadas).</li>
+    <li>Puntos: piezas propias en el tablero + piezas rivales capturadas. Peón 1, caballo y alfil 3, torre 4, dama 6. En caso de empate gana quien haya gastado menos tiempo.</li>
+   </ul>
+   <h2>Manejo</h2>
+   <ul>
+    <li>Haz clic en una pieza → se iluminan las jugadas posibles → haz clic en la casilla de destino. «↶ Atrás» o Ctrl+Z deshace jugadas.</li>
+    <li>☰ Menú · Vista 3D · 💾 Guardar / 📂 Cargar · ⏸ Pausa · 🔊 Sonido · ⛶ Pantalla completa · 👥 Ventanas de jugadores sí/no.</li>
+    <li><b>Los rivales del ordenador</b> tienen su propio carácter: <b style="color:#5599ff">Blubbo</b> (bonachón, efusivo), <b style="color:#44ee22">Grumbo</b> (gruñón, fuerte) y <b style="color:#ff5533">Flammo</b> (exaltado, inquieto). Se alegran, se enfadan, tienen miedo, celebran y lloran – según cómo vaya la partida.</li>
+   </ul>
+  
+<h2>La notación</h2>
+<p>Cada casilla tiene un nombre de tres caracteres: sección (B, G o R para Azul, Verde, Rojo), fila (A a D) y columna (1 a 8). Así, <b>BA5</b> es la casilla A5 de la sección azul – donde está el rey azul al principio. Una jugada se anota con casilla de salida y de destino, por ejemplo <b>BB4–BD4</b> para el doble paso de un peón; una captura con «×», como <b>GC3×RD6</b>.</p>
+<p class="note">Consejo: en el juego, las coordenadas se muestran en el menú ☰. La lista de jugadas arriba a la derecha muestra cada jugada en esta notación, y con 📼 puedes reproducir cualquier partida jugada a jugada.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../spiel.html">▶ Probar las reglas ahora</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">Aviso legal</a><a href="../datenschutz.html">Privacidad</a><a href="../ueber.html#kontakt">Contacto</a><a href="regeln.html">Reglas</a><a href="../strategie.html">Estrategia</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','es')}catch(_){}});</script>
+</body></html>

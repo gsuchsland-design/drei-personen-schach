@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regras – Xadrez a três</title>
+<meta name="description" content="As regras completas do xadrez a três: tabuleiro, lances pelo centro, peões, roque, dever de ajudar, xeque-mate, controlo de tempo e pontuação.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="Regras – Xadrez a três">
+<meta property="og:description" content="As regras completas do xadrez a três: tabuleiro, lances pelo centro, peões, roque, dever de ajudar, xeque-mate, controlo de tempo e pontuação.">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">Xadrez a três</a>
+<nav class="main"><a href="../index.html#start">Início</a><a href="regeln.html" class=on>Regras</a><a href="../strategie.html">Estratégia</a><a href="reiche-regeln.html">6 Reinos</a><a href="grenzenlos-regeln.html">Sem fronteiras</a><a href="../ueber.html">Sobre o jogo</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../regeln.html">Deutsch</option><option value="../en/regeln.html">English</option><option value="../fr/regeln.html">Français</option><option value="../es/regeln.html">Español</option><option value="../it/regeln.html">Italiano</option><option value="regeln.html" selected>Português</option><option value="../nl/regeln.html">Nederlands</option><option value="../pl/regeln.html">Polski</option><option value="../tr/regeln.html">Türkçe</option><option value="../ja/regeln.html">日本語</option><option value="../ko/regeln.html">한국어</option><option value="../th/regeln.html">ไทย</option><option value="../ar/regeln.html">العربية</option><option value="../is/regeln.html">Íslenska</option><option value="../da/regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ Jogar agora</a>
+</div></header>
+<main>
+<article>
+<h1>Regras do jogo</h1>
+<p class="lead">Quem conhece o xadrez normal pode começar em cinco minutos. Aqui estão todas as regras completas – do tabuleiro e dos lances pelo centro até ao dever de ajudar, que é o que torna o jogo a três justo.</p>
+<figure><img src="../img/brett-2d.webp" width="382" height="354" alt="O tabuleiro em forma de estrela visto de cima" style="max-width:420px;display:block;margin:0 auto"><figcaption>O tabuleiro: três secções de 4 × 8 casas, filas A a D, colunas 1 a 8.</figcaption></figure>
+
+   
+   <h2>Jogadores e tabuleiro</h2>
+   <ul>
+    <li>Três jogadores: <b style="color:#5599ff">Azul</b>, <b style="color:#44ee22">Verde</b>, <b style="color:#ff5533">Vermelho</b>. Joga-se à vez: Azul → Verde → Vermelho.</li>
+    <li>O tabuleiro é uma estrela de David formada por três secções de 4 × 8 casas: filas <b>A–D</b>, colunas <b>1–8</b>. A fila A é a tua fila de base, a fila D fica junto ao centro do tabuleiro.</li>
+    <li>Cada jogador tem 16 peças como no xadrez normal. O rei fica em A5, a dama em A4.</li>
+   </ul>
+   <h2>Lances pelo centro</h2>
+   <ul>
+    <li>Quem avança para além da sua fila D entra numa <b>secção vizinha</b> – na fila D dela – e continua aí em direção à fila A dela.</li>
+    <li>A coluna é espelhada: a coluna c passa a ser a coluna <b>9 − c</b>.</li>
+    <li><b>Torre e dama (em linha reta):</b> das colunas 1–3 chega-se a uma secção vizinha, das 6–8 à outra. Das colunas centrais 4 e 5 alcançam-se <b>ambas</b> as secções.</li>
+    <li><b>Bispo e dama (na diagonal):</b> um bispo também passa para uma secção vizinha, e na ponta do centro para ambas.</li>
+    <li><b>Cavalo:</b> dois passos para a frente/trás e um para o lado (ou ao contrário), também pelo centro. Algumas passagens nas fronteiras estão excluídas.</li>
+    <li><b>Rei:</b> uma casa em qualquer direção, também para as secções vizinhas.</li>
+    <li>No jogo podes experimentar cada peça num tabuleiro de treino em «📖 Regras».</li>
+   </ul>
+   <h2>Peões</h2>
+   <ul>
+    <li>Na própria secção, os peões avançam em direção ao centro (A → D); a partir da fila B também duas casas.</li>
+    <li>Pelo centro entram numa secção vizinha e continuam em direção à fila A dela. Capturam na diagonal para a frente, também pelo centro.</li>
+    <li><b>Promoção:</b> na fila A de uma secção alheia.</li>
+    <li><b>En passant:</b> após um passo duplo, <b>ambos</b> os adversários podem capturar en passant até que o jogador do passo duplo volte a jogar.</li>
+   </ul>
+   <h2>Roque</h2>
+   <ul><li>Rei (A5) e torre sem terem jogado, casas intermédias livres e não atacadas. Pequeno: rei para A7, torre A8 → A6. Grande: rei para A3, torre A1 → A4.</li></ul>
+   <h2 id="hilfspflicht">Xeque, dever de ajudar e mate</h2>
+   <ul>
+    <li>Quem está em xeque tem de sair dele. Nenhum lance pode deixar o próprio rei em xeque.</li>
+    <li><b>Dever de ajudar:</b> se um jogador está em xeque e o terceiro jogador joga <i>antes</i> dele, este não pode fazer um lance depois do qual o ameaçado ficaria em mate. Se o ameaçado já estiver em mate, o terceiro tem de o libertar – se não puder, o mate mantém-se. Se o ameaçado se puder salvar sozinho, jogue o terceiro o que jogar, não há restrição.</li>
+    <li><b>O xeque-mate termina a partida.</b> Ganha <b>quem dá xeque ao rei</b> – não quem apenas tira casas de fuga. Os outros dois perdem.</li>
+   </ul>
+   <h2>Nenhum lance possível</h2>
+   <ul><li>Quem não pode jogar sem ficar em xeque passa a vez. Se já ninguém puder jogar, decidem os pontos.</li></ul>
+   <h2>Tempo e pontos</h2>
+   <ul>
+    <li>Opcionalmente, tempo por lance (esgotado → o lance perde-se) e/ou por partida (esgotado → não há mais lances, as peças ainda podem ser capturadas).</li>
+    <li>Pontos: peças próprias no tabuleiro + peças adversárias capturadas. Peão 1, cavalo e bispo 3, torre 4, dama 6. Em caso de empate ganha quem gastou menos tempo.</li>
+   </ul>
+   <h2>Comandos</h2>
+   <ul>
+    <li>Clica numa peça → os lances possíveis acendem-se → clica na casa de destino. «↶ Voltar» ou Ctrl+Z desfaz lances.</li>
+    <li>☰ Menu · Vista 3D · 💾 Guardar / 📂 Carregar · ⏸ Pausa · 🔊 Som · ⛶ Ecrã inteiro · 👥 Janelas dos jogadores sim/não.</li>
+    <li><b>Os adversários do computador</b> têm o seu próprio carácter: <b style="color:#5599ff">Blubbo</b> (bonacheirão, efusivo), <b style="color:#44ee22">Grumbo</b> (rabugento, forte) e <b style="color:#ff5533">Flammo</b> (esquentado, irrequieto). Alegram-se, irritam-se, ficam com medo, festejam e choram – conforme o rumo da partida.</li>
+   </ul>
+  
+<h2>A notação</h2>
+<p>Cada casa tem um nome de três caracteres: secção (B, G ou R para Azul, Verde, Vermelho), fila (A a D) e coluna (1 a 8). <b>BA5</b> é portanto a casa A5 da secção azul – onde está o rei azul no início. Um lance anota-se com casa de partida e de chegada, por exemplo <b>BB4–BD4</b> para o passo duplo de um peão; uma captura com «×», como <b>GC3×RD6</b>.</p>
+<p class="note">Dica: no jogo, as coordenadas mostram-se pelo menu ☰. A lista de lances no canto superior direito mostra cada lance nesta notação, e com 📼 podes rever qualquer partida lance a lance.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../spiel.html">▶ Experimentar as regras já</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">Ficha técnica</a><a href="../datenschutz.html">Privacidade</a><a href="../ueber.html#kontakt">Contacto</a><a href="regeln.html">Regras</a><a href="../strategie.html">Estratégia</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','pt')}catch(_){}});</script>
+</body></html>

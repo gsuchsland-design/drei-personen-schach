@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Règles – Échecs à trois</title>
+<meta name="description" content="Les règles complètes des échecs à trois : échiquier, coups par le centre, pions, roque, devoir d’aide, échec et mat, contrôle du temps et décompte des points.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="Règles – Échecs à trois">
+<meta property="og:description" content="Les règles complètes des échecs à trois : échiquier, coups par le centre, pions, roque, devoir d’aide, échec et mat, contrôle du temps et décompte des points.">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">Échecs à trois</a>
+<nav class="main"><a href="../index.html#start">Accueil</a><a href="regeln.html" class=on>Règles</a><a href="../strategie.html">Stratégie</a><a href="reiche-regeln.html">6 Royaumes</a><a href="grenzenlos-regeln.html">Sans frontières</a><a href="../ueber.html">À propos du jeu</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../regeln.html">Deutsch</option><option value="../en/regeln.html">English</option><option value="regeln.html" selected>Français</option><option value="../es/regeln.html">Español</option><option value="../it/regeln.html">Italiano</option><option value="../pt/regeln.html">Português</option><option value="../nl/regeln.html">Nederlands</option><option value="../pl/regeln.html">Polski</option><option value="../tr/regeln.html">Türkçe</option><option value="../ja/regeln.html">日本語</option><option value="../ko/regeln.html">한국어</option><option value="../th/regeln.html">ไทย</option><option value="../ar/regeln.html">العربية</option><option value="../is/regeln.html">Íslenska</option><option value="../da/regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ Jouer</a>
+</div></header>
+<main>
+<article>
+<h1>Règles du jeu</h1>
+<p class="lead">Si vous connaissez les échecs classiques, vous pouvez commencer au bout de cinq minutes. Voici toutes les règles en détail – de l’échiquier et des coups par le centre jusqu’au devoir d’aide, qui rend le jeu à trois vraiment équitable.</p>
+<figure><img src="../img/brett-2d.webp" width="382" height="354" alt="L’échiquier en étoile vu d’en haut" style="max-width:420px;display:block;margin:0 auto"><figcaption>L’échiquier : trois sections de 4 × 8 cases, rangées A à D, colonnes 1 à 8.</figcaption></figure>
+
+   
+   <h2>Joueurs et échiquier</h2>
+   <ul>
+    <li>Trois joueurs : <b style="color:#5599ff">Bleu</b>, <b style="color:#44ee22">Vert</b>, <b style="color:#ff5533">Rouge</b>. On joue à tour de rôle : Bleu → Vert → Rouge.</li>
+    <li>L’échiquier est une étoile de David formée de trois sections de 4 × 8 cases : rangées <b>A–D</b>, colonnes <b>1–8</b>. La rangée A est votre propre rangée de base, la rangée D touche le centre de l’échiquier.</li>
+    <li>Chaque joueur a 16 pièces comme aux échecs classiques. Le roi est en A5, la dame en A4.</li>
+   </ul>
+   <h2>Coups par le centre</h2>
+   <ul>
+    <li>Qui dépasse sa propre rangée D entre dans une <b>section voisine</b> – sur sa rangée D – et continue vers sa rangée A.</li>
+    <li>La colonne est inversée : la colonne c devient la colonne <b>9 − c</b>.</li>
+    <li><b>Tour et dame (en ligne droite) :</b> des colonnes 1–3 on atteint une section voisine, des colonnes 6–8 l’autre. Depuis les colonnes centrales 4 et 5, on atteint <b>les deux</b> sections.</li>
+    <li><b>Fou et dame (en diagonale) :</b> un fou passe lui aussi dans une section voisine, et à la pointe du centre dans les deux.</li>
+    <li><b>Cavalier :</b> deux pas en avant/en arrière et un de côté (ou l’inverse), y compris par le centre. Quelques passages aux frontières sont exclus.</li>
+    <li><b>Roi :</b> une case dans toutes les directions, y compris vers les sections voisines.</li>
+    <li>Dans le jeu, sous « 📖 Règles », vous pouvez essayer chaque pièce sur un échiquier d’entraînement.</li>
+   </ul>
+   <h2>Pions</h2>
+   <ul>
+    <li>Dans leur propre section, les pions avancent vers le centre (A → D) ; depuis la rangée B, aussi de deux cases.</li>
+    <li>Par le centre, ils entrent dans une section voisine et continuent vers sa rangée A. Ils prennent en diagonale vers l’avant, y compris par le centre.</li>
+    <li><b>Promotion :</b> sur la rangée A d’une section adverse.</li>
+    <li><b>En passant :</b> après un double pas, <b>les deux</b> adversaires peuvent prendre en passant jusqu’à ce que le joueur ayant fait le double pas rejoue.</li>
+   </ul>
+   <h2>Roque</h2>
+   <ul><li>Roi (A5) et tour n’ont pas bougé, les cases entre eux sont libres et non attaquées. Petit roque : roi en A7, tour A8 → A6. Grand roque : roi en A3, tour A1 → A4.</li></ul>
+   <h2 id="hilfspflicht">Échec, devoir d’aide et mat</h2>
+   <ul>
+    <li>Un joueur en échec doit le parer. Aucun coup ne peut laisser son propre roi en échec.</li>
+    <li><b>Devoir d’aide :</b> si un joueur est en échec et que le troisième joueur joue <i>avant</i> lui, celui-ci ne peut pas jouer un coup après lequel le joueur menacé serait mat. Si le joueur menacé est déjà mat, le troisième doit le libérer – s’il ne le peut pas, le mat reste. Si le joueur menacé peut se sauver lui-même quoi que joue le troisième, il n’y a aucune restriction.</li>
+    <li><b>L’échec et mat termine la partie.</b> Gagne <b>celui qui donne l’échec au roi</b> – pas celui qui ne fait que couper des cases de fuite. Les deux autres perdent.</li>
+   </ul>
+   <h2>Aucun coup possible</h2>
+   <ul><li>Qui ne peut pas jouer sans être en échec passe son tour. Si plus personne ne peut jouer, les points décident.</li></ul>
+   <h2>Temps et points</h2>
+   <ul>
+    <li>Au choix, temps par coup (écoulé → le coup est perdu) et/ou par partie (épuisé → plus de coups, les pièces peuvent toujours être prises).</li>
+    <li>Points : ses propres pièces sur l’échiquier + les pièces adverses prises. Pion 1, cavalier et fou 3, tour 4, dame 6. En cas d’égalité, gagne celui qui a utilisé le moins de temps.</li>
+   </ul>
+   <h2>Commandes</h2>
+   <ul>
+    <li>Cliquer sur une pièce → les coups possibles s’allument → cliquer sur la case d’arrivée. « ↶ Retour » ou Ctrl+Z annule des coups.</li>
+    <li>☰ Menu · Vue 3D · 💾 Enregistrer / 📂 Charger · ⏸ Pause · 🔊 Son · ⛶ Plein écran · 👥 Fenêtres des joueurs on/off.</li>
+    <li><b>Les adversaires ordinateur</b> ont leur propre caractère : <b style="color:#5599ff">Blubbo</b> (débonnaire, exubérant), <b style="color:#44ee22">Grumbo</b> (bougon, costaud) et <b style="color:#ff5533">Flammo</b> (tête brûlée, agité). Ils se réjouissent, s’énervent, ont peur, exultent et pleurent – selon le déroulement de la partie.</li>
+   </ul>
+  
+<h2>La notation</h2>
+<p>Chaque case a un nom de trois caractères : section (B, G ou R pour Bleu, Vert, Rouge), rangée (A à D) et colonne (1 à 8). <b>BA5</b> est donc la case A5 de la section bleue – là où se trouve le roi bleu au départ. Un coup s’écrit avec la case de départ et la case d’arrivée, par exemple <b>BB4–BD4</b> pour le double pas d’un pion ; une prise avec « × », comme <b>GC3×RD6</b>.</p>
+<p class="note">Astuce : dans le jeu, les coordonnées s’affichent via le menu ☰. La liste des coups en haut à droite montre chaque coup dans cette notation, et avec 📼 vous pouvez rejouer toute partie coup par coup.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../spiel.html">▶ Essayer les règles tout de suite</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">Mentions légales</a><a href="../datenschutz.html">Confidentialité</a><a href="../ueber.html#kontakt">Contact</a><a href="regeln.html">Règles</a><a href="../strategie.html">Stratégie</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','fr')}catch(_){}});</script>
+</body></html>

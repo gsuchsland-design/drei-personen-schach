@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pl"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zasady – Szachy dla trojga</title>
+<meta name="description" content="Pełne zasady szachów dla trojga: szachownica, ruchy przez środek, piony, roszada, obowiązek pomocy, mat, kontrola czasu i punktacja.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="Zasady – Szachy dla trojga">
+<meta property="og:description" content="Pełne zasady szachów dla trojga: szachownica, ruchy przez środek, piony, roszada, obowiązek pomocy, mat, kontrola czasu i punktacja.">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">Szachy dla trojga</a>
+<nav class="main"><a href="../index.html#start">Start</a><a href="regeln.html" class=on>Zasady</a><a href="../strategie.html">Strategia</a><a href="reiche-regeln.html">6 Królestw</a><a href="grenzenlos-regeln.html">Bez granic</a><a href="../ueber.html">O grze</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../regeln.html">Deutsch</option><option value="../en/regeln.html">English</option><option value="../fr/regeln.html">Français</option><option value="../es/regeln.html">Español</option><option value="../it/regeln.html">Italiano</option><option value="../pt/regeln.html">Português</option><option value="../nl/regeln.html">Nederlands</option><option value="regeln.html" selected>Polski</option><option value="../tr/regeln.html">Türkçe</option><option value="../ja/regeln.html">日本語</option><option value="../ko/regeln.html">한국어</option><option value="../th/regeln.html">ไทย</option><option value="../ar/regeln.html">العربية</option><option value="../is/regeln.html">Íslenska</option><option value="../da/regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ Graj teraz</a>
+</div></header>
+<main>
+<article>
+<h1>Zasady gry</h1>
+<p class="lead">Kto zna zwykłe szachy, może zacząć po pięciu minutach. Tu są wszystkie zasady w całości – od szachownicy i ruchów przez środek aż po obowiązek pomocy, który dopiero czyni grę we troje sprawiedliwą.</p>
+<figure><img src="../img/brett-2d.webp" width="382" height="354" alt="Gwiaździsta szachownica z góry" style="max-width:420px;display:block;margin:0 auto"><figcaption>Szachownica: trzy sekcje po 4 × 8 pól, rzędy od A do D, kolumny od 1 do 8.</figcaption></figure>
+
+   
+   <h2>Gracze i szachownica</h2>
+   <ul>
+    <li>Trzech graczy: <b style="color:#5599ff">Niebieski</b>, <b style="color:#44ee22">Zielony</b>, <b style="color:#ff5533">Czerwony</b>. Ruchy wykonuje się po kolei: Niebieski → Zielony → Czerwony.</li>
+    <li>Szachownica to gwiazda Dawida z trzech sekcji po 4 × 8 pól: rzędy <b>A–D</b>, kolumny <b>1–8</b>. Rząd A to własny rząd wyjściowy, rząd D leży przy środku szachownicy.</li>
+    <li>Każdy gracz ma 16 bierek jak w zwykłych szachach. Król stoi na A5, hetman na A4.</li>
+   </ul>
+   <h2>Ruchy przez środek</h2>
+   <ul>
+    <li>Kto wyjdzie poza swój rząd D, wchodzi do <b>sąsiedniej sekcji</b> – na jej rząd D – i idzie tam dalej w stronę jej rzędu A.</li>
+    <li>Kolumna jest odbijana lustrzanie: kolumna c staje się kolumną <b>9 − c</b>.</li>
+    <li><b>Wieża i hetman (prosto):</b> z kolumn 1–3 dochodzi się do jednej sąsiedniej sekcji, z 6–8 do drugiej. Ze środkowych kolumn 4 i 5 osiągalne są <b>obie</b> sekcje.</li>
+    <li><b>Goniec i hetman (ukośnie):</b> goniec również przechodzi do sąsiedniej sekcji, na czubku środka do obu.</li>
+    <li><b>Skoczek:</b> dwa kroki do przodu/tyłu i jeden w bok (lub odwrotnie), także przez środek. Niektóre przejścia na granicach są wykluczone.</li>
+    <li><b>Król:</b> jedno pole w każdą stronę, także do sekcji sąsiednich.</li>
+    <li>W grze w „📖 Zasady” możesz wypróbować każdą bierkę na szachownicy ćwiczebnej.</li>
+   </ul>
+   <h2>Piony</h2>
+   <ul>
+    <li>We własnej sekcji piony idą w stronę środka (A → D), z rzędu B także o dwa pola.</li>
+    <li>Przez środek wchodzą do sąsiedniej sekcji i idą dalej w stronę jej rzędu A. Biją ukośnie do przodu, także przez środek.</li>
+    <li><b>Promocja:</b> na rzędzie A obcej sekcji.</li>
+    <li><b>Bicie w przelocie:</b> po podwójnym kroku <b>obaj</b> przeciwnicy mogą bić w przelocie, dopóki gracz, który wykonał podwójny krok, znów nie wykona ruchu.</li>
+   </ul>
+   <h2>Roszada</h2>
+   <ul><li>Król (A5) i wieża nieruszone, pola pomiędzy wolne i niezagrożone. Krótka: król na A7, wieża A8 → A6. Długa: król na A3, wieża A1 → A4.</li></ul>
+   <h2 id="hilfspflicht">Szach, obowiązek pomocy i mat</h2>
+   <ul>
+    <li>Kto jest szachowany, musi się od szacha uwolnić. Żaden ruch nie może zostawić własnego króla w szachu.</li>
+    <li><b>Obowiązek pomocy:</b> jeśli gracz jest szachowany, a trzeci gracz ma ruch <i>przed</i> nim, nie wolno mu wykonać ruchu, po którym zagrożony dostałby mata. Jeśli zagrożony ma już mata, trzeci musi go uwolnić – jeśli nie może, mat zostaje. Jeśli zagrożony i tak może się uratować, niezależnie od ruchu trzeciego, nie ma żadnych ograniczeń.</li>
+    <li><b>Mat kończy partię.</b> Wygrywa <b>ten, kto daje królowi szacha</b> – a nie ten, kto tylko odbiera pola ucieczki. Pozostali dwaj przegrywają.</li>
+   </ul>
+   <h2>Brak możliwego ruchu</h2>
+   <ul><li>Kto nie może wykonać ruchu bez wejścia w szacha, pauzuje. Jeśli nikt nie może już ruszyć, decydują punkty.</li></ul>
+   <h2>Czas i punkty</h2>
+   <ul>
+    <li>Do wyboru czas na ruch (upłynął → ruch przepada) i/lub na partię (wyczerpany → koniec ruchów, bierki nadal można bić).</li>
+    <li>Punkty: własne bierki na szachownicy + zbite bierki przeciwników. Pion 1, skoczek i goniec 3, wieża 4, hetman 6. Przy remisie wygrywa ten, kto zużył mniej czasu.</li>
+   </ul>
+   <h2>Obsługa</h2>
+   <ul>
+    <li>Kliknij bierkę → możliwe ruchy się podświetlą → kliknij pole docelowe. „↶ Wstecz” lub Ctrl+Z cofa ruchy.</li>
+    <li>☰ Menu · Widok 3D · 💾 Zapisz / 📂 Wczytaj · ⏸ Pauza · 🔊 Dźwięk · ⛶ Pełny ekran · 👥 Okna graczy wł./wył.</li>
+    <li><b>Przeciwnicy komputerowi</b> mają własne charaktery: <b style="color:#5599ff">Blubbo</b> (dobroduszny, wylewny), <b style="color:#44ee22">Grumbo</b> (zrzędliwy, silny) i <b style="color:#ff5533">Flammo</b> (porywczy, nerwowy). Cieszą się, złoszczą, boją, wiwatują i płaczą – zależnie od przebiegu partii.</li>
+   </ul>
+  
+<h2>Notacja</h2>
+<p>Każde pole ma nazwę z trzech znaków: sekcja (B, G lub R dla Niebieskiego, Zielonego, Czerwonego), rząd (A do D) i kolumna (1 do 8). <b>BA5</b> to więc pole A5 w sekcji niebieskiej – tam na początku stoi niebieski król. Ruch zapisuje się jako pole startowe i docelowe, np. <b>BB4–BD4</b> dla podwójnego kroku piona; bicie z „×”, np. <b>GC3×RD6</b>.</p>
+<p class="note">Wskazówka: w grze współrzędne można wyświetlić w menu ☰. Lista ruchów w prawym górnym rogu pokazuje każdy ruch w tej notacji, a dzięki 📼 możesz odtworzyć każdą partię ruch po ruchu.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../spiel.html">▶ Wypróbuj zasady od razu</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">Nota prawna</a><a href="../datenschutz.html">Prywatność</a><a href="../ueber.html#kontakt">Kontakt</a><a href="regeln.html">Zasady</a><a href="../strategie.html">Strategia</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','pl')}catch(_){}});</script>
+</body></html>

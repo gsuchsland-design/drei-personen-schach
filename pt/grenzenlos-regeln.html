@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Xadrez sem fronteiras – Regras</title>
+<meta name="description" content="Regras do Xadrez sem fronteiras: xadrez normal num tabuleiro infinito para 2 a 4 jogadores, com zonas iniciais, regra de promoção, relógio, monstros e vista 3D.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="Xadrez sem fronteiras – Regras">
+<meta property="og:description" content="Regras do Xadrez sem fronteiras: xadrez normal num tabuleiro infinito para 2 a 4 jogadores, com zonas iniciais, regra de promoção, relógio, monstros e vista 3D.">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">Xadrez a três</a>
+<nav class="main"><a href="../index.html#start">Início</a><a href="regeln.html">Regras</a><a href="../strategie.html">Estratégia</a><a href="reiche-regeln.html">6 Reinos</a><a href="grenzenlos-regeln.html" class=on>Sem fronteiras</a><a href="../ueber.html">Sobre o jogo</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../grenzenlos-regeln.html">Deutsch</option><option value="../en/grenzenlos-regeln.html">English</option><option value="../fr/grenzenlos-regeln.html">Français</option><option value="../es/grenzenlos-regeln.html">Español</option><option value="../it/grenzenlos-regeln.html">Italiano</option><option value="grenzenlos-regeln.html" selected>Português</option><option value="../nl/grenzenlos-regeln.html">Nederlands</option><option value="../pl/grenzenlos-regeln.html">Polski</option><option value="../tr/grenzenlos-regeln.html">Türkçe</option><option value="../ja/grenzenlos-regeln.html">日本語</option><option value="../ko/grenzenlos-regeln.html">한국어</option><option value="../th/grenzenlos-regeln.html">ไทย</option><option value="../ar/grenzenlos-regeln.html">العربية</option><option value="../is/grenzenlos-regeln.html">Íslenska</option><option value="../da/grenzenlos-regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ Jogar agora</a>
+</div></header>
+<main>
+<article>
+<h1>Xadrez sem fronteiras</h1>
+<p class="lead">Xadrez completamente normal – só que o tabuleiro não tem borda. As peças podem desviar-se para a esquerda, direita, frente e trás o quanto quiserem. A dois como de costume; a três ou quatro, os exércitos sentam-se como à volta de uma mesa.</p>
+<p style="text-align:center"><a class="cta go" href="../grenzenlos.html">▶ Jogar Xadrez sem fronteiras</a></p>
+<figure><img src="../img/grenz-partie.webp" alt="Uma partida a quatro em curso com monitores e monstros" loading="lazy"><figcaption>Quatro jogadores contra três monstros: Blubbo, Flammo e Grumbo.</figcaption></figure>
+<h2>A posição inicial</h2>
+<figure><img src="../img/grenz-2p.webp" alt="Posição inicial a dois" loading="lazy"><figcaption>A dois: a posição inicial de sempre – só que o tabuleiro continua em todas as direções.</figcaption></figure>
+<ul>
+<li><b>A dois</b>, Azul e Verde dispõem-se como no xadrez normal.</li>
+<li><b>A três e a quatro</b>, os exércitos dispõem-se como à volta de uma mesa: Azul em baixo, Vermelho à esquerda, Verde em cima, Amarelo à direita. Entre os exércitos há um espaço livre de quatro filas. Cada exército tem uma <b>zona inicial</b> colorida de duas filas.</li>
+<li>Cada peão avança em direção ao jogador em frente.</li>
+</ul>
+<div class="grid"><div class="card"><figure><img src="../img/grenz-3p.webp" alt="Posição inicial a três" loading="lazy"><figcaption>A três</figcaption></figure></div><div class="card"><figure><img src="../img/grenz-4p.webp" alt="Posição inicial a quatro" loading="lazy"><figcaption>A quatro</figcaption></figure></div></div>
+<h2>As peças</h2>
+<p>Todas as peças se movem como no xadrez normal. No tabuleiro infinito, porém, torre, bispo e dama vão muito longe: podem avançar até dez casas para além das peças mais afastadas – o jogo mostra cada casa alcançável.</p>
+<figure><img src="../img/grenz-dame.webp" alt="Uma dama em espaço aberto com todas as casas de destino" loading="lazy"><figcaption>Uma dama em espaço aberto: os pontos verdes são casas livres, os anéis vermelhos capturas.</figcaption></figure>
+<h2>Roque e en passant</h2>
+<figure><img src="../img/grenz-rochade.webp" alt="O rei com ambos os roques (marcados a azul)" loading="lazy"><figcaption>As casas de roque estão marcadas a azul. No tabuleiro aberto, o rei também pode fugir para trás.</figcaption></figure>
+<ul>
+<li><b>Roque:</b> o rei e a torre ainda não podem ter jogado, o espaço entre eles está livre, o rei não está em xeque e não passa por nenhuma casa atacada. O rei desloca-se duas casas em direção à torre, a torre salta por cima dele.</li>
+<li><b>En passant:</b> se um peão avança duas casas, um peão adversário pode capturá-lo de passagem – com vários jogadores, até que o jogador do passo duplo volte a ter a vez.</li>
+</ul>
+<h2>Promoção</h2>
+<figure><img src="../img/grenz-umwandlung.webp" alt="Um peão azul entra na zona inicial amarela" loading="lazy"><figcaption>Com «zona inicial», o peão azul torna-se dama assim que entra na zona inicial amarela.</figcaption></figure>
+<ul>
+<li><b>A dois:</b> como de costume, na fila de base do adversário.</li>
+<li><b>A três ou a quatro decide o anfitrião:</b> o peão torna-se dama assim que entra na <b>zona inicial de outro jogador</b> – ou só quando chega à <b>fila dos almirantes</b> de outro jogador. Em frente conta sempre também a fila de base prolongada.</li>
+</ul>
+<h2>Xeque, mate e fim da partida</h2>
+<ul>
+<li>Quem está em xeque tem de sair dele. Nenhum lance pode deixar o próprio rei em xeque. Um rei em xeque brilha a vermelho.</li>
+<li><b>Fim da partida – escolhido pelo anfitrião:</b> «O primeiro mate decide»: ganha quem dá mate. «Eliminação»: quem fica em mate é eliminado e as suas peças desaparecem; continua-se até restar um.</li>
+<li>Quem só tem o rei está derrotado. Quem não pode jogar sem ficar em xeque passa a vez.</li>
+<li>Depois da primeira captura: após 30 rondas sem capturas nem lances de peão decide o material (peão 1, cavalo e bispo 3, torre 5, dama 9).</li>
+</ul>
+<h2>Manter a visão geral</h2>
+<figure><img src="../img/grenz-3d.webp" alt="A vista 3D com peças de xadrez" loading="lazy"><figcaption>A vista 3D – com peças de xadrez, peças-estrela, naves espaciais ou símbolos.</figcaption></figure>
+<ul>
+<li><b>Deslocar:</b> arrastar. <b>Zoom:</b> roda do rato ou dois dedos. <b>Duplo clique:</b> enquadrar todas as peças.</li>
+<li>A <b>vista geral</b> no canto inferior direito mostra tudo o que acontece; ao tocar salta-se para lá.</li>
+<li><b>Rodar o tabuleiro:</b> o teu lado em baixo, virado para quem tem a vez ou à mão.</li>
+<li>Toca numa peça: os seus lances aparecem a verde (livre), vermelho (captura) e azul (roque). As peças adversárias mostram os lances a azul-claro e laranja, só para ver. O último lance está marcado na cor de quem jogou.</li>
+</ul>
+<h2>O que todas as variantes têm em comum</h2>
+<ul>
+<li><b>Adversários:</b> cada lugar pode ser uma pessoa neste dispositivo, uma pessoa convidada online ou um computador – em quatro níveis: fácil, médio, forte e mestre. O mestre antecipa também a resposta dos adversários.</li>
+<li><b>Monstros com carácter:</b> os adversários do computador chamam-se Blubbo, Grumbo, Flammo, Zappo, Spuki e Kraki. Alegram-se e zangam-se nos monitores, forjam alianças contra quem lidera, às vezes traem-nas, vingam-se – e falam, se quiseres. Podes negociar com eles no chat («Grumbo, vamos atacar o Vermelho juntos!»). Também se lembram de como os humanos jogam.</li>
+<li><b>Dever de ajudar (opção a partir de três jogadores):</b> se um jogador está em xeque, todos os que jogam antes dele têm de o ajudar: se está em mate, o lance tem de o libertar; se não está em mate, o lance não lhe pode dar mate. Quem não puder ajudar sela o mate.</li>
+<li><b>Relógio:</b> tempo por lance, tempo por partida ou sem relógio. Se o tempo por lance se esgotar, o lance perde-se; se o tempo de partida se esgotar, és eliminado.</li>
+<li><b>Online:</b> ao vivo com monitores, câmara, microfone, chat, reações com emojis, legendas e tradução automática – ou por correspondência, em que cada um joga quando tem tempo (com notificação quando é a tua vez). As partidas podem ser oferecidas no lobby público; o anfitrião decide se se pode assistir.</li>
+<li><b>Depois da partida:</b> rever lance a lance, tabuleiro de análise com sugestões do computador, avaliação com momentos-chave, avaliação psicológica (vingança, nervosismo após perdas, alianças silenciosas, dito e feito) e, se quiseres, um relatório profissional de IA.</li>
+<li><b>E ainda:</b> cores à escolha (também com sinais para daltónicos), sons, pausa, guardar e carregar, «As minhas partidas», introdução para principiantes, instalável como app, ecrã inteiro.</li>
+</ul>
+<p class="note">O Xadrez sem fronteiras é um esboço e continua a ser desenvolvido.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../grenzenlos.html">▶ Jogar Xadrez sem fronteiras</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">Ficha técnica</a><a href="../datenschutz.html">Privacidade</a><a href="../ueber.html#kontakt">Contacto</a><a href="regeln.html">Regras</a><a href="../strategie.html">Estratégia</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','pt')}catch(_){}});</script>
+</body></html>
