@@ -49,7 +49,7 @@ a { color:#8fb6ff; }
    <div class="row">Spieler: <select id="gN" onchange="gSeats()"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></select></div>
    <div id="gSeatRows"></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
-   <div class="hint">Es gelten die Zugregeln und die Bauernaufstellung von unten. Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus.</div>
+   <div class="hint">Es gelten die Zugregeln und die Bauernaufstellung von unten. Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Wer nur noch den König hat, ist geschlagen. Sobald einmal geschlagen wurde, gilt: Nach 30 Runden ohne Schlagen und ohne Bauernzug entscheidet das Material.</div>
    <div class="row"><button class="on" onclick="gameStart()">▶ Partie starten</button></div>
   </div>
   <div id="gameRun" style="display:none">
@@ -323,7 +323,7 @@ function share(){const u=location.origin+location.pathname+'?r='+encode();const 
 const VAL={P:1,N:3,B:3,R:5,U:3,Q:9,H:7,V:5,A:6,C:7,M:11,W:5,K:0};
 const TURNS={2:['B','G'],3:['B','R','L'],4:['B','R','G','Y'],6:['B','R','G','Y','L','T']};
 const LVLN={human:'Mensch',easy:'Computer – leicht',medium:'Computer – mittel',hard:'Computer – stark'};
-let GM=null;   // laufende Partie: {order,ctrl,end,idx,out:[],over,winner,note}
+let GM=null;const QUIET=30;   // laufende Partie: {order,ctrl,end,idx,out:[],over,winner,note}
 const ALLD=()=>dirs('ax').concat(dirs('fd'),dirs('rd'));
 function rayKinds(n){return n===1?'RQHCM':n===2?'BQVAM':'UHV'+(OPT.B==='r'?'BA':'')+(OPT.Q==='1'?'QM':'');}
 // Welche Spieler (test(p)=true) greifen Feld c an?
@@ -359,7 +359,7 @@ function gameStart(){
   const n=+document.getElementById('gN').value,order=TURNS[n],ctrl={};
   for(const p of order)ctrl[p]=document.getElementById('gS'+p).value;
   setup(n);hist=[];
-  GM={order,ctrl,end:document.getElementById('gEnd').value,idx:0,out:[],over:false,winner:null,note:''};
+  GM={order,ctrl,end:document.getElementById('gEnd').value,idx:0,out:[],over:false,winner:null,note:'',quiet:0};
   sel=null;targets=[];setTool('move');
   document.getElementById('ui').classList.add('ingame');
   document.getElementById('gameSetup').style.display='none';document.getElementById('gameRun').style.display='block';
@@ -376,11 +376,17 @@ function afterMove(mover){
     const k=kingOf(q);
     if(!k){note+=`${PNAME[q]} hat keinen König mehr. `;eliminate(q);if(GM.over)break;continue;}
     const att=attackers(k,x=>x!==q&&!GM.out.includes(x));
+    const bare=![...S.values()].some(v=>v.p===q&&v.t!=='K');   // nur noch der König übrig
+    if(bare){if(GM.end==='first'){GM.over=true;GM.winner=mover;note+=`${PNAME[q]} hat nur noch den König. `;break;}
+      note+=`${PNAME[q]} hat nur noch den König und scheidet aus. `;eliminate(q);if(GM.over)break;continue;}
     if(att.length&&!legalMoves(q).length){
       if(GM.end==='first'){GM.over=true;GM.winner=att.includes(mover)?mover:att[0];note+=`${PNAME[q]} ist schachmatt! `;break;}
       note+=`${PNAME[q]} ist schachmatt und scheidet aus. `;eliminate(q);if(GM.over)break;}
   }
   GM.note=note;
+  if(!GM.over&&GM.quiet>=QUIET*alive().length){   // zu lange nichts geschlagen und kein Bauer gezogen
+    const a=alive();let best=a[0];for(const q of a)if(material(q)>material(best))best=q;
+    GM.over=true;GM.winner=best;GM.note+=`${QUIET} Runden ohne Schlagen und ohne Bauernzug – es entscheidet das Material. `;}
   if(!GM.over)advance();else render();
 }
 function eliminate(q){if(!GM.out.includes(q))GM.out.push(q);for(const[k,v]of[...S])if(v.p===q)S.delete(k);
@@ -403,7 +409,7 @@ function gameMove(from,to){
   hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice(),GM:snapGM()});
   S.delete(fk);const np={t:pc.t,p:pc.p,m:true};let promo='';
   if(pc.t==='P'&&promoZone(pc.p,to)){np.t='Q';promo=' = Dame';}
-  S.set(tk,np);
+  S.set(tk,np);if(cap)GM.capt=true;GM.quiet=cap||pc.t==='P'||!GM.capt?0:(GM.quiet||0)+1;
   moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+5).join('·')} ${cap?'×':'–'} ${to.map(v=>v+5).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
   sel=null;targets=[];
   if(cap&&cap.t==='K'){GM.note='';eliminateByKing(cap.p,pc.p);return;}
@@ -447,7 +453,8 @@ function renderTurn(){const el=document.getElementById('turn'),tb=document.getEl
   let h;
   if(GM.over)h=`🏁 <span style="color:${PCOL[GM.winner]}">${PNAME[GM.winner]}</span> gewinnt!`;
   else{const p=gCur(),chk=inCheck(p);h=`<span style="color:${PCOL[p]}">●</span> ${PNAME[p]} ist am Zug${GM.ctrl[p]!=='human'?' 🤖':''}${chk?' – <span style="color:#ff6a50">Schach!</span>':''}`;}
-  const out=GM.out.length?`<br><span class="hint">ausgeschieden: ${GM.out.map(q=>PNAME[q]).join(', ')}</span>`:'';
+  let out=GM.out.length?`<br><span class="hint">ausgeschieden: ${GM.out.map(q=>PNAME[q]).join(', ')}</span>`:'';
+  out+=`<br><span class="hint">Material: ${alive().map(q=>`<span style="color:${PCOL[q]}">${material(q)}</span>`).join(' · ')}${!GM.over&&GM.quiet>QUIET*alive().length/2?` · ruhige Züge ${GM.quiet}/${QUIET*alive().length}`:''}</span>`;
   el.innerHTML=h+(GM.note?`<div class="hint" style="font-weight:400">${GM.note}</div>`:'');el.style.display='block';
   el.style.borderColor=GM.over?PCOL[GM.winner]:PCOL[gCur()];
   tb.innerHTML=h+out+(GM.note?`<div class="hint">${GM.note}</div>`:'');}
