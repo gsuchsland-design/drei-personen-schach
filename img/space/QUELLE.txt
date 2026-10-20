@@ -1,0 +1,3 @@
+Sternenhimmel (Würfelseiten sky_*.webp): Himmelskarte aus dem Tycho-2-Sternkatalog mit Milchstraße
+Quelle: NASA Goddard Space Flight Center, Scientific Visualization Studio (svs.gsfc.nasa.gov/3572) bzw. NASA/JPL (maps.jpl.nasa.gov/stars.html),
+Würfelseiten wie im Projekt CesiumJS. NASA-Bildmaterial ist gemeinfrei (NASA Media Usage Guidelines). Für das Spiel aufgehellt.
