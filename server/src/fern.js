@@ -174,7 +174,7 @@ export class Fern {
 
   async create(b) {
     if (await this.state.storage.get('g')) return json({ error: 'exists' }, 409);
-    const game = ['raum', 'grenz'].includes(b.game) ? b.game : 'dps';
+    const game = ['raum', 'grenz', 'stern'].includes(b.game) ? b.game : 'dps';
     let order = ORDER;
     if (game !== 'dps') {
       const o = Array.isArray(b.order) ? b.order.filter((p, i, a) => ALL.includes(p) && a.indexOf(p) === i) : [];
