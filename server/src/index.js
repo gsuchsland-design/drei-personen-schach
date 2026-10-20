@@ -52,7 +52,7 @@ async function aiReport(req, env) {
   if (facts.length < 50) return json({ error: 'zu wenig Daten' }, 400);
   const GAMES = { raum: 'Schach der 6 Reiche (Schach im Würfel aus 8 × 8 × 8 Feldern für 2 bis 6 Spieler; Bündnisse sind erlaubt)',
     grenz: 'Schach ohne Grenzen (normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler; Bündnisse sind erlaubt)',
-    stern: 'Sternschach (Schach im Sterntetraeder, dem räumlichen Davidstern, für 2 bis 6 Spieler; die Heere stehen in den Spitzen; Bündnisse sind erlaubt)' };
+    stern: 'Sternschach (Schach im Sterntetraeder, dem räumlichen Davidstern, für 2 bis 8 Spieler; die Heere stehen in den Spitzen; Bündnisse sind erlaubt)' };
   const gameTxt = GAMES[b.game] || 'Drei-Personen-Schach (drei Spieler, Bündnisse und Verrat sind erlaubt, Mitschrift der Gespräche nur mit Zustimmung aller)';
   const system = 'Du bist ein erfahrener Schachtrainer und Spielpsychologe. Du bekommst die automatische Auswertung einer Partie ' +
     gameTxt + '. ' +

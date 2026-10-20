@@ -14,7 +14,7 @@ const json = (obj, status = 200) =>
 
 const LIVE_TTL = 90e3, FERN_TTL = 14 * 86400e3, MAX_ENTRIES = 500, MAX_PER_IP = 6, REPORT_HIDE = 3;
 const ORDER = ['B', 'G', 'R'];
-const ALL = ['B', 'G', 'R', 'Y', 'L', 'T'];
+const ALL = ['B', 'G', 'R', 'Y', 'L', 'T', 'O', 'I'];
 const LEVELS = ['easy', 'medium', 'hard', 'master'];
 
 function randStr(n, abc = 'abcdefghjkmnpqrstuvwxyz23456789') {

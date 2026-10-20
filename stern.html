@@ -2,8 +2,8 @@
 <html lang="de"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Sternschach – Schach im Sterntetraeder für 2 bis 6 Spieler</title>
-<meta name="description" content="Sternschach: Schach im Sterntetraeder, dem räumlichen Davidstern – 2 bis 6 Heere in den Spitzen des Sterns, Computergegner, online, mit Hilfspflicht.">
+<title>Sternschach – Schach im Sterntetraeder für 2 bis 8 Spieler</title>
+<meta name="description" content="Sternschach: Schach im Sterntetraeder, dem räumlichen Davidstern – 2 bis 8 Heere in den Spitzen des Sterns, Computergegner, online, mit Hilfspflicht.">
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest-stern.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -54,15 +54,15 @@ a { color:#8fb6ff; }
 <div id="ui">
  <h1>⭐ Sternschach <span class="hint">Schach im Sterntetraeder · Entwurf</span><button id="minBtn" onclick="toggleUI()" title="Leiste ein-/ausklappen">▴</button></h1>
  <div class="body">
-  <div class="hint">Der Sterntetraeder ist der räumliche Davidstern: ein Würfel aus 10 × 10 × 10 Feldern, so verzogen, dass seine 8 Ecken zu Spitzen werden. Jedes Heer steht in einer Spitze. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom, Rechtsklick-Ziehen/zwei Finger = verschieben.</div>
+  <div class="hint">Der Sterntetraeder ist der räumliche Davidstern mit 8 Spitzen. In jeder Spitze liegen 3 × 3 × 3 gleiche Rhomboeder-Felder, dazwischen sechs Zwischenräume. Jedes Heer steht in einer Spitze. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom, Rechtsklick-Ziehen/zwei Finger = verschieben.</div>
 
   <h2>Partie</h2>
   <div id="gameSetup">
    <div id="resumeBox"></div>
-   <div class="row">Spieler: <select id="gN" onchange="gSeats()"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></select></div>
+   <div class="row">Spieler: <select id="gN" onchange="gSeats()"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select></div>
    <div id="gSeatRows"></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
-   <div class="hint">Zu zweit stehen die Heere an den Polen, zu dritt und zu viert an den Spitzen eines Tetraeders, zu sechst im Ring um die Mitte. Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Wer nur noch den König hat, ist geschlagen. Sobald einmal geschlagen wurde, gilt: Nach 30 Runden ohne Schlagen und ohne Bauernzug entscheidet das Material.</div>
+   <div class="hint">Zu zweit stehen die Heere an den Polen, zu dritt und zu viert an den Spitzen eines Tetraeders, zu sechst im Ring um die Mitte, zu acht in allen Spitzen. Alle 8 Spitzen sind gleichwertig. Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Wer nur noch den König hat, ist geschlagen. Sobald einmal geschlagen wurde, gilt: Nach 30 Runden ohne Schlagen und ohne Bauernzug entscheidet das Material.</div>
    <div class="row" id="helpRow"><label title="Steht ein Spieler im Schach, muss jeder, der vor ihm zieht, ihm helfen: Ist er matt, muss der Zug ihn befreien – ist er nicht matt, darf der Zug ihn nicht mattsetzen."><input type="checkbox" id="gHelp"> 🆘 Hilfspflicht (ab 3 Spielern)</label></div>
    <div id="tcBox"></div>
    <div id="gOnline" style="display:none">
@@ -88,7 +88,7 @@ a { color:#8fb6ff; }
 
   <h2>Aufstellung</h2>
   <div class="row noGame">
-   <button onclick="setup(2)">2 Spieler</button><button onclick="setup(3)">3</button><button onclick="setup(4)">4</button><button onclick="setup(6)">6</button><button onclick="setup(0)">Leer</button>
+   <button onclick="setup(2)">2 Spieler</button><button onclick="setup(3)">3</button><button onclick="setup(4)">4</button><button onclick="setup(6)">6</button><button onclick="setup(8)">8</button><button onclick="setup(0)">Leer</button>
   </div>
 
   <h2>Ansicht</h2>
@@ -98,17 +98,17 @@ a { color:#8fb6ff; }
   <div class="row">Farben: <span id="visRow" class="row" style="margin:0"></span></div>
   <div class="hint">Farbe antippen: ● sichtbar → ◐ blass → ○ ausgeblendet. Verschieben: Rechtsklick/Shift + Ziehen oder mit zwei Fingern. Doppelklick = ganzer Stern.</div>
 
-  <h2>Ebene</h2>
+  <h2>Bereich</h2>
   <div class="row">
    <select id="axSel" onchange="setSlice()">
-    <option value="-1">alle Ebenen</option>
-    <option value="0">Richtung 1</option>
-    <option value="1">Richtung 2</option>
-    <option value="2">Richtung 3</option>
+    <option value="">alle Bereiche</option>
+    <option value="t0">Spitze S1</option><option value="t1">Spitze S2</option><option value="t2">Spitze S3</option><option value="t3">Spitze S4</option>
+    <option value="t4">Spitze S5</option><option value="t5">Spitze S6</option><option value="t6">Spitze S7</option><option value="t7">Spitze S8</option>
+    <option value="g0">Zwischenraum M1</option><option value="g1">Zwischenraum M2</option><option value="g2">Zwischenraum M3</option>
+    <option value="g3">Zwischenraum M4</option><option value="g4">Zwischenraum M5</option><option value="g5">Zwischenraum M6</option>
    </select>
   </div>
-  <div class="row" id="slRow" style="display:none"><input type="range" id="slSel" min="0" max="9" value="4" oninput="setSlice()"><span id="slLbl" style="min-width:4.5em"></span></div>
-  <div class="hint">Zum Setzen von Figuren eine Ebene wählen – dann sind ihre Felder anklickbar.</div>
+  <div class="hint">Zum Setzen von Figuren einen Bereich wählen – dann sind seine Felder anklickbar.</div>
 
   <h2>Werkzeug</h2>
   <div class="row noGame"><button id="tMove" class="on" onclick="setTool('move')">♟ Ziehen</button><button id="tSet" onclick="setTool('set')">✎ Figur setzen</button><button onclick="undo()" title="Letzten Schritt zurücknehmen">↶ Zurück</button></div>
@@ -118,7 +118,7 @@ a { color:#8fb6ff; }
   </div>
 
   <h2>Die Figuren</h2>
-  <div class="hint">Turm ♜: entlang der drei Richtungen. Läufer ♝: über zwei Richtungen gleichzeitig. Einhorn 🦄: über alle drei gleichzeitig. Dame ♛: alles davon. König ♚: ein Feld in jede der 26 Richtungen. Springer ♞: 2 + 1 in zwei Richtungen. Bauer ♟: ein Feld in eine der drei Richtungen zur Mitte, schlägt schräg nach vorn; in einer fremden Spitze wird er zur Dame. Im Setzen-Werkzeug gibt es außerdem die Märchenfiguren aus dem Schach der 6 Reiche.</div>
+  <div class="hint">Turm ♜: durch die Flächen der Felder geradeaus. Läufer ♝: über die Kanten schräg. Einhorn 🦄: über die Ecken. Dame ♛: alles davon. König ♚: ein Schritt wie die Dame. Springer ♞: 2 + 1 quer. Bauer ♟: ein Feld weiter weg von der eigenen Spitze, schlägt schräg nach vorn; in einer fremden Spitze wird er zur Dame. Im Setzen-Werkzeug gibt es außerdem die Märchenfiguren aus dem Schach der 6 Reiche.</div>
 
   <h2>Auswahl</h2>
   <div id="info">Noch nichts ausgewählt.</div>
@@ -135,131 +135,124 @@ a { color:#8fb6ff; }
 <script src="lib/three.min.js"></script>
 <script src="lib/reiche3d.js"></script>
 <script src="lib/monsters.js?v=2026102010"></script>
-<script src="lib/kit.js?v=2026102020"></script>
+<script src="lib/kit.js?v=2026102101"></script>
+<script src="lib/sternbrett.js?v=2026102101"></script>
 <script>
 'use strict';
 // ================= Spielfeld =================
-// Innen ein Würfel aus 10 × 10 × 10 Feldern (Koordinaten 0 … 9). Dargestellt wird er als Sterntetraeder:
-// die 8 Ecken werden zu den 8 Spitzen, die Mitte zum Oktaeder (siehe warp()).
-const N=10,H=3,LO=0,HI=N-1,MID=(N-1)/2;
-const PL=['B','G','R','Y','L','T'];
-const PNAME={B:'Blau',G:'Grün',R:'Rot',Y:'Gelb',L:'Lila',T:'Türkis'};
-const PCOL={B:'#3b7bff',G:'#35c935',R:'#ff4a33',Y:'#f2c418',L:'#b05cff',T:'#1fc9c9'};
-// Spitzen: Vorzeichen je Achse (+1 = Ecke bei 9, −1 = Ecke bei 0). Pole = (+,+,+) und (−,−,−).
-// 2: die Pole · 3: drei Spitzen eines Tetraeders · 4: alle vier Spitzen dieses Tetraeders · 6: der Ring um die Mitte
+// Der Sterntetraeder (räumlicher Davidstern) mit 864 Feldern, siehe lib/sternbrett.js:
+// in jeder der 8 Spitzen 3 × 3 × 3 gleiche Rhomboeder, dazwischen 6 Zwischenräume aus je 4 × 27 Feldern.
+// Ein Feld ist [nummer]; key() macht daraus den Schlüssel für die Stellung.
+const NC=SB.NC,CELLS=SB.CELLS;
+const PL=['B','G','R','Y','L','T','O','I'];
+const PNAME={B:'Blau',G:'Grün',R:'Rot',Y:'Gelb',L:'Lila',T:'Türkis',O:'Orange',I:'Rosa'};
+const PCOL={B:'#3b7bff',G:'#35c935',R:'#ff4a33',Y:'#f2c418',L:'#b05cff',T:'#1fc9c9',O:'#ff9a3a',I:'#ff6ad0'};
+// Spitzen als Vorzeichen je Achse. Pole = (+,+,+) und (−,−,−).
+// 2: die Pole · 3: drei Spitzen eines Tetraeders · 4: alle vier Spitzen dieses Tetraeders · 6: der Ring um die Mitte · 8: alle Spitzen
 const CORN={2:{B:[1,1,1],G:[-1,-1,-1]},
   3:{B:[1,-1,-1],R:[-1,1,-1],L:[-1,-1,1]},
   4:{B:[1,1,1],R:[1,-1,-1],G:[-1,1,-1],Y:[-1,-1,1]},
-  6:{B:[1,-1,-1],R:[1,-1,1],G:[-1,-1,1],Y:[-1,1,1],L:[-1,1,-1],T:[1,1,-1]}};
+  6:{B:[1,-1,-1],R:[1,-1,1],G:[-1,-1,1],Y:[-1,1,1],L:[-1,1,-1],T:[1,1,-1]},
+  8:{B:[1,1,1],L:[-1,-1,-1],R:[1,-1,-1],T:[-1,1,1],G:[-1,1,-1],O:[1,-1,1],Y:[-1,-1,1],I:[1,1,-1]}};
 let CFG=CORN[2];
-const SETS={2:['B','G'],3:['B','R','L'],4:['B','R','G','Y'],6:['B','R','G','Y','L','T']};
+const SETS={2:['B','G'],3:['B','R','L'],4:['B','R','G','Y'],6:['B','R','G','Y','L','T'],8:['B','L','R','T','G','O','Y','I']};
 const GLYPH={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟',U:'🦄',H:'♜',V:'♝',A:'♝',C:'♜',M:'♛',W:'♞'};
 const BADGE={H:'🦄',V:'🦄',A:'♞',C:'♞',M:'♞',W:'»'};
 const PLAB=t=>GLYPH[t]+(BADGE[t]||'');
 const PNAMES={K:'König',Q:'Dame',R:'Turm',B:'Läufer',N:'Springer',P:'Bauer',U:'Einhorn',H:'Herzogin',V:'Gouverneur',A:'Erzbischof',C:'Kanzler',M:'Amazone',W:'Nachtreiter'};
-const PDESC={H:'Turm + Einhorn',V:'Läufer + Einhorn',A:'Läufer + Springer',C:'Turm + Springer',M:'Dame + Springer',W:'mehrere Springersprünge in einer Linie',U:'nur Raumdiagonalen'};
-const valid=(x,y,z)=>x>=0&&x<N&&y>=0&&y<N&&z>=0&&z<N;
-const key=(x,y,z)=>x+','+y+','+z;
-const unkey=k=>k.split(',').map(Number);
-// Eckblock (3 × 3 × 3) eines Feldes als Vorzeichen-Schlüssel, sonst null
-function cornerOf(c){const s=[];for(let i=0;i<3;i++){if(c[i]<H)s.push(-1);else if(c[i]>=N-H)s.push(1);else return null;}return s.join();}
-function region(x,y,z){const k=cornerOf([x,y,z]);if(!k)return null;for(const p in CFG)if(CFG[p].join()===k)return p;return null;}
-function cname(x,y,z){const r=region(x,y,z),k=cornerOf([x,y,z]);return `${x+1}·${y+1}·${z+1}`+(r?` (Spitze ${PNAME[r]})`:k?' (freie Spitze)':' (Mitte)');}
+const PDESC={H:'Turm + Einhorn',V:'Läufer + Einhorn',A:'Läufer + Springer',C:'Turm + Springer',M:'Dame + Springer',W:'mehrere Springersprünge in einer Linie',U:'nur über Ecken'};
+const valid=id=>Number.isInteger(id)&&id>=0&&id<NC;
+const key=(...a)=>a.join(',');
+const unkey=k=>[+k];
+const tipIdx=p=>CFG[p]?SB.TIPS.indexOf(CFG[p].join()):-1;
+const apexOf=sg=>CELLS.findIndex(c=>c.tip===SB.TIPS.indexOf(sg.join())&&c.d===0);
+// Spitze eines Feldes als Vorzeichen-Schlüssel, sonst null
+function cornerOf(c){const x=CELLS[c[0]];return x&&x.tip!==undefined?SB.TIPS[x.tip]:null;}
+function region(id){const k=cornerOf([id]);if(!k)return null;for(const p in CFG)if(CFG[p].join()===k)return p;return null;}
+// Bereiche: 8 Spitzen (S1–S8) und 6 Zwischenräume (M1–M6, je mit 4 Kissen a–d)
+const GAP0=CELLS.findIndex(c=>c.gap!==undefined),PILN=SB.n*SB.n*SB.m;
+function zoneOf(id){const x=CELLS[id];return x.tip!==undefined?'t'+x.tip:'g'+x.gap;}
+function cellLbl(c){const id=c[0],x=CELLS[id];if(!x)return'?';const l=x.loc.map(v=>v+1).join('');
+  return x.tip!==undefined?'S'+(x.tip+1)+'·'+l:'M'+(x.gap+1)+'abcd'[Math.floor((id-GAP0)/PILN)%4]+'·'+l;}
+function cname(id){const r=region(id),k=cornerOf([id]);return cellLbl([id])+(r?` (Spitze ${PNAME[r]})`:k?' (freie Spitze)':' (Zwischenraum)');}
 
 // ================= Zustand =================
-let S=new Map();          // "x,y,z" → {t,p,m}  m = schon gezogen
+let S=new Map();          // Feldnummer → {t,p,m}  m = schon gezogen
 // Zugregeln wie im Schach der 6 Reiche (feste Einstellung)
 let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'s'};let lastN=2;
 const OK=['B','Q','K','N','P','U','S','F'];
 let LASTMV=null;
-let hist=[],moves=[],sel=null,targets=[],tool='move',pal={p:'B',t:'Q'},slice={ax:-1,v:4};
+let hist=[],moves=[],sel=null,targets=[],tool='move',pal={p:'B',t:'Q'},slice={ax:-1,v:''};
 
 // Richtung zur Mitte (Weltkoordinaten) – für Raumschiffe und Animation
 function fwd(p){const s=CFG[p]||[1,1,1];const v=W.dir(-s[0],-s[1],-s[2]);return[v.x,v.y,v.z];}
-// Achsenschritte zur Mitte für die Bauern
-function pawnSteps(p){const s=CFG[p]||[1,1,1];return[[-s[0],0,0],[0,-s[1],0],[0,0,-s[2]]];}
 function setup(n){lastN=n||lastN;
   pushHist();fill(n);moves=[];sel=null;targets=[];LASTMV=null;
   if(typeof buildGrid==='function')buildGrid();
   render();
 }
-// Aufstellung im Eckblock, geordnet nach Abstand d zur Spitze:
+// Aufstellung in der eigenen Spitze, geordnet nach Abstand d zur Spitze:
 // d=0 König · d=1 Dame und zwei Türme · d=2 zwei Läufer, zwei Springer, zwei Einhörner · d=3 sieben Bauern
 const ARMY={0:'K',1:'QRR',2:'BBNNUU'};
 function fill(n){S=new Map();if(CORN[n])CFG=CORN[n];
-  for(const p of(SETS[n]||[])){const s=CFG[p];const cells={0:[],1:[],2:[],3:[]};
-    for(let a=0;a<H;a++)for(let b=0;b<H;b++)for(let c=0;c<H;c++){const d=a+b+c;if(d>3)continue;
-      const loc=[a,b,c].map((v,i)=>s[i]>0?N-1-v:v);cells[d].push([loc,[a,b,c]]);}
+  for(const p of(SETS[n]||[])){const ti=tipIdx(p);const cells={0:[],1:[],2:[],3:[]};
+    for(const x of CELLS)if(x.tip===ti&&x.d<=3)cells[x.d].push([x.id,x.loc]);
     for(let d=0;d<=2;d++){const line=ARMY[d].split('');
       // gleiche Figuren gegenüber verteilen: Reihenfolge der Felder nach Achse
       cells[d].sort((u,v)=>u[1].join()<v[1].join()?1:-1);
-      cells[d].forEach(([loc],i)=>{if(line[i])S.set(key(...loc),{t:line[i],p,m:false});});}
-    for(const[loc]of cells[3])S.set(key(...loc),{t:'P',p,m:false});}
+      cells[d].forEach(([id],i)=>{if(line[i])S.set(key(id),{t:line[i],p,m:false});});}
+    for(const[id]of cells[3])S.set(key(id),{t:'P',p,m:false});}
 }
 
 // ================= Zugregeln =================
-function dirs(type){const out=[];
-  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){const n=(dx!==0)+(dy!==0)+(dz!==0);if(!n)continue;
-    if(type==='ax'&&n===1)out.push([dx,dy,dz]);if(type==='fd'&&n===2)out.push([dx,dy,dz]);if(type==='rd'&&n===3)out.push([dx,dy,dz]);}
+// Alle Strahlen sind in lib/sternbrett.js vorberechnet.
+function slides(rays,p,max){const out=[];
+  for(const r of rays)for(let i=0;i<Math.min(r.length,max||99);i++){const x=r[i],o=S.get(key(x));
+    if(o){if(o.p!==p)out.push({c:[x],cap:true});break;}out.push({c:[x],cap:false});}
   return out;}
-function slides(x,y,z,ds,p,max){const out=[];
-  for(const d of ds){let a=x,b=y,c=z;for(let i=0;i<(max||99);i++){a+=d[0];b+=d[1];c+=d[2];if(!valid(a,b,c))break;const o=S.get(key(a,b,c));
-    if(o){if(o.p!==p)out.push({c:[a,b,c],cap:true});break;}out.push({c:[a,b,c],cap:false});}}
-  return out;}
-function knightVecs(){const jumps=[],seen=new Set();
-  for(const a of[-2,2])for(const b of[-1,1])for(const[i,j]of[[0,1],[0,2],[1,0],[1,2],[2,0],[2,1]]){const v=[0,0,0];v[i]=a;v[j]=b;jumps.push(v);
-    if(OPT.N==='2')for(const c of[-1,1]){const w=v.slice();w[3-i-j]=c;jumps.push(w);}}
-  return jumps.filter(v=>{const k=v.join();if(seen.has(k))return false;seen.add(k);return true;});}
-function leaps(x,y,z,p,max){const out=[];
-  for(const v of knightVecs()){let a=x,b=y,c=z;const hops=[];for(let i=0;i<max;i++){a+=v[0];b+=v[1];c+=v[2];if(!valid(a,b,c))break;const o=S.get(key(a,b,c));
-    if(o){if(o.p!==p)out.push({c:[a,b,c],cap:true,hops:hops.slice(),jump:1});break;}out.push({c:[a,b,c],cap:false,hops:hops.slice(),jump:1});hops.push([a,b,c]);}}
+function knights(id,p){const out=[];for(const x of SB.KN[id]){const o=S.get(key(x));if(o&&o.p===p)continue;out.push({c:[x],cap:!!o,hops:[],jump:1});}return out;}
+function riders(id,p){const out=[];
+  for(const r of SB.NR[id]){const hops=[];for(const x of r){const o=S.get(key(x));if(o){if(o.p!==p)out.push({c:[x],cap:true,hops:hops.slice(),jump:1});break;}out.push({c:[x],cap:false,hops:hops.slice(),jump:1});hops.push([x]);}}
   return out;}
 function uniq(l){const seen=new Set();return l.filter(m=>{const k=m.c.join();if(seen.has(k))return false;seen.add(k);return true;});}
-// Bauern schlagen schräg nach vorn: zwei Richtungen zur Mitte gleichzeitig
-function pawnCaps(p){const s=CFG[p];if(!s)return[];return[[-s[0],-s[1],0],[-s[0],0,-s[2]],[0,-s[1],-s[2]]];}
-function genMoves(x,y,z){
-  const pc=S.get(key(x,y,z));if(!pc)return[];const p=pc.p;
-  const ax=dirs('ax'),fd=dirs('fd'),rd=dirs('rd');
+function genMoves(id){
+  const pc=S.get(key(id));if(!pc)return[];const p=pc.p;
+  const R=SB.RAY_R[id],B=SB.RAY_B[id],U=SB.RAY_U[id],ALL=R.concat(B,U);
   switch(pc.t){
-    case'R':return slides(x,y,z,ax,p);
-    case'B':return slides(x,y,z,fd,p);
-    case'U':return slides(x,y,z,rd,p);
-    case'Q':return slides(x,y,z,ax.concat(fd,rd),p);
-    case'K':return slides(x,y,z,ax.concat(fd,rd),p,1);
-    case'N':return leaps(x,y,z,p,1);
-    case'W':return leaps(x,y,z,p,99);
-    case'H':return slides(x,y,z,ax.concat(rd),p);
-    case'V':return slides(x,y,z,fd.concat(rd),p);
-    case'A':return uniq(slides(x,y,z,fd,p).concat(leaps(x,y,z,p,1)));
-    case'C':return uniq(slides(x,y,z,ax,p).concat(leaps(x,y,z,p,1)));
-    case'M':return uniq(slides(x,y,z,ax.concat(fd,rd),p).concat(leaps(x,y,z,p,1)));
-    case'P':{const out=[];if(!CFG[p])return out;const home=region(x,y,z)===p;
-      for(const f of pawnSteps(p)){const s1=[x+f[0],y+f[1],z+f[2]];
-        if(!valid(...s1)||S.get(key(...s1)))continue;out.push({c:s1,cap:false});
-        const s2=[s1[0]+f[0],s1[1]+f[1],s1[2]+f[2]];if(home&&valid(...s2)&&!S.get(key(...s2)))out.push({c:s2,cap:false});}
-      for(const v of pawnCaps(p)){const c=[x+v[0],y+v[1],z+v[2]];if(!valid(...c))continue;const o=S.get(key(...c));if(o&&o.p!==p)out.push({c,cap:true});}
-      return out;}
+    case'R':return slides(R,p);
+    case'B':return slides(B,p);
+    case'U':return slides(U,p);
+    case'Q':return uniq(slides(ALL,p));
+    case'K':return uniq(slides(ALL,p,1));
+    case'N':return knights(id,p);
+    case'W':return riders(id,p);
+    case'H':return uniq(slides(R.concat(U),p));
+    case'V':return uniq(slides(B.concat(U),p));
+    case'A':return uniq(slides(B,p).concat(knights(id,p)));
+    case'C':return uniq(slides(R,p).concat(knights(id,p)));
+    case'M':return uniq(slides(ALL,p).concat(knights(id,p)));
+    case'P':{const out=[],ti=tipIdx(p);if(ti<0)return out;const home=region(id)===p;
+      for(const[x,y]of SB.PSTEP[ti][id]){if(S.get(key(x)))continue;out.push({c:[x],cap:false});
+        if(home&&y>=0&&!S.get(key(y)))out.push({c:[y],cap:false});}
+      for(const x of SB.PCAP[ti][id]){const o=S.get(key(x));if(o&&o.p!==p)out.push({c:[x],cap:true});}
+      return uniq(out);}
   }
   return[];
 }
 // Umwandlung: sobald der Bauer eine fremde Spitze betritt
 function promoZone(p,c){const k=cornerOf(c);return!!k&&CFG[p]&&k!==CFG[p].join();}
 
-// ---------- Verzerrung: Würfel → Sterntetraeder ----------
-// Jeder Achtelwürfel wird stückweise linear (6 Tetraeder um die Raumdiagonale) auf eine Doppelpyramide abgebildet:
-// Würfelecke → Sternspitze, Flächenmitte → Oktaederecke, Kantenmitte → halb nach innen. Die Pole liegen oben und unten.
-const W=(function(){const SC=N/2;let q=null;
+// ---------- Lage im Raum ----------
+// Die Pole liegen oben und unten; die Spitze (+,−,−) zeigt nach vorn.
+const W=(function(){const SC=SB.S;let q=null;
   function rot(){if(!q){q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1,1,1).normalize(),new THREE.Vector3(0,1,0));
-      // Spitze B (bei 6 Spielern) nach vorne drehen
       const t=new THREE.Vector3(1,-1,-1).applyQuaternion(q);const yaw=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.atan2(t.x,t.z));q.premultiply(yaw.invert());}return q;}
-  function map(x,y,z){const u=[(x-MID)/SC,(y-MID)/SC,(z-MID)/SC],s=u.map(v=>v<0?-1:1),a=u.map(Math.abs);
-    const o=[0,1,2].sort((i,j)=>a[j]-a[i]),[i,j,k]=o,r=[0,0,0];
-    r[0]+=a[k];r[1]+=a[k];r[2]+=a[k];
-    r[i]+=(a[j]-a[k])/2;r[j]+=(a[j]-a[k])/2;
-    r[i]+=a[i]-a[j];
-    return new THREE.Vector3(r[0]*s[0]*SC,r[1]*s[1]*SC,r[2]*s[2]*SC).applyQuaternion(rot());}
+  const map=(x,y,z)=>new THREE.Vector3(x,y,z).applyQuaternion(rot());
   return{map,dir:(x,y,z)=>new THREE.Vector3(x,y,z).normalize().applyQuaternion(rot()),SC,rot};})();
-const P=c=>W.map(c[0],c[1],c[2]);
+const CP=CELLS.map(c=>W.map(...c.ctr)),VPW=SB.VP.map(v=>W.map(...v));
+const P=c=>CP[c[0]].clone();
+const tipP=sg=>P([apexOf(sg)]);
+const cdist=(a,b)=>CP[a[0]].distanceTo(CP[b[0]]);
 
 // ================= Darstellung =================
 const cv=document.getElementById('cv');
@@ -280,7 +273,7 @@ function panBy(dx,dy){const right=new THREE.Vector3(),up=new THREE.Vector3();cam
 function viewReset(){TGT.copy(C0);cam.r=30;draw();}
 // Blick auf die eigene Armee: Blickpunkt in die eigene Spitze, Kamera von außen
 function viewArmy(p){p=p||(GM&&GM.online?ON.seat:GM?GM.order.find(q=>GM.ctrl[q]==='human'):null)||Object.keys(CFG)[0];const sg=CFG[p];if(!sg)return;
-  const tip=P(sg.map(v=>v>0?N-1:0)),d=tip.clone().normalize();TGT.copy(tip.clone().multiplyScalar(0.55));
+  const tip=tipP(sg),d=tip.clone().normalize();TGT.copy(tip.clone().multiplyScalar(0.55));
   d.add(new THREE.Vector3(Math.cos(cam.th),0,Math.sin(cam.th)).multiplyScalar(0.8)).normalize();cam.ph=Math.acos(Math.max(-1,Math.min(1,d.y)));cam.th=Math.atan2(d.z,d.x);cam.r=16;draw();}
 // Sichtbarkeit je Farbe: 2 = normal, 1 = blass, 0 = ausgeblendet
 const VIS={};
@@ -289,26 +282,21 @@ function visUI(){const box=document.getElementById('visRow');if(!box)return;box.
   for(const p of PL){if(![...S.values()].some(v=>v.p===p))continue;const b=document.createElement('button');const v=VIS[p]??2;
     b.textContent=v===2?'●':v===1?'◐':'○';b.style.color=PCOL[p];b.title=PNAME[p]+': '+(v===2?'sichtbar':v===1?'blass':'ausgeblendet')+' – antippen zum Wechseln';b.onclick=()=>visCycle(p);box.appendChild(b);}}
 function resize(){R.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();draw();}
-// Linie im Würfel, verzerrt in den Stern übertragen (in kleinen Stücken, weil die Abbildung stückweise linear ist)
-function wline(P0,P1,out,steps){steps=steps||6;let prev=W.map(...P0);for(let i=1;i<=steps;i++){const t=i/steps;const cur=W.map(P0[0]+(P1[0]-P0[0])*t,P0[1]+(P1[1]-P0[1])*t,P0[2]+(P1[2]-P0[2])*t);
-  out.push(prev.x,prev.y,prev.z,cur.x,cur.y,cur.z);prev=cur;}}
-// Gitterlinien eines Quaders (in Würfelkoordinaten, Zellgrenzen) – verzerrt
-function lattice(x0,x1,y0,y1,z0,z1,col,op){
-  const L=[];const X0=x0-0.5,X1=x1+0.5,Y0=y0-0.5,Y1=y1+0.5,Z0=z0-0.5,Z1=z1+0.5,st=n=>Math.max(2,Math.round(n*2));
-  for(let y=Y0;y<=Y1+1e-6;y++)for(let z=Z0;z<=Z1+1e-6;z++)wline([X0,y,z],[X1,y,z],L,st(X1-X0));
-  for(let x=X0;x<=X1+1e-6;x++)for(let z=Z0;z<=Z1+1e-6;z++)wline([x,Y0,z],[x,Y1,z],L,st(Y1-Y0));
-  for(let x=X0;x<=X1+1e-6;x++)for(let y=Y0;y<=Y1+1e-6;y++)wline([x,y,Z0],[x,y,Z1],L,st(Z1-Z0));
+// Kanten aller Felder einer Auswahl als Linien (doppelte Kanten nur einmal)
+function cellEdges(ids,col,op){const seen=new Set(),L=[];
+  for(const id of ids){const v=CELLS[id].v;for(let q=0;q<8;q++)for(const b of[1,2,4]){if(q&b)continue;const a=v[q],z=v[q|b];if(a===z)continue;const k=a<z?a+'_'+z:z+'_'+a;if(seen.has(k))continue;seen.add(k);
+    const A=VPW[a],Z=VPW[z];L.push(A.x,A.y,A.z,Z.x,Z.y,Z.z);}}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L,3));
   return new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false}));
 }
 const gridGroup=new THREE.Group(),sliceGroup=new THREE.Group(),pieceGroup=new THREE.Group(),markGroup=new THREE.Group(),animGroup=new THREE.Group();
 scene.add(gridGroup,sliceGroup,pieceGroup,markGroup,animGroup);
-// ---------- Animation: Figur gleitet/springt, geschlagene Figur fliegt mit Überschlag aus dem Würfel ----------
+// ---------- Animation: Figur gleitet/springt, geschlagene Figur fliegt mit Überschlag aus dem Stern ----------
 let ANIM=null;
 function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
   if(!mv||!mv.from||!mv.to)return;
   const a=P(mv.from),b=P(mv.to),len=a.distanceTo(b);
-  const d=[0,1,2].map(i=>Math.abs(mv.to[i]-mv.from[i])).sort((x,y)=>y-x),leap='NWACM'.includes(mv.t)&&!(d[1]===0||d[0]===d[1]);
+  const leap='NW'.includes(mv.t)||('ACM'.includes(mv.t)&&SB.KN[mv.from[0]].includes(mv.to[0]));
   const pts=[mv.from].concat(mv.hops||[],[mv.to]).map(c=>P(c));
   const dur=pts.length>2?Math.min(1600,260*(pts.length-1)):Math.min(900,280+len*45);
   const ship=STYLE==='ship';
@@ -320,7 +308,7 @@ function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
     ANIM.laser.visible=false;animGroup.add(ANIM.laser);
     animStep();return;}
   if(mv.cap){   // Ziel des Flugs: hinter dem Quader dessen, der geschlagen hat
-    const sg=CFG[mv.p]||[1,1,1],tg=P(sg.map(v=>v>0?N-1:0)).multiplyScalar(1.45);
+    const sg=CFG[mv.p]||[1,1,1],tg=tipP(sg).multiplyScalar(1.45);
     tg.x+=(Math.random()-0.5)*4;tg.z+=(Math.random()-0.5)*4;tg.y+=(Math.random()-0.5)*3;
     ANIM.kick={p:mv.cap.p,t:mv.cap.t,from:b.clone(),to:tg,dir:b.clone().sub(a).normalize(),t0:ANIM.t0+dur*0.75,dur:1000};}
   const mk=(p,t)=>STYLE==='sym'?sprite(p,t,1):R3.object(STYLE,t,PCOL[p],fwd(p));
@@ -368,12 +356,21 @@ for(const sx of[-1,1])for(const sy of[-1,1])for(const sz of[-1,1]){const sg=[sx,
   const g2=new THREE.BufferGeometry();g2.setAttribute('position',new THREE.Float32BufferAttribute(eg,3));
   gridGroup.add(new THREE.LineSegments(g2,new THREE.LineBasicMaterial({color:own?PCOL[own]:'#8fa0c8',transparent:true,opacity:own?0.8:0.45})));
   // Eckblock (Heimat) als Gitter
-  const r=sg.map(v=>v>0?[N-H,N-1]:[0,H-1]);
-  gridGroup.add(lattice(r[0][0],r[0][1],r[1][0],r[1][1],r[2][0],r[2][1],own?PCOL[own]:'#8090b0',own?0.3:0.12));}
-gridGroup.add(lattice(0,N-1,0,N-1,0,N-1,'#8090b0',0.07));
+  // Spitze (Heimat) als Gitter
+  const ti=SB.TIPS.indexOf(k);
+  gridGroup.add(cellEdges(CELLS.filter(c=>c.tip===ti).map(c=>c.id),own?PCOL[own]:'#8090b0',own?0.32:0.14));}
+gridGroup.add(cellEdges(CELLS.filter(c=>c.gap!==undefined).map(c=>c.id),'#8090b0',0.09));
 if(typeof SPACE_ON!=='undefined'&&SPACE_ON&&typeof gridOp==='function')gridOp();}
 buildGrid();
 
+// Feld als Umriss (Kanten) oder Körper, um die Mitte des Feldes skaliert
+function cellGeo(id,k){const c=CP[id],v=CELLS[id].v.map(g=>VPW[g].clone().sub(c).multiplyScalar(k));return v;}
+function cellLines(c,col,op,k){const v=cellGeo(c[0],k||1),L=[];for(let q=0;q<8;q++)for(const b of[1,2,4]){if(q&b)continue;L.push(v[q].x,v[q].y,v[q].z,v[q|b].x,v[q|b].y,v[q|b].z);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L,3));
+  const m=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:col,transparent:op<1,opacity:op}));m.position.copy(CP[c[0]]);return m;}
+function cellSolid(c,col,op,k){const v=cellGeo(c[0],k||1),L=[];for(const f of SB.FV){const o=[f[0],f[1],f[3],f[2]];for(const t of[[0,1,2],[0,2,3]])for(const i of t)L.push(v[o[i]].x,v[o[i]].y,v[o[i]].z);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L,3));
+  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false,side:THREE.DoubleSide}));m.position.copy(CP[c[0]]);return m;}
 // Figuren als Plaketten (immer zur Kamera gedreht)
 const TEX={};
 function pieceTex(p,t){const k=p+t;if(TEX[k])return TEX[k];
@@ -387,15 +384,15 @@ function pieceTex(p,t){const k=p+t;if(TEX[k])return TEX[k];
     x.font=(bd==='🦄'?'36px':bd==='»'?'bold 52px':'44px')+' "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif';x.fillStyle=bd==='»'?'#ffd23f':'#fff';x.fillText(bd,92,bd==='»'?88:96);}
   const tx=new THREE.CanvasTexture(c);TEX[k]=tx;return tx;}
 function sprite(p,t,op){const m=new THREE.SpriteMaterial({map:pieceTex(p,t),transparent:true,opacity:op,depthWrite:op>0.9});const s=new THREE.Sprite(m);s.scale.set(0.74,0.74,1);return s;}
-const inSlice=c=>slice.ax<0||c[slice.ax]===slice.v;
+const inSlice=c=>slice.ax<0||zoneOf(c[0])===slice.v;
 
 function render(){
   // Ebene
   sliceGroup.clear();
   if(slice.ax>=0){
-    const g=new THREE.BoxGeometry(0.94,0.94,0.94);
-    for(let a=LO;a<=HI;a++)for(let b=LO;b<=HI;b++){const c=[0,0,0];const o=[0,1,2].filter(k=>k!==slice.ax);c[slice.ax]=slice.v;c[o[0]]=a;c[o[1]]=b;
-      if(!valid(...c))continue;const r=region(...c),light=(c[0]+c[1]+c[2])%2===0;
+    const g=new THREE.SphereGeometry(0.42,12,9);
+    for(const x of CELLS){if(zoneOf(x.id)!==slice.v)continue;const c=[x.id];
+      const r=region(x.id),light=(x.loc[0]+x.loc[1]+x.loc[2])%2===0;
       let col=r?PCOL[r]:'#9aa6c0';const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:new THREE.Color(col).multiplyScalar(light?0.55:0.3),transparent:true,opacity:0.5,depthWrite:false}));
       m.scale.setScalar(0.7);m.position.copy(P(c));m.userData.cell=c;sliceGroup.add(m);}
   }
@@ -417,8 +414,8 @@ function render(){
   visUI();
   // Auswahl und Ziele
   markGroup.clear();
-  if(HINT){const h=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.15,1.15,1.15)),new THREE.LineBasicMaterial({color:'#ffd23f'}));h.position.copy(P(HINT));markGroup.add(h);}
-  if(sel){const b=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1,1,1)),new THREE.LineBasicMaterial({color:'#ffdd00'}));b.position.copy(P(sel));markGroup.add(b);
+  if(HINT)markGroup.add(cellLines(HINT,'#ffd23f',1,1.08));
+  if(sel){markGroup.add(cellLines(sel,'#ffdd00',1,1));markGroup.add(cellSolid(sel,'#ffdd00',0.12,0.98));
     const gs=new THREE.SphereGeometry(0.17,14,10);
     const segs=[];
     for(const t of targets)if(t.jump){const pts=[sel].concat(t.hops||[]);segs.push(pts[pts.length-1],t.c);}
@@ -430,7 +427,7 @@ function render(){
   // letzter Zug: Start- und Zielfeld in der Farbe des Ziehenden, dazwischen eine Linie
   const lm=RPLM!==null?RPLM:GM?GM.lastMove:LASTMV;
   if(lm&&lm.from&&lm.to){const col=PCOL[lm.p]||'#ffdd00';
-    for(const[c,op]of[[lm.from,0.45],[lm.to,1]]){const b=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.04,1.04,1.04)),new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op}));b.position.copy(P(c));markGroup.add(b);}
+    for(const[c,op]of[[lm.from,0.45],[lm.to,1]])markGroup.add(cellLines(c,col,op,1.02));
     const chain=[lm.from].concat(lm.hops||[],[lm.to]).map(c=>P(c));
     for(let i=0;i<chain.length-1;i++){const a=chain[i],z=chain[i+1],len=a.distanceTo(z);if(len<0.1)continue;
       const cyl=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,len,8),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.75}));
@@ -438,9 +435,8 @@ function render(){
     for(const c of chain.slice(0,-1)){const dot=new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.6}));dot.position.copy(c);markGroup.add(dot);}}
   // Schach: König rot umrahmt
   if(GM&&!GM.over)for(const q of alive()){const k=kingOf(q);if(!k||!attackers(k,x=>x!==q&&!GM.out.includes(x),true).length)continue;
-    const b=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.1,1.1),new THREE.MeshBasicMaterial({color:'#ff2a1a',transparent:true,opacity:0.28,depthWrite:false}));b.position.copy(P(k));markGroup.add(b);
-    const e=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.12,1.12,1.12)),new THREE.LineBasicMaterial({color:'#ff3b2a'}));e.position.copy(P(k));markGroup.add(e);}
-  document.getElementById('slLbl').textContent=slice.ax<0?'':('Ebene '+(slice.v+1));
+    markGroup.add(cellSolid(k,'#ff2a1a',0.3,1));markGroup.add(cellLines(k,'#ff3b2a',1,1.04));}
+  
   updInfo();updLog();renderTurn();draw();
 }
 function updInfo(){const el=document.getElementById('info');
@@ -469,13 +465,13 @@ function doMove(t){const from=sel,pc=S.get(key(...from)),cap=S.get(key(...t.c));
   S.delete(key(...from));const np={t:pc.t,p:pc.p,m:true};let promo='';
   if(pc.t==='P'&&promoZone(pc.p,t.c)){np.t='Q';promo=' = Dame';}
   S.set(key(...t.c),np);LASTMV={from:from.slice(),to:t.c.slice(),p:pc.p,hops:t.hops||[]};
-  moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+1).join('·')} ${cap?'×':'–'} ${t.c.map(v=>v+1).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
+  moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${cellLbl(from)} ${cap?'×':'–'} ${cellLbl(t.c)}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
   sel=t.c;targets=genMoves(...t.c);render();}
 function place(c){pushHist();if(pal.t==='x')S.delete(key(...c));else S.set(key(...c),{t:pal.t,p:pal.p,m:false});sel=null;targets=[];render();}
 function setTool(t){tool=t;document.getElementById('tMove').classList.toggle('on',t==='move');document.getElementById('tSet').classList.toggle('on',t==='set');
   document.getElementById('palette').style.display=t==='set'?'block':'none';
-  if(t==='set'&&slice.ax<0){document.getElementById('axSel').value='1';setSlice();}}
-function setSlice(){slice.ax=+document.getElementById('axSel').value;slice.v=+document.getElementById('slSel').value;document.getElementById('slRow').style.display=slice.ax<0?'none':'flex';render();}
+  if(t==='set'&&slice.ax<0){document.getElementById('axSel').value='t'+Math.max(0,tipIdx(pal.p));setSlice();}}
+function setSlice(){const v=document.getElementById('axSel').value;slice.ax=v?1:-1;slice.v=v;render();}
 function optChg(){if(sel)targets=genMoves(...sel);render();}
 function toggleUI(){const u=document.getElementById('ui');u.classList.toggle('min');document.getElementById('minBtn').textContent=u.classList.contains('min')?'▾':'▴';}
 function buildPalette(){
@@ -486,11 +482,11 @@ function buildPalette(){
     if(pal.t===t)b.classList.add('on');b.onclick=()=>{pal.t=t;buildPalette();};cr.appendChild(b);}
 }
 // Teilen: Spielerzahl + Figuren (Spieler, Typ, x,y,z als Ziffern 0–9)
-function encode(){const ps=[...S].map(([k,v])=>v.p+v.t+unkey(k).join('')+(v.m?'m':'')).join('-');
-  return 's1_'+lastN+'_'+ps;}
-function decode(s){try{const[ver,n,ps]=s.split('_');if(ver!=='s1')return false;
+function encode(){const ps=[...S].map(([k,v])=>v.p+v.t+(+k).toString(36).padStart(2,'0')+(v.m?'m':'')).join('-');
+  return 's2_'+lastN+'_'+ps;}
+function decode(s){try{const[ver,n,ps]=s.split('_');if(ver!=='s2')return false;
   if(CORN[+n]){lastN=+n;CFG=CORN[lastN];}
-  S=new Map();for(const e of(ps||'').split('-').filter(Boolean)){const p=e[0],t=e[1],c=[2,3,4].map(i=>+e[i]);if(PL.includes(p)&&GLYPH[t]&&valid(...c))S.set(key(...c),{p,t,m:e[5]==='m'});}
+  S=new Map();for(const e of(ps||'').split('-').filter(Boolean)){const p=e[0],t=e[1],id=parseInt(e.slice(2,4),36);if(PL.includes(p)&&GLYPH[t]&&valid(id))S.set(key(id),{p,t,m:e[4]==='m'});}
   if(typeof buildGrid==='function')buildGrid();
   return true;}catch(e){return false;}}
 function share(){const u=location.origin+location.pathname+'?r='+encode();const f=document.getElementById('shareTxt');f.style.display='block';f.value=u;
@@ -501,22 +497,17 @@ function share(){const u=location.origin+location.pathname+'?r='+encode();const 
 
 // ================= Partie =================
 const VAL={P:1,N:3,B:3,R:5,U:3,Q:9,H:7,V:5,A:6,C:7,M:11,W:5,K:0};
-const TURNS={2:['B','G'],3:['B','R','L'],4:['B','R','G','Y'],6:['B','R','G','Y','L','T']};
+const TURNS=SETS;
 const LVLN={human:'Mensch (an diesem Gerät)',open:'Mensch – online eingeladen',easy:'Computer – leicht',medium:'Computer – mittel',hard:'Computer – stark',master:'Computer – Meister'};
 let GM=null;const QUIET=30;   // laufende Partie: {order,ctrl,end,idx,out:[],over,winner,note}
-const ALLD=()=>dirs('ax').concat(dirs('fd'),dirs('rd'));
-function rayKinds(n){return n===1?'RQHCM':n===2?'BQVAM':'UHV'+(OPT.B==='r'?'BA':'')+(OPT.Q==='1'?'QM':'');}
-// Welche Spieler (test(p)=true) greifen Feld c an?
-function attackers(c,test,first){const out=[];const add=q=>{if(!out.includes(q))out.push(q);};
-  for(const d of ALLD()){const n=(d[0]!==0)+(d[1]!==0)+(d[2]!==0),kinds=rayKinds(n);let a=c[0],b=c[1],z=c[2];
-    for(let i=1;;i++){a+=d[0];b+=d[1];z+=d[2];if(!valid(a,b,z))break;const o=S.get(key(a,b,z));if(!o)continue;
-      if(test(o.p)&&(kinds.includes(o.t)||(i===1&&o.t==='K'&&(n<3||OPT.K==='26')))){add(o.p);if(first)return out;}
-      break;}}
-  for(const v of knightVecs()){let a=c[0],b=c[1],z=c[2];
-    for(let i=1;;i++){a+=v[0];b+=v[1];z+=v[2];if(!valid(a,b,z))break;const o=S.get(key(a,b,z));if(!o)continue;
-      if(test(o.p)&&(o.t==='W'||(i===1&&'NACM'.includes(o.t)))){add(o.p);if(first)return out;}break;}}
-  for(const q of PL){if(!test(q))continue;for(const v of pawnCaps(q)){const a=c[0]-v[0],b=c[1]-v[1],z=c[2]-v[2];if(!valid(a,b,z))continue;
-    const o=S.get(key(a,b,z));if(o&&o.p===q&&o.t==='P'){add(q);if(first)return out;}}}
+// Welche Spieler (test(p)=true) greifen Feld c an? (über die vorberechneten Rückwärts-Tabellen)
+function attackers(c,test,first){const id=c[0],out=[];const add=q=>{if(!out.includes(q))out.push(q);};
+  const rays=(REV,kinds)=>{for(const[x,r,i]of REV[id]){const o=S.get(key(x));if(!o||!kinds.includes(o.t)||!test(o.p))continue;
+    let free=true;for(let j=0;j<i;j++)if(S.has(key(r[j]))){free=false;break;}if(free){add(o.p);if(first)return true;}}return false;};
+  const pts=(L,kinds,q)=>{for(const x of L){const o=S.get(key(x));if(o&&kinds.includes(o.t)&&(q?o.p===q:test(o.p))){add(o.p);if(first)return true;}}return false;};
+  if(rays(SB.REV_R,'RQHCM')||rays(SB.REV_B,'BQVAM')||rays(SB.REV_U,'UQHVM')||rays(SB.REV_W,'W'))return out;
+  if(pts(SB.REV_K[id],'K')||pts(SB.REV_N[id],'NACM'))return out;
+  for(const q of PL){if(!test(q))continue;const ti=tipIdx(q);if(ti<0)continue;if(pts(SB.REV_P[ti][id],'P',q))return out;}
   return out;}
 function kingOf(p){for(const[k,v]of S)if(v.p===p&&v.t==='K')return unkey(k);return null;}
 const inCheck=p=>{const k=kingOf(p);return!!k&&attackers(k,q=>q!==p,true).length>0;};
@@ -600,7 +591,7 @@ function dutyTxt(){if(!DUTY||!GM||GM.over)return'';const p=gCur();
 const helpOn=()=>!!(GM&&GM.help&&alive().length>=3);
 function nextAlive(m){const n=GM.order.length,i0=GM.order.indexOf(m);for(let i=1;i<=n;i++){const q=GM.order[(i0+i)%n];if(!GM.out.includes(q))return q;}return m;}
 function hasMoves(q){const ks=kingOf(q);if(!ks)return false;   // bricht beim ersten erlaubten Zug ab; König und Nahe zuerst
-  const L=[];for(const[k,v]of S)if(v.p===q){const c=unkey(k);L.push([c,v,c.reduce((s,x,i)=>s+Math.abs(x-ks[i]),0)]);}L.sort((a,b)=>a[2]-b[2]);
+  const L=[];for(const[k,v]of S)if(v.p===q){const c=unkey(k);L.push([c,v,cdist(c,ks)]);}L.sort((a,b)=>a[2]-b[2]);
   const foe=x=>x!==q&&!GM.out.includes(x);
   for(const[c,v]of L)for(const m of genMoves(...c))if(tryMove(key(...c),key(...m.c),()=>attackers(v.t==='K'?m.c:ks,foe,true).length===0))return true;
   return false;}
@@ -628,11 +619,11 @@ function gameMove(from,to){
   animStart({from,to,p:pc.p,t:pc.t,cap:GM.lastCap,hops:GM.lastHops});
   if(pc.t==='P'&&promoZone(pc.p,to)){np.t='Q';promo=' = Dame';}
   S.set(tk,np);if(cap)GM.capt=true;GM.lastMove={from,to,p:pc.p,t:pc.t,cap:GM.lastCap,hops:GM.lastHops};
-  GM.lastBy=GM.ctrl[pc.p]==='human'||GM.ctrl[pc.p]==='open'?pc.p:(GM.online?ON.seat:null);GM.lastMoverSeat=pc.p;GM.lastText=`${PNAME[pc.p]}: ${PNAMES[pc.t]} ${to.map(v=>v+1).join('·')}`;GM.quiet=cap||pc.t==='P'||!GM.capt?0:(GM.quiet||0)+1;
+  GM.lastBy=GM.ctrl[pc.p]==='human'||GM.ctrl[pc.p]==='open'?pc.p:(GM.online?ON.seat:null);GM.lastMoverSeat=pc.p;GM.lastText=`${PNAME[pc.p]}: ${PNAMES[pc.t]} ${cellLbl(to)}`;GM.quiet=cap||pc.t==='P'||!GM.capt?0:(GM.quiet||0)+1;
   const chk=alive().filter(q=>q!==pc.p&&(!cap||cap.t!=='K'||cap.p!==q)&&inCheck(q));
   const e={p:pc.p,f:from.slice(),t:to.slice(),pc:pc.t,ms,chk};if(cap){e.cap=cap.t;e.capP=cap.p;}if(promo)e.promo=1;
   GM.rec=GM.rec||[];GM.rec.push(e);
-  moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+1).join('·')} ${cap?'×':'–'} ${to.map(v=>v+1).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}${chk.length?' +':''}`);
+  moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${cellLbl(from)} ${cap?'×':'–'} ${cellLbl(to)}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}${chk.length?' +':''}`);
   sel=null;targets=[];
   if(cap&&cap.t==='K'){GM.note='';eliminateByKing(cap.p,pc.p);}
   else afterMove(pc.p);
@@ -658,7 +649,7 @@ function timeout(p,kind){if(!GM||GM.over||gCur()!==p)return;clearTimeout(aiT);
 // Bewertet Züge (Zehntel-Bauern); noise=false für die Auswertung
 function aiEval(p,lvl,ms,noise){
   const foes=alive().filter(q=>q!==p),kings=foes.map(q=>[q,kingOf(q)]).filter(x=>x[1]);
-  const kd=c=>{let m=99;for(const[,k]of kings)m=Math.min(m,Math.max(Math.abs(c[0]-k[0]),Math.abs(c[1]-k[1]),Math.abs(c[2]-k[2])));return m;};
+  const kd=c=>{let m=99;for(const[,k]of kings)m=Math.min(m,Math.round(cdist(c,k)/1.2));return m;};
   const strong=lvl==='hard'||lvl==='master',out=[],THR=noise?KIT.oppThreat(p):1,DIP=noise&&KIT.dipBoss();
   for(const m of ms){
     const tg=S.get(key(...m.to));
@@ -673,10 +664,10 @@ function aiEval(p,lvl,ms,noise){
         if(a.t!=='K'&&a.t!=='P')v+=(kd(m.from)-kd(m.to))*(strong?0.35:0.25);   // Richtung gegnerischer König
         if(a.t==='P'){v+=0.4;if(promoZone(p,m.to))v+=60;}
         if(DIP)v+=KIT.dipBias(p,tg&&tg.p,tg?VAL[tg.t]:0,foes.filter(q=>inCheck(q)));
-        const dc=Math.abs(m.to[0]-MID)+Math.abs(m.to[1]-MID)+Math.abs(m.to[2]-MID);v+=Math.max(0,14-dc)*0.05;
+        const dc=CP[m.to[0]].length()*1.6;v+=Math.max(0,14-dc)*0.05;
         if(strong){   // eigene bedrohte Figuren, die nach dem Zug noch hängen
           let hang=0;for(const[k,o]of S){if(o.p!==p||o.t==='P')continue;const c=unkey(k);
-            if(Math.abs(c[0]-m.to[0])+Math.abs(c[1]-m.to[1])+Math.abs(c[2]-m.to[2])>6)continue;
+            if(cdist(c,m.to)>6)continue;
             if(attackers(c,q=>q!==p&&!GM.out.includes(q),true).length&&!attackers(c,q=>q===p,true).length)hang+=VAL[o.t];}
           v-=hang*3*THR;}
         return v;});
@@ -710,7 +701,7 @@ function anaPos(i){if(!REAL)REAL={S,out:GM.out};
     for(const q of e.elim||[]){if(!GM.out.includes(q))GM.out.push(q);for(const[k,v]of[...S])if(v.p===q)S.delete(k);}}}
 function anaScores(p){return aiEval(p,'medium',legalMoves(p),false).map(o=>({f:o.m.from,t:o.m.to,pc:(S.get(key(...o.m.from))||{}).t,v:o.v/10}));}
 function anaRestore(){if(!REAL)return;S=REAL.S;GM.out=REAL.out;REAL=null;}
-function moveText(e){if(e.to&&!e.f)return e.to==='move'?'Zugzeit abgelaufen':'Partiezeit verbraucht';return `${PNAMES[e.pc]||''} ${e.f.map(v=>v+1).join('·')} – ${e.t.map(v=>v+1).join('·')}`;}
+function moveText(e){if(e.to&&!e.f)return e.to==='move'?'Zugzeit abgelaufen':'Partiezeit verbraucht';return `${PNAMES[e.pc]||''} ${cellLbl(e.f)} – ${cellLbl(e.t)}`;}
 function renderTurn(){const el=document.getElementById('turn'),tb=document.getElementById('turnBox');
   if(!GM){el.style.display='none';return;}
   let h;
@@ -835,14 +826,14 @@ function seatName(p){if(!GM)return PNAME[p];if(GM.online&&ON.seats&&ON.seats[p])
   const c=GM.ctrl[p];return c==='human'?(GM.order.filter(q=>GM.ctrl[q]==='human').length===1?KIT.myName():'Mensch'):KIT.monName(p)+' · '+(KIT.LVL[c]||'');}
 // ---------- Monitore: hinter jedem Reich, immer zur Kamera gedreht ----------
 const MON_W=6,MON_H=4.5,monGroup=new THREE.Group(),MONS={};scene.add(monGroup);
-function monPos(p){const sg=CFG[p]||[1,1,1];const c=P(sg.map(v=>v>0?N-1:0));return c.multiplyScalar(1+7/c.length());}
+function monPos(p){const sg=CFG[p]||[1,1,1];const c=tipP(sg);return c.multiplyScalar(1+7/c.length());}
 function monEnsure(p){if(MONS[p])return MONS[p];const cv=document.createElement('canvas');cv.width=320;cv.height=240;const tex=new THREE.CanvasTexture(cv);
   const scr=new THREE.Mesh(new THREE.PlaneGeometry(MON_W,MON_H),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));
   const fr=new THREE.Mesh(new THREE.PlaneGeometry(MON_W+0.5,MON_H+0.5),new THREE.MeshBasicMaterial({color:PCOL[p],side:THREE.DoubleSide}));fr.position.z=-0.03;
   const g=new THREE.Group();g.add(fr,scr);g.position.copy(monPos(p));monGroup.add(g);return MONS[p]={g,cv,tex,fr};}
 function monDraw(){
   if(!GM||!TB.monOn){monGroup.visible=false;draw();return;}monGroup.visible=true;
-  for(const p of PL){const M=MONS[p];if(M){M.g.visible=GM.order.includes(p);M.g.position.copy(monPos(p));}}
+  for(const p of PL){const M=MONS[p];if(M){M.g.visible=GM.order.includes(p);M.g.position.copy(monPos(p));M.g.scale.setScalar(GM.order.length>6?0.72:1);}}
   for(const p of GM.order){const M=monEnsure(p);M.g.lookAt(camera.position);
     const act=KIT.monPaint(M.cv.getContext('2d'),p);M.fr.material.color.set(act?'#ffffff':PCOL[p]);M.tex.needsUpdate=true;}
   draw();}
@@ -904,7 +895,7 @@ addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.prevent
 
 // ================= Start =================
 function gridOp(){gridGroup.traverse(o=>{if(o.material&&o.material.opacity!==undefined){if(o.userData.op0===undefined)o.userData.op0=o.material.opacity;o.material.opacity=o.userData.op0*(SPACE_ON?0.7:1);}});}
-KIT.init({game:'stern',title:'Sternschach',descr:'Schach im Sterntetraeder, dem räumlichen Davidstern: ein Würfel aus 10 × 10 × 10 Feldern, verzogen zu einem Stern mit 8 Spitzen; 2 bis 6 Heere in den Spitzen, mit Einhorn',
+KIT.init({game:'stern',title:'Sternschach',descr:'Schach im Sterntetraeder, dem räumlichen Davidstern: ein 864 Felder, in den 8 Spitzen gleiche Rhomboeder; 2 bis 8 Heere in den Spitzen, mit Einhorn',
   PCOL,PNAME,VAL,material,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,mon3d:monDraw,clockShow:()=>renderTurn(),
   onColors:()=>{for(const k in TEX)delete TEX[k];buildGrid();buildPalette();render();},
   snap:snapGame,load:loadGame,moveList:()=>moves,replayShow,resume:()=>{if(GM&&!GM.over)turnStart();},poll:()=>onPoll(),varEnter,varExit,varUndo:()=>undo(),varAI,showMove});
@@ -914,11 +905,11 @@ for(const k in TEX)delete TEX[k];buildGrid();
 // ---------- Einführung ----------
 function tourStart(){const ui=document.getElementById('ui');if(ui.classList.contains('min'))toggleUI();
   KIT.tour([
-  {t:'⭐ Willkommen im Sternschach',x:'Der Sterntetraeder ist der räumliche Davidstern – von oben gesehen genau das Brett des Drei-Personen-Schachs. Innen ist er ein Würfel aus 10 × 10 × 10 Feldern, so verzogen, dass seine 8 Ecken zu Spitzen werden. Jedes Heer steht in einer Spitze.',run:()=>viewReset()},
+  {t:'⭐ Willkommen im Sternschach',x:'Der Sterntetraeder ist der räumliche Davidstern – von oben gesehen genau das Brett des Drei-Personen-Schachs. In jeder seiner 8 Spitzen liegen 3 × 3 × 3 gleiche Rhomboeder-Felder; die Spitzen treffen sich in der Mitte, dazwischen liegen sechs Zwischenräume. Jedes Heer steht in einer Spitze.',run:()=>viewReset()},
   {t:'Drehen, zoomen, verschieben',x:'Ziehen dreht den Stern, Mausrad oder zwei Finger zoomen, Rechtsklick-Ziehen verschiebt. Doppelklick zeigt wieder den ganzen Stern. Mit „🎯 Meine Armee“ schaust du von außen in deine Spitze.'},
-  {t:'Figur antippen',x:'Grüne Kugeln: freie Felder. Rote Kugeln: Schlagen. Gerade Linien knicken dort, wo der Würfel zum Stern verzogen ist – wie im Drei-Personen-Schach über die Mitte. Gegnerische Figuren zeigen ihre Züge hellblau und orange, nur zur Ansicht.'},
-  {t:'Die Figuren',x:'König ganz außen in der Spitze, davor Dame und zwei Türme, dann Läufer, Springer und Einhörner, davor sieben Bauern. Die Bauern ziehen in eine der drei Richtungen zur Mitte und schlagen schräg nach vorn. In einer fremden Spitze werden sie zur Dame.'},
-  {t:'Übersicht behalten',x:'Unter „Farben“ blendest du einzelne Heere blass oder aus, unter „Ebene“ greifst du eine einzelne Schicht heraus. Figuren gibt es als Symbole, 3D-Schachfiguren, Sternfiguren oder Raumschiffe – auf Wunsch vor dem Weltall.',el:'#styleSel'},
+  {t:'Figur antippen',x:'Grüne Kugeln: freie Felder. Rote Kugeln: Schlagen. Gerade Linien laufen von Feld zu Feld weiter und knicken in den Zwischenräumen – wie im Drei-Personen-Schach über die Mitte. Gegnerische Figuren zeigen ihre Züge hellblau und orange, nur zur Ansicht.'},
+  {t:'Die Figuren',x:'König ganz außen in der Spitze, davor Dame und zwei Türme, dann Läufer, Springer und Einhörner, davor sieben Bauern. Die Bauern ziehen immer weiter weg von der eigenen Spitze und schlagen schräg nach vorn. In einer fremden Spitze werden sie zur Dame.'},
+  {t:'Übersicht behalten',x:'Unter „Farben“ blendest du einzelne Heere blass oder aus, unter „Bereich“ greifst du eine Spitze oder einen Zwischenraum heraus. Figuren gibt es als Symbole, 3D-Schachfiguren, Sternfiguren oder Raumschiffe – auf Wunsch vor dem Weltall.',el:'#styleSel'},
   {t:'Gegner und Uhr',x:'Für jeden Platz: Mensch, online eingeladen oder Computer in vier Stärken (leicht, mittel, stark, Meister). Mit Zeit pro Zug oder pro Partie – oder ohne Uhr.',el:'#gSeatRows'},
   {t:'Online: live oder als Fernpartie',x:'Live spielt ihr gleichzeitig mit Monitoren hinter jeder Spitze, Kamera, Mikrofon, Chat und automatischer Übersetzung. Eine Fernpartie zieht jeder, wann er Zeit hat.'},
   {t:'Nach der Partie',x:'„🔬 Auswertung“ zeigt Fehler, Schlüsselmomente und eine psychologische Auswertung; auf Wunsch schreibt eine KI einen professionellen Bericht. Viel Spaß!'}]);}
@@ -928,6 +919,6 @@ const qs=new URLSearchParams(location.search);
 if(!(qs.get('r')&&decode(qs.get('r'))))setup(2);
 resize();render();
 if(qs.get('g'))onOpen(qs.get('g'));
-window.RS={W,P,CFG:()=>CFG,cornerOf,S,genMoves,setup,decode,encode,select,OPT,get state(){return S;},legalMoves,gameStart,get GM(){return GM;},aiMove,inCheck,attackers,gameMove};
+window.RS={SB,W,P,CFG:()=>CFG,cornerOf,S,genMoves,setup,decode,encode,select,OPT,get state(){return S;},legalMoves,gameStart,get GM(){return GM;},aiMove,inCheck,attackers,gameMove};
 </script>
 </body></html>

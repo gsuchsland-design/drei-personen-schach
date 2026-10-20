@@ -625,7 +625,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <button onclick="aboardOpen()" style="background:#355f8a" title="Stellungen aufbauen, Züge prüfen und teilen – unabhängig von einer Partie">🔬 Analysebrett</button>
     <button onclick="location.href='raum.html?v='+Date.now()" style="background:#5a3f8a" title="Schach im Würfel für 2 bis 6 Spieler: 8 × 8 × 8 Felder mit sechs Heimatquadern">👑 Schach der 6 Reiche</button>
     <button onclick="location.href='grenzenlos.html?v='+Date.now()" style="background:#2f6a5a" title="Normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler">♾️ Schach ohne Grenzen</button>
-    <button onclick="location.href='stern.html?v='+Date.now()" style="background:#7a3f5f" title="Schach im Sterntetraeder, dem räumlichen Davidstern, für 2 bis 6 Spieler">⭐ Sternschach</button>
+    <button onclick="location.href='stern.html?v='+Date.now()" style="background:#7a3f5f" title="Schach im Sterntetraeder, dem räumlichen Davidstern, für 2 bis 8 Spieler">⭐ Sternschach</button>
     <button onclick="tourFromSetup()" style="background:#7a6420" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
     <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · <a href="index.html#start" style="color:#8fb6ff">Startseite</a> · <a href="regeln.html" style="color:#8fb6ff">Regeln</a> · <a href="strategie.html" style="color:#8fb6ff">Strategie</a> · <a href="impressum.html" style="color:#8fb6ff">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
   </div>
@@ -1887,7 +1887,7 @@ async function pubLoad(){
 }
 function pubAge(ms){const m=Math.round(ms/60000);return m<1?T('gerade eben'):m<60?T('vor {0} Min.',[m]):m<1440?T('vor {0} Std.',[Math.round(m/60)]):T('vor {0} Tagen',[Math.round(m/1440)]);}
 const PUB_LVL={easy:'leicht',medium:'mittel',hard:'stark',master:'Meister'};
-const RCOL={Y:'#f2c418',L:'#b05cff',T:'#1fc9c9'};
+const RCOL={Y:'#f2c418',L:'#b05cff',T:'#1fc9c9',O:'#ff9a3a',I:'#ff6ad0'};
 function pubRender(){
   const el=document.getElementById('pubList'),L=PUBL.filter(e=>PUBF==='all'||(PUBF==='raum'||PUBF==='grenz'||PUBF==='stern'?e.game===PUBF:e.game==='dps'&&e.kind===PUBF));
   if(!L.length){el.innerHTML='<div class="lbHint">'+T('Gerade gibt es keine offenen Spiele. Biete selbst eine Partie an – oder schau später noch einmal vorbei.')+'</div>';return;}

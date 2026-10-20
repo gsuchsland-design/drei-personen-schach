@@ -15,7 +15,7 @@ const json = (obj, status = 200) =>
 import { lobbyCall, safeName } from './lobby.js';
 
 const ORDER = ['B', 'G', 'R'];
-const ALL = ['B', 'G', 'R', 'Y', 'L', 'T'];   // Raumschach: bis zu sechs Spieler
+const ALL = ['B', 'G', 'R', 'Y', 'L', 'T', 'O', 'I'];   // bis zu acht Spieler (Sternschach)
 const ord = (g) => g.order || ORDER;
 const LEVELS = ['easy', 'medium', 'hard', 'master'];
 const KEEP_MS = 120 * 86400e3;          // unbenutzte Partien werden nach 120 Tagen gelöscht
