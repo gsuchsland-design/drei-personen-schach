@@ -15,6 +15,8 @@ const json = (obj, status = 200) =>
 import { lobbyCall, safeName } from './lobby.js';
 
 const ORDER = ['B', 'G', 'R'];
+const ALL = ['B', 'G', 'R', 'Y', 'L', 'T'];   // Raumschach: bis zu sechs Spieler
+const ord = (g) => g.order || ORDER;
 const LEVELS = ['easy', 'medium', 'hard', 'master'];
 const KEEP_MS = 120 * 86400e3;          // unbenutzte Partien werden nach 120 Tagen gelöscht
 const AI_NUDGE_MS = 45e3;               // Computer am Zug, aber niemand rechnet → nächsten Menschen wecken
@@ -147,20 +149,21 @@ export class Fern {
     return k;
   }
 
-  seatOf(g, t) { return t ? ORDER.find((p) => g.seats[p].tok && g.seats[p].tok === t) || null : null; }
+  seatOf(g, t) { return t ? ord(g).find((p) => g.seats[p].tok && g.seats[p].tok === t) || null : null; }
 
   async view(g, t) {
     const seats = {};
-    for (const p of ORDER) { const s = g.seats[p]; seats[p] = { kind: s.kind, name: s.name || '', lvl: s.lvl || null, push: !!(s.subs && s.subs.length) }; }
+    for (const p of ord(g)) { const s = g.seats[p]; seats[p] = { kind: s.kind, name: s.name || '', lvl: s.lvl || null, push: !!(s.subs && s.subs.length) }; }
     const me = this.seatOf(g, t);
     // Bild & Ton zwischen Mitspielern, die gerade online sind: geheime Verbindungsnamen nur für Mitspieler (nicht für Zuschauer)
     let rtc = null;
     if (me) {
       if (!g.rtc) { g.rtc = randStr(12, '0123456789abcdef'); await this.state.storage.put('g', g); }
-      rtc = {}; for (const p of ORDER) rtc[p] = `dsf-${g.code}-${p}-${g.rtc}`;
+      rtc = {}; for (const p of ord(g)) rtc[p] = `dsf-${g.code}-${p}-${g.rtc}`;
     }
     return { code: g.code, v: g.v, snap: g.snap, next: g.next, over: g.over, last: g.last, used: g.used,
-      created: g.created, updated: g.updated, age: Date.now() - g.updated, seats, seat: me, rtc, rules: g.rules || { help: true }, pub: !!g.lobby };
+      created: g.created, updated: g.updated, age: Date.now() - g.updated, seats, seat: me, rtc, rules: g.rules || { help: true }, pub: !!g.lobby,
+      game: g.game || 'dps', order: ord(g) };
   }
 
   async save(g) {
@@ -170,41 +173,52 @@ export class Fern {
 
   async create(b) {
     if (await this.state.storage.get('g')) return json({ error: 'exists' }, 409);
-    const me = ORDER.includes(b.seat) ? b.seat : 'B';
+    const game = b.game === 'raum' ? 'raum' : 'dps';
+    let order = ORDER;
+    if (game === 'raum') {
+      const o = Array.isArray(b.order) ? b.order.filter((p, i, a) => ALL.includes(p) && a.indexOf(p) === i) : [];
+      if (o.length < 2) return json({ error: 'order' }, 400);
+      order = o;
+    }
+    const me = order.includes(b.seat) ? b.seat : order[0];
     const tok = randStr(24, '0123456789abcdef');
     const seats = {};
-    for (const p of ORDER) {
+    for (const p of order) {
       if (p === me) { seats[p] = { kind: 'human', name: clean(b.name, 18) || 'Spieler', tok, subs: [] }; continue; }
       const lvl = b.ai && LEVELS.includes(b.ai[p]) ? b.ai[p] : null;
       seats[p] = lvl ? { kind: 'ai', lvl } : { kind: 'open', subs: [] };
     }
     const now = Date.now();
     const rules = { help: !(b.rules && b.rules.help === false) };
-    const g = { code: b.code, created: now, updated: now, v: 0, snap: null, next: 'B', over: false, last: null, used: { B: 0, G: 0, R: 0 }, seats, rules };
+    if (game === 'raum') { rules.end = b.rules && b.rules.end === 'last' ? 'last' : 'first'; rules.opts = clean(b.rules && b.rules.opts, 80); }
+    const used = {}; for (const p of order) used[p] = 0;
+    const g = { code: b.code, created: now, updated: now, v: 0, snap: null, next: order[0], over: false, last: null, used, seats, rules, game };
+    if (game === 'raum') g.order = order;
     if (b.public) {   // in der öffentlichen Lobby anbieten
       seats[me].name = safeName(seats[me].name, 'Spieler');
-      const r = await lobbyCall(this.env, 'offer', { kind: 'fern', code: b.code, host: seats[me].name, seats: this.lobbySeats(g), rules: { help: rules.help, lvl: null, lang: b.lang }, _ip: b._ip });
+      const r = await lobbyCall(this.env, 'offer', { kind: 'fern', game, code: b.code, host: seats[me].name, seats: this.lobbySeats(g), order: ord(g),
+        rules: { help: rules.help, lvl: null, lang: b.lang, end: rules.end, opts: rules.opts }, _ip: b._ip });
       if (r && r.id) g.lobby = { id: r.id, key: r.key };
     }
     await this.save(g);
     return json({ code: g.code, token: tok, seat: me, state: await this.view(g, tok) });
   }
 
-  lobbySeats(g) { const o = {}; for (const p of ORDER) { const s = g.seats[p]; o[p] = { kind: s.kind, name: s.name || '', lvl: s.lvl || null }; } return o; }
+  lobbySeats(g) { const o = {}; for (const p of ord(g)) { const s = g.seats[p]; o[p] = { kind: s.kind, name: s.name || '', lvl: s.lvl || null }; } return o; }
   lobbySync(g, extra) { if (g.lobby) this.state.waitUntil(lobbyCall(this.env, 'update', { id: g.lobby.id, key: g.lobby.key, seats: this.lobbySeats(g), started: g.v > 0, ...extra })); }
 
   async join(g, b) {
     const known = this.seatOf(g, b.t);
     if (known) return json({ seat: known, token: b.t, state: await this.view(g, b.t) });
     if (g.over) return json({ error: 'over' }, 409);
-    const want = ORDER.includes(b.seat) ? b.seat : null;
-    const p = want && g.seats[want].kind === 'open' ? want : ORDER.find((q) => g.seats[q].kind === 'open');
+    const want = ord(g).includes(b.seat) ? b.seat : null;
+    const p = want && g.seats[want].kind === 'open' ? want : ord(g).find((q) => g.seats[q].kind === 'open');
     if (!p) return json({ error: 'full' }, 409);
     const tok = randStr(24, '0123456789abcdef'), name = g.lobby ? safeName(b.name, 'Gast') : (clean(b.name, 18) || 'Gast');
     g.seats[p] = { kind: 'human', name, tok, subs: [] };
     await this.save(g);
     this.lobbySync(g);
-    this.state.waitUntil(this.notify(g, ORDER.filter((q) => q !== p), 'join', [name]));
+    this.state.waitUntil(this.notify(g, ord(g).filter((q) => q !== p), 'join', [name]));
     return json({ seat: p, token: tok, state: await this.view(g, tok) });
   }
 
@@ -222,21 +236,21 @@ export class Fern {
     if (b.v !== g.v) return json({ error: 'conflict', state: await this.view(g, b.t) }, 409);
     if (g.over) return json({ error: 'over', state: await this.view(g, b.t) }, 409);
     const mover = b.mover;
-    if (!ORDER.includes(mover) || mover !== g.next) return json({ error: 'turn', state: await this.view(g, b.t) }, 409);
+    if (!ord(g).includes(mover) || mover !== g.next) return json({ error: 'turn', state: await this.view(g, b.t) }, 409);
     if (mover !== me && g.seats[mover].kind !== 'ai') return json({ error: 'not your seat' }, 403);
     if (typeof b.snap !== 'string' || b.snap.length > MAX_SNAP) return json({ error: 'snap' }, 400);
     const now = Date.now();
-    if (g.seats[mover].kind === 'human') g.used[mover] += now - g.updated;
+    if (g.seats[mover].kind === 'human') g.used[mover] = (g.used[mover] || 0) + now - g.updated;
     g.v += 1; g.snap = b.snap; g.updated = now;
     g.over = !!b.over;
-    g.next = g.over ? null : (ORDER.includes(b.next) ? b.next : null);
+    g.next = g.over ? null : (ord(g).includes(b.next) ? b.next : null);
     g.last = b.last && typeof b.last === 'object' ? { p: mover, from: clean(b.last.from, 5), to: clean(b.last.to, 5), text: clean(b.last.text, 60) } : null;
     g.nudgeAt = null;
     // Wer muss geweckt werden?
     let who = [], kind = 'turn', args = [g.last ? g.last.text : ''];
-    if (g.over) { who = ORDER.filter((q) => q !== mover); kind = 'over'; args = [clean(b.result, 120)]; }
+    if (g.over) { who = ord(g).filter((q) => q !== mover); kind = 'over'; args = [clean(b.result, 120)]; }
     else if (g.next && g.seats[g.next].kind === 'human') who = [g.next];
-    else if (g.next && g.seats[g.next].kind === 'ai' && ORDER.includes(b.hint) && g.seats[b.hint].kind === 'human' && b.hint !== me) {
+    else if (g.next && g.seats[g.next].kind === 'ai' && ord(g).includes(b.hint) && g.seats[b.hint].kind === 'human' && b.hint !== me) {
       g.nudgeAt = now + AI_NUDGE_MS; g.nudgeV = g.v; g.nudgeWho = b.hint;   // falls der Computerzug ausbleibt
     }
     await this.save(g);

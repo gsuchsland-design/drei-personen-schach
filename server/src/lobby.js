@@ -14,6 +14,7 @@ const json = (obj, status = 200) =>
 
 const LIVE_TTL = 90e3, FERN_TTL = 14 * 86400e3, MAX_ENTRIES = 500, MAX_PER_IP = 6, REPORT_HIDE = 3;
 const ORDER = ['B', 'G', 'R'];
+const ALL = ['B', 'G', 'R', 'Y', 'L', 'T'];
 const LEVELS = ['easy', 'medium', 'hard', 'master'];
 
 function randStr(n, abc = 'abcdefghjkmnpqrstuvwxyz23456789') {
@@ -35,9 +36,10 @@ function norm(s) {
 export function badName(s) { const n = norm(s); return !!n && BAD.some((w) => n.includes(w)); }
 export const safeName = (s, fb) => { const c = clean(s, 18); return !c || badName(c) ? fb : c; };
 
-function cleanSeats(seats) {
+function cleanSeats(seats, order) {
   const out = [];
-  for (const p of ORDER) {
+  const ord = Array.isArray(order) && order.length >= 2 ? order.filter((p, i, a) => ALL.includes(p) && a.indexOf(p) === i) : ORDER;
+  for (const p of ord) {
     const s = (seats && seats[p]) || {};
     const kind = ['open', 'human', 'ai'].includes(s.kind) ? s.kind : 'open';
     out.push({ p, kind, name: kind === 'human' ? safeName(s.name, 'Spieler') : '', lvl: kind === 'ai' && LEVELS.includes(s.lvl) ? s.lvl : null });
@@ -53,6 +55,7 @@ function cleanRules(r) {
     lvl: LEVELS.includes(r.lvl) ? r.lvl : null,
     cam: !!r.cam, spec: ['ask', 'always', 'never'].includes(r.spec) ? r.spec : 'ask',
     lang: clean(r.lang, 5),
+    end: r.end === 'last' ? 'last' : r.end === 'first' ? 'first' : undefined, opts: r.opts ? clean(r.opts, 80) : undefined,
   };
 }
 
@@ -103,7 +106,7 @@ export class Lobby {
       if (ipKey && Object.values(this.list).filter((e) => e.ip === ipKey).length >= MAX_PER_IP) return json({ error: 'too many' }, 429);
       for (const e of Object.values(this.list)) if (e.code === code && e.kind === kind) delete this.list[e.id];   // gleiche Partie neu anbieten
       const now = Date.now(), id = randStr(10), key = randStr(20, '0123456789abcdef');
-      const e = { id, key, kind, game: b.game === 'raum' ? 'raum' : 'dps', code, host: safeName(b.host, 'Gastgeber'), seats: cleanSeats(b.seats),
+      const e = { id, key, kind, game: b.game === 'raum' ? 'raum' : 'dps', code, host: safeName(b.host, 'Gastgeber'), seats: cleanSeats(b.seats, b.order), order: Array.isArray(b.order) ? b.order.slice(0, 6) : null,
         rules: cleanRules(b.rules), started: !!b.started, created: now, seen: now, ip: ipKey, reports: [] };
       this.list[id] = e;
       await this.store();
@@ -119,7 +122,7 @@ export class Lobby {
     }
     if (!e || e.key !== b.key) return json({ error: 'not found' }, 404);
     if (action === 'update') {
-      if (b.seats) e.seats = cleanSeats(b.seats);
+      if (b.seats) e.seats = cleanSeats(b.seats, e.order);
       if (b.rules) e.rules = cleanRules(Object.assign({}, e.rules, b.rules));
       if (b.host) e.host = safeName(b.host, e.host);
       if (b.started != null) e.started = !!b.started;

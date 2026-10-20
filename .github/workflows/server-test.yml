@@ -18,6 +18,7 @@ jobs:
           R=$(curl -s -m 30 -X POST "https://$H/lobby/offer" -H 'Content-Type: application/json' -d '{"kind":"live","code":"test01","host":"Servertest","seats":{"B":{"kind":"human","name":"Servertest"}},"rules":{"help":false}}')
           echo "$R"
           ID=$(echo "$R" | jq -r .id); KEY=$(echo "$R" | jq -r .key)
+          curl -s -m 30 -X POST "https://$H/fern/new" -H 'Content-Type: application/json' -d '{"game":"raum","order":["B","R","L"],"seat":"B","name":"Servertest","ai":{"L":"medium"},"rules":{"end":"last","opts":"f.1.26.1.4.in.home.1"}}' | head -c 400; echo
           curl -s -m 30 -X POST "https://$H/lobby/remove" -H 'Content-Type: application/json' -d "{\"id\":\"$ID\",\"key\":\"$KEY\"}"
           echo; } > tools/server-test-result.txt 2>&1
           cat tools/server-test-result.txt

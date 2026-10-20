@@ -39,6 +39,14 @@ a { color:#8fb6ff; }
 <canvas id="cv"></canvas>
 <div id="tip"></div>
 <div id="turn"></div>
+<div id="joinBox" style="display:none;position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
+ <div style="background:#1f2330;border:1px solid #444;border-radius:14px;padding:18px;max-width:360px;width:92%">
+  <h3 style="margin-top:0">🧊 Einladung zum Raumschach</h3>
+  <p id="joinTxt"></p>
+  <input type="text" id="joinName" maxlength="18" placeholder="Dein Name" style="width:100%">
+  <div class="row" style="margin-top:10px"><button class="on" onclick="onJoin()">Mitspielen</button><button onclick="onWatch()">Zuschauen</button></div>
+ </div>
+</div>
 <div id="ui">
  <h1>🧊 Raumschach <span class="hint">Partie &amp; Analysebrett · Entwurf</span><button id="minBtn" onclick="toggleUI()" title="Leiste ein-/ausklappen">▴</button></h1>
  <div class="body">
@@ -50,12 +58,23 @@ a { color:#8fb6ff; }
    <div id="gSeatRows"></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
    <div class="hint">Es gelten die Zugregeln und die Bauernaufstellung von unten. Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Wer nur noch den König hat, ist geschlagen. Sobald einmal geschlagen wurde, gilt: Nach 30 Runden ohne Schlagen und ohne Bauernzug entscheidet das Material.</div>
+   <div id="gOnline" style="display:none">
+    <div class="row">Dein Name: <input type="text" id="gName" maxlength="18" placeholder="Name" style="flex:1"></div>
+    <div class="row"><label><input type="checkbox" id="gPub"> 🌍 In der öffentlichen Lobby anbieten</label></div>
+    <div class="hint">Eingeladene Mitspieler bekommen einen Link. Der Spielstand liegt auf dem Server – ihr könnt gleichzeitig spielen oder jeder zieht, wann er Zeit hat.</div>
+   </div>
    <div class="row"><button class="on" onclick="gameStart()">▶ Partie starten</button></div>
   </div>
   <div id="gameRun" style="display:none">
    <div id="turnBox"></div>
+   <div id="onBox" style="display:none">
+    <div class="hint" id="onState"></div>
+    <div class="row"><input type="text" id="onLink" readonly style="flex:1" onclick="this.select()"><button onclick="onShare()">📤</button></div>
+   </div>
    <div class="row"><button onclick="undo()" title="Zurück bis zu deinem letzten Zug">↶ Zug zurück</button><button onclick="gameStop()">■ Partie beenden</button></div>
   </div>
+
+  <div class="row"><button onclick="location.href='spiel.html?lobby=1'+fernQS()">🌍 Offene Spiele (Lobby)</button></div>
 
   <h2>Aufstellung</h2>
   <div class="row noGame">
@@ -281,10 +300,11 @@ let raf=0;function draw(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;app
 // ================= Bedienung =================
 function pushHist(){hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice()});if(hist.length>200)hist.shift();}
 function undo(){
+  if(GM&&GM.online){alert('In Online-Partien kann man nicht zurücknehmen.');return;}
   if(GM){clearTimeout(aiT);let h;do{h=hist.pop();}while(h&&h.GM&&hist.length&&h.GM.ctrl[h.GM.order[h.GM.idx]]!=='human');
     if(!h||!h.GM)return;S=h.S;moves=h.moves;GM=h.GM;sel=null;targets=[];render();turnStart();return;}
   const h=hist.pop();if(!h)return;S=h.S;moves=h.moves;sel=null;targets=[];render();}
-function select(c){const pc=S.get(key(...c));if(!pc){sel=null;targets=[];render();return;}sel=c;targets=GM?(pc.p===gCur()&&!GM.over?legalFrom(c):[]):genMoves(...c);render();}
+function select(c){const pc=S.get(key(...c));if(!pc){sel=null;targets=[];render();return;}sel=c;targets=GM?(pc.p===gCur()&&!GM.over&&myTurn()?legalFrom(c):[]):genMoves(...c);render();}
 function doMove(t){const from=sel,pc=S.get(key(...from)),cap=S.get(key(...t.c));pushHist();
   S.delete(key(...from));const np={t:pc.t,p:pc.p,m:true};let promo='';
   if(pc.t==='P'&&promoZone(pc.p,t.c)){np.t='Q';promo=' = Dame';}
@@ -322,7 +342,7 @@ function share(){const u=location.origin+location.pathname+'?r='+encode();const 
 // ================= Partie =================
 const VAL={P:1,N:3,B:3,R:5,U:3,Q:9,H:7,V:5,A:6,C:7,M:11,W:5,K:0};
 const TURNS={2:['B','G'],3:['B','R','L'],4:['B','R','G','Y'],6:['B','R','G','Y','L','T']};
-const LVLN={human:'Mensch',easy:'Computer – leicht',medium:'Computer – mittel',hard:'Computer – stark'};
+const LVLN={human:'Mensch (an diesem Gerät)',open:'Mensch – online eingeladen',easy:'Computer – leicht',medium:'Computer – mittel',hard:'Computer – stark'};
 let GM=null;const QUIET=30;   // laufende Partie: {order,ctrl,end,idx,out:[],over,winner,note}
 const ALLD=()=>dirs('ax').concat(dirs('fd'),dirs('rd'));
 function rayKinds(n){return n===1?'RQHCM':n===2?'BQVAM':'UHV'+(OPT.B==='r'?'BA':'')+(OPT.Q==='1'?'QM':'');}
@@ -354,10 +374,14 @@ function material(p){let s=0;for(const v of S.values())if(v.p===p)s+=VAL[v.t]||0
 function gSeats(){const n=+document.getElementById('gN').value,box=document.getElementById('gSeatRows');box.innerHTML='';
   TURNS[n].forEach((p,i)=>{const r=document.createElement('div');r.className='row';
     r.innerHTML=`<span style="color:${PCOL[p]};font-weight:700;min-width:4.5em">${PNAME[p]}</span><select id="gS${p}">${Object.entries(LVLN).map(([v,l])=>`<option value="${v}"${(i===0?'human':'medium')===v?' selected':''}>${l}</option>`).join('')}</select>`;
-    box.appendChild(r);});}
+    box.appendChild(r);r.querySelector('select').onchange=gOnlineUI;});gOnlineUI();}
+function gOnlineUI(){const n=+document.getElementById('gN').value;const on=TURNS[n].some(p=>(document.getElementById('gS'+p)||{}).value==='open');
+  document.getElementById('gOnline').style.display=on?'block':'none';
+  if(on&&!document.getElementById('gName').value){try{document.getElementById('gName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}}}
 function gameStart(){
   const n=+document.getElementById('gN').value,order=TURNS[n],ctrl={};
   for(const p of order)ctrl[p]=document.getElementById('gS'+p).value;
+  if(order.some(p=>ctrl[p]==='open')){onCreate(order,ctrl);return;}
   setup(n);hist=[];
   GM={order,ctrl,end:document.getElementById('gEnd').value,idx:0,out:[],over:false,winner:null,note:'',quiet:0};
   sel=null;targets=[];setTool('move');
@@ -365,7 +389,9 @@ function gameStart(){
   document.getElementById('gameSetup').style.display='none';document.getElementById('gameRun').style.display='block';
   render();turnStart();
 }
-function gameStop(){if(GM&&!GM.over&&!confirm('Partie beenden?'))return;GM=null;clearTimeout(aiT);
+function gameStop(){if(GM&&!GM.over&&!confirm(GM.online?'Partie verlassen? Du kannst später über den Link zurückkehren.':'Partie beenden?'))return;
+  if(GM&&GM.online){clearInterval(ON.poll);try{history.replaceState(null,'',location.pathname+(QS.get('fernhost')?'?fernhost='+encodeURIComponent(QS.get('fernhost')):''));}catch(e){}document.getElementById('onBox').style.display='none';ON={};}
+  GM=null;clearTimeout(aiT);
   document.getElementById('ui').classList.remove('ingame');
   document.getElementById('gameSetup').style.display='block';document.getElementById('gameRun').style.display='none';render();}
 function snapGM(){return GM?JSON.parse(JSON.stringify(GM)):null;}
@@ -403,17 +429,19 @@ function advance(){
 }
 let aiT=0;
 function turnStart(){sel=null;targets=[];render();const p=gCur();
-  if(GM&&!GM.over&&GM.ctrl[p]!=='human'){clearTimeout(aiT);aiT=setTimeout(()=>aiMove(p),GM.order.every(q=>GM.ctrl[q]!=='human')?150:450);}}
+  if(GM&&!GM.over&&GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'&&(!GM.online||GM.lastBy===ON.seat)){clearTimeout(aiT);aiT=setTimeout(()=>aiMove(p),GM.order.every(q=>GM.ctrl[q]!=='human')?150:450);}}
 function gameMove(from,to){
   const fk=key(...from),tk=key(...to),pc=S.get(fk),cap=S.get(tk);if(!pc)return;
   hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice(),GM:snapGM()});
   S.delete(fk);const np={t:pc.t,p:pc.p,m:true};let promo='';
   if(pc.t==='P'&&promoZone(pc.p,to)){np.t='Q';promo=' = Dame';}
-  S.set(tk,np);if(cap)GM.capt=true;GM.quiet=cap||pc.t==='P'||!GM.capt?0:(GM.quiet||0)+1;
+  S.set(tk,np);if(cap)GM.capt=true;
+  GM.lastBy=GM.ctrl[pc.p]==='human'||GM.ctrl[pc.p]==='open'?pc.p:(GM.online?ON.seat:null);GM.lastMoverSeat=pc.p;GM.lastText=`${PNAME[pc.p]}: ${PNAMES[pc.t]} ${to.map(v=>v+5).join('·')}`;GM.quiet=cap||pc.t==='P'||!GM.capt?0:(GM.quiet||0)+1;
   moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+5).join('·')} ${cap?'×':'–'} ${to.map(v=>v+5).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
   sel=null;targets=[];
-  if(cap&&cap.t==='K'){GM.note='';eliminateByKing(cap.p,pc.p);return;}
-  afterMove(pc.p);
+  if(cap&&cap.t==='K'){GM.note='';eliminateByKing(cap.p,pc.p);}
+  else afterMove(pc.p);
+  if(GM&&GM.online)onPush();
 }
 function eliminateByKing(q,mover){if(GM.end==='first'){GM.over=true;GM.winner=mover;GM.note=`${PNAME[q]}s König wurde geschlagen. `;render();return;}
   eliminate(q);GM.note=`${PNAME[q]}s König wurde geschlagen – ${PNAME[q]} scheidet aus. `;if(GM.over)render();else afterMove(mover);}
@@ -452,12 +480,113 @@ function renderTurn(){const el=document.getElementById('turn'),tb=document.getEl
   if(!GM){el.style.display='none';return;}
   let h;
   if(GM.over)h=`🏁 <span style="color:${PCOL[GM.winner]}">${PNAME[GM.winner]}</span> gewinnt!`;
-  else{const p=gCur(),chk=inCheck(p);h=`<span style="color:${PCOL[p]}">●</span> ${PNAME[p]} ist am Zug${GM.ctrl[p]!=='human'?' 🤖':''}${chk?' – <span style="color:#ff6a50">Schach!</span>':''}`;}
+  else{const p=gCur(),chk=inCheck(p),nm=GM.online&&ON.seats&&ON.seats[p]&&ON.seats[p].name?' ('+esc(ON.seats[p].name)+')':'';
+    const wait=GM.ctrl[p]==='open'&&ON.seats&&ON.seats[p]&&ON.seats[p].kind==='open';
+    h=`<span style="color:${PCOL[p]}">●</span> ${PNAME[p]}${nm} ${wait?'– Platz noch frei, warte auf Mitspieler':'ist am Zug'}${GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'?' 🤖':''}${GM.online&&p===ON.seat?' – <b>du</b>':''}${chk?' – <span style="color:#ff6a50">Schach!</span>':''}`;}
   let out=GM.out.length?`<br><span class="hint">ausgeschieden: ${GM.out.map(q=>PNAME[q]).join(', ')}</span>`:'';
   out+=`<br><span class="hint">Material: ${alive().map(q=>`<span style="color:${PCOL[q]}">${material(q)}</span>`).join(' · ')}${!GM.over&&GM.quiet>QUIET*alive().length/2?` · ruhige Züge ${GM.quiet}/${QUIET*alive().length}`:''}</span>`;
   el.innerHTML=h+(GM.note?`<div class="hint" style="font-weight:400">${GM.note}</div>`:'');el.style.display='block';
   el.style.borderColor=GM.over?PCOL[GM.winner]:PCOL[gCur()];
   tb.innerHTML=h+out+(GM.note?`<div class="hint">${GM.note}</div>`:'');}
+
+// ================= Online: Spielstand auf dem Server (live oder als Fernpartie) =================
+let ON={};
+const QS=new URLSearchParams(location.search);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function myTurn(){const p=gCur();return GM&&(GM.online?p===ON.seat:GM.ctrl[p]==='human');}
+function fernQS(){return QS.get('fernhost')?'&fernhost='+encodeURIComponent(QS.get('fernhost')):'';}
+let SRV=null;
+async function srvBase(){if(SRV)return SRV;const h=QS.get('fernhost');
+  if(h)return SRV=(/^https?:/.test(h)?h:'http://'+h).replace(/\/$/,'');
+  try{const r=await fetch('server.json?'+Date.now(),{cache:'no-store'});const j=await r.json();SRV='https://'+String(j.host).replace(/^https?:\/\//,'').replace(/\/+$/,'');}catch(e){throw new Error('Server nicht erreichbar');}
+  return SRV;}
+async function api(path,body){const b=await srvBase();
+  const r=await fetch(b+path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});
+  const j=await r.json().catch(()=>({}));j._status=r.status;return j;}
+const optStr=()=>OK.map(k=>OPT[k]).join('.');
+function setOpts(str){const ov=String(str||'').split('.');OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});}
+function onLink(){return location.origin+location.pathname+'?g='+ON.code+fernQS();}
+function onSnap(){const g=Object.assign({},GM);delete g.online;return JSON.stringify({pos:encode(),gm:g,moves});}
+async function onCreate(order,ctrl){
+  const name=(document.getElementById('gName').value||'').trim().slice(0,18)||'Spieler';try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
+  const seat=order.find(p=>ctrl[p]==='human');
+  if(!seat){alert('Mindestens ein Platz muss „Mensch (an diesem Gerät)“ sein – das bist du.');return;}
+  const ai={};for(const p of order)if(!['human','open'].includes(ctrl[p]))ai[p]=ctrl[p];
+  // weitere „an diesem Gerät“-Plätze gibt es online nicht: sie werden zu eingeladenen Plätzen
+  for(const p of order)if(ctrl[p]==='human'&&p!==seat)ctrl[p]='open';
+  const end=document.getElementById('gEnd').value;
+  let j;try{j=await api('/fern/new',{game:'raum',order,seat,name,ai,rules:{end,opts:optStr()},public:document.getElementById('gPub').checked,lang:'de'});}
+  catch(e){alert('⚠️ '+e.message);return;}
+  if(!j.code){alert('⚠️ '+(j.error||'Fehler beim Anlegen'));return;}
+  try{localStorage.setItem('raum.t.'+j.code,j.token);}catch(e){}
+  const n=order.length;setup(n);hist=[];
+  GM={order,ctrl,end,idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:seat};
+  ON={code:j.code,token:j.token,seat,v:0,seats:j.state.seats};
+  onEnter();
+  onPush(true);
+}
+function onEnter(){
+  try{history.replaceState(null,'',location.pathname+'?g='+ON.code+fernQS());}catch(e){}
+  sel=null;targets=[];setTool('move');
+  document.getElementById('ui').classList.add('ingame');
+  document.getElementById('gameSetup').style.display='none';document.getElementById('gameRun').style.display='block';
+  document.getElementById('onBox').style.display='block';document.getElementById('onLink').value=onLink();
+  onStateUI();render();turnStart();
+  clearInterval(ON.poll);ON.poll=setInterval(()=>{if(document.visibilityState==='visible')onPoll();},2500);
+}
+function onStateUI(){const free=GM.order.filter(p=>ON.seats&&ON.seats[p]&&ON.seats[p].kind==='open');
+  document.getElementById('onState').innerHTML=(ON.seat?`Du spielst <b style="color:${PCOL[ON.seat]}">${PNAME[ON.seat]}</b>. `:'Du schaust zu. ')+
+    (free.length?`Freie Plätze: ${free.map(p=>`<span style="color:${PCOL[p]}">${PNAME[p]}</span>`).join(', ')} – Link teilen:`:'Alle Plätze sind besetzt. Link zum Zuschauen:');}
+function onShare(){const u=onLink();if(navigator.share)navigator.share({title:'Raumschach',text:'Spiel mit mir Raumschach!',url:u}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>alert('Link kopiert.'));}
+// Züge nacheinander an den Server schicken (Computerzüge können schnell aufeinander folgen)
+let pushing=0;
+function onPush(init){
+  if(!ON.code||init)return;   // der erste Stand entsteht beim ersten Zug
+  const body={t:ON.token,mover:GM.lastMoverSeat,snap:onSnap(),next:GM.over?null:gCur(),over:GM.over,last:{text:GM.lastText||''},hint:ON.seat,
+    result:GM.over?`${PNAME[GM.winner]} gewinnt.`:''};
+  pushing++;
+  ON.chain=(ON.chain||Promise.resolve()).then(async()=>{
+    try{body.v=ON.v;const j=await api('/fern/g/'+ON.code+'/move',body);
+      if(j.ok)ON.v=j.v;else if(j.state){clearTimeout(aiT);onApply(j.state);}}
+    catch(e){}finally{pushing--;}});
+}
+async function onPoll(){if(!ON.code||pushing)return;
+  try{const st=await api('/fern/g/'+ON.code+'/state'+(ON.token?'?t='+ON.token:''));if(st._status!==200)return;
+    ON.seats=st.seats;if(st.v>ON.v)onApply(st);else{onStateUI();renderTurn();}}catch(e){}}
+function onApply(st,force){
+  ON.seats=st.seats;ON.v=st.v;
+  if(st.snap){try{const d=JSON.parse(st.snap);setOpts(st.rules&&st.rules.opts);decode(d.pos);const keepSeat=ON.seat;
+      GM=Object.assign(d.gm,{online:true});moves=d.moves||[];ON.seat=keepSeat;}catch(e){}}
+  clearTimeout(aiT);sel=null;targets=[];onStateUI();render();turnStart();
+}
+// Partie über Link öffnen
+async function onOpen(code){
+  code=String(code).toLowerCase().replace(/[^a-z0-9]/g,'');let tok='';try{tok=localStorage.getItem('raum.t.'+code)||'';}catch(e){}
+  let st;try{st=await api('/fern/g/'+code+'/state'+(tok?'?t='+tok:''));}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
+  if(st._status===404||st.game!=='raum'){alert('Diese Raumschach-Partie gibt es nicht (mehr).');return;}
+  ON={code,token:st.seat?tok:'',seat:st.seat||null,v:-1,seats:st.seats,st};
+  const free=st.order.filter(p=>st.seats[p].kind==='open');
+  if(!st.seat&&free.length&&!st.over){
+    const who=st.order.filter(p=>st.seats[p].kind==='human').map(p=>st.seats[p].name).join(' und ');
+    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Raumschach ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}). Du spielst ${PNAME[free[0]]}.`;
+    try{document.getElementById('joinName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
+    document.getElementById('joinBox').style.display='flex';return;}
+  onBegin(st);
+}
+function onBegin(st){
+  setOpts(st.rules&&st.rules.opts);
+  const ctrl={};for(const p of st.order)ctrl[p]=st.seats[p].kind==='ai'?(st.seats[p].lvl||'medium'):'open';
+  setup(st.order.length);hist=[];
+  GM={order:st.order,ctrl,end:st.rules&&st.rules.end==='last'?'last':'first',idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:st.order.find(p=>st.seats[p].kind==='human')};
+  ON.v=-1;onEnter();if(st.snap||st.v>0)onApply(st);else{ON.v=st.v;}
+}
+async function onJoin(){const name=(document.getElementById('joinName').value||'').trim().slice(0,18)||'Gast';try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
+  const j=await api('/fern/g/'+ON.code+'/join',{name});
+  if(!j.seat){alert(j.error==='full'?'Inzwischen sind alle Plätze vergeben – du kannst zuschauen.':'Beitreten nicht möglich.');onWatch();return;}
+  try{localStorage.setItem('raum.t.'+ON.code,j.token);}catch(e){}
+  ON.token=j.token;ON.seat=j.seat;document.getElementById('joinBox').style.display='none';onBegin(j.state);}
+function onWatch(){document.getElementById('joinBox').style.display='none';ON.seat=null;onBegin(ON.st);}
 // Maus / Touch: drehen, zoomen, antippen
 const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),ptrs=new Map();let down=null,pinch=null;
 function hit(e){ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(ndc,camera);
@@ -478,7 +607,7 @@ cv.addEventListener('pointermove',e=>{const tip=document.getElementById('tip');
 const up=e=>{ptrs.delete(e.pointerId);if(pinch){if(ptrs.size<2)pinch=null;down=null;return;}
   if(e.type==='pointerup'&&down&&down.moved<=6){const h=hit(e);
     if(GM){const p=gCur();
-      if(h&&h.target&&sel&&!GM.over&&GM.ctrl[p]==='human'&&S.get(key(...sel))&&S.get(key(...sel)).p===p)gameMove(sel,h.target.c);
+      if(h&&h.target&&sel&&!GM.over&&myTurn()&&S.get(key(...sel))&&S.get(key(...sel)).p===p)gameMove(sel,h.target.c);
       else if(h&&S.get(key(...h.cell)))select(h.cell);
       else{sel=null;targets=[];render();}}
     else if(tool==='set'){if(h)place(h.cell);}
@@ -496,6 +625,7 @@ buildPalette();gSeats();
 const qs=new URLSearchParams(location.search);
 if(!(qs.get('r')&&decode(qs.get('r'))))setup(2);
 resize();render();
+if(qs.get('g'))onOpen(qs.get('g'));
 window.RS={S,genMoves,setup,decode,encode,select,OPT,get state(){return S;},legalMoves,gameStart,get GM(){return GM;},aiMove,inCheck,attackers,gameMove};
 </script>
 </body></html>
