@@ -71,6 +71,8 @@ a { color:#8fb6ff; }
   <div class="row">König: <select id="oK" onchange="optChg()"><option value="26">alle 26 Nachbarfelder</option><option value="18">ohne Raumdiagonalen (18)</option></select></div>
   <div class="row">Springer: <select id="oN" onchange="optChg()"><option value="1">2 + 1 in zwei Achsen (24 Ziele)</option><option value="2">zusätzlich 2 + 1 + 1 (48 Ziele)</option></select></div>
   <div class="row">Bauer schlägt: <select id="oP" onchange="optChg()"><option value="4">schräg vorwärts über Flächen (4)</option><option value="8">auch über Raumdiagonalen (8)</option></select></div>
+  <div class="row">Bauer zieht: <select id="oS" onchange="optChg()"><option value="first">1 Feld, beim ersten Zug 2</option><option value="home" selected>im eigenen Quader immer bis zu 2</option><option value="always">immer bis zu 2 Felder</option></select></div>
+  <div class="row">Bauern je Spieler: <select id="oF" onchange="optChg(true)"><option value="1">eine Reihe (8)</option><option value="2">zwei Reihen (16)</option><option value="44" selected>Fläche 4 × 4 (16)</option></select></div>
   <div class="row">Umwandlung: <select id="oU" onchange="optChg()"><option value="in">beim Betreten des Quaders gegenüber</option><option value="end">auf der hintersten Ebene gegenüber</option></select></div>
   <div class="hint">Einhorn 🦄 (aus dem Raumschach von 1907): zieht nur über die Raumdiagonalen. Im Setzen-Werkzeug verfügbar.</div>
 
@@ -109,19 +111,21 @@ function cname(x,y,z){const r=region(x,y,z);return `${x+5}·${y+5}·${z+5}`+(r?`
 
 // ================= Zustand =================
 let S=new Map();          // "x,y,z" → {t,p,m}  m = schon gezogen
-let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in'};
+let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'44'};let lastN=2;
+const OK=['B','Q','K','N','P','U','S','F'];
 let hist=[],moves=[],sel=null,targets=[],tool='move',pal={p:'B',t:'Q'},slice={ax:-1,v:3};
 
 function fwd(p){const[k,s]=HOME[p];const f=[0,0,0];f[k]=-s;return f;}
-function setup(n){
+function setup(n){lastN=n;
   pushHist();S=new Map();moves=[];sel=null;targets=[];
   for(const p of(SETS[n]||[])){
     const[k,s]=HOME[p],o=[0,1,2].filter(a=>a!==k);
     // Achsen im Querschnitt: die waagerechte Achse für die Grundreihe, Höhe 3 bei senkrechten Quadern
     let u=o[0],v=o[1];if(k!==1){u=o.find(a=>a!==1);v=1;}
     const layer=d=>s<0?LO+d:HI-d;   // d=0 äußerste Ebene
-    'RNBQKBNR'.split('').forEach((t,i)=>{const c=[0,0,0];c[k]=layer(0);c[u]=i;c[v]=3;S.set(key(...c),{t,p,m:false});
-      const q=[0,0,0];q[k]=layer(1);q[u]=i;q[v]=3;S.set(key(...q),{t:'P',p,m:false});});
+    'RNBQKBNR'.split('').forEach((t,i)=>{const c=[0,0,0];c[k]=layer(0);c[u]=i;c[v]=3;S.set(key(...c),{t,p,m:false});});
+    const pawns=OPT.F==='44'?[2,3,4,5].flatMap(a=>[2,3,4,5].map(b=>[a,b])):OPT.F==='2'?[0,1,2,3,4,5,6,7].flatMap(a=>[[a,3],[a,4]]):[0,1,2,3,4,5,6,7].map(a=>[a,3]);
+    for(const[a,b]of pawns){const q=[0,0,0];q[k]=layer(1);q[u]=a;q[v]=b;S.set(key(...q),{t:'P',p,m:false});}
   }
   render();
 }
@@ -153,7 +157,7 @@ function genMoves(x,y,z){
     case'P':{const out=[],f=fwd(p),fk=f.findIndex(v=>v),side=[0,1,2].filter(k=>k!==fk);
       const s1=[x+f[0],y+f[1],z+f[2]];
       if(valid(...s1)&&!S.get(key(...s1))){out.push({c:s1,cap:false});
-        const s2=[s1[0]+f[0],s1[1]+f[1],s1[2]+f[2]];if(!pc.m&&valid(...s2)&&!S.get(key(...s2)))out.push({c:s2,cap:false});}
+        const s2=[s1[0]+f[0],s1[1]+f[1],s1[2]+f[2]];if((OPT.S==='always'||!pc.m||(OPT.S==='home'&&region(x,y,z)===p))&&valid(...s2)&&!S.get(key(...s2)))out.push({c:s2,cap:false});}
       const caps=[];for(const k of side)for(const sg of[-1,1]){const v=f.slice();v[k]=sg;caps.push(v);}
       if(OPT.P==='8')for(const a of[-1,1])for(const b of[-1,1]){const v=f.slice();v[side[0]]=a;v[side[1]]=b;caps.push(v);}
       for(const v of caps){const c=[x+v[0],y+v[1],z+v[2]];if(!valid(...c))continue;const o=S.get(key(...c));if(o&&o.p!==p)out.push({c,cap:true});}
@@ -251,7 +255,7 @@ function setTool(t){tool=t;document.getElementById('tMove').classList.toggle('on
   document.getElementById('palette').style.display=t==='set'?'block':'none';
   if(t==='set'&&slice.ax<0){document.getElementById('axSel').value='1';setSlice();}}
 function setSlice(){slice.ax=+document.getElementById('axSel').value;slice.v=+document.getElementById('slSel').value;render();}
-function optChg(){for(const k of['B','Q','K','N','P','U'])OPT[k]=document.getElementById('o'+k).value;if(sel)targets=genMoves(...sel);render();}
+function optChg(re){for(const k of OK)OPT[k]=document.getElementById('o'+k).value;if(re&&!moves.length){setup(lastN);return;}if(sel)targets=genMoves(...sel);render();}
 function toggleUI(){const u=document.getElementById('ui');u.classList.toggle('min');document.getElementById('minBtn').textContent=u.classList.contains('min')?'▾':'▴';}
 function buildPalette(){
   const pr=document.getElementById('plRow');pr.innerHTML='';
@@ -261,11 +265,11 @@ function buildPalette(){
     if(pal.t===t)b.classList.add('on');b.onclick=()=>{pal.t=t;buildPalette();};cr.appendChild(b);}
 }
 // Teilen: Optionen + Figuren (Spieler, Typ, x,y,z hexadezimal ab −4)
-function encode(){const o=['B','Q','K','N','P','U'].map(k=>OPT[k]).join('.');
+function encode(){const o=OK.map(k=>OPT[k]).join('.');
   const ps=[...S].map(([k,v])=>v.p+v.t+unkey(k).map(n=>(n+4).toString(16)).join('')+(v.m?'m':'')).join('-');
   return 'r1_'+o+'_'+ps;}
 function decode(s){try{const[ver,o,ps]=s.split('_');if(ver!=='r1')return false;
-  const ov=o.split('.');['B','Q','K','N','P','U'].forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];document.getElementById('o'+k).value=ov[i];}});
+  const ov=o.split('.');OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];document.getElementById('o'+k).value=ov[i];}});
   S=new Map();for(const e of(ps||'').split('-').filter(Boolean)){const p=e[0],t=e[1],c=[2,3,4].map(i=>parseInt(e[i],16)-4);if(PL.includes(p)&&GLYPH[t]&&valid(...c))S.set(key(...c),{p,t,m:e[5]==='m'});}
   return true;}catch(e){return false;}}
 function share(){const u=location.origin+location.pathname+'?r='+encode();const f=document.getElementById('shareTxt');f.style.display='block';f.value=u;
