@@ -119,6 +119,7 @@ body.online #msgLine { display:block; flex:0 1 auto; min-width:0; }
 #btn3d { position:fixed; top:6px; left:52px; z-index:150; padding:4px 10px; font-size:14px; font-weight:bold; cursor:pointer;
   background:#333; color:#eee; border:1px solid #666; border-radius:5px; opacity:.85; }
 #btn3d:hover { opacity:1; }
+.plusOnly { display:none !important; } body.v3plus .plusOnly { display:inline !important; }
 #viewBar { display:none; position:fixed; bottom:calc(10px + var(--fernH,0px)); left:50%; transform:translateX(-50%); z-index:150; gap:6px; align-items:center;
   background:rgba(28,28,28,.92); border:1px solid #555; border-radius:8px; padding:6px 10px; color:#ddd; font-size:12px; flex-wrap:wrap; justify-content:center; }
 #viewBar.show { display:flex; }
@@ -396,7 +397,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 </style>
 </head><body>
 <button id="menuBtn" onclick="toggleMenu()" title="Menü ein-/ausblenden">☰</button>
-<button id="btn3d" onclick="V3.toggle()" title="Zwischen 2D- und 3D-Ansicht umschalten">3D</button>
+<button id="btn3d" onclick="V3.toggle()" title="Ansicht wechseln: 2D → 3D → 3D+ (Würfel)">3D</button>
 <button id="rulesBtn" onclick="openRules()" title="Spielanleitung">📖<span class="lbl"> Regeln</span></button>
 <button id="soundBtn" onclick="toggleSound()" title="Ton ein/aus">🔊</button>
 <button id="fsBtn2" onclick="toggleFullscreen()" title="Vollbild – Adressleiste ausblenden">⛶</button>
@@ -477,6 +478,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <button onclick="V3.view('R')" style="color:#ff5533">Rot</button>
   <button onclick="V3.view('top')">Oben</button>
   <label><input type="checkbox" id="chkFollow" checked> folgt Spieler am Zug</label>
+  <label class="plusOnly" title="Wie die Figuren auf den schrägen Würfelflächen stehen">Figuren: <select id="plusMode" onchange="V3.setPlusMode(this.value)"><option value="up">aufrecht</option><option value="normal">senkrecht (dürfen sich berühren)</option><option value="shift">senkrecht, weichen aus</option><option value="lean">senkrecht, an den Kehlen geneigt</option></select></label>
   <label><input type="checkbox" id="chkMon" onchange="toggleAvatars()"> Monitore</label>
   <label title="Größe der Mitspieler-Monitore">🖥️ <input type="range" id="monSize" min="50" max="180" step="5" value="100" style="width:90px;vertical-align:middle" oninput="V3.setMonScale(this.value/100)"></label>
   <button onclick="V3.resetMon()" title="Monitore wieder an ihren Platz stellen (verschieben: Monitor mit dem Finger/der Maus ziehen)">↺ Monitore</button>
@@ -762,7 +764,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026101929"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102001"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -794,7 +796,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-20 01:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-20 03:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -6028,7 +6030,7 @@ try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage
 // ================= 3D-Ansicht (three.js) =================
 window.V3={on:false};
 (function(){
-  let R=null,scene,camera,fieldGroup,pieceGroup,capGroup,labelGroup;
+  let R=null,scene,camera,fieldGroup,pieceGroup,capGroup,labelGroup,ground;
   const fieldMesh={},matCache={};
   let sideDir={},lastCur=null;
   const cam={theta:0,phi:0.95,r:24,tx:0,ty:0,tz:0},goal={theta:0,phi:0.95,r:24,tx:0,ty:0,tz:0};
@@ -6175,7 +6177,7 @@ window.V3={on:false};
     const dl=new THREE.DirectionalLight(0xffffff,0.85);dl.position.set(6,16,5);dl.castShadow=true;
     dl.shadow.mapSize.set(2048,2048);Object.assign(dl.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:1,far:50});
     dl.shadow.bias=-0.0005;scene.add(dl);
-    const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:0.35}));
+    ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:0.35}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.13;ground.receiveShadow=true;scene.add(ground);
 
     fieldGroup=new THREE.Group();pieceGroup=new THREE.Group();capGroup=new THREE.Group();labelGroup=new THREE.Group();
@@ -6234,6 +6236,103 @@ window.V3={on:false};
     return true;
   }
 
+
+  // ---------- 3D+: drei Würfel, die sich mit einer Ecke in der Mitte treffen ----------
+  // Jeder Spieler hat zwei Würfelflächen mit je 4×4 Feldern. Knick zwischen Spalte 4 und 5 = Würfelkante (Grat),
+  // Grenze zum Nachbarn (Reihe D an Reihe D) = gemeinsame Kante zweier Würfel (Kehle). Die Regeln bleiben gleich.
+  let PLUS=false,plusGroup=null,plusLow=-0.13,plusT=null;
+  const fieldMeshP={},PF={},PCUBE={},cubeMat={};
+  let plusMode='shift';try{plusMode=localStorage.getItem('dreiSchach.plusMode')||'shift';}catch(e){}
+  const FM=()=>PLUS?fieldMeshP:fieldMesh;
+  function buildPlus(){
+    const SG=[[1,1,1],[1,-1,-1],[-1,1,-1]],P=TURN_ORDER,idx={};P.forEach((p,i)=>idx[p]=i);
+    const ax=(k,sg)=>{const v=new THREE.Vector3();v.setComponent(k,sg);return v;};
+    const shared=(i,j)=>{for(let k=0;k<3;k++)if(SG[i][k]===SG[j][k])return ax(k,SG[i][k]);};
+    const foldOf=i=>{for(let k=0;k<3;k++)if(SG[i][k]!==SG[(i+1)%3][k]&&SG[i][k]!==SG[(i+2)%3][k])return ax(k,SG[i][k]);};
+    // Nachbarn wie im 2D-Brett: Feld D1 grenzt an D8 des einen Nachbarn
+    const L={},RN={};
+    withBase(()=>{for(const p of P){let best=null,bd=1e9;for(const q of P){if(q===p)continue;
+      const a=FIELDS[C2F[`${p}D1`]],b=FIELDS[C2F[`${q}D8`]];const d=Math.hypot(a.cx-b.cx,a.cy-b.cy);if(d<bd){bd=d;best=q;}}
+      L[p]=best;RN[p]=P.find(q=>q!==p&&q!==best);}});
+    const raw={};
+    for(const p of P){
+      const i=idx[p],F=foldOf(i),aL=shared(i,idx[L[p]]),aR=shared(i,idx[RN[p]]);
+      const nrm=a=>{const k=[0,1,2].find(k=>Math.abs(a.getComponent(k))<0.5&&Math.abs(F.getComponent(k))<0.5);return ax(k,-SG[i][k]);};
+      PCUBE[p]={F,aL,aR,c:new THREE.Vector3(...SG[i]).multiplyScalar(2)};
+      for(let r=0;r<4;r++)for(let c=1;c<=8;c++){
+        const fid=C2F[`${p}${'ABCD'[r]}${c}`];if(!fid)continue;
+        const left=c<=4,a=left?aL:aR,da=left?4-c+0.5:c-5+0.5,df=3-r+0.5;
+        raw[fid]={p:a.clone().multiplyScalar(da).addScaledVector(F,df),n:nrm(a),a,f:F,player:p,r,c,nb:left?L[p]:RN[p]};
+      }
+    }
+    // gemeinsame Blickrichtung aller Spielflächen → nach oben; dann so drehen (ggf. spiegeln), dass jeder Spieler dort sitzt wie in 2D
+    const d=new THREE.Vector3();for(const k in raw)d.add(raw[k].n);d.normalize();
+    const qd=new THREE.Quaternion().setFromUnitVectors(d,new THREE.Vector3(0,1,0));
+    const mk=(mz,th)=>v=>{const w=v.clone().applyQuaternion(qd);w.z*=mz;const c=Math.cos(th),s=Math.sin(th);return new THREE.Vector3(w.x*c-w.z*s,w.y,w.x*s+w.z*c);};
+    let best=null;
+    for(const mz of[1,-1]){
+      const t0=mk(mz,0),ang=p=>{const w=t0(PCUBE[p].F);return Math.atan2(w.z,w.x);},sa=p=>Math.atan2(sideDir[p][1],sideDir[p][0]);
+      const th=sa(P[0])-ang(P[0]);let err=0;
+      for(const p of P){const e=sa(p)-ang(p)-th;err+=Math.abs(Math.atan2(Math.sin(e),Math.cos(e)));}
+      if(!best||err<best.err)best={err,mz,th};
+    }
+    const T=plusT=mk(best.mz,best.th);
+    plusGroup=new THREE.Group();scene.add(plusGroup);
+    const basis=(x,y)=>{const z=new THREE.Vector3().crossVectors(x,y);return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x,y,z));};
+    plusLow=1e9;
+    for(const p of P){
+      const cb=PCUBE[p],m=new THREE.MeshStandardMaterial({color:'#444',roughness:0.7});cubeMat[p]=m;
+      const box=new THREE.Mesh(new THREE.BoxGeometry(3.98,3.98,3.98),m);
+      box.position.copy(T(cb.c));box.quaternion.copy(basis(T(new THREE.Vector3(1,0,0)),T(new THREE.Vector3(0,1,0))));
+      box.castShadow=true;box.receiveShadow=true;plusGroup.add(box);
+      const ed=new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry),new THREE.LineBasicMaterial({color:'#222'}));
+      ed.position.copy(box.position);ed.quaternion.copy(box.quaternion);plusGroup.add(ed);
+      for(const sx of[-2,2])for(const sy of[-2,2])for(const sz of[-2,2])plusLow=Math.min(plusLow,T(cb.c.clone().add(new THREE.Vector3(sx,sy,sz))).y);
+    }
+    const tg=new THREE.BoxGeometry(0.96,0.05,0.96);
+    for(const[fid,q]of Object.entries(raw)){
+      const n=T(q.n),a=T(q.a),pos=T(q.p);
+      const m=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({color:fieldFill(fid),roughness:0.8}));
+      m.position.copy(pos).addScaledVector(n,0.025);m.quaternion.copy(basis(a,n));
+      m.receiveShadow=true;m.userData.fid=fid;fieldMeshP[fid]=m;plusGroup.add(m);
+      PF[fid]={p:pos,n,a,f:T(q.f),player:q.player,r:q.r,c:q.c,opp:q.r===3?C2F[`${q.nb}D${9-q.c}`]:null};
+    }
+    plusGroup.visible=false;
+  }
+  const Y=()=>new THREE.Vector3(0,1,0);
+  function plusPose(fid){
+    const F=PF[fid];let up=F.n,pos=F.p.clone().addScaledVector(F.n,0.05);
+    if(plusMode==='up'){up=Y();pos=F.p.clone().addScaledVector(F.n,0.02);}
+    else if(plusMode==='lean'){const t=F.r===3?1:F.r===2?0.35:0;if(t)up=F.n.clone().addScaledVector(F.f,t).normalize();}
+    else if(plusMode==='shift'&&F.opp&&gameState[COORD_LABELS[F.opp]]){
+      const s=TURN_ORDER.indexOf(F.player)<TURN_ORDER.indexOf(PF[F.opp].player)?1:-1;pos.addScaledVector(F.a,0.26*s);}
+    return{pos,q:new THREE.Quaternion().setFromUnitVectors(Y(),up)};
+  }
+  function plusWrap(g,pose,sc){const o=new THREE.Group();o.add(g);o.position.copy(pose.pos);o.quaternion.copy(pose.q);if(sc)g.scale.setScalar(sc);return o;}
+  // geschlagene Figuren auf der freien dritten Fläche des Würfels dessen, der geschlagen hat
+  function plusCapLayout(){
+    const out=[];
+    for(const cp of TURN_ORDER){
+      const list=capturedBy[cp],cb=PCUBE[cp];if(!list.length||!cb)continue;
+      const n=plusT(cb.F);
+      TURN_ORDER.filter(p=>p!==cp).forEach((opp,k)=>{
+        const mine=list.filter(e=>e.from===opp);
+        const off=mine.filter(e=>e.piece!=='P').sort((x,y)=>CAP_ORDER.indexOf(x.piece)-CAP_ORDER.indexOf(y.piece)),paw=mine.filter(e=>e.piece==='P');
+        [[off,k*2],[paw,k*2+1]].forEach(([ps,slot])=>ps.forEach((ce,i)=>{
+          const loc=cb.F.clone().multiplyScalar(4).addScaledVector(cb.aL,0.5+slot*0.95).addScaledVector(cb.aR,2+(i-(ps.length-1)/2)*0.46);
+          out.push({pos:plusT(loc).addScaledVector(n,0.01),n,piece:ce.piece,player:opp,ref:ce});
+        }));
+      });
+    }
+    return out;
+  }
+  function setPlus(on){
+    PLUS=on;if(on&&!plusGroup)buildPlus();
+    fieldGroup.visible=!on;if(plusGroup)plusGroup.visible=on;
+    ground.position.y=on?plusLow-0.02:-0.13;
+    document.body.classList.toggle('v3plus',on);
+    const sel=document.getElementById('plusMode');if(sel)sel.value=plusMode;
+  }
   // ---------- Zustand → Szene ----------
   const HL={sel:'#ffdd00',castle:'#50c8ff',enemy:'#ff3300',valid:'#e6c63a'};
   function sync(){
@@ -6243,7 +6342,9 @@ window.V3={on:false};
       const kc=Object.keys(gameState).find(c=>gameState[c].piece==='K'&&gameState[c].player===pl);if(kc)checked.add(C2F[kc]);
     }
     const lm=lastMoveFids();
-    for(const[fid,m]of Object.entries(fieldMesh)){
+    if(PLUS)for(const p of TURN_ORDER)if(cubeMat[p]){const c1=fieldFill(C2F[`${p}A1`]),c2=fieldFill(C2F[`${p}A2`]),lum=h=>{const x=hexRgb(h);return x[0]*0.3+x[1]*0.59+x[2]*0.11;};
+      cubeMat[p].color.set(mixHex(lum(c1)>lum(c2)?c1:c2,'#000000',0.2));}
+    for(const[fid,m]of Object.entries(FM())){
       const coord=COORD_LABELS[fid],isV=validMoves.has(fid)&&showHints;
       let col=fieldFill(fid),em='#000000',ei=0;
       const H=hl(fid);
@@ -6260,17 +6361,22 @@ window.V3={on:false};
     pieceGroup.visible=showPieces;
     for(const[coord,pd]of Object.entries(gameState)){
       if(animHidden(coord))continue;
-      const fid=C2F[coord],m=fieldMesh[fid];if(!m)continue;
+      const fid=C2F[coord],m=FM()[fid];if(!m)continue;
       const g=makePiece(pd.piece,pd.player,fid===selected?'sel':'');
-      g.position.set(m.userData.c[0],0,m.userData.c[1]);
       if(symOn){const sp=symSprite(pd.player);sp.position.set(0,pieceTop(g,pd.piece)+(pd.piece==='K'?0.75:0.3),0);g.add(sp);}
       g.traverse(o=>o.userData.fid=fid);
+      if(PLUS){pieceGroup.add(plusWrap(g,plusPose(fid)));continue;}
+      g.position.set(m.userData.c[0],0,m.userData.c[1]);
       pieceGroup.add(g);
     }
     // bewegte Figur(en): gleiten mit kleinem Hüpfer
     if(moveAnim){
       const e=animProgress();
       for(const it of moveAnim.items){
+        if(PLUS){const fa=C2F[it.from],fb=C2F[it.to];if(!PF[fa]||!PF[fb])continue;
+          const A=plusPose(fa),B=plusPose(fb),g=makePiece(it.piece,it.player,'');
+          const o=plusWrap(g,{pos:A.pos.clone().lerp(B.pos,e).addScaledVector(Y(),0.8*Math.sin(Math.PI*e)),q:A.q.clone().slerp(B.q,e)});
+          pieceGroup.add(o);continue;}
         const a=fieldMesh[C2F[it.from]],b=fieldMesh[C2F[it.to]];if(!a||!b)continue;
         const g=makePiece(it.piece,it.player,'');
         g.position.set(a.userData.c[0]+(b.userData.c[0]-a.userData.c[0])*e,0.55*Math.sin(Math.PI*e),
@@ -6281,6 +6387,22 @@ window.V3={on:false};
     }
     // geschlagene Figuren
     capGroup.clear();
+    if(PLUS){
+      const cap=plusCapLayout(),qUp=new THREE.Quaternion();
+      for(const it of cap){
+        if(kickHidden(it.ref))continue;
+        const q=plusMode==='up'?qUp:new THREE.Quaternion().setFromUnitVectors(Y(),it.n);
+        capGroup.add(plusWrap(makePiece(it.piece,it.player,''),{pos:it.pos,q},0.5));
+      }
+      for(const k of kicks){
+        const it=cap.find(x=>x.ref===k.ref),a=PF[C2F[k.capSq]];if(!it||!a)continue;
+        const P=kickPath(k,[0,0],[1,0],[0,0],1);
+        const g=makePiece(k.piece,k.player,'');g.userData.noFace=true;
+        g.rotation.set(P.spin*0.8,0,P.spin*0.5);g.scale.setScalar(1-0.5*P.e);
+        g.position.copy(a.p.clone().lerp(it.pos,P.e).addScaledVector(Y(),Math.sin(Math.PI*P.e)*2.6));
+        capGroup.add(g);
+      }
+    }else{
     const cap=withBase(()=>capturedLayout());
     for(const it of cap){
       if(kickHidden(it.ref))continue;
@@ -6298,7 +6420,8 @@ window.V3={on:false};
       g.rotation.set(P.spin*0.8,0,P.spin*0.5);g.scale.setScalar(1-0.45*P.e);
       capGroup.add(g);
     }
-    labelGroup.visible=showCoordRing;
+    }
+    labelGroup.visible=showCoordRing&&!PLUS;
     // Kamera folgt dem Spieler am Zug
     if(cur()!==lastCur&&!moveAnim){const prev=lastCur;lastCur=cur();const pl=cur();
       if(document.getElementById('chkFollow').checked&&!gameOver&&prev)setTimeout(()=>{if(cur()===pl&&V3.on)followTo(pl,prev);},500);}
@@ -6318,7 +6441,8 @@ window.V3={on:false};
   const monOn=()=>avatarsOn&&monGroup;
   function fitPoints(th){
     const pts=[];
-    for(const m of Object.values(fieldMesh))pts.push({v:new THREE.Vector3(m.userData.c[0],0.4,m.userData.c[1]),lx:0.97,ly:0.9});
+    if(PLUS){for(const F of Object.values(PF))pts.push({v:F.p.clone().addScaledVector(F.n,0.5),lx:0.97,ly:0.9});}
+    else for(const m of Object.values(fieldMesh))pts.push({v:new THREE.Vector3(m.userData.c[0],0.4,m.userData.c[1]),lx:0.97,ly:0.9});
     for(const sp of labelGroup.children)pts.push({v:sp.position.clone(),lx:0.99,ly:0.92});
     if(monOn()){
       monGroup.updateMatrixWorld(true);const cx=Math.cos(th),cz=Math.sin(th);
@@ -6358,7 +6482,7 @@ window.V3={on:false};
   function preset(p,instant){
     let th;
     if(p==='top'){th=goal.theta;Object.assign(goal,{theta:th,phi:0.02,tx:0,tz:0});}
-    else{const d=sideDir[p];th=Math.atan2(d[1],d[0]);Object.assign(goal,{theta:th,phi:0.95,tx:0,tz:0});}
+    else{const d=sideDir[p];th=Math.atan2(d[1],d[0]);Object.assign(goal,{theta:th,phi:PLUS?0.42:0.95,tx:0,tz:0});}
     goal.ty=p==='top'?0:fitTy();
     goal.r=fitR(th,goal.phi,goal.ty,fitPoints(th));userZoomed=false;
     // kürzester Drehweg
@@ -6405,7 +6529,7 @@ window.V3={on:false};
     const r=cv.getBoundingClientRect();
     ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
     ray.setFromCamera(ndc,camera);
-    const hits=ray.intersectObjects([pieceGroup,fieldGroup],true);
+    const hits=ray.intersectObjects([pieceGroup,PLUS?plusGroup:fieldGroup],true);
     for(const h of hits)if(h.object.userData.fid)return h.object.userData.fid;
     return null;
   }
@@ -6496,15 +6620,20 @@ window.V3={on:false};
   V3.avatarTick=()=>{if(!monGroup||!monGroup.visible)return;for(const p of TURN_ORDER)if(monitors[p].g.visible)monitors[p].tex.needsUpdate=true;};
   V3.camInfo=()=>({r:goal.r,theta:goal.theta,phi:goal.phi,tx:goal.tx,tz:goal.tz});
   V3.screenPos=coord=>{const m=fieldMesh[C2F[coord]];if(!m)return null;applyCam();camera.updateMatrixWorld();
-    const v=new THREE.Vector3(m.userData.c[0],0.3,m.userData.c[1]).project(camera),r=document.getElementById('c3').getBoundingClientRect();
+    const v=(PLUS&&PF[C2F[coord]]?PF[C2F[coord]].p.clone().addScaledVector(PF[C2F[coord]].n,0.3):new THREE.Vector3(m.userData.c[0],0.3,m.userData.c[1])).project(camera),r=document.getElementById('c3').getBoundingClientRect();
     return[r.left+(v.x+1)/2*r.width,r.top+(1-v.y)/2*r.height];};
+  const updBtn=()=>{document.getElementById('btn3d').textContent=!V3.on?'3D':PLUS?'2D':'3D+';};
+  V3.setPlusMode=v=>{plusMode=v;try{localStorage.setItem('dreiSchach.plusMode',v);}catch(e){}if(V3.on)sync();};
+  V3.isPlus=()=>V3.on&&PLUS;
   V3.toggle=()=>{
+    if(V3.on&&!PLUS){setPlus(true);updBtn();lastCur=cur();preset(cur(),true);sync();return;}
     if(!V3.on&&!init())return;
     V3.on=!V3.on;
+    if(V3.on)setPlus(false);
     document.getElementById('c').style.display=V3.on?'none':'block';
     document.getElementById('c3').style.display=V3.on?'block':'none';
     document.getElementById('viewBar').classList.toggle('show',V3.on);
-    document.getElementById('btn3d').textContent=V3.on?'2D':'3D';
+    updBtn();
     document.getElementById('tooltip').style.display='none';
     resizeCanvas();
     if(V3.on){lastCur=cur();preset(cur(),true);}

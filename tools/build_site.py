@@ -73,7 +73,7 @@ page('index.html', 'Drei-Personen-Schach – Schach zu dritt, kostenlos im Brows
 <div class="card"><h3>✉️ Fernpartie</h3><p>Jeder zieht, wann er Zeit hat. Der Spielstand liegt sicher auf dem Server, wer dran ist, bekommt eine Benachrichtigung aufs Handy. Wer gerade gleichzeitig online ist, kann sich sehen und hören.</p></div>
 <div class="card"><h3>🔬 Analyse</h3><p>Nach der Partie zeigt die Analyse Patzer, Wendepunkte und bessere Züge, eine Punktekurve und ein Verhaltensprofil jedes Spielers. Auf Wunsch schreibt eine KI einen Bericht über Verlauf und Psychologie der Partie.</p></div>
 <div class="card"><h3>♟ Analysebrett</h3><p>Beliebige Stellungen aufbauen, Züge ausprobieren, Vorschläge des Computers ansehen und die Stellung per Link mit Freunden teilen – zum Beispiel, um einen strittigen Zug zu besprechen.</p></div>
-<div class="card"><h3>🎨 Für alle Augen</h3><p>Spielerfarben frei wählbar mit Farbrad, zusätzliche Zeichen bei Farbsehschwäche, 2D- und 3D-Ansicht, Hoch- und Querformat am Handy.</p></div>
+<div class="card"><h3>🎨 Für alle Augen</h3><p>Spielerfarben frei wählbar mit Farbrad, zusätzliche Zeichen bei Farbsehschwäche, 2D- und 3D-Ansicht sowie 3D+ mit drei Würfeln als Spielbrett, Hoch- und Querformat am Handy.</p></div>
 </div>
 
 <div class="cols" style="margin-top:30px">
