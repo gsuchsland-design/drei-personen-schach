@@ -241,3 +241,5 @@ for f in urls:
     sm += f'  <url><loc>https://{DOMAIN}/{"" if f == "index.html" else f}</loc></url>\n'
 open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf-8').write(sm + '</urlset>\n')
 print('ok')
+# ---------- Übersetzte Regelseiten ----------
+import build_rules_i18n; build_rules_i18n.run()

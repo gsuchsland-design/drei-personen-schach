@@ -40,3 +40,5 @@ footer.bottom { border-top:1px solid var(--line); color:var(--muted); font-size:
 footer.bottom .in { max-width:1040px; margin:0 auto; padding:18px 16px 30px; display:flex; gap:16px; flex-wrap:wrap; }
 footer.bottom a { color:var(--muted); }
 @media (max-width:760px){ .hero, .cols { grid-template-columns:1fr; } nav.main { order:3; width:100%; gap:12px; font-size:14px; } body { font-size:16px; } }
+select.lang { background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:4px 6px; font-size:14px; }
+[dir=rtl] .play { margin-left:0; margin-right:auto; }

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>六王国チェス – ルール</title>
+<meta name="description" content="六王国チェス (Sd6R) のルール: 8 × 8 × 8 マスの立方体で遊ぶ2〜6人用のチェス。ユニコーン、ナイトライダー、アマゾンなどが登場します。">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="六王国チェス – ルール">
+<meta property="og:description" content="六王国チェス (Sd6R) のルール: 8 × 8 × 8 マスの立方体で遊ぶ2〜6人用のチェス。ユニコーン、ナイトライダー、アマゾンなどが登場します。">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">三人チェス</a>
+<nav class="main"><a href="../index.html#start">ホーム</a><a href="regeln.html">ルール</a><a href="../strategie.html">戦略</a><a href="reiche-regeln.html" class=on>六王国</a><a href="grenzenlos-regeln.html">境界なし</a><a href="../ueber.html">このゲームについて</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../reiche-regeln.html">Deutsch</option><option value="../en/reiche-regeln.html">English</option><option value="reiche-regeln.html" selected>日本語</option><option value="../ko/reiche-regeln.html">한국어</option><option value="../th/reiche-regeln.html">ไทย</option><option value="../ar/reiche-regeln.html">العربية</option><option value="../is/reiche-regeln.html">Íslenska</option><option value="../da/reiche-regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ 今すぐ遊ぶ</a>
+</div></header>
+<main>
+<article>
+<h1>六王国チェス</h1>
+<p class="lead">8 × 8 × 8 マスの立方体の6つの面それぞれに王国があります: プレイヤーの本陣です。最大6つの軍が上下左右前後の四方八方から立方体に攻め込みます。略して <b>Sd6R</b>。</p>
+<p style="text-align:center"><a class="cta go" href="../raum.html">▶ 六王国チェスを遊ぶ</a></p>
+<figure><img src="../img/reiche-brett.webp" alt="6色の本陣が6つある立方体" loading="lazy"><figcaption>6つの王国、6つの色: 青、緑、赤、黄、紫、ターコイズ。</figcaption></figure>
+<h2>盤面</h2>
+<ul>
+<li>中央の<b>立方体</b>は 8 × 8 × 8 = 512 マス。最初は空です – ここが戦場です。</li>
+<li>各面に 8 × 8 × 4 マスの<b>本陣</b>があります。最初はそこにプレイヤーの駒が並んでいます。</li>
+<li>合計 2.048 マス。立方体の外側の角や辺は盤面に含まれません。</li>
+<li>マスは1〜16の3つの数字で呼ばれます。例えば <b>8·8·8</b> – ゲームではタップしたマスの名前が表示されます。</li>
+</ul>
+<h2>プレイヤーと順番</h2>
+<p>2人、3人、4人、6人で遊びます。空いた席は希望すればコンピューターが受け持ちます。2人なら青と緑が向かい合い、4人なら青、赤、緑、黄が立方体を囲み、6人なら紫（下）とターコイズ（上）が加わります。順番に指します。招待する人が、人数、コンピューターの担当、対局の終わり方を決めます。</p>
+<h2>初期配置</h2>
+<figure><img src="../img/reiche-armee.webp" alt="本陣にいる青の軍" loading="lazy"><figcaption>標準: 一番外側の層に64人の提督、その前に64個のポーン。</figcaption></figure>
+<p>標準は大きな配置です: 本陣の一番外側の層に64人の提督が並びます – 8列あり、真ん中の列にキングとクイーン、ルーク、ビショップ、ナイト、その周りに特別な駒。その前に64個のポーンが1つの層を埋めます。立方体までは2つの層が空いています。小さめが好みなら、ゲームでポーン8個の1列、2列、または 4 × 4 のポーンのブロックを選べます。</p>
+<h2>空間の方向</h2>
+<p>立方体の中では、どのマスからも3種類の方向があります:</p>
+<ul><li><b>軸</b>（6）: 左/右、前/後、上/下へ1歩。</li>
+<li><b>面の対角線</b>（12）: 2つの軸を同時に – チェス盤の斜めのように。</li>
+<li><b>空間の対角線</b>（8）: 3つの軸すべてを同時に – 小さな立方体を角から角へ貫いて。</li></ul>
+<p>図は空の立方体の中央にいる各駒を示します。緑の点はその駒が届くマスです。右下に追加の記号がある駒は複合駒です。</p>
+<h2>駒</h2>
+<div class="grid"><div class="card"><h3>ルーク</h3><figure><img src="../img/reiche-fig-R.webp" alt="ルーク: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>3つの軸に沿ってまっすぐ: 左/右、前/後、上/下 – 6方向。立方体の中央から最大45マス。</p></div><div class="card"><h3>ビショップ</h3><figure><img src="../img/reiche-fig-B.webp" alt="ビショップ: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>面の対角線に沿って – 盤上のビショップのように2つの軸を同時に、ただし3つの面すべてで: 12方向。設定で空間の対角線も追加（20方向）。</p></div><div class="card"><h3>ユニコーン</h3><figure><img src="../img/reiche-fig-U.webp" alt="ユニコーン: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>空間の対角線のみ – 3つの軸すべてを同時に、立方体の角から反対の角へ: 8方向。この駒はフェルディナント・マークの立体チェス（1907年）に由来します。</p></div><div class="card"><h3>クイーン</h3><figure><img src="../img/reiche-fig-Q.webp" alt="クイーン: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>ルーク、ビショップ、ユニコーンを1つに: 全26方向（設定で空間の対角線なし: 18）。中央から最大118マス – 最強の古典的な駒。</p></div><div class="card"><h3>キング</h3><figure><img src="../img/reiche-fig-K.webp" alt="キング: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>26方向それぞれに1マス（設定で空間の対角線なし: 18）。各プレイヤーはちょうど1つのキングを持ちます。</p></div><div class="card"><h3>ナイト</h3><figure><img src="../img/reiche-fig-N.webp" alt="ナイト: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>1つの軸に2マス、2つ目の軸に1マス – 24か所、すべてを跳び越えて。設定で3つの軸にまたがる「2 + 1 + 1」も追加（48か所）。</p></div><div class="card"><h3>ナイトライダー</h3><figure><img src="../img/reiche-fig-W.webp" alt="ナイトライダー: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>着地マスがすべて空いている限り、同じ方向に何度でも繰り返せるナイト跳び。空の立方体ではとても遠くまで届きます – 途中の着地マスはゲームで点として表示されます。</p></div><div class="card"><h3>ダッチェス</h3><figure><img src="../img/reiche-fig-H.webp" alt="ダッチェス: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>ルーク + ユニコーン: 軸と空間の対角線。</p></div><div class="card"><h3>ガバナー</h3><figure><img src="../img/reiche-fig-V.webp" alt="ガバナー: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>ビショップ + ユニコーン: 面と空間の対角線。</p></div><div class="card"><h3>アークビショップ</h3><figure><img src="../img/reiche-fig-A.webp" alt="アークビショップ: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>ビショップ + ナイト。</p></div><div class="card"><h3>チャンセラー</h3><figure><img src="../img/reiche-fig-C.webp" alt="チャンセラー: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>ルーク + ナイト。</p></div><div class="card"><h3>アマゾン</h3><figure><img src="../img/reiche-fig-M.webp" alt="アマゾン: 立方体の中央からの動き" loading="lazy"><figcaption></figcaption></figure><p>クイーン + ナイト – ゲーム最強の駒、立方体の中央から最大142か所。</p></div></div>
+<h2>ポーン</h2>
+<figure><img src="../img/reiche-fig-P.webp" alt="2つの取り方がある青いポーン" loading="lazy"><figcaption>ポーンは立方体に向かってまっすぐ進み、斜め前に取ります（赤いマス）。</figcaption></figure>
+<ul>
+<li>ポーンはまっすぐ1マス進みます – 常に向かいの王国の方向へ。</li>
+<li>自分の本陣では毎回2マスまで進めます（設定: 最初の手だけ、または常に）。</li>
+<li>取るのは斜め前: 前左、前右、前上、前下 – 4方向（設定: 空間の対角線も追加、8）。</li>
+<li><b>昇格:</b> ポーンが向かいの本陣に着くとクイーンになります（設定: その一番奥の層で初めて）。</li>
+</ul>
+<h2>チェック、メイト、終局</h2>
+<figure><img src="../img/reiche-schach.webp" alt="赤い枠で示された、チェックされたキング" loading="lazy"><figcaption>チェックされたキングは赤い枠で示され、最後の手は色で示されます。</figcaption></figure>
+<ul>
+<li>チェックされた人は解除しなければなりません。自分のキングをチェックされたままにする手は指せません。</li>
+<li>チェックされずに指せない人は1回休みです。</li>
+<li><b>終局 – ホストが選びます:</b><br>
+「最初のメイトで決着」: 誰かがメイトになった時点で対局終了。チェックをかけた人の勝ち。<br>
+「脱落」: メイトになった人は脱落し、その駒は消えます。1人残るまで続きます。</li>
+<li>キングだけになった人は負けです。</li>
+<li>一度駒が取られた後は: 30ラウンド取りもポーンの移動もなければ駒の価値で決着（ポーン 1、ナイト、ビショップ、ユニコーン 3、ルークとナイトライダー 5、ガバナー 5、アークビショップ 6、ダッチェスとチャンセラー 7、クイーン 9、アマゾン 11）。</li>
+</ul>
+<h2>全体を見渡す</h2>
+<figure><img src="../img/reiche-nachtreiter.webp" alt="途中のマスをすべて示したナイトライダーの道筋" loading="lazy"><figcaption>ナイトライダーの途中の着地をすべて示した最後の手。</figcaption></figure>
+<ul>
+<li>駒をタップ: 指せる手が緑、取る手が赤に光ります。相手の駒もタップできます – その手は水色とオレンジで表示され、見るだけです。</li>
+<li>最後の手は指した人の色で、線と途中の着地すべてとともに示されます。</li>
+<li>「🎯 自分の軍」で自分の軍を表示、「色」で王国ごとに薄くしたり隠したり、「層」で1枚の層だけを取り出せます。</li>
+<li>回転: ドラッグ。ズーム: マウスホイールか2本指。移動: 右クリックか2本指。</li>
+</ul>
+<h2>すべてのバリエーションに共通すること</h2>
+<ul>
+<li><b>対戦相手:</b> 各席は、この端末の人間、オンラインで招待した人間、またはコンピューター – 4段階の強さ: やさしい、ふつう、強い、名人。名人は相手の応手も先読みします。</li>
+<li><b>個性的なモンスター:</b> コンピューターの対戦相手はブルッボ、グルンボ、フラモ、ザッポ、スプーキー、クラキ。モニターの中で喜んだり怒ったりし、リードしている人に対抗して同盟を結び、ときには裏切り、仕返しもします – 希望すれば話もします。チャットで交渉できます（「グルンボ、一緒に赤を攻めよう！」）。人間の指し方も覚えます。</li>
+<li><b>救援義務（3人以上でオプション）:</b> あるプレイヤーがチェックされているとき、その人より先に指す全員が助けなければなりません: メイトなら、その手で解放しなければならず、メイトでないなら、その手でメイトにしてはいけません。助けられない人はメイトを確定させます。</li>
+<li><b>時計:</b> 一手ごとの時間、一局ごとの時間、または時計なし。一手の時間が切れるとその手は無効、一局の時間を使い切ると脱落です。</li>
+<li><b>オンライン:</b> モニター、カメラ、マイク、チャット、絵文字リアクション、字幕、自動翻訳つきのライブ – または各自が時間のあるときに指す通信対局（自分の番になると通知）。対局は公開ロビーに掲載でき、観戦を許すかはホストが決めます。</li>
+<li><b>対局の後:</b> 一手ずつの再生、コンピューターの提案つき分析盤、重要な場面を含む評価、心理的な評価（仕返し、駒を失った後の緊張、暗黙の同盟、言ったこととやったこと）、希望すれば AI による専門的なレポート。</li>
+<li><b>その他:</b> 自由に選べる色（色覚の違いに対応した記号も）、効果音、一時停止、保存と読み込み、「自分の対局」、初心者向けの紹介、アプリとしてインストール、全画面。</li>
+</ul>
+<p class="note">六王国チェスは試作段階で、さらに開発中です。移動ルールはゲームの「試せる移動ルール」で変更できます。</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../raum.html">▶ 六王国チェスを遊ぶ</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">運営者情報</a><a href="../datenschutz.html">プライバシー</a><a href="../ueber.html#kontakt">お問い合わせ</a><a href="regeln.html">ルール</a><a href="../strategie.html">戦略</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','ja')}catch(_){}});</script>
+</body></html>

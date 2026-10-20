@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ルール – 三人チェス</title>
+<meta name="description" content="三人チェスの完全なルール: 盤、中央を越える手、ポーン、キャスリング、救援義務、チェックメイト、持ち時間、得点。">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="ルール – 三人チェス">
+<meta property="og:description" content="三人チェスの完全なルール: 盤、中央を越える手、ポーン、キャスリング、救援義務、チェックメイト、持ち時間、得点。">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">三人チェス</a>
+<nav class="main"><a href="../index.html#start">ホーム</a><a href="regeln.html" class=on>ルール</a><a href="../strategie.html">戦略</a><a href="reiche-regeln.html">六王国</a><a href="grenzenlos-regeln.html">境界なし</a><a href="../ueber.html">このゲームについて</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../regeln.html">Deutsch</option><option value="../en/regeln.html">English</option><option value="regeln.html" selected>日本語</option><option value="../ko/regeln.html">한국어</option><option value="../th/regeln.html">ไทย</option><option value="../ar/regeln.html">العربية</option><option value="../is/regeln.html">Íslenska</option><option value="../da/regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ 今すぐ遊ぶ</a>
+</div></header>
+<main>
+<article>
+<h1>ルール</h1>
+<p class="lead">普通のチェスを知っていれば、5分で始められます。ここにすべてのルールをまとめました – 盤と中央を越える手から、三人対局を公平にする救援義務まで。</p>
+<figure><img src="../img/brett-2d.webp" width="382" height="354" alt="上から見た星形の盤" style="max-width:420px;display:block;margin:0 auto"><figcaption>盤: 4 × 8 マスのセクションが3つ、行 A〜D、列 1〜8。</figcaption></figure>
+
+   
+   <h2>プレイヤーと盤</h2>
+   <ul>
+    <li>プレイヤーは3人: <b style="color:#5599ff">青</b>、<b style="color:#44ee22">緑</b>、<b style="color:#ff5533">赤</b>。順番に指します: 青 → 緑 → 赤。</li>
+    <li>盤は 4 × 8 マスのセクション3つでできたダビデの星です: 行 <b>A–D</b>、列 <b>1–8</b>。A 行が自分の最下段、D 行が盤の中央に接しています。</li>
+    <li>各プレイヤーは普通のチェスと同じ16個の駒を持ちます。キングは A5、クイーンは A4 に置きます。</li>
+   </ul>
+   <h2>中央を越える手</h2>
+   <ul>
+    <li>自分の D 行を越えて進むと<b>隣のセクション</b>のD 行に入り、そこからその A 行に向かって進みます。</li>
+    <li>列は反転します: c 列は <b>9 − c</b> 列になります。</li>
+    <li><b>ルークとクイーン（まっすぐ）:</b> 1–3 列からは一方の、6–8 列からはもう一方の隣のセクションへ。中央の 4 列と 5 列からは<b>両方</b>のセクションに届きます。</li>
+    <li><b>ビショップとクイーン（斜め）:</b> ビショップも隣のセクションへ渡り、中央の先端からは両方へ渡れます。</li>
+    <li><b>ナイト:</b> 前後に2歩と横に1歩（またはその逆）、中央越えも可能です。境界の一部の渡りは除外されます。</li>
+    <li><b>キング:</b> あらゆる方向に1マス、隣のセクションへも渡れます。</li>
+    <li>ゲームでは「📖 ルール」の練習盤ですべての駒を試せます。</li>
+   </ul>
+   <h2>ポーン</h2>
+   <ul>
+    <li>自分のセクションではポーンは中央に向かって進み（A → D）、B 行からは2マス進むこともできます。</li>
+    <li>中央を越えると隣のセクションに入り、その A 行に向かって進み続けます。取るときは斜め前、中央越しでも取れます。</li>
+    <li><b>昇格:</b> 他人のセクションの A 行で。</li>
+    <li><b>アンパッサン:</b> 2マス進んだ後は、2マス進んだプレイヤーが再び指すまで<b>両方</b>の相手がアンパッサンで取れます。</li>
+   </ul>
+   <h2>キャスリング</h2>
+   <ul><li>キング（A5）とルークが未移動で、間のマスが空いていて攻撃されていないこと。ショート: キングを A7、ルーク A8 → A6。ロング: キングを A3、ルーク A1 → A4。</li></ul>
+   <h2 id="hilfspflicht">チェック、救援義務、メイト</h2>
+   <ul>
+    <li>チェックされた人は解除しなければなりません。自分のキングをチェックされたままにする手は指せません。</li>
+    <li><b>救援義務:</b> あるプレイヤーがチェックされていて、3人目のプレイヤーがその人より<i>先に</i>指す場合、3人目はチェックされている人がメイトになる手を指してはいけません。すでにメイトなら、3人目はその人を解放しなければなりません – できなければメイトのままです。3人目が何を指してもチェックされている人が自力で助かるなら、制限はありません。</li>
+    <li><b>チェックメイトで対局終了。</b> 勝つのは<b>キングにチェックをかけた人</b>です – 逃げ道を塞いだだけの人ではありません。残りの2人は負けです。</li>
+   </ul>
+   <h2>指せる手がない</h2>
+   <ul><li>チェックされずに指せない人は1回休みです。誰も指せなくなったら、得点で決まります。</li></ul>
+   <h2>時間と得点</h2>
+   <ul>
+    <li>一手ごとの時間（切れたら → その手は無効）と/または対局ごとの時間（使い切ったら → もう指せないが、駒は取られうる）を選べます。</li>
+    <li>得点: 盤上の自分の駒 + 取った相手の駒。ポーン 1、ナイトとビショップ 3、ルーク 4、クイーン 6。同点なら使用時間が少ない人の勝ち。</li>
+   </ul>
+   <h2>操作</h2>
+   <ul>
+    <li>駒をクリック → 指せる手が光る → 移動先をクリック。「↶ 戻る」または Ctrl+Z で手を戻せます。</li>
+    <li>☰ メニュー · 3D 表示 · 💾 保存 / 📂 読み込み · ⏸ 一時停止 · 🔊 音 · ⛶ 全画面 · 👥 対局相手のウィンドウのオン/オフ。</li>
+    <li><b>コンピューターの対戦相手</b>にはそれぞれ性格があります: <b style="color:#5599ff">ブルッボ</b>（お人よしで陽気）、<b style="color:#44ee22">グルンボ</b>（不機嫌で力持ち）、<b style="color:#ff5533">フラモ</b>（短気で落ち着きがない）。対局の流れに合わせて喜び、怒り、怖がり、歓声を上げ、泣きます。</li>
+   </ul>
+  
+<h2>棋譜の書き方</h2>
+<p>各マスには3文字の名前があります: セクション（青、緑、赤を表す B、G、R）、行（A〜D）、列（1〜8）。つまり <b>BA5</b> は青のセクションの A5 – 最初に青のキングがいるマスです。手は出発マスと到着マスで書きます。例えばポーンの2マス前進は <b>BB4–BD4</b>、取る手は「×」で <b>GC3×RD6</b> のように書きます。</p>
+<p class="note">ヒント: ゲームでは ☰ メニューで座標を表示できます。右上の棋譜はすべての手をこの書き方で示し、📼 でどの対局も一手ずつ再生できます。</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../spiel.html">▶ すぐにルールを試す</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">運営者情報</a><a href="../datenschutz.html">プライバシー</a><a href="../ueber.html#kontakt">お問い合わせ</a><a href="regeln.html">ルール</a><a href="../strategie.html">戦略</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','ja')}catch(_){}});</script>
+</body></html>

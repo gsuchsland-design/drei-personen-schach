@@ -44,7 +44,7 @@ async function turnServers(env) {
 // Bekommt die Fakten der Analyse (Text) und lässt ein kleines Sprachmodell daraus einen lesbaren Bericht schreiben.
 // Das Modell rechnet kein Schach – die Fakten stammen aus der Analyse im Browser.
 const AI_MODEL = '@cf/mistralai/mistral-small-3.1-24b-instruct';
-const LANGNAME = { de: 'Deutsch', en: 'English', fr: 'Français', es: 'Español', it: 'Italiano', pt: 'Português', nl: 'Nederlands', pl: 'Polski', tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '中文' };
+const LANGNAME = { de: 'Deutsch', en: 'English', fr: 'Français', es: 'Español', it: 'Italiano', pt: 'Português', nl: 'Nederlands', pl: 'Polski', tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '中文', ja: '日本語', ko: '한국어', th: 'ไทย', ar: 'العربية', is: 'Íslenska', da: 'Dansk' };
 async function aiReport(req, env) {
   if (!env.AI) return json({ error: 'KI ist auf diesem Server nicht eingerichtet' }, 501);
   let b; try { b = await req.json(); } catch (e) { return json({ error: 'bad json' }, 400); }

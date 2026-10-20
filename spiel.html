@@ -791,7 +791,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <script>
 // ---------- Sprachen: Auswahl wird gemerkt; die Sprachdatei wird vor dem Spiel geladen ----------
 const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Français','🇫🇷'],['es','Español','🇪🇸'],['it','Italiano','🇮🇹'],['pt','Português','🇵🇹'],
-  ['nl','Nederlands','🇳🇱'],['pl','Polski','🇵🇱'],['tr','Türkçe','🇹🇷'],['ru','Русский','🇷🇺'],['uk','Українська','🇺🇦'],['zh','中文','🇨🇳']];
+  ['nl','Nederlands','🇳🇱'],['pl','Polski','🇵🇱'],['tr','Türkçe','🇹🇷'],['ru','Русский','🇷🇺'],['uk','Українська','🇺🇦'],['zh','中文','🇨🇳'],['ja','日本語','🇯🇵'],['ko','한국어','🇰🇷'],['th','ไทย','🇹🇭'],['ar','العربية','🇸🇦'],['is','Íslenska','🇮🇸'],['da','Dansk','🇩🇰']];
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
@@ -1190,7 +1190,7 @@ function talkAdd(m){   // Nachricht ins Gesprächsprotokoll der Partie (Zeitpunk
 }
 function talkName(x){return x.name||netName(x.p)||PNAMES[x.p];}
 
-const BCP={de:'de-DE',en:'en-US',fr:'fr-FR',es:'es-ES',it:'it-IT',pt:'pt-PT',nl:'nl-NL',pl:'pl-PL',tr:'tr-TR',ru:'ru-RU',uk:'uk-UA',zh:'zh-CN'};
+const BCP={de:'de-DE',en:'en-US',fr:'fr-FR',es:'es-ES',it:'it-IT',pt:'pt-PT',nl:'nl-NL',pl:'pl-PL',tr:'tr-TR',ru:'ru-RU',uk:'uk-UA',zh:'zh-CN',ja:'ja-JP',ko:'ko-KR',th:'th-TH',ar:'ar-SA',is:'is-IS',da:'da-DK'};
 NET.langs={};
 function othersLangs(){return Object.entries(NET.langs).filter(([k])=>k!==(NET.seat||'me')).map(([,l])=>l);}
 function needTranslation(){const me=myLang();return othersLangs().some(l=>l&&l!==me);}

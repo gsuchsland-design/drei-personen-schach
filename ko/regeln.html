@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>규칙 – 3인 체스</title>
+<meta name="description" content="3인 체스의 전체 규칙: 판, 중앙을 넘는 수, 폰, 캐슬링, 구조 의무, 체크메이트, 시간 제한, 점수.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="규칙 – 3인 체스">
+<meta property="og:description" content="3인 체스의 전체 규칙: 판, 중앙을 넘는 수, 폰, 캐슬링, 구조 의무, 체크메이트, 시간 제한, 점수.">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">3인 체스</a>
+<nav class="main"><a href="../index.html#start">홈</a><a href="regeln.html" class=on>규칙</a><a href="../strategie.html">전략</a><a href="reiche-regeln.html">여섯 왕국</a><a href="grenzenlos-regeln.html">경계 없음</a><a href="../ueber.html">게임 소개</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../regeln.html">Deutsch</option><option value="../en/regeln.html">English</option><option value="../ja/regeln.html">日本語</option><option value="regeln.html" selected>한국어</option><option value="../th/regeln.html">ไทย</option><option value="../ar/regeln.html">العربية</option><option value="../is/regeln.html">Íslenska</option><option value="../da/regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ 지금 하기</a>
+</div></header>
+<main>
+<article>
+<h1>규칙</h1>
+<p class="lead">일반 체스를 안다면 5분 만에 시작할 수 있습니다. 여기에 모든 규칙을 담았습니다 – 판과 중앙을 넘는 수부터, 3인 대국을 공정하게 만드는 구조 의무까지.</p>
+<figure><img src="../img/brett-2d.webp" width="382" height="354" alt="위에서 본 별 모양 판" style="max-width:420px;display:block;margin:0 auto"><figcaption>판: 4 × 8칸 구역 세 개, 행 A~D, 열 1~8.</figcaption></figure>
+
+   
+   <h2>플레이어와 판</h2>
+   <ul>
+    <li>플레이어는 세 명: <b style="color:#5599ff">파랑</b>, <b style="color:#44ee22">초록</b>, <b style="color:#ff5533">빨강</b>. 차례대로 둡니다: 파랑 → 초록 → 빨강.</li>
+    <li>판은 4 × 8칸짜리 구역 세 개로 이루어진 다윗의 별입니다: 행 <b>A–D</b>, 열 <b>1–8</b>. A행은 자기 맨 뒷줄, D행은 판의 중앙에 있습니다.</li>
+    <li>각 플레이어는 일반 체스처럼 말 16개를 가집니다. 킹은 A5, 퀸은 A4에 섭니다.</li>
+   </ul>
+   <h2>중앙을 넘는 수</h2>
+   <ul>
+    <li>자기 D행 너머로 가면 <b>이웃 구역</b>의 D행으로 들어가, 그곳에서 그 구역의 A행을 향해 계속 갑니다.</li>
+    <li>열은 뒤집힙니다: c열은 <b>9 − c</b>열이 됩니다.</li>
+    <li><b>룩과 퀸 (직선):</b> 1–3열에서는 한쪽 이웃 구역으로, 6–8열에서는 다른 쪽으로 갑니다. 가운데 4열과 5열에서는 <b>두</b> 구역 모두에 닿습니다.</li>
+    <li><b>비숍과 퀸 (대각선):</b> 비숍도 이웃 구역으로 건너가며, 중앙의 꼭짓점에서는 두 곳 모두로 갑니다.</li>
+    <li><b>나이트:</b> 앞/뒤로 두 칸, 옆으로 한 칸(또는 그 반대), 중앙을 넘어서도 됩니다. 경계의 일부 건너가기는 제외됩니다.</li>
+    <li><b>킹:</b> 모든 방향으로 한 칸, 이웃 구역으로도 건너갑니다.</li>
+    <li>게임의 „📖 규칙“에서 연습판으로 모든 말을 시험해 볼 수 있습니다.</li>
+   </ul>
+   <h2>폰</h2>
+   <ul>
+    <li>자기 구역에서 폰은 중앙을 향해 갑니다(A → D). B행에서는 두 칸도 갈 수 있습니다.</li>
+    <li>중앙을 넘어 이웃 구역에 들어가 그 구역의 A행을 향해 계속 갑니다. 잡기는 대각선 앞으로, 중앙을 넘어서도 됩니다.</li>
+    <li><b>승진:</b> 다른 사람 구역의 A행에서.</li>
+    <li><b>앙파상:</b> 두 칸 전진 후에는, 두 칸 전진한 플레이어가 다시 둘 때까지 <b>두</b> 상대 모두 앙파상으로 잡을 수 있습니다.</li>
+   </ul>
+   <h2>캐슬링</h2>
+   <ul><li>킹(A5)과 룩이 움직이지 않았고, 사이 칸이 비어 있으며 공격받지 않아야 합니다. 짧은 캐슬링: 킹은 A7, 룩 A8 → A6. 긴 캐슬링: 킹은 A3, 룩 A1 → A4.</li></ul>
+   <h2 id="hilfspflicht">체크, 구조 의무, 메이트</h2>
+   <ul>
+    <li>체크를 당한 사람은 벗어나야 합니다. 자기 킹을 체크 상태로 두는 수는 둘 수 없습니다.</li>
+    <li><b>구조 의무:</b> 어떤 플레이어가 체크 상태이고 세 번째 플레이어가 그보다 <i>먼저</i> 둔다면, 세 번째 플레이어는 위협받는 플레이어가 메이트가 되는 수를 두면 안 됩니다. 이미 메이트라면 세 번째 플레이어가 풀어 주어야 합니다 – 그럴 수 없으면 메이트가 확정됩니다. 세 번째 플레이어가 무엇을 두든 위협받는 플레이어가 스스로 살 수 있다면 제한은 없습니다.</li>
+    <li><b>체크메이트로 대국이 끝납니다.</b> 이기는 사람은 <b>킹에게 체크를 건 사람</b>입니다 – 도망칠 칸만 막은 사람이 아닙니다. 나머지 두 사람은 집니다.</li>
+   </ul>
+   <h2>둘 수 있는 수가 없음</h2>
+   <ul><li>체크를 당하지 않고는 둘 수 없는 사람은 한 번 쉽니다. 아무도 둘 수 없으면 점수로 결정합니다.</li></ul>
+   <h2>시간과 점수</h2>
+   <ul>
+    <li>선택에 따라 한 수당 시간(초과 → 그 수는 무효) 및/또는 대국당 시간(소진 → 더 둘 수 없지만 말은 잡힐 수 있음).</li>
+    <li>점수: 판 위의 자기 말 + 잡은 상대 말. 폰 1, 나이트와 비숍 3, 룩 4, 퀸 6. 동점이면 시간을 덜 쓴 사람이 이깁니다.</li>
+   </ul>
+   <h2>조작</h2>
+   <ul>
+    <li>말 클릭 → 가능한 수가 빛남 → 도착 칸 클릭. „↶ 뒤로“ 또는 Ctrl+Z로 수를 무릅니다.</li>
+    <li>☰ 메뉴 · 3D 보기 · 💾 저장 / 📂 불러오기 · ⏸ 일시정지 · 🔊 소리 · ⛶ 전체 화면 · 👥 함께하는 플레이어 창 켜기/끄기.</li>
+    <li><b>컴퓨터 상대</b>는 저마다 성격이 있습니다: <b style="color:#5599ff">블루보</b>(착하고 들뜬), <b style="color:#44ee22">그룸보</b>(퉁명스럽고 힘센), <b style="color:#ff5533">플라모</b>(성급하고 들썩이는). 대국 흐름에 따라 기뻐하고, 화내고, 겁먹고, 환호하고, 웁니다.</li>
+   </ul>
+  
+<h2>기보 표기</h2>
+<p>모든 칸에는 세 글자 이름이 있습니다: 구역(파랑, 초록, 빨강을 뜻하는 B, G, R), 행(A~D), 열(1~8). 그래서 <b>BA5</b>는 파랑 구역의 A5 칸 – 처음에 파랑 킹이 서 있는 곳입니다. 수는 출발 칸과 도착 칸으로 적습니다. 예를 들어 폰의 두 칸 전진은 <b>BB4–BD4</b>, 잡는 수는 „×“를 써서 <b>GC3×RD6</b>처럼 적습니다.</p>
+<p class="note">팁: 게임에서 ☰ 메뉴로 좌표를 표시할 수 있습니다. 오른쪽 위 기보는 모든 수를 이 표기로 보여 주고, 📼로 어떤 대국이든 한 수씩 재생할 수 있습니다.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../spiel.html">▶ 바로 규칙 시험해 보기</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">운영자 정보</a><a href="../datenschutz.html">개인정보</a><a href="../ueber.html#kontakt">연락처</a><a href="regeln.html">규칙</a><a href="../strategie.html">전략</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','ko')}catch(_){}});</script>
+</body></html>
