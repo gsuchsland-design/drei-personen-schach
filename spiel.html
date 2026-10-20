@@ -1893,6 +1893,7 @@ function pubRender(){
   el.innerHTML=L.map(e=>{
     const seats=e.seats.map(s=>`<span class="pubSeat" style="border-color:${PCOLOR[s.p]||RCOL[s.p]}">${s.kind==='human'?esc(s.name):s.kind==='ai'?'🤖 '+T(PUB_LVL[s.lvl]||'Computer'):'<i>'+T('frei')+'</i>'}</span>`).join('');
     const r=e.rules||{},raum=e.game==='raum'||e.game==='grenz',grenz=e.game==='grenz',parts=raum?[T('{0} Spieler',[e.seats.length]),r.end==='last'?T('wer matt ist, scheidet aus'):T('erstes Matt entscheidet')]:[r.help===false?T('ohne Hilfspflicht'):T('mit Hilfspflicht')];
+    if(raum){parts.push(r.live===false?T('Fernpartie'):T('Live'));if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));}
     if(e.kind==='live'){if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));if(!r.tcMove&&!r.tcGame)parts.push(T('ohne Zeitlimit'));
       parts.push(r.cam?T('mit Kamera'):T('ohne Kamera'));}
     const lg=r.lang&&r.lang!=='de'?' '+((LANGS.find(l=>l[0]===r.lang)||[])[2]||''):'';

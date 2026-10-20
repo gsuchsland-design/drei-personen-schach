@@ -190,14 +190,18 @@ export class Fern {
     }
     const now = Date.now();
     const rules = { help: !(b.rules && b.rules.help === false) };
-    if (game !== 'dps') { rules.end = b.rules && b.rules.end === 'last' ? 'last' : 'first'; rules.opts = clean(b.rules && b.rules.opts, 80); }
+    if (game !== 'dps') {
+      const r = b.rules || {}, n = (v, hi) => Math.max(0, Math.min(hi, Math.round(+v || 0)));
+      rules.end = r.end === 'last' ? 'last' : 'first'; rules.opts = clean(r.opts, 80);
+      rules.live = r.live !== false; rules.tcMove = rules.live ? n(r.tcMove, 3600) : 0; rules.tcGame = rules.live ? n(r.tcGame, 600) : 0;
+    }
     const used = {}; for (const p of order) used[p] = 0;
     const g = { code: b.code, created: now, updated: now, v: 0, snap: null, next: order[0], over: false, last: null, used, seats, rules, game };
     if (game !== 'dps') g.order = order;
     if (b.public) {   // in der öffentlichen Lobby anbieten
       seats[me].name = safeName(seats[me].name, 'Spieler');
       const r = await lobbyCall(this.env, 'offer', { kind: 'fern', game, code: b.code, host: seats[me].name, seats: this.lobbySeats(g), order: ord(g),
-        rules: { help: rules.help, lvl: null, lang: b.lang, end: rules.end, opts: rules.opts }, _ip: b._ip });
+        rules: { help: rules.help, lvl: null, lang: b.lang, end: rules.end, opts: rules.opts, live: rules.live, tcMove: rules.tcMove, tcGame: rules.tcGame }, _ip: b._ip });
       if (r && r.id) g.lobby = { id: r.id, key: r.key };
     }
     await this.save(g);
@@ -237,7 +241,8 @@ export class Fern {
     if (g.over) return json({ error: 'over', state: await this.view(g, b.t) }, 409);
     const mover = b.mover;
     if (!ord(g).includes(mover) || mover !== g.next) return json({ error: 'turn', state: await this.view(g, b.t) }, 409);
-    if (mover !== me && g.seats[mover].kind !== 'ai') return json({ error: 'not your seat' }, 403);
+    const tcOn = g.rules && (g.rules.tcMove || g.rules.tcGame);   // abgelaufene Uhr eines anderen darf jeder Mitspieler melden
+    if (mover !== me && g.seats[mover].kind !== 'ai' && !(b.timeout && tcOn && Date.now() - g.updated > 8000)) return json({ error: 'not your seat' }, 403);
     if (typeof b.snap !== 'string' || b.snap.length > MAX_SNAP) return json({ error: 'snap' }, 400);
     const now = Date.now();
     if (g.seats[mover].kind === 'human') g.used[mover] = (g.used[mover] || 0) + now - g.updated;

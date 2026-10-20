@@ -25,7 +25,7 @@ button:hover { background:#353a47; } button.on { background:#2a9d4a; border-colo
 #log { max-height:110px; overflow:auto; font:12px/1.4 ui-monospace,monospace; background:#1d2130; border-radius:8px; padding:4px 8px; }
 #seats .pc { display:flex; align-items:center; gap:6px; padding:3px 6px; border-radius:8px; margin:2px 0; background:#1d2130; }
 #seats .pc.act { outline:2px solid #fff; }
-.ingame .noGame { opacity:.45; pointer-events:none; }
+.ingame .noGame { opacity:.45; pointer-events:none; } .ingame .setupOnly { display:none; }
 a { color:#8fb6ff; }
 @media (max-width:700px){ #ui { width:auto; right:8px; bottom:auto; max-height:50vh; } #mini { width:110px; height:110px; } }
 </style>
@@ -52,7 +52,9 @@ a { color:#8fb6ff; }
    <div id="gSeatRows"></div>
    <div class="row" id="promoRow">Umwandlung: <select id="gPromo"><option value="zone">beim Erreichen einer fremden Startzone</option><option value="rank">erst auf der Grundreihe der Admiräle</option></select></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
+   <div id="tcBox"></div>
    <div id="gOnline" style="display:none">
+    <div class="row">Art: <select id="gMode" onchange="gOnlineUI()"><option value="live">🌐 Live – alle spielen gleichzeitig</option><option value="fern">✉️ Fernpartie – ziehen, wann man Zeit hat</option></select></div>
     <div class="row">Dein Name: <input type="text" id="gName" maxlength="18" placeholder="Name" style="flex:1"></div>
     <div class="row"><label><input type="checkbox" id="gPub"> 🌍 In der öffentlichen Lobby anbieten</label></div>
     <div class="hint">Eingeladene bekommen einen Link. Der Spielstand liegt auf dem Server – gleichzeitig spielen oder ziehen, wann man Zeit hat.</div>
@@ -63,14 +65,16 @@ a { color:#8fb6ff; }
    <div id="seats"></div>
    <div id="onBox" style="display:none"><div class="hint" id="onState"></div>
     <div class="row"><input type="text" id="onLink" readonly style="flex:1" onclick="this.select()"><button onclick="onShare()">📤</button></div></div>
-   <div class="row"><button onclick="undo()">↶ Zug zurück</button><button onclick="gameStop()">■ Partie beenden</button></div>
+   <div class="row"><button onclick="undo()">↶ Zug zurück</button><button onclick="gameStop()">■ Partie beenden</button><button onclick="KIT.anaOpen()">🔬 Auswertung</button></div>
+   <div id="kitBox"></div>
   </div>
-  <div class="row"><button onclick="fitAll()">⤢ Alle Figuren</button><button onclick="viewMine()">🎯 Meine Armee</button><button onclick="location.href='spiel.html?lobby=1'+fernQS()">🌍 Lobby</button></div>
+  <div class="row"><button onclick="fitAll()">⤢ Alle Figuren</button><button onclick="viewMine()">🎯 Meine Armee</button><button onclick="location.href='spiel.html?lobby=1'+fernQS()">🌍 Lobby</button><button onclick="tourStart()">🎓 Einführung</button><button class="setupOnly" onclick="KIT.colOpen()">🎨 Farben</button></div>
   <h2>Züge</h2>
   <div id="log"></div>
   <p class="hint" style="margin-top:12px"><a href="grenzenlos-regeln.html" target="_blank">📖 Regeln</a> · <a href="spiel.html">← Drei-Personen-Schach</a> · <a href="raum.html">👑 Schach der 6 Reiche</a></p>
  </div>
 </div>
+<script src="lib/kit.js?v=2026102008"></script>
 <script>
 'use strict';
 // ================= Spieler, Aufstellung =================
@@ -156,7 +160,7 @@ function promotes(p,c){const M=LAY.M,{f}=LAY.seats[p];
     if(Math.abs(u)<=3.5&&(GM&&GM.promo==='zone'?w>=LAY.dPawn-1e-9&&w<=LAY.dOff+1e-9:Math.abs(w-LAY.dOff)<1e-9))return true;}
   return false;}
 // ================= Partie =================
-const LVLN={human:'Mensch (an diesem Gerät)',open:'Mensch – online eingeladen',easy:'Computer – leicht',medium:'Computer – mittel',hard:'Computer – stark'};
+const LVLN={human:'Mensch (an diesem Gerät)',open:'Mensch – online eingeladen',easy:'Computer – leicht',medium:'Computer – mittel',hard:'Computer – stark',master:'Computer – Meister'};
 const QUIET=30;
 let GM=null,moves=[],hist=[],sel=null,targets=[],LASTMV=null;
 const gCur=()=>GM&&GM.order[GM.idx];
@@ -168,21 +172,23 @@ function gSeats(){const n=+document.getElementById('gN').value,box=document.getE
     r.innerHTML=`<span style="color:${PCOL[p]};font-weight:700;min-width:4em">${PNAME[p]}</span><select id="gS${p}">${Object.entries(LVLN).map(([v,l])=>`<option value="${v}"${(i===0?'human':'medium')===v?' selected':''}>${l}</option>`).join('')}</select>`;
     box.appendChild(r);r.querySelector('select').onchange=gOnlineUI;});
   document.getElementById('promoRow').style.display=n>2?'flex':'none';gOnlineUI();}
+function onMode(){const m=document.getElementById('gMode');return m&&document.getElementById('gOnline').style.display!=='none'?m.value:'local';}
 function gOnlineUI(){const n=+document.getElementById('gN').value,on=TURNS[n].some(p=>(document.getElementById('gS'+p)||{}).value==='open');
   document.getElementById('gOnline').style.display=on?'block':'none';
+  document.getElementById('tcBox').style.display=on&&document.getElementById('gMode').value==='fern'?'none':'block';
   if(on&&!document.getElementById('gName').value){try{document.getElementById('gName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}}}
 function gameStart(){
   const n=+document.getElementById('gN').value,order=TURNS[n],ctrl={};
   for(const p of order)ctrl[p]=document.getElementById('gS'+p).value;
   if(order.some(p=>ctrl[p]==='open')){onCreate(order,ctrl);return;}
   setup(n);hist=[];moves=[];EP=null;LASTMV=null;
-  GM={order,ctrl,end:document.getElementById('gEnd').value,promo:document.getElementById('gPromo').value,idx:0,out:[],over:false,winner:null,note:'',quiet:0};
-  enterGame();
+  GM={order,ctrl,end:document.getElementById('gEnd').value,promo:document.getElementById('gPromo').value,idx:0,out:[],over:false,winner:null,note:'',quiet:0,rec:[],tc:KIT.tcRead()};
+  KIT.clockInit(GM);enterGame();
 }
-function enterGame(){sel=null;targets=[];document.getElementById('ui').classList.add('ingame');
+function enterGame(){sel=null;targets=[];REP=null;document.getElementById('ui').classList.add('ingame');
   document.getElementById('gameSetup').style.display='none';document.getElementById('gameRun').style.display='block';fitAll();render();turnStart();}
 function gameStop(){if(GM&&!GM.over&&!confirm(GM.online?'Partie verlassen? Du kannst später über den Link zurückkehren.':'Partie beenden?'))return;
-  if(GM&&GM.online){clearInterval(ON.poll);try{history.replaceState(null,'',location.pathname+(QS.get('fernhost')?'?fernhost='+encodeURIComponent(QS.get('fernhost')):''));}catch(e){}document.getElementById('onBox').style.display='none';ON={};}
+  if(GM&&GM.online){KIT.tbStop();clearInterval(ON.poll);try{history.replaceState(null,'',location.pathname+(QS.get('fernhost')?'?fernhost='+encodeURIComponent(QS.get('fernhost')):''));}catch(e){}document.getElementById('onBox').style.display='none';ON={};}
   GM=null;clearTimeout(aiT);document.getElementById('ui').classList.remove('ingame');
   document.getElementById('gameSetup').style.display='block';document.getElementById('gameRun').style.display='none';setup(+document.getElementById('gN').value);render();}
 function afterMove(mover){let note='';
@@ -199,7 +205,7 @@ function afterMove(mover){let note='';
 function eliminate(q){if(!GM.out.includes(q))GM.out.push(q);for(const[k,v]of[...S])if(v.p===q)S.delete(k);const a=alive();if(a.length===1){GM.over=true;GM.winner=a[0];}}
 function advance(){for(let i=0;i<GM.order.length;i++){GM.idx=(GM.idx+1)%GM.order.length;const p=gCur();if(GM.out.includes(p))continue;
     if(EP&&EP.p===p)EP=null;   // en passant gilt, bis der Spieler mit dem Doppelschritt wieder zieht
-    if(legalMoves(p).length){turnStart();return;}GM.note+=`${PNAME[p]} kann nicht ziehen und setzt aus. `;}
+    if(legalMoves(p).length){KIT.clockTurn();turnStart();return;}GM.note+=`${PNAME[p]} kann nicht ziehen und setzt aus. `;}
   const a=alive();let best=a[0];for(const p of a)if(material(p)>material(best))best=p;GM.over=true;GM.winner=best;GM.note+='Niemand kann mehr ziehen – es entscheidet das Material. ';render();}
 let aiT=0;
 function myTurn(){const p=gCur();return GM&&(GM.online?p===ON.seat:GM.ctrl[p]==='human');}
@@ -208,6 +214,7 @@ function turnStart(){sel=null;targets=[];render();const p=gCur();
 function gameMove(from,m){
   const fk=key(...from),tk=key(...m.c),pc=S.get(fk);if(!pc)return;let cap=S.get(tk);
   if(!GM.online)hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice(),GM:JSON.parse(JSON.stringify(GM)),EP});
+  const ms=KIT.clockSpend(pc.p),outB=GM.out.slice();
   if(m.ep){cap=S.get(key(...m.ep));S.delete(key(...m.ep));}
   animStart(from,m.c,pc,cap);
   S.delete(fk);const np={t:pc.t,p:pc.p,m:true};let promo='';
@@ -216,42 +223,84 @@ function gameMove(from,m){
   if(m.castle){const r=S.get(key(...m.castle.from));S.delete(key(...m.castle.from));S.set(key(...m.castle.to),Object.assign({},r,{m:true}));}
   if(m.dbl){const f=LAY.seats[pc.p].f;EP={sq:[from[0]+f[0],from[1]+f[1]],pawn:m.c.slice(),p:pc.p};}
   if(cap)GM.capt=true;GM.quiet=cap||pc.t==='P'||!GM.capt?0:(GM.quiet||0)+1;
-  GM.lastMove={from,to:m.c,p:pc.p};GM.lastBy=GM.ctrl[pc.p]==='human'||GM.ctrl[pc.p]==='open'?pc.p:(GM.online?ON.seat:null);GM.lastMoverSeat=pc.p;
+  GM.lastMove={from,to:m.c,p:pc.p,cas:m.castle||null};GM.lastBy=GM.ctrl[pc.p]==='human'||GM.ctrl[pc.p]==='open'?pc.p:(GM.online?ON.seat:null);GM.lastMoverSeat=pc.p;
   const nm=(c)=>`(${c[0]},${c[1]})`;
-  moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${nm(from)} ${cap?'×':'–'} ${nm(m.c)}${m.castle?' Rochade':''}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
+  const chk=alive().filter(q=>q!==pc.p&&(!cap||cap.t!=='K'||cap.p!==q)&&inCheck(q));
+  const e={p:pc.p,f:from.slice(),t:m.c.slice(),pc:pc.t,ms,chk};if(cap){e.cap=cap.t;e.capP=cap.p;}if(promo)e.promo=1;if(m.castle)e.cs=m.castle;if(m.ep)e.ep=m.ep;if(m.dbl)e.dbl=1;
+  GM.rec=GM.rec||[];GM.rec.push(e);
+  moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${nm(from)} ${cap?'×':'–'} ${nm(m.c)}${m.castle?' Rochade':''}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}${chk.length?' +':''}`);
   GM.lastText=moves[moves.length-1];sel=null;targets=[];
   if(cap&&cap.t==='K'){if(GM.end==='first'){GM.over=true;GM.winner=pc.p;GM.note=`${PNAME[cap.p]}s König wurde geschlagen. `;render();}else{eliminate(cap.p);GM.note=`${PNAME[cap.p]} scheidet aus. `;if(GM.over)render();else afterMove(pc.p);}}
   else afterMove(pc.p);
+  e.elim=GM.out.filter(q=>!outB.includes(q));e.mat={};for(const q of GM.order)e.mat[q]=material(q);
   if(GM&&GM.online)onPush();
+}
+// Zeit abgelaufen: Zugzeit → Zug verfällt; Partiezeit → Spieler scheidet aus
+function timeout(p,kind){if(!GM||GM.over||gCur()!==p)return;clearTimeout(aiT);
+  if(!GM.online)hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice(),GM:JSON.parse(JSON.stringify(GM)),EP});
+  KIT.clockSpend(p);const outB=GM.out.slice();
+  const note=kind==='move'?`${PNAME[p]}: Zugzeit abgelaufen – der Zug verfällt. `:`${PNAME[p]}: Partiezeit verbraucht – ${PNAME[p]} scheidet aus. `;
+  if(kind==='game')eliminate(p);
+  const e={p,to:kind,elim:GM.out.filter(q=>!outB.includes(q)),mat:{}};for(const q of GM.order)e.mat[q]=material(q);GM.rec.push(e);
+  moves.push('⏱ '+note.trim());GM.note=note;GM.lastText=note;GM.lastMoverSeat=p;GM.lastBy=GM.online?ON.seat:null;sel=null;targets=[];
+  if(!GM.over)advance();else render();
+  if(GM.online)onPush(true);
 }
 function undo(){if(!GM)return;if(GM.online){alert('In Online-Partien kann man nicht zurücknehmen.');return;}clearTimeout(aiT);
   let h;do{h=hist.pop();}while(h&&hist.length&&h.GM.ctrl[h.GM.order[h.GM.idx]]!=='human');
-  if(!h)return;S=h.S;moves=h.moves;GM=h.GM;EP=h.EP;sel=null;targets=[];render();turnStart();}
+  if(!h)return;S=h.S;moves=h.moves;GM=h.GM;EP=h.EP;sel=null;targets=[];KIT.clockTurn();render();turnStart();}
 // ---------- Computergegner ----------
-function aiMove(p){if(!GM||GM.over||gCur()!==p)return;
-  const lvl=GM.ctrl[p],ms=legalMoves(p);if(!ms.length){advance();return;}
+// Bewertet alle Züge (in Zehntel-Bauern); noise=false für die Auswertung
+function aiEval(p,lvl,ms,noise){
   const foes=alive().filter(q=>q!==p),kings=foes.map(q=>kingOf(q)).filter(Boolean);
   const kd=c=>{let m=99;for(const k of kings)m=Math.min(m,Math.max(Math.abs(c[0]-k[0]),Math.abs(c[1]-k[1])));return m;};
-  let best=null,bs=-1e9;
-  for(const m of ms){const pc=S.get(key(...m.from)),tg=m.ep?S.get(key(...m.ep)):S.get(key(...m.c));
-    let sc=Math.random()*(lvl==='easy'?6:lvl==='medium'?0.8:0.3);
+  const out=[];
+  for(const m of ms){const tg=m.ep?S.get(key(...m.ep)):S.get(key(...m.c));
+    let sc=noise?Math.random()*(lvl==='easy'?6:lvl==='medium'?0.8:0.3):0;
     if(tg)sc+=tg.t==='K'?1000:VAL[tg.t]*10;
     if(m.castle)sc+=1.2;
     if(lvl!=='easy'){
       sc+=tryMove(m,m.from,(a)=>{let v=0;
         const enemy=attackers(m.c,q=>q!==p&&!GM.out.includes(q),true).length;
         if(enemy){const def=attackers(m.c,q=>q===p,true).length;v-=VAL[a.t]*(def?5:10)+(a.t==='K'?100:0);}
-        for(const q of foes)if(inCheck(q)){v+=lvl==='hard'?3:1.5;if(!legalMoves(q).length)v+=5000;}
+        for(const q of foes)if(inCheck(q)){v+=lvl==='medium'?1.5:3;if(!legalMoves(q).length)v+=5000;}
         if(a.t==='P'){v+=0.5;if(promotes(p,m.c))v+=80;}
-        if(a.t!=='K'&&a.t!=='P')v+=(kd(m.from)-kd(m.c))*(lvl==='hard'?0.35:0.25);
-        if(a.t==='K'&&!GM.capt)v-=1.5;   // König am Anfang nicht spazieren führen
+        if(a.t!=='K'&&a.t!=='P')v+=(kd(m.from)-kd(m.c))*(lvl==='medium'?0.25:0.35);
+        if(a.t==='K'&&!GM.capt)v-=1.5;
         const dc=Math.abs(m.c[0]-LAY.M[0])+Math.abs(m.c[1]-LAY.M[1]);v+=Math.max(0,10-dc)*0.04;
-        if(lvl==='hard'){let hang=0;for(const[k,o]of S){if(o.p!==p||o.t==='P')continue;const c=unkey(k);if(Math.abs(c[0]-m.c[0])+Math.abs(c[1]-m.c[1])>8)continue;
+        if(lvl==='hard'||lvl==='master'){let hang=0;for(const[k,o]of S){if(o.p!==p||o.t==='P')continue;const c=unkey(k);if(Math.abs(c[0]-m.c[0])+Math.abs(c[1]-m.c[1])>8)continue;
           if(attackers(c,q=>q!==p&&!GM.out.includes(q),true).length&&!attackers(c,q=>q===p,true).length)hang+=VAL[o.t];}v-=hang*3;}
         return v;});}
-    if(sc>bs){bs=sc;best=m;}}
+    out.push({m,v:sc});}
+  // Meister: die besten Züge eine Ebene tiefer prüfen – was kann der nächste Gegner darauf schlagen oder matt setzen?
+  if(lvl==='master'&&out.length>1){out.sort((a,b)=>b.v-a.v);
+    for(const o of out.slice(0,8)){const m=o.m;
+      o.v-=tryMove(m,m.from,()=>{if(foes.some(q=>{const k=kingOf(q);return!k;}))return 0;let worst=0;
+        for(const q of foes){if(GM.out.includes(q))continue;for(const r of legalMoves(q)){const t=S.get(key(...r.c));if(!t||t.p!==p)continue;
+          let g=t.t==='K'?500:VAL[t.t]*10;const capT=S.get(key(...r.from)).t;const back=tryMove(r,r.from,()=>attackers(r.c,x=>x===p,true).length>0);if(back&&t.t!=='K')g-=VAL[capT]*8;if(g>worst)worst=g;}}
+        return worst*0.85;});}}
+  return out;}
+function aiMove(p){if(!GM||GM.over||gCur()!==p)return;
+  const lvl=GM.ctrl[p],ms=legalMoves(p);if(!ms.length){advance();return;}
+  let best=null,bs=-1e9;for(const o of aiEval(p,lvl,ms,true))if(o.v>bs){bs=o.v;best=o.m;}
   gameMove(best.from,best);
 }
+// ---------- Auswertung: Stellungen nachspielen ----------
+let REAL=null,REP=null;
+function anaPos(i){if(!REAL)REAL={S,EP,out:GM.out,LAY};
+  if(!REP||REP.i>i){setup(GM.order.length);REP={i:0,S,EP:null,out:[]};}
+  S=REP.S;EP=REP.EP;GM.out=REP.out;BB=null;
+  while(REP.i<i){const e=GM.rec[REP.i++];
+    if(EP&&EP.p===e.p)EP=null;
+    if(e.f){const pc=S.get(key(...e.f));S.delete(key(...e.f));if(e.ep)S.delete(key(...e.ep));
+      S.set(key(...e.t),{t:e.promo?'Q':e.pc,p:e.p,m:true});
+      if(e.cs){const r=S.get(key(...e.cs.from));S.delete(key(...e.cs.from));S.set(key(...e.cs.to),Object.assign({},r,{m:true}));}
+      if(e.dbl){const f=LAY.seats[e.p].f;EP={sq:[e.f[0]+f[0],e.f[1]+f[1]],pawn:e.t.slice(),p:e.p};}}
+    for(const q of e.elim||[]){if(!GM.out.includes(q))GM.out.push(q);for(const[k,v]of[...S])if(v.p===q)S.delete(k);}}
+  REP.EP=EP;BB=null;}
+function anaScores(p){const ms=legalMoves(p);return aiEval(p,'hard',ms,false).map(o=>({f:o.m.from,t:o.m.c,pc:(S.get(key(...o.m.from))||{}).t,v:o.v/10}));}
+function anaRestore(){if(!REAL)return;S=REAL.S;EP=REAL.EP;GM.out=REAL.out;LAY=REAL.LAY;REAL=null;BB=null;}
+function moveText(e){if(e.to)return e.to==='move'?'Zugzeit abgelaufen':'Partiezeit verbraucht';return `${PNAMES[e.pc]||''} (${e.f[0]},${e.f[1]}) – (${e.t[0]},${e.t[1]})`;}
 // ================= Darstellung (2D) =================
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),mini=document.getElementById('mini'),mx=mini.getContext('2d');
 const V={cx:4.5,cy:4.5,s:48};   // Blickmitte in Feldern, Pixel je Feld
@@ -284,7 +333,8 @@ function paint(){
   for(const[k,pc]of S){if(k===hide)continue;const[x,y]=unkey(k);if(x<x0||x>x1||y<y0||y>y1)continue;drawPiece(...toScr(x,y),pc);}
   if(ANIM)animPaint();
   // Ziele
-  for(const t of targets){const[sx,sy]=toScr(...t.c);ctx.fillStyle=t.view?(t.cap?'#ff9a3a':'#7fb8ff'):(t.cap?'#ff3322':'#2fd04f');
+  for(const t of targets){const[sx,sy]=toScr(...t.c);ctx.fillStyle=t.view?(t.cap?'#ff9a3a':'#7fb8ff'):(t.cap?'#ff3322':t.castle?'#50c8ff':'#2fd04f');
+    if(t.castle&&!t.view){ctx.globalAlpha=0.55;ctx.fillRect(sx-s/2+2,sy-s/2+2,s-4,s-4);ctx.globalAlpha=1;}
     ctx.globalAlpha=0.85;ctx.beginPath();if(t.cap){ctx.lineWidth=Math.max(3,s*0.08);ctx.strokeStyle=ctx.fillStyle;ctx.arc(sx,sy,s*0.42,0,7);ctx.stroke();}else{ctx.arc(sx,sy,s*0.15,0,7);ctx.fill();}ctx.globalAlpha=1;}
   // Koordinaten am Rand, wenn groß genug
   if(s>=34){ctx.font='11px sans-serif';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';
@@ -309,12 +359,13 @@ function viewMine(){const p=GM?(GM.online?ON.seat:GM.order.find(q=>GM.ctrl[q]===
 function renderTurn(){const el=document.getElementById('turn');if(!GM){el.style.display='none';return;}
   let h;if(GM.over)h=`🏁 <span style="color:${PCOL[GM.winner]}">${PNAME[GM.winner]}</span> gewinnt!`;
   else{const p=gCur(),nm=GM.online&&ON.seats&&ON.seats[p]&&ON.seats[p].name?' ('+esc(ON.seats[p].name)+')':'',wait=GM.online&&ON.seats&&ON.seats[p]&&ON.seats[p].kind==='open';
-    h=`<span style="color:${PCOL[p]}">●</span> ${PNAME[p]}${nm} ${wait?'– Platz frei, warte auf Mitspieler':'ist am Zug'}${GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'?' 🤖':''}${GM.online&&p===ON.seat?' – <b>du</b>':''}${inCheck(p)?' – <span style="color:#ff6a50">Schach!</span>':''}`;}
+    h=`<span style="color:${PCOL[p]}">●</span> ${PNAME[p]}${nm} ${wait?'– Platz frei, warte auf Mitspieler':'ist am Zug'}${GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'?' 🤖':''}${GM.online&&p===ON.seat?' – <b>du</b>':''}${inCheck(p)?' – <span style="color:#ff6a50">Schach!</span>':''}${KIT.clockHTML(p)}`;}
   el.innerHTML=h+(GM.note?`<div class="hint" style="font-weight:400">${GM.note}</div>`:'');el.style.display='block';el.style.borderColor=GM.over?PCOL[GM.winner]:PCOL[gCur()];
-  document.getElementById('seats').innerHTML=GM.order.map(p=>`<div class="pc${!GM.over&&gCur()===p?' act':''}"><span style="color:${PCOL[p]};font-weight:700">● ${PNAME[p]}</span><span class="hint">${seatLabel(p)}</span><span style="margin-left:auto">${GM.out.includes(p)?'ausgeschieden':material(p)}</span></div>`).join('')
+  document.getElementById('seats').innerHTML=GM.order.map(p=>`<div class="pc${!GM.over&&gCur()===p?' act':''}"><span style="color:${PCOL[p]};font-weight:700">● ${PNAME[p]}</span><span class="hint">${esc(seatName(p))}</span>${GM.out.includes(p)?'':KIT.clockHTML(p)}<span style="margin-left:auto">${GM.out.includes(p)?'ausgeschieden':material(p)}</span></div>`).join('')
     +(GM.quiet>QUIET*alive().length/2&&!GM.over?`<div class="hint">ruhige Züge ${GM.quiet}/${QUIET*alive().length}</div>`:'');
   const l=document.getElementById('log');l.innerHTML=moves.map((m,i)=>`${i+1}. ${esc(m)}`).join('<br>')||'<span class="hint">noch keine</span>';l.scrollTop=l.scrollHeight;}
-function seatLabel(p){if(GM.online&&ON.seats&&ON.seats[p]){const s=ON.seats[p];return s.kind==='human'?esc(s.name):s.kind==='ai'?'Computer':'frei';}const c=GM.ctrl[p];return c==='human'?'Mensch':'Computer · '+({easy:'leicht',medium:'mittel',hard:'stark'}[c]||'');}
+function seatName(p){if(!GM)return PNAME[p];if(GM.online&&ON.seats&&ON.seats[p]){const s=ON.seats[p];return s.kind==='human'?(p===ON.seat?KIT.myName():s.name||PNAME[p]):s.kind==='ai'?'Computer · '+(KIT.LVL[s.lvl]||''):'frei';}
+  const c=GM.ctrl[p];return c==='human'?(GM.order.filter(q=>GM.ctrl[q]==='human').length===1?KIT.myName():'Mensch'):'Computer · '+(KIT.LVL[c]||'');}
 // ---------- Animation ----------
 let ANIM=null;
 function animStart(from,to,pc,cap){ANIM={from,to,pc:{t:pc.t,p:pc.p},cap:cap?{t:cap.t,p:cap.p}:null,t0:performance.now(),dur:Math.min(700,220+Math.hypot(to[0]-from[0],to[1]-from[1])*40)};animStep();}
@@ -370,49 +421,65 @@ async function onCreate(order,ctrl){
   const seat=order.find(p=>ctrl[p]==='human');if(!seat){alert('Mindestens ein Platz muss „Mensch (an diesem Gerät)“ sein – das bist du.');return;}
   const ai={};for(const p of order)if(!['human','open'].includes(ctrl[p]))ai[p]=ctrl[p];
   for(const p of order)if(ctrl[p]==='human'&&p!==seat)ctrl[p]='open';
-  const end=document.getElementById('gEnd').value,promo=document.getElementById('gPromo').value;
-  let j;try{j=await api('/fern/new',{game:'grenz',order,seat,name,ai,rules:{end,opts:promo},public:document.getElementById('gPub').checked,lang:'de'});}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
+  const end=document.getElementById('gEnd').value,promo=document.getElementById('gPromo').value,live=document.getElementById('gMode').value==='live',tc=live?KIT.tcRead():null;
+  let j;try{j=await api('/fern/new',{game:'grenz',order,seat,name,ai,rules:{end,opts:promo,live,tcMove:tc?tc.move:0,tcGame:tc?tc.game:0},public:document.getElementById('gPub').checked,lang:KIT.myLang()});}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
   if(!j.code){alert('⚠️ '+(j.error||'Fehler beim Anlegen'));return;}
   try{localStorage.setItem('grenz.t.'+j.code,j.token);}catch(e){}
   setup(order.length);hist=[];moves=[];EP=null;
-  GM={order,ctrl,end,promo,idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:seat};
-  ON={code:j.code,token:j.token,seat,v:0,seats:j.state.seats};onEnter();
+  GM={order,ctrl,end,promo,idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:seat,rec:[],tc};KIT.clockInit(GM);
+  ON={code:j.code,token:j.token,seat,v:0,seats:j.state.seats,rtc:j.state.rtc};onEnter();
 }
 function onEnter(){try{history.replaceState(null,'',location.pathname+'?g='+ON.code+fernQS());}catch(e){}
   document.getElementById('onBox').style.display='block';document.getElementById('onLink').value=onLink();onStateUI();enterGame();
-  clearInterval(ON.poll);ON.poll=setInterval(()=>{if(document.visibilityState==='visible')onPoll();},2500);}
+  clearInterval(ON.poll);ON.poll=setInterval(()=>{if(document.visibilityState==='visible')onPoll();},2500);setTimeout(KIT.tbStart,300);}
 function onStateUI(){const free=GM.order.filter(p=>ON.seats&&ON.seats[p]&&ON.seats[p].kind==='open');
   document.getElementById('onState').innerHTML=(ON.seat?`Du spielst <b style="color:${PCOL[ON.seat]}">${PNAME[ON.seat]}</b>. `:'Du schaust zu. ')+(free.length?`Freie Plätze: ${free.map(p=>PNAME[p]).join(', ')} – Link teilen:`:'Alle Plätze sind besetzt. Link zum Zuschauen:');}
 function onShare(){const u=onLink();if(navigator.share)navigator.share({title:'Schach ohne Grenzen',text:'Spiel mit mir Schach ohne Grenzen!',url:u}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>alert('Link kopiert.'));}
 let pushing=0;
-function onPush(){if(!ON.code)return;const g=Object.assign({},GM);delete g.online;
-  const body={t:ON.token,mover:GM.lastMoverSeat,snap:JSON.stringify({pos:encodePos(),gm:g,moves,ep:EP}),next:GM.over?null:gCur(),over:GM.over,last:{text:GM.lastText||''},hint:ON.seat,result:GM.over?`${PNAME[GM.winner]} gewinnt.`:''};
+function onPush(isTimeout){if(!ON.code)return;const g=Object.assign({},GM);delete g.online;
+  const body={t:ON.token,mover:GM.lastMoverSeat,snap:JSON.stringify({pos:encodePos(),gm:g,moves,ep:EP}),next:GM.over?null:gCur(),over:GM.over,last:{text:GM.lastText||''},hint:ON.seat,timeout:!!isTimeout,result:GM.over?`${PNAME[GM.winner]} gewinnt.`:''};
   pushing++;ON.chain=(ON.chain||Promise.resolve()).then(async()=>{try{body.v=ON.v;const j=await api('/fern/g/'+ON.code+'/move',body);if(j.ok)ON.v=j.v;else if(j.state){clearTimeout(aiT);onApply(j.state);}}catch(e){}finally{pushing--;}});}
-async function onPoll(){if(!ON.code||pushing)return;try{const st=await api('/fern/g/'+ON.code+'/state'+(ON.token?'?t='+ON.token:''));if(st._status!==200)return;ON.seats=st.seats;if(st.v>ON.v)onApply(st);else{onStateUI();renderTurn();}}catch(e){}}
-function onApply(st){ON.seats=st.seats;ON.v=st.v;
-  if(st.snap){try{const d=JSON.parse(st.snap);const prev=moves.length;decodePos(d.pos);EP=d.ep||null;const keep=ON.seat;GM=Object.assign(d.gm,{online:true});moves=d.moves||[];ON.seat=keep;
+async function onPoll(){if(!ON.code||pushing)return;try{const st=await api('/fern/g/'+ON.code+'/state'+(ON.token?'?t='+ON.token:''));if(st._status!==200)return;ON.seats=st.seats;if(st.rtc)ON.rtc=st.rtc;if(st.v>ON.v)onApply(st);else{onStateUI();renderTurn();}KIT.tbTick();}catch(e){}}
+function onApply(st){ON.seats=st.seats;ON.v=st.v;if(st.rtc)ON.rtc=st.rtc;
+  if(st.snap){try{const d=JSON.parse(st.snap);const prev=moves.length;decodePos(d.pos);EP=d.ep||null;const keep=ON.seat;GM=Object.assign(d.gm,{online:true});GM.rec=GM.rec||[];moves=d.moves||[];ON.seat=keep;
     if(moves.length===prev+1&&GM.lastMove){const pc=S.get(key(...GM.lastMove.to));if(pc)animStart(GM.lastMove.from,GM.lastMove.to,pc,null);}}catch(e){}}
   clearTimeout(aiT);sel=null;targets=[];onStateUI();render();turnStart();}
 async function onOpen(code){code=String(code).toLowerCase().replace(/[^a-z0-9]/g,'');let tok='';try{tok=localStorage.getItem('grenz.t.'+code)||'';}catch(e){}
   let st;try{st=await api('/fern/g/'+code+'/state'+(tok?'?t='+tok:''));}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
   if(st._status===404||st.game!=='grenz'){alert('Diese Partie gibt es nicht (mehr).');return;}
-  ON={code,token:st.seat?tok:'',seat:st.seat||null,v:-1,seats:st.seats,st};
+  ON={code,token:st.seat?tok:'',seat:st.seat||null,v:-1,seats:st.seats,st,rtc:st.rtc};
   const free=st.order.filter(p=>st.seats[p].kind==='open');
   if(!st.seat&&free.length&&!st.over){const who=st.order.filter(p=>st.seats[p].kind==='human').map(p=>st.seats[p].name).join(' und ');
-    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Schach ohne Grenzen ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}). Du spielst ${PNAME[free[0]]}.`;
+    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Schach ohne Grenzen ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}${tcText(st.rules)}${st.rules&&st.rules.live===false?', Fernpartie':''}). Du spielst ${PNAME[free[0]]}.`;
     try{document.getElementById('joinName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
     document.getElementById('joinBox').style.display='flex';return;}
   onBegin(st);}
 function onBegin(st){const ctrl={};for(const p of st.order)ctrl[p]=st.seats[p].kind==='ai'?(st.seats[p].lvl||'medium'):'open';
   setup(st.order.length);hist=[];moves=[];EP=null;
-  GM={order:st.order,ctrl,end:st.rules&&st.rules.end==='last'?'last':'first',promo:st.rules&&st.rules.opts==='rank'?'rank':'zone',idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:st.order.find(p=>st.seats[p].kind==='human')};
+  const r=st.rules||{},tc=r.tcMove||r.tcGame?{move:r.tcMove||0,game:r.tcGame||0}:null;
+  GM={order:st.order,ctrl,end:r.end==='last'?'last':'first',promo:r.opts==='rank'?'rank':'zone',idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:st.order.find(p=>st.seats[p].kind==='human'),rec:[],tc};KIT.clockInit(GM);
   ON.v=-1;onEnter();if(st.snap||st.v>0)onApply(st);else ON.v=st.v;}
 async function onJoin(){const name=(document.getElementById('joinName').value||'').trim().slice(0,18)||'Gast';try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
   const j=await api('/fern/g/'+ON.code+'/join',{name});
   if(!j.seat){alert(j.error==='full'?'Inzwischen sind alle Plätze vergeben – du kannst zuschauen.':'Beitreten nicht möglich.');onWatch();return;}
-  try{localStorage.setItem('grenz.t.'+ON.code,j.token);}catch(e){}ON.token=j.token;ON.seat=j.seat;document.getElementById('joinBox').style.display='none';onBegin(j.state);}
+  try{localStorage.setItem('grenz.t.'+ON.code,j.token);}catch(e){}ON.token=j.token;ON.seat=j.seat;ON.rtc=j.state.rtc;document.getElementById('joinBox').style.display='none';onBegin(j.state);if(GM)GM.turnAt=Date.now();}
 function onWatch(){document.getElementById('joinBox').style.display='none';ON.seat=null;onBegin(ON.st);}
 // ================= Start =================
+function tcText(r){if(!r||!(r.tcMove||r.tcGame))return'';return', '+[r.tcMove?(KIT.TC_MOVE.find(x=>x[0]===r.tcMove)||[0,r.tcMove+' s'])[1]+' pro Zug':'',r.tcGame?r.tcGame+' Min. pro Partie':''].filter(Boolean).join(', ');}
+KIT.init({game:'grenz',title:'Schach ohne Grenzen',descr:'normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler; bei 3 oder 4 Spielern stehen die Heere wie an einem Tisch, Bauern ziehen auf den gegenüberliegenden Spieler zu',
+  PCOL,PNAME,VAL,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,clockShow:()=>renderTurn(),onColors:()=>{render();}});
+document.getElementById('tcBox').innerHTML=KIT.tcHTML();document.getElementById('kitBox').innerHTML=KIT.tbHTML();
+// ---------- Einführung ----------
+function tourStart(){const ui=document.getElementById('ui');if(ui.classList.contains('min'))toggleUI();
+  KIT.tour([
+  {t:'♾️ Willkommen bei Schach ohne Grenzen',x:'Ganz normales Schach – nur hat das Brett keinen Rand. Figuren dürfen in jede Richtung ausweichen, angreifen und umzingeln.'},
+  {t:'Das Brett bewegen',x:'Ziehen verschiebt das Brett, Mausrad oder zwei Finger zoomen. Doppelklick zeigt alle Figuren. Die Übersicht unten rechts zeigt das ganze Geschehen – antippen springt dorthin.',el:'#mini'},
+  {t:'Zu zweit, zu dritt, zu viert',x:'Zu zweit steht alles wie gewohnt. Zu dritt und zu viert sitzen die Heere wie an einem Tisch; jeder Bauer zieht auf den Spieler gegenüber zu. Die farbigen Flächen sind die Startzonen.',el:'#gN'},
+  {t:'Umwandlung',x:'Bei 3 oder 4 Spielern legt der Gastgeber fest: Der Bauer wird zur Dame, sobald er eine fremde Startzone betritt – oder erst auf deren Grundreihe der Admiräle. Gegenüber gilt immer die verlängerte Grundreihe.',el:'#promoRow'},
+  {t:'Figur antippen',x:'Grüne Punkte: freie Felder. Roter Ring: Schlagen. Blaues Feld: Rochade. Auch gegnerische Figuren kann man antippen – ihre Züge erscheinen hellblau und orange, nur zur Ansicht. Der letzte Zug ist in der Farbe des Ziehenden markiert, ein König im Schach glüht rot.'},
+  {t:'Gegner und Uhr',x:'Für jeden Platz: Mensch, online eingeladen oder Computer in vier Stärken (leicht, mittel, stark, Meister). Mit Zeit pro Zug oder pro Partie – oder ganz ohne Uhr.',el:'#gSeatRows'},
+  {t:'Online: live oder als Fernpartie',x:'Wähle bei einem Platz „online eingeladen“. Live spielt ihr gleichzeitig, mit Monitoren, Kamera, Mikrofon, Chat und automatischer Übersetzung. Eine Fernpartie zieht jeder, wann er Zeit hat.'},
+  {t:'Nach der Partie',x:'„🔬 Auswertung“ zeigt Fehler, Schlüsselmomente und eine psychologische Auswertung eurer Spielweise. Auf Wunsch schreibt eine KI einen professionellen Bericht. Viel Spaß!'}]);}
 gSeats();setup(2);resize();fitAll();
 if(QS.get('g'))onOpen(QS.get('g'));
 window.GZ={get S(){return S;},get GM(){return GM;},legalMoves,aiMove,gameMove,setup,inCheck,promotes,attackers};

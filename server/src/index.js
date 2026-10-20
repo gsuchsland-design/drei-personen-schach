@@ -50,8 +50,11 @@ async function aiReport(req, env) {
   let b; try { b = await req.json(); } catch (e) { return json({ error: 'bad json' }, 400); }
   const facts = String(b.facts || '').slice(0, 9000), lang = LANGNAME[b.lang] ? b.lang : 'de';
   if (facts.length < 50) return json({ error: 'zu wenig Daten' }, 400);
+  const GAMES = { raum: 'Schach der 6 Reiche (Schach im Würfel aus 8 × 8 × 8 Feldern für 2 bis 6 Spieler; Bündnisse sind erlaubt)',
+    grenz: 'Schach ohne Grenzen (normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler; Bündnisse sind erlaubt)' };
+  const gameTxt = GAMES[b.game] || 'Drei-Personen-Schach (drei Spieler, Bündnisse und Verrat sind erlaubt, Mitschrift der Gespräche nur mit Zustimmung aller)';
   const system = 'Du bist ein erfahrener Schachtrainer und Spielpsychologe. Du bekommst die automatische Auswertung einer Partie ' +
-    'Drei-Personen-Schach (drei Spieler, Bündnisse und Verrat sind erlaubt, Mitschrift der Gespräche nur mit Zustimmung aller). ' +
+    gameTxt + '. ' +
     'Schreibe daraus einen lebendigen, fairen Bericht mit höchstens 280 Wörtern, Sprache: ' + LANGNAME[lang] + '. ' +
     'Gliederung mit kurzen Zwischenüberschriften: Verlauf, Wendepunkte, Spielweise und Psychologie, Tipps. ' +
     'Regeln: Nutze ausschließlich die gegebenen Fakten; erfinde keine Züge, Zahlen, Zitate oder Ereignisse (zum Beispiel kein Ende eines Bündnisses, wenn es nicht in den Fakten steht). ' +

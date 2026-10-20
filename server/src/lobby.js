@@ -55,7 +55,7 @@ function cleanRules(r) {
     lvl: LEVELS.includes(r.lvl) ? r.lvl : null,
     cam: !!r.cam, spec: ['ask', 'always', 'never'].includes(r.spec) ? r.spec : 'ask',
     lang: clean(r.lang, 5),
-    end: r.end === 'last' ? 'last' : r.end === 'first' ? 'first' : undefined, opts: r.opts ? clean(r.opts, 80) : undefined,
+    end: r.end === 'last' ? 'last' : r.end === 'first' ? 'first' : undefined, live: r.live === false ? false : r.live ? true : undefined, opts: r.opts ? clean(r.opts, 80) : undefined,
   };
 }
 
