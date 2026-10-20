@@ -106,7 +106,7 @@ export class Lobby {
       if (ipKey && Object.values(this.list).filter((e) => e.ip === ipKey).length >= MAX_PER_IP) return json({ error: 'too many' }, 429);
       for (const e of Object.values(this.list)) if (e.code === code && e.kind === kind) delete this.list[e.id];   // gleiche Partie neu anbieten
       const now = Date.now(), id = randStr(10), key = randStr(20, '0123456789abcdef');
-      const e = { id, key, kind, game: b.game === 'raum' ? 'raum' : 'dps', code, host: safeName(b.host, 'Gastgeber'), seats: cleanSeats(b.seats, b.order), order: Array.isArray(b.order) ? b.order.slice(0, 6) : null,
+      const e = { id, key, kind, game: ['raum', 'grenz'].includes(b.game) ? b.game : 'dps', code, host: safeName(b.host, 'Gastgeber'), seats: cleanSeats(b.seats, b.order), order: Array.isArray(b.order) ? b.order.slice(0, 6) : null,
         rules: cleanRules(b.rules), started: !!b.started, created: now, seen: now, ip: ipKey, reports: [] };
       this.list[id] = e;
       await this.store();

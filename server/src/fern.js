@@ -173,9 +173,9 @@ export class Fern {
 
   async create(b) {
     if (await this.state.storage.get('g')) return json({ error: 'exists' }, 409);
-    const game = b.game === 'raum' ? 'raum' : 'dps';
+    const game = ['raum', 'grenz'].includes(b.game) ? b.game : 'dps';
     let order = ORDER;
-    if (game === 'raum') {
+    if (game !== 'dps') {
       const o = Array.isArray(b.order) ? b.order.filter((p, i, a) => ALL.includes(p) && a.indexOf(p) === i) : [];
       if (o.length < 2) return json({ error: 'order' }, 400);
       order = o;
@@ -190,10 +190,10 @@ export class Fern {
     }
     const now = Date.now();
     const rules = { help: !(b.rules && b.rules.help === false) };
-    if (game === 'raum') { rules.end = b.rules && b.rules.end === 'last' ? 'last' : 'first'; rules.opts = clean(b.rules && b.rules.opts, 80); }
+    if (game !== 'dps') { rules.end = b.rules && b.rules.end === 'last' ? 'last' : 'first'; rules.opts = clean(b.rules && b.rules.opts, 80); }
     const used = {}; for (const p of order) used[p] = 0;
     const g = { code: b.code, created: now, updated: now, v: 0, snap: null, next: order[0], over: false, last: null, used, seats, rules, game };
-    if (game === 'raum') g.order = order;
+    if (game !== 'dps') g.order = order;
     if (b.public) {   // in der öffentlichen Lobby anbieten
       seats[me].name = safeName(seats[me].name, 'Spieler');
       const r = await lobbyCall(this.env, 'offer', { kind: 'fern', game, code: b.code, host: seats[me].name, seats: this.lobbySeats(g), order: ord(g),
