@@ -2,8 +2,8 @@
 <html lang="de"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Raumschach – Analysebrett</title>
-<meta name="description" content="Analysebrett für Raumschach: ein Würfel aus 8 × 8 × 8 Feldern mit sechs Heimatquadern. Figuren setzen, Zugmöglichkeiten ansehen, Regeln ausprobieren, Stellung teilen.">
+<title>Schach der 6 Reiche – Würfelschach für 2 bis 6 Spieler</title>
+<meta name="description" content="Schach der 6 Reiche (Sd6R): ein Würfel aus 8 × 8 × 8 Feldern mit sechs Heimatquadern. Figuren setzen, Zugmöglichkeiten ansehen, Regeln ausprobieren, Stellung teilen.">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#16181d">
 <style>
@@ -41,14 +41,14 @@ a { color:#8fb6ff; }
 <div id="turn"></div>
 <div id="joinBox" style="display:none;position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
  <div style="background:#1f2330;border:1px solid #444;border-radius:14px;padding:18px;max-width:360px;width:92%">
-  <h3 style="margin-top:0">🧊 Einladung zum Raumschach</h3>
+  <h3 style="margin-top:0">👑 Einladung zum Schach der 6 Reiche</h3>
   <p id="joinTxt"></p>
   <input type="text" id="joinName" maxlength="18" placeholder="Dein Name" style="width:100%">
   <div class="row" style="margin-top:10px"><button class="on" onclick="onJoin()">Mitspielen</button><button onclick="onWatch()">Zuschauen</button></div>
  </div>
 </div>
 <div id="ui">
- <h1>🧊 Raumschach <span class="hint">Partie &amp; Analysebrett · Entwurf</span><button id="minBtn" onclick="toggleUI()" title="Leiste ein-/ausklappen">▴</button></h1>
+ <h1>👑 Schach der 6 Reiche <span class="hint">Partie &amp; Analysebrett · Entwurf</span><button id="minBtn" onclick="toggleUI()" title="Leiste ein-/ausklappen">▴</button></h1>
  <div class="body">
   <div class="hint">Würfel aus 8 × 8 × 8 Feldern, an jeder Seite ein Heimatquader mit 8 × 8 × 4 Feldern. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom, Rechtsklick-Ziehen/zwei Finger = verschieben.</div>
 
@@ -125,7 +125,7 @@ a { color:#8fb6ff; }
 
   <h2>Züge</h2>
   <div id="log"></div>
-  <p class="hint" style="margin-top:12px"><a href="spiel.html">← zum Drei-Personen-Schach</a> · <a href="index.html#start">Startseite</a></p>
+  <p class="hint" style="margin-top:12px"><a href="reiche-regeln.html" target="_blank">📖 Regeln</a> · <a href="spiel.html">← zum Drei-Personen-Schach</a> · <a href="index.html#start">Startseite</a></p>
  </div>
 </div>
 <script src="lib/three.min.js"></script>
@@ -414,7 +414,7 @@ function decode(s){try{const[ver,o,ps]=s.split('_');if(ver!=='r1')return false;
   return true;}catch(e){return false;}}
 function share(){const u=location.origin+location.pathname+'?r='+encode();const f=document.getElementById('shareTxt');f.style.display='block';f.value=u;
   const ok=()=>{document.getElementById('shareOk').textContent='✓ kopiert';setTimeout(()=>document.getElementById('shareOk').textContent='',2500);};
-  if(navigator.share&&/Mobi|Android/i.test(navigator.userAgent)){navigator.share({title:'Raumschach-Stellung',url:u}).catch(()=>{});return;}
+  if(navigator.share&&/Mobi|Android/i.test(navigator.userAgent)){navigator.share({title:'Schach der 6 Reiche – Stellung',url:u}).catch(()=>{});return;}
   if(navigator.clipboard)navigator.clipboard.writeText(u).then(ok,()=>{f.select();});else f.select();}
 
 
@@ -619,7 +619,7 @@ function onEnter(){
 function onStateUI(){const free=GM.order.filter(p=>ON.seats&&ON.seats[p]&&ON.seats[p].kind==='open');
   document.getElementById('onState').innerHTML=(ON.seat?`Du spielst <b style="color:${PCOL[ON.seat]}">${PNAME[ON.seat]}</b>. `:'Du schaust zu. ')+
     (free.length?`Freie Plätze: ${free.map(p=>`<span style="color:${PCOL[p]}">${PNAME[p]}</span>`).join(', ')} – Link teilen:`:'Alle Plätze sind besetzt. Link zum Zuschauen:');}
-function onShare(){const u=onLink();if(navigator.share)navigator.share({title:'Raumschach',text:'Spiel mit mir Raumschach!',url:u}).catch(()=>{});
+function onShare(){const u=onLink();if(navigator.share)navigator.share({title:'Schach der 6 Reiche',text:'Spiel mit mir Schach der 6 Reiche!',url:u}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>alert('Link kopiert.'));}
 // Züge nacheinander an den Server schicken (Computerzüge können schnell aufeinander folgen)
 let pushing=0;
@@ -647,12 +647,12 @@ function onApply(st,force){
 async function onOpen(code){
   code=String(code).toLowerCase().replace(/[^a-z0-9]/g,'');let tok='';try{tok=localStorage.getItem('raum.t.'+code)||'';}catch(e){}
   let st;try{st=await api('/fern/g/'+code+'/state'+(tok?'?t='+tok:''));}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
-  if(st._status===404||st.game!=='raum'){alert('Diese Raumschach-Partie gibt es nicht (mehr).');return;}
+  if(st._status===404||st.game!=='raum'){alert('Diese Partie gibt es nicht (mehr).');return;}
   ON={code,token:st.seat?tok:'',seat:st.seat||null,v:-1,seats:st.seats,st};
   const free=st.order.filter(p=>st.seats[p].kind==='open');
   if(!st.seat&&free.length&&!st.over){
     const who=st.order.filter(p=>st.seats[p].kind==='human').map(p=>st.seats[p].name).join(' und ');
-    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Raumschach ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}). Du spielst ${PNAME[free[0]]}.`;
+    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Schach der 6 Reiche ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}). Du spielst ${PNAME[free[0]]}.`;
     try{document.getElementById('joinName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
     document.getElementById('joinBox').style.display='flex';return;}
   onBegin(st);

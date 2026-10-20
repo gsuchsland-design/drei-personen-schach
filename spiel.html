@@ -623,7 +623,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie aus Datei laden</button>
     <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
     <button onclick="aboardOpen()" style="background:#355f8a" title="Stellungen aufbauen, Züge prüfen und teilen – unabhängig von einer Partie">🔬 Analysebrett</button>
-    <button onclick="location.href='raum.html?v='+Date.now()" style="background:#5a3f8a" title="Schach im Würfel: 8 × 8 × 8 Felder mit sechs Heimatquadern – Analysebrett zum Ausprobieren der Regeln">🧊 Raumschach (Entwurf)</button>
+    <button onclick="location.href='raum.html?v='+Date.now()" style="background:#5a3f8a" title="Schach im Würfel für 2 bis 6 Spieler: 8 × 8 × 8 Felder mit sechs Heimatquadern">👑 Schach der 6 Reiche</button>
     <button onclick="tourFromSetup()" style="background:#7a6420" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
     <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · <a href="index.html#start" style="color:#8fb6ff">Startseite</a> · <a href="regeln.html" style="color:#8fb6ff">Regeln</a> · <a href="strategie.html" style="color:#8fb6ff">Strategie</a> · <a href="impressum.html" style="color:#8fb6ff">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
   </div>
@@ -659,7 +659,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <div id="pubModal" class="netModal"><div class="netBox" style="max-width:560px">
   <h3>🌍 Offene Spiele <button class="lbMin" onclick="pubClose()" title="Schließen">✕</button></h3>
   <div class="lbHint" style="margin-top:0">Einladungen, die andere öffentlich gemacht haben: mitspielen, zuschauen – oder selbst eine Partie anbieten (Häkchen „In der öffentlichen Lobby anbieten“ beim Erstellen).</div>
-  <div id="pubTabs"><button data-f="all" class="on" onclick="pubFilter('all')">Alle</button><button data-f="live" onclick="pubFilter('live')">🌐 Live</button><button data-f="fern" onclick="pubFilter('fern')">✉️ Fernpartien</button><button data-f="raum" onclick="pubFilter('raum')">🧊 Raumschach</button></div>
+  <div id="pubTabs"><button data-f="all" class="on" onclick="pubFilter('all')">Alle</button><button data-f="live" onclick="pubFilter('live')">🌐 Live</button><button data-f="fern" onclick="pubFilter('fern')">✉️ Fernpartien</button><button data-f="raum" onclick="pubFilter('raum')">👑 6 Reiche</button></div>
   <div id="pubList"></div>
   <button class="lbLeave" onclick="pubLoad()">🔄 Aktualisieren</button>
   <button class="lbLeave" onclick="pubClose()">Zurück</button>
@@ -794,7 +794,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102005"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102006"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -826,7 +826,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-20 08:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-20 12:30';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -1898,7 +1898,7 @@ function pubRender(){
     const canPlay=e.open>0&&(e.kind==='fern'||!e.started),canWatch=e.kind==='fern'?e.started||!e.open:r.spec!=='never'&&(e.started||!e.open);
     const st=e.started?(e.kind==='fern'&&e.open?T('läuft – freie Plätze können noch besetzt werden'):T('läuft')):T('wartet auf Mitspieler');
     const code=String(e.code).replace(/[^a-z0-9]/g,''),kind=e.kind==='fern'?'fern':'live';
-    return `<div class="pubCard"><div class="pubHead">${raum?'🧊 '+T('Raumschach'):kind==='fern'?'✉️ '+T('Fernpartie'):'🌐 '+T('Live')} · <b>${T('Partie von {0}',[esc(e.host)])}</b>${lg}<span class="pubAge">${pubAge(e.age)}</span></div>
+    return `<div class="pubCard"><div class="pubHead">${raum?'👑 '+T('Schach der 6 Reiche'):kind==='fern'?'✉️ '+T('Fernpartie'):'🌐 '+T('Live')} · <b>${T('Partie von {0}',[esc(e.host)])}</b>${lg}<span class="pubAge">${pubAge(e.age)}</span></div>
       <div class="pubSeats">${seats}</div><div class="pubRules">${parts.join(' · ')}</div><div class="pubState">${st}</div>
       <div class="pubBtns">${canPlay?`<button onclick="pubGo('${raum?'raum':kind}','${code}')">▶ ${T('Mitspielen')}</button>`:''}${canWatch?`<button class="alt" onclick="pubGo('${raum?'raum':kind}','${code}')">👀 ${T('Zuschauen')}</button>`:''}<button class="rep" onclick="pubReport('${esc(e.id)}')" title="${T('Unangemessenen Namen melden')}">⚑</button></div></div>`;
   }).join('');
