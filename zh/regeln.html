@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>规则 – 三人象棋</title>
+<meta name="description" content="三人象棋的完整规则：棋盘、穿过中央的走法、兵、王车易位、救援义务、将死、计时和计分。">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="规则 – 三人象棋">
+<meta property="og:description" content="三人象棋的完整规则：棋盘、穿过中央的走法、兵、王车易位、救援义务、将死、计时和计分。">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">三人象棋</a>
+<nav class="main"><a href="../index.html#start">首页</a><a href="regeln.html" class=on>规则</a><a href="../strategie.html">策略</a><a href="reiche-regeln.html">六国</a><a href="grenzenlos-regeln.html">无界</a><a href="../ueber.html">关于游戏</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../regeln.html">Deutsch</option><option value="../en/regeln.html">English</option><option value="../fr/regeln.html">Français</option><option value="../es/regeln.html">Español</option><option value="../it/regeln.html">Italiano</option><option value="../pt/regeln.html">Português</option><option value="../nl/regeln.html">Nederlands</option><option value="../pl/regeln.html">Polski</option><option value="../tr/regeln.html">Türkçe</option><option value="../ru/regeln.html">Русский</option><option value="../uk/regeln.html">Українська</option><option value="regeln.html" selected>中文</option><option value="../ja/regeln.html">日本語</option><option value="../ko/regeln.html">한국어</option><option value="../th/regeln.html">ไทย</option><option value="../ar/regeln.html">العربية</option><option value="../is/regeln.html">Íslenska</option><option value="../da/regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ 立即开玩</a>
+</div></header>
+<main>
+<article>
+<h1>游戏规则</h1>
+<p class="lead">会下普通国际象棋的人，五分钟就能上手。这里列出全部规则——从棋盘、穿过中央的走法，到让三人对局真正公平的救援义务。</p>
+<figure><img src="../img/brett-2d.webp" width="382" height="354" alt="从上方看星形棋盘" style="max-width:420px;display:block;margin:0 auto"><figcaption>棋盘：三个区，每区 4 × 8 格，行 A 到 D，列 1 到 8。</figcaption></figure>
+
+   
+   <h2>玩家与棋盘</h2>
+   <ul>
+    <li>三位玩家：<b style="color:#5599ff">蓝</b>、<b style="color:#44ee22">绿</b>、<b style="color:#ff5533">红</b>。轮流走棋：蓝 → 绿 → 红。</li>
+    <li>棋盘是由三个区组成的大卫之星，每区 4 × 8 格：行 <b>A–D</b>，列 <b>1–8</b>。A 行是自己的底线，D 行紧邻棋盘中央。</li>
+    <li>每位玩家和普通国际象棋一样有 16 枚棋子。王在 A5，后在 A4。</li>
+   </ul>
+   <h2>穿过中央的走法</h2>
+   <ul>
+    <li>越过自己 D 行的棋子进入<b>相邻区</b>——到该区的 D 行——然后继续朝该区的 A 行走。</li>
+    <li>列会镜像翻转：第 c 列变成第 <b>9 − c</b> 列。</li>
+    <li><b>车和后（直线）：</b>从第 1–3 列进入一个相邻区，从第 6–8 列进入另一个。从中间的第 4、5 列可以到达<b>两个</b>区。</li>
+    <li><b>象和后（斜线）：</b>象也能越入相邻区，在中央尖端处可进入两个区。</li>
+    <li><b>马：</b>前后两步、横向一步（或反之），也可穿过中央。边界处的少数过渡除外。</li>
+    <li><b>王：</b>向任何方向走一格，也可进入相邻区。</li>
+    <li>在游戏的“📖 规则”中，可以在练习棋盘上试走每一枚棋子。</li>
+   </ul>
+   <h2>兵</h2>
+   <ul>
+    <li>在自己的区内，兵朝中央前进（A → D），从 B 行出发也可走两格。</li>
+    <li>穿过中央后进入相邻区，继续朝该区的 A 行前进。兵斜向前吃子，也可穿过中央。</li>
+    <li><b>升变：</b>在他人区的 A 行。</li>
+    <li><b>吃过路兵：</b>兵走两步后，在走两步的玩家再次走棋之前，<b>两位</b>对手都可以吃过路兵。</li>
+   </ul>
+   <h2>王车易位</h2>
+   <ul><li>王（A5）和车未曾移动，中间的格子空着且未受攻击。短易位：王到 A7，车 A8 → A6。长易位：王到 A3，车 A1 → A4。</li></ul>
+   <h2 id="hilfspflicht">将军、救援义务与将死</h2>
+   <ul>
+    <li>被将军的一方必须解除将军。任何走法都不能让自己的王处于被将军状态。</li>
+    <li><b>救援义务：</b>如果某位玩家被将军，而第三位玩家在他<i>之前</i>走棋，则第三位玩家不得走出使被威胁者被将死的棋。如果被威胁者已经被将死，第三位玩家必须解救他——若做不到，将死成立。如果不论第三位玩家怎么走，被威胁者都能自救，则没有任何限制。</li>
+    <li><b>将死即结束对局。</b>获胜者是<b>向王将军的人</b>——而不是只封住逃跑格的人。另外两人告负。</li>
+   </ul>
+   <h2>无棋可走</h2>
+   <ul><li>无法在不被将军的情况下走棋的玩家跳过一轮。如果没有人能再走棋，则由分数决定。</li></ul>
+   <h2>时间与分数</h2>
+   <ul>
+    <li>可选每步限时（超时 → 本步作废）和/或每局限时（用完 → 不能再走棋，棋子仍可被吃）。</li>
+    <li>分数：自己在棋盘上的棋子 + 吃掉的对手棋子。兵 1，马和象 3，车 4，后 6。平分时，用时较少者获胜。</li>
+   </ul>
+   <h2>操作</h2>
+   <ul>
+    <li>点击棋子 → 可走的格子亮起 → 点击目标格。“↶ 返回”或 Ctrl+Z 可以悔棋。</li>
+    <li>☰ 菜单 · 3D 视图 · 💾 保存 / 📂 载入 · ⏸ 暂停 · 🔊 声音 · ⛶ 全屏 · 👥 玩家窗口开/关。</li>
+    <li><b>电脑对手</b>各有个性：<b style="color:#5599ff">布鲁波</b>（温厚、热情）、<b style="color:#44ee22">格朗博</b>（暴躁、强壮）和 <b style="color:#ff5533">弗拉莫</b>（急性子、坐不住）。他们会随着局势高兴、生气、害怕、欢呼和哭泣。</li>
+   </ul>
+  
+<h2>记谱法</h2>
+<p>每个格子都有一个由三个字符组成的名字：区（B、G 或 R 分别代表蓝、绿、红）、行（A 到 D）和列（1 到 8）。所以 <b>BA5</b> 就是蓝区的 A5 格——开局时蓝王所在的位置。一步棋记作起点和终点，例如兵走两步记为 <b>BB4–BD4</b>；吃子用“×”，例如 <b>GC3×RD6</b>。</p>
+<p class="note">提示：在游戏中可以通过菜单 ☰ 显示坐标。右上角的着法列表以这种记法显示每一步，用 📼 可以逐步回放任何一局。</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../spiel.html">▶ 马上试试规则</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">版本信息</a><a href="../datenschutz.html">隐私</a><a href="../ueber.html#kontakt">联系</a><a href="regeln.html">规则</a><a href="../strategie.html">策略</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','zh')}catch(_){}});</script>
+</body></html>

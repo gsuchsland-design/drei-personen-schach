@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>六国象棋 – 规则</title>
+<meta name="description" content="六国象棋（Sd6R）规则：在 8 × 8 × 8 格的立方体中进行的象棋，供 2 至 6 人对弈，有独角兽、夜骑士、亚马逊等棋子。">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="六国象棋 – 规则">
+<meta property="og:description" content="六国象棋（Sd6R）规则：在 8 × 8 × 8 格的立方体中进行的象棋，供 2 至 6 人对弈，有独角兽、夜骑士、亚马逊等棋子。">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">三人象棋</a>
+<nav class="main"><a href="../index.html#start">首页</a><a href="regeln.html">规则</a><a href="../strategie.html">策略</a><a href="reiche-regeln.html" class=on>六国</a><a href="grenzenlos-regeln.html">无界</a><a href="../ueber.html">关于游戏</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../reiche-regeln.html">Deutsch</option><option value="../en/reiche-regeln.html">English</option><option value="../fr/reiche-regeln.html">Français</option><option value="../es/reiche-regeln.html">Español</option><option value="../it/reiche-regeln.html">Italiano</option><option value="../pt/reiche-regeln.html">Português</option><option value="../nl/reiche-regeln.html">Nederlands</option><option value="../pl/reiche-regeln.html">Polski</option><option value="../tr/reiche-regeln.html">Türkçe</option><option value="../ru/reiche-regeln.html">Русский</option><option value="../uk/reiche-regeln.html">Українська</option><option value="reiche-regeln.html" selected>中文</option><option value="../ja/reiche-regeln.html">日本語</option><option value="../ko/reiche-regeln.html">한국어</option><option value="../th/reiche-regeln.html">ไทย</option><option value="../ar/reiche-regeln.html">العربية</option><option value="../is/reiche-regeln.html">Íslenska</option><option value="../da/reiche-regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ 立即开玩</a>
+</div></header>
+<main>
+<article>
+<h1>六国象棋</h1>
+<p class="lead">一个 8 × 8 × 8 格的立方体，它的六个面上各有一个王国：一位玩家的本阵。最多六支军队从各个方向——上、下、左、右、前、后——攻入立方体。简称 <b>Sd6R</b>。</p>
+<p style="text-align:center"><a class="cta go" href="../raum.html">▶ 下六国象棋</a></p>
+<figure><img src="../img/reiche-brett.webp" alt="带有六种颜色、六个本阵的立方体" loading="lazy"><figcaption>六个王国，六种颜色：蓝、绿、红、黄、紫和青。</figcaption></figure>
+<h2>棋盘空间</h2>
+<ul>
+<li>中央的<b>立方体</b>有 8 × 8 × 8 = 512 格。开局时它是空的——战斗在这里展开。</li>
+<li>每一面都有一个 8 × 8 × 4 格的<b>本阵</b>。开局时玩家的棋子就摆在那里。</li>
+<li>总共 2.048 格。立方体外的角和棱不属于棋盘空间。</li>
+<li>格子用 1 到 16 的三个数字命名，例如 <b>8·8·8</b>——点击格子时游戏会显示它的名称。</li>
+</ul>
+<h2>玩家与顺序</h2>
+<p>可两人、三人、四人或六人对弈；空位可按需由电脑接手。两人时蓝和绿相对而坐，四人时蓝、红、绿、黄围着立方体坐成一圈，六人时再加入紫（下）和青（上）。轮流走棋。邀请者决定人数、哪些是电脑以及对局如何结束。</p>
+<h2>开局布置</h2>
+<figure><img src="../img/reiche-armee.webp" alt="本阵中的蓝色军队" loading="lazy"><figcaption>标准：最外层 64 名将领，前面 64 个兵。</figcaption></figure>
+<p>标准是大布置：本阵最外层站着 64 名将领——共八排，中间一排是王与后、车、象、马，周围是特殊棋子。前面 64 个兵填满整整一层。到立方体之间留有两层空位。若想小一些，可在游戏中选择一排 8 个兵、两排，或 4 × 4 的兵方阵。</p>
+<h2>空间中的方向</h2>
+<p>在立方体中，每一格都有三类方向：</p>
+<ul><li><b>轴向</b>（6）：向左/右、前/后或上/下走一步。</li>
+<li><b>面对角线</b>（12）：同时沿两条轴——就像棋盘上的斜线。</li>
+<li><b>体对角线</b>（8）：同时沿三条轴——从一个小立方体的一角穿到对角。</li></ul>
+<p>图中每枚棋子都位于空立方体的中央；绿点是它能到达的格子。右下角带附加标记的棋子是组合棋子。</p>
+<h2>棋子</h2>
+<div class="grid"><div class="card"><h3>车</h3><figure><img src="../img/reiche-fig-R.webp" alt="车：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>沿三条轴直线移动：左/右、前/后、上/下——6 个方向。从立方体中心最多 45 格。</p></div><div class="card"><h3>象</h3><figure><img src="../img/reiche-fig-B.webp" alt="象：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>沿面对角线——同时沿两条轴，就像棋盘上的象，只是在全部三个平面上：12 个方向。可设置为同时沿体对角线（20 个方向）。</p></div><div class="card"><h3>独角兽</h3><figure><img src="../img/reiche-fig-U.webp" alt="独角兽：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>只沿体对角线——同时沿三条轴，从立方体一角走到对角：8 个方向。这枚棋子源自费迪南德·马克的立体象棋（1907 年）。</p></div><div class="card"><h3>后</h3><figure><img src="../img/reiche-fig-Q.webp" alt="后：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>车、象和独角兽合为一体：全部 26 个方向（可设置为不含体对角线：18）。从中心最多 118 格——最强的经典棋子。</p></div><div class="card"><h3>王</h3><figure><img src="../img/reiche-fig-K.webp" alt="王：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>向 26 个方向中的任一方向走一格（可设置为不含体对角线：18）。每位玩家恰好有一个王。</p></div><div class="card"><h3>马</h3><figure><img src="../img/reiche-fig-N.webp" alt="马：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>沿一条轴两格、另一条轴一格——24 个目标格，可越过一切。可另设置跨三条轴的“2 + 1 + 1”（48 个目标）。</p></div><div class="card"><h3>夜骑士</h3><figure><img src="../img/reiche-fig-W.webp" alt="夜骑士：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>一种马步跳跃，只要每个落点都空着，就可以沿同一方向任意重复。在空立方体中能跳得非常远——途中落点会以圆点显示。</p></div><div class="card"><h3>女公爵</h3><figure><img src="../img/reiche-fig-H.webp" alt="女公爵：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>车 + 独角兽：轴向和体对角线。</p></div><div class="card"><h3>总督</h3><figure><img src="../img/reiche-fig-V.webp" alt="总督：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>象 + 独角兽：面对角线和体对角线。</p></div><div class="card"><h3>大主教</h3><figure><img src="../img/reiche-fig-A.webp" alt="大主教：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>象 + 马。</p></div><div class="card"><h3>大臣</h3><figure><img src="../img/reiche-fig-C.webp" alt="大臣：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>车 + 马。</p></div><div class="card"><h3>亚马逊</h3><figure><img src="../img/reiche-fig-M.webp" alt="亚马逊：从立方体中心出发的可能走法" loading="lazy"><figcaption></figcaption></figure><p>后 + 马——游戏中最强的棋子，从立方体中心最多可达 142 个目标。</p></div></div>
+<h2>兵</h2>
+<figure><img src="../img/reiche-fig-P.webp" alt="有两种吃子可能的蓝兵" loading="lazy"><figcaption>兵笔直朝立方体前进，斜向前吃子（红色格子）。</figcaption></figure>
+<ul>
+<li>兵每次直行一格——始终朝对面的王国前进。</li>
+<li>在自己的本阵中每次最多可走两格（可设置：仅第一步或始终）。</li>
+<li>斜向前吃子：前左、前右、前上、前下——4 个方向（可设置：也沿体对角线，8 个）。</li>
+<li><b>升变：</b>兵到达对面的本阵即升变为后（可设置：须到其最深一层）。</li>
+</ul>
+<h2>将军、将死与终局</h2>
+<figure><img src="../img/reiche-schach.webp" alt="被将军的王，以红框标出" loading="lazy"><figcaption>被将军的王以红框标出；上一步以颜色标记。</figcaption></figure>
+<ul>
+<li>被将军的一方必须解除将军。任何走法都不能让自己的王处于被将军状态。</li>
+<li>无法在不被将军的情况下走棋的玩家跳过一轮。</li>
+<li><b>终局方式——由房主选择：</b><br>
+“首次将死定胜负”：一旦有玩家被将死，对局结束；将军者获胜。<br>
+“淘汰”：被将死者出局，其棋子消失；继续进行，直到只剩一人。</li>
+<li>只剩王的玩家告负。</li>
+<li>一旦发生过吃子：连续 30 轮无吃子且无兵走动，则按子力判定（兵 1，马、象和独角兽 3，车和夜骑士 5，总督 5，大主教 6，女公爵和大臣 7，后 9，亚马逊 11）。</li>
+</ul>
+<h2>保持全局视野</h2>
+<figure><img src="../img/reiche-nachtreiter.webp" alt="夜骑士的路线及所有中途格子" loading="lazy"><figcaption>上一步及夜骑士的所有中途落点。</figcaption></figure>
+<ul>
+<li>点击棋子：其走法亮绿色，吃子亮红色。也可以点击对手的棋子——其走法以浅蓝和橙色显示，仅供查看。</li>
+<li>上一步以走棋方的颜色标出，并带有连线和所有中途落点。</li>
+<li>“🎯 我的军队”显示自己的军队，“颜色”可淡化或隐藏某个王国，“层”可单独挑出一层。</li>
+<li>旋转：拖动。缩放：鼠标滚轮或双指。平移：右键或双指。</li>
+</ul>
+<h2>所有变体的共同点</h2>
+<ul>
+<li><b>对手：</b>每个座位可以是本设备上的真人、在线邀请的真人或电脑——分四档：简单、中等、强和大师。大师还会预判对手的应对。</li>
+<li><b>有个性的怪兽：</b>电脑对手名叫布鲁波、格朗博、弗拉莫、扎波、斯普基和克拉基。他们在显示屏上高兴、生气，结盟对付领先者，有时也会背叛，会复仇——如果你愿意，他们还会说话。你可以在聊天中和他们谈判（“格朗博，我们一起进攻红方！”）。他们还会记住人类的下法。</li>
+<li><b>救援义务（三人起可选）：</b>如果某位玩家被将军，在他之前走棋的每个人都必须帮他：若他已被将死，这步棋必须解救他；若未被将死，这步棋不得将死他。无法相助的人就确定了将死。</li>
+<li><b>计时：</b>每步限时、每局限时或不计时。步时用完，本步作废；局时用尽，即出局。</li>
+<li><b>在线：</b>实时对局，配有显示屏、摄像头、麦克风、聊天、表情回应、字幕和自动翻译——或者通信对局，每个人有空再走（轮到你时会通知）。对局可在公共大厅发布；是否允许观战由房主决定。</li>
+<li><b>对局结束后：</b>逐步回放、带电脑建议的分析棋盘、含关键时刻的复盘、心理分析（复仇、失子后的紧张、默契结盟、言行对照），如有需要还有 AI 撰写的专业报告。</li>
+<li><b>此外：</b>可自由选择颜色（也有供色盲使用的符号）、音效、暂停、保存和载入、“我的对局”、新手入门、可安装为应用、全屏。</li>
+</ul>
+<p class="note">六国象棋仍是草稿，正在继续开发。走法规则可在游戏中的“可试验的走法规则”里修改。</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../raum.html">▶ 下六国象棋</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">版本信息</a><a href="../datenschutz.html">隐私</a><a href="../ueber.html#kontakt">联系</a><a href="regeln.html">规则</a><a href="../strategie.html">策略</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','zh')}catch(_){}});</script>
+</body></html>

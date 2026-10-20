@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>无界象棋 – 规则</title>
+<meta name="description" content="无界象棋规则：在无限棋盘上进行的普通国际象棋，供 2 至 4 人对弈，有出发区、升变规则、计时、怪兽和 3D 视图。">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="无界象棋 – 规则">
+<meta property="og:description" content="无界象棋规则：在无限棋盘上进行的普通国际象棋，供 2 至 4 人对弈，有出发区、升变规则、计时、怪兽和 3D 视图。">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">三人象棋</a>
+<nav class="main"><a href="../index.html#start">首页</a><a href="regeln.html">规则</a><a href="../strategie.html">策略</a><a href="reiche-regeln.html">六国</a><a href="grenzenlos-regeln.html" class=on>无界</a><a href="../ueber.html">关于游戏</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../grenzenlos-regeln.html">Deutsch</option><option value="../en/grenzenlos-regeln.html">English</option><option value="../fr/grenzenlos-regeln.html">Français</option><option value="../es/grenzenlos-regeln.html">Español</option><option value="../it/grenzenlos-regeln.html">Italiano</option><option value="../pt/grenzenlos-regeln.html">Português</option><option value="../nl/grenzenlos-regeln.html">Nederlands</option><option value="../pl/grenzenlos-regeln.html">Polski</option><option value="../tr/grenzenlos-regeln.html">Türkçe</option><option value="../ru/grenzenlos-regeln.html">Русский</option><option value="../uk/grenzenlos-regeln.html">Українська</option><option value="grenzenlos-regeln.html" selected>中文</option><option value="../ja/grenzenlos-regeln.html">日本語</option><option value="../ko/grenzenlos-regeln.html">한국어</option><option value="../th/grenzenlos-regeln.html">ไทย</option><option value="../ar/grenzenlos-regeln.html">العربية</option><option value="../is/grenzenlos-regeln.html">Íslenska</option><option value="../da/grenzenlos-regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ 立即开玩</a>
+</div></header>
+<main>
+<article>
+<h1>无界象棋</h1>
+<p class="lead">完全普通的国际象棋——只是棋盘没有边界。棋子可以向左、右、前、后随意躲闪。两人时照常；三人或四人时，各军如围桌而坐。</p>
+<p style="text-align:center"><a class="cta go" href="../grenzenlos.html">▶ 下无界象棋</a></p>
+<figure><img src="../img/grenz-partie.webp" alt="进行中的四人对局，带显示屏和怪兽" loading="lazy"><figcaption>四人对三只怪兽：布鲁波、弗拉莫和格朗博。</figcaption></figure>
+<h2>开局布置</h2>
+<figure><img src="../img/grenz-2p.webp" alt="两人的初始局面" loading="lazy"><figcaption>两人：熟悉的初始局面——只是棋盘向各个方向延伸。</figcaption></figure>
+<ul>
+<li><b>两人时</b>，蓝和绿像普通国际象棋那样摆放。</li>
+<li><b>三人和四人时</b>，各军如围桌而坐：蓝在下，红在左，绿在上，黄在右。各军之间隔着四行空地。每支军队都有两行宽的彩色<b>出发区</b>。</li>
+<li>每个兵都朝对面的玩家前进。</li>
+</ul>
+<div class="grid"><div class="card"><figure><img src="../img/grenz-3p.webp" alt="三人的初始局面" loading="lazy"><figcaption>三人</figcaption></figure></div><div class="card"><figure><img src="../img/grenz-4p.webp" alt="四人的初始局面" loading="lazy"><figcaption>四人</figcaption></figure></div></div>
+<h2>棋子</h2>
+<p>所有棋子的走法与普通国际象棋相同。不过在无限棋盘上，车、象和后可以走得很远：它们最多可越过最外侧的棋子十格——游戏会显示每一个可到达的格子。</p>
+<figure><img src="../img/grenz-dame.webp" alt="空旷处的后及其所有目标格" loading="lazy"><figcaption>空旷处的后：绿点是空格，红圈是吃子。</figcaption></figure>
+<h2>王车易位与吃过路兵</h2>
+<figure><img src="../img/grenz-rochade.webp" alt="带两种易位的王（蓝色标记）" loading="lazy"><figcaption>易位格以蓝色标出。在开阔的棋盘上，王也可以向后躲避。</figcaption></figure>
+<ul>
+<li><b>王车易位：</b>王和车都尚未移动，两者之间无子，王未被将军，也不经过受攻击的格子。王朝车的方向走两格，车跳过王。</li>
+<li><b>吃过路兵：</b>兵走两格时，对手的兵可以吃过路兵——多人对局时，直到走两格的玩家再次轮到为止。</li>
+</ul>
+<h2>升变</h2>
+<figure><img src="../img/grenz-umwandlung.webp" alt="蓝兵进入黄色出发区" loading="lazy"><figcaption>选择“出发区”时，蓝兵一进入黄色出发区就升变为后。</figcaption></figure>
+<ul>
+<li><b>两人时：</b>照常在对手的底线升变。</li>
+<li><b>三人或四人时由房主决定：</b>兵一进入<b>他人的出发区</b>就升变为后——或者要到达他人<b>将领所在的底线</b>才升变。正对面始终也以延长的底线为准。</li>
+</ul>
+<h2>将军、将死与终局</h2>
+<ul>
+<li>被将军的一方必须解除将军。任何走法都不能让自己的王处于被将军状态。被将军的王会发红光。</li>
+<li><b>终局方式——由房主选择：</b>“首次将死定胜负”：将死对方者获胜。“淘汰”：被将死者出局，其棋子消失；继续进行，直到只剩一人。</li>
+<li>只剩王的玩家告负。无法在不被将军的情况下走棋的玩家跳过一轮。</li>
+<li>一旦发生过吃子：连续 30 轮无吃子且无兵走动，则按子力判定（兵 1，马和象 3，车 5，后 9）。</li>
+</ul>
+<h2>保持全局视野</h2>
+<figure><img src="../img/grenz-3d.webp" alt="用国际象棋棋子显示的 3D 视图" loading="lazy"><figcaption>3D 视图——可选国际象棋棋子、星形棋子、宇宙飞船或符号。</figcaption></figure>
+<ul>
+<li><b>平移：</b>拖动。<b>缩放：</b>鼠标滚轮或双指。<b>双击：</b>显示全部棋子。</li>
+<li>右下角的<b>全局视图</b>显示所有动态；点击即可跳转过去。</li>
+<li><b>旋转棋盘：</b>己方在下、朝向当前行棋方或手动。</li>
+<li>点击棋子：其走法以绿色（空格）、红色（吃子）和蓝色（易位）显示。对手棋子的走法以浅蓝和橙色显示，仅供查看。上一步以走棋方的颜色标出。</li>
+</ul>
+<h2>所有变体的共同点</h2>
+<ul>
+<li><b>对手：</b>每个座位可以是本设备上的真人、在线邀请的真人或电脑——分四档：简单、中等、强和大师。大师还会预判对手的应对。</li>
+<li><b>有个性的怪兽：</b>电脑对手名叫布鲁波、格朗博、弗拉莫、扎波、斯普基和克拉基。他们在显示屏上高兴、生气，结盟对付领先者，有时也会背叛，会复仇——如果你愿意，他们还会说话。你可以在聊天中和他们谈判（“格朗博，我们一起进攻红方！”）。他们还会记住人类的下法。</li>
+<li><b>救援义务（三人起可选）：</b>如果某位玩家被将军，在他之前走棋的每个人都必须帮他：若他已被将死，这步棋必须解救他；若未被将死，这步棋不得将死他。无法相助的人就确定了将死。</li>
+<li><b>计时：</b>每步限时、每局限时或不计时。步时用完，本步作废；局时用尽，即出局。</li>
+<li><b>在线：</b>实时对局，配有显示屏、摄像头、麦克风、聊天、表情回应、字幕和自动翻译——或者通信对局，每个人有空再走（轮到你时会通知）。对局可在公共大厅发布；是否允许观战由房主决定。</li>
+<li><b>对局结束后：</b>逐步回放、带电脑建议的分析棋盘、含关键时刻的复盘、心理分析（复仇、失子后的紧张、默契结盟、言行对照），如有需要还有 AI 撰写的专业报告。</li>
+<li><b>此外：</b>可自由选择颜色（也有供色盲使用的符号）、音效、暂停、保存和载入、“我的对局”、新手入门、可安装为应用、全屏。</li>
+</ul>
+<p class="note">无界象棋仍是草稿，正在继续开发。</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../grenzenlos.html">▶ 下无界象棋</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">版本信息</a><a href="../datenschutz.html">隐私</a><a href="../ueber.html#kontakt">联系</a><a href="regeln.html">规则</a><a href="../strategie.html">策略</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','zh')}catch(_){}});</script>
+</body></html>

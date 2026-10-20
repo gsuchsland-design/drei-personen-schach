@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uk"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Правила – Шахи на трьох</title>
+<meta name="description" content="Повні правила шахів на трьох: дошка, ходи через центр, пішаки, рокіровка, обов’язок допомоги, мат, контроль часу та підрахунок очок.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:title" content="Правила – Шахи на трьох">
+<meta property="og:description" content="Повні правила шахів на трьох: дошка, ходи через центр, пішаки, рокіровка, обов’язок допомоги, мат, контроль часу та підрахунок очок.">
+<meta property="og:image" content="../img/brett-3d.webp">
+<link rel="stylesheet" href="../site.css">
+
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="../index.html#start"><img src="../icon-192.png" alt="">Шахи на трьох</a>
+<nav class="main"><a href="../index.html#start">Головна</a><a href="regeln.html" class=on>Правила</a><a href="../strategie.html">Стратегія</a><a href="reiche-regeln.html">6 королівств</a><a href="grenzenlos-regeln.html">Без меж</a><a href="../ueber.html">Про гру</a></nav><select class="lang" aria-label="Sprache" onchange="location.href=this.value"><option value="../regeln.html">Deutsch</option><option value="../en/regeln.html">English</option><option value="../fr/regeln.html">Français</option><option value="../es/regeln.html">Español</option><option value="../it/regeln.html">Italiano</option><option value="../pt/regeln.html">Português</option><option value="../nl/regeln.html">Nederlands</option><option value="../pl/regeln.html">Polski</option><option value="../tr/regeln.html">Türkçe</option><option value="../ru/regeln.html">Русский</option><option value="regeln.html" selected>Українська</option><option value="../zh/regeln.html">中文</option><option value="../ja/regeln.html">日本語</option><option value="../ko/regeln.html">한국어</option><option value="../th/regeln.html">ไทย</option><option value="../ar/regeln.html">العربية</option><option value="../is/regeln.html">Íslenska</option><option value="../da/regeln.html">Dansk</option></select>
+<a class="play" href="../spiel.html">▶ Грати</a>
+</div></header>
+<main>
+<article>
+<h1>Правила гри</h1>
+<p class="lead">Хто знає звичайні шахи, може почати вже за п’ять хвилин. Тут усі правила повністю – від дошки й ходів через центр до обов’язку допомоги, який і робить гру втрьох справедливою.</p>
+<figure><img src="../img/brett-2d.webp" width="382" height="354" alt="Зіркова дошка згори" style="max-width:420px;display:block;margin:0 auto"><figcaption>Дошка: три секції по 4 × 8 полів, горизонталі від A до D, вертикалі від 1 до 8.</figcaption></figure>
+
+   
+   <h2>Гравці й дошка</h2>
+   <ul>
+    <li>Три гравці: <b style="color:#5599ff">Синій</b>, <b style="color:#44ee22">Зелений</b>, <b style="color:#ff5533">Червоний</b>. Ходять по черзі: Синій → Зелений → Червоний.</li>
+    <li>Дошка – зірка Давида з трьох секцій по 4 × 8 полів: горизонталі <b>A–D</b>, вертикалі <b>1–8</b>. Горизонталь A – ваша перша лінія, горизонталь D прилягає до центру дошки.</li>
+    <li>Кожен гравець має 16 фігур, як у звичайних шахах. Король стоїть на A5, ферзь на A4.</li>
+   </ul>
+   <h2>Ходи через центр</h2>
+   <ul>
+    <li>Хто виходить за свою горизонталь D, потрапляє до <b>сусідньої секції</b> – на її горизонталь D – і йде там далі до її горизонталі A.</li>
+    <li>Вертикаль віддзеркалюється: вертикаль c стає вертикаллю <b>9 − c</b>.</li>
+    <li><b>Тура й ферзь (по прямій):</b> з вертикалей 1–3 потрапляють до однієї сусідньої секції, з 6–8 – до іншої. З центральних вертикалей 4 і 5 досяжні <b>обидві</b> секції.</li>
+    <li><b>Слон і ферзь (по діагоналі):</b> слон теж переходить до сусідньої секції, а на вістрі центру – до обох.</li>
+    <li><b>Кінь:</b> два кроки вперед/назад і один убік (або навпаки), зокрема через центр. Деякі переходи на межах виключено.</li>
+    <li><b>Король:</b> одне поле в будь-якому напрямку, зокрема до сусідніх секцій.</li>
+    <li>У грі в розділі «📖 Правила» можна випробувати кожну фігуру на навчальній дошці.</li>
+   </ul>
+   <h2>Пішаки</h2>
+   <ul>
+    <li>У своїй секції пішаки йдуть до центру (A → D), з горизонталі B – і на два поля.</li>
+    <li>Через центр вони потрапляють до сусідньої секції й ідуть далі до її горизонталі A. Б’ють навскіс уперед, зокрема через центр.</li>
+    <li><b>Перетворення:</b> на горизонталі A чужої секції.</li>
+    <li><b>Взяття на проході:</b> після подвійного ходу <b>обидва</b> суперники можуть бити на проході, доки гравець, який зробив подвійний хід, не походить знову.</li>
+   </ul>
+   <h2>Рокіровка</h2>
+   <ul><li>Король (A5) і тура не ходили, поля між ними вільні й не атаковані. Коротка: король на A7, тура A8 → A6. Довга: король на A3, тура A1 → A4.</li></ul>
+   <h2 id="hilfspflicht">Шах, обов’язок допомоги й мат</h2>
+   <ul>
+    <li>Кому оголошено шах, той мусить від нього піти. Жоден хід не може залишити свого короля під шахом.</li>
+    <li><b>Обов’язок допомоги:</b> якщо гравець під шахом, а третій гравець ходить <i>раніше</i> за нього, третій не може зробити хід, після якого загроженому був би мат. Якщо загроженому вже мат, третій мусить його звільнити – якщо не може, мат лишається. Якщо загрожений у будь-якому разі врятується сам, хоч би що зробив третій, обмежень немає.</li>
+    <li><b>Мат закінчує партію.</b> Перемагає <b>той, хто оголошує шах королю</b>, – а не той, хто лише відбирає поля для відступу. Двоє інших програють.</li>
+   </ul>
+   <h2>Немає можливого ходу</h2>
+   <ul><li>Хто не може походити, не опинившись під шахом, пропускає хід. Якщо ходити більше не може ніхто, вирішують очки.</li></ul>
+   <h2>Час і очки</h2>
+   <ul>
+    <li>На вибір час на хід (минув → хід пропадає) та/або на партію (вичерпано → ходів більше немає, фігури все ще можна бити).</li>
+    <li>Очки: власні фігури на дошці + взяті фігури суперників. Пішак 1, кінь і слон 3, тура 4, ферзь 6. За рівності перемагає той, хто витратив менше часу.</li>
+   </ul>
+   <h2>Керування</h2>
+   <ul>
+    <li>Натисніть на фігуру → можливі ходи підсвітяться → натисніть на цільове поле. «↶ Назад» або Ctrl+Z скасовує ходи.</li>
+    <li>☰ Меню · Вигляд 3D · 💾 Зберегти / 📂 Завантажити · ⏸ Пауза · 🔊 Звук · ⛶ Повний екран · 👥 Вікна гравців увімк./вимк.</li>
+    <li><b>Комп’ютерні суперники</b> мають свій характер: <b style="color:#5599ff">Блуббо</b> (добродушний, захоплений), <b style="color:#44ee22">Грумбо</b> (буркотливий, сильний) і <b style="color:#ff5533">Фламмо</b> (запальний, непосидючий). Вони радіють, сердяться, лякаються, тріумфують і плачуть – залежно від перебігу партії.</li>
+   </ul>
+  
+<h2>Нотація</h2>
+<p>Кожне поле має назву з трьох знаків: секція (B, G або R для Синього, Зеленого, Червоного), горизонталь (від A до D) і вертикаль (від 1 до 8). <b>BA5</b> – це поле A5 у синій секції, де на початку стоїть синій король. Хід записують як початкове й кінцеве поле, наприклад <b>BB4–BD4</b> для подвійного ходу пішака; взяття – через «×», наприклад <b>GC3×RD6</b>.</p>
+<p class="note">Порада: у грі координати можна показати через меню ☰. Список ходів праворуч угорі показує кожен хід у цій нотації, а з 📼 можна переглянути будь-яку партію хід за ходом.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="../spiel.html">▶ Одразу випробувати правила</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="../impressum.html">Вихідні дані</a><a href="../datenschutz.html">Конфіденційність</a><a href="../ueber.html#kontakt">Контакти</a><a href="regeln.html">Правила</a><a href="../strategie.html">Стратегія</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(a&&/(spiel|raum|grenzenlos)\.html/.test(a.getAttribute('href')||''))try{localStorage.setItem('dreiSchach.lang','uk')}catch(_){}});</script>
+</body></html>
