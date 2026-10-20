@@ -151,11 +151,12 @@ function cname(x,y,z){const r=region(x,y,z);return `${x+5}·${y+5}·${z+5}`+(r?`
 let S=new Map();          // "x,y,z" → {t,p,m}  m = schon gezogen
 let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'88'};let lastN=2;
 const OK=['B','Q','K','N','P','U','S','F'];
+let LASTMV=null;
 let hist=[],moves=[],sel=null,targets=[],tool='move',pal={p:'B',t:'Q'},slice={ax:-1,v:3};
 
 function fwd(p){const[k,s]=HOME[p];const f=[0,0,0];f[k]=-s;return f;}
 function setup(n){lastN=n;
-  pushHist();S=new Map();moves=[];sel=null;targets=[];
+  pushHist();S=new Map();moves=[];sel=null;targets=[];LASTMV=null;
   for(const p of(SETS[n]||[])){
     const[k,s]=HOME[p],o=[0,1,2].filter(a=>a!==k);
     // Achsen im Querschnitt: die waagerechte Achse für die Grundreihe, Höhe 3 bei senkrechten Quadern
@@ -259,8 +260,8 @@ function pieceTex(p,t){const k=p+t;if(TEX[k])return TEX[k];
   x.font=(t==='U'?'64px':'84px')+' "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif';x.textAlign='center';x.textBaseline='middle';
   const bd=BADGE[t],gx=bd?56:64,gy=bd?64:70;if(bd)x.font='70px "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif';
   x.lineWidth=7;x.strokeStyle='#000';if(t!=='U')x.strokeText(GLYPH[t],gx,gy);x.fillStyle='#fff';x.fillText(GLYPH[t],gx,t==='U'?68:gy);
-  if(bd){x.beginPath();x.arc(94,94,24,0,7);x.fillStyle='#111';x.fill();x.lineWidth=3;x.strokeStyle='#fff';x.stroke();
-    x.font=(bd==='🦄'?'28px':'34px')+' "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif';x.fillStyle='#fff';x.fillText(bd,94,bd==='»'?92:97);}
+  if(bd){x.beginPath();x.arc(92,92,32,0,7);x.fillStyle='#111';x.fill();x.lineWidth=4;x.strokeStyle='#fff';x.stroke();
+    x.font=(bd==='🦄'?'36px':bd==='»'?'bold 52px':'44px')+' "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif';x.fillStyle=bd==='»'?'#ffd23f':'#fff';x.fillText(bd,92,bd==='»'?88:96);}
   const tx=new THREE.CanvasTexture(c);TEX[k]=tx;return tx;}
 function sprite(p,t,op){const m=new THREE.SpriteMaterial({map:pieceTex(p,t),transparent:true,opacity:op,depthWrite:op>0.9});const s=new THREE.Sprite(m);s.scale.set(0.82,0.82,1);return s;}
 const inSlice=c=>slice.ax<0||c[slice.ax]===slice.v;
@@ -285,6 +286,18 @@ function render(){
     for(const t of targets){const m=new THREE.Mesh(gs,new THREE.MeshBasicMaterial({color:t.cap?'#ff3322':'#3ee05a',transparent:true,opacity:inSlice(t.c)?0.95:0.55}));
       if(t.cap)m.scale.setScalar(2.4);m.position.set(...t.c);m.userData.cell=t.c;m.userData.target=t;markGroup.add(m);}
   }
+  // letzter Zug: Start- und Zielfeld in der Farbe des Ziehenden, dazwischen eine Linie
+  const lm=GM?GM.lastMove:LASTMV;
+  if(lm&&lm.from&&lm.to){const col=PCOL[lm.p]||'#ffdd00';
+    for(const[c,op]of[[lm.from,0.45],[lm.to,1]]){const b=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.04,1.04,1.04)),new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op}));b.position.set(...c);markGroup.add(b);}
+    const a=new THREE.Vector3(...lm.from),z=new THREE.Vector3(...lm.to),len=a.distanceTo(z);
+    if(len>0.1){const cyl=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,len,8),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.75}));
+      cyl.position.copy(a).add(z).multiplyScalar(0.5);cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),z.clone().sub(a).normalize());markGroup.add(cyl);}
+    const dot=new THREE.Mesh(new THREE.SphereGeometry(0.12,10,8),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.6}));dot.position.copy(a);markGroup.add(dot);}
+  // Schach: König rot umrahmt
+  if(GM&&!GM.over)for(const q of alive()){const k=kingOf(q);if(!k||!attackers(k,x=>x!==q&&!GM.out.includes(x),true).length)continue;
+    const b=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.1,1.1),new THREE.MeshBasicMaterial({color:'#ff2a1a',transparent:true,opacity:0.28,depthWrite:false}));b.position.set(...k);markGroup.add(b);
+    const e=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.12,1.12,1.12)),new THREE.LineBasicMaterial({color:'#ff3b2a'}));e.position.set(...k);markGroup.add(e);}
   document.getElementById('slLbl').textContent=slice.ax<0?'':('Ebene '+(slice.v+5));
   updInfo();updLog();renderTurn();draw();
 }
@@ -308,7 +321,7 @@ function select(c){const pc=S.get(key(...c));if(!pc){sel=null;targets=[];render(
 function doMove(t){const from=sel,pc=S.get(key(...from)),cap=S.get(key(...t.c));pushHist();
   S.delete(key(...from));const np={t:pc.t,p:pc.p,m:true};let promo='';
   if(pc.t==='P'&&promoZone(pc.p,t.c)){np.t='Q';promo=' = Dame';}
-  S.set(key(...t.c),np);
+  S.set(key(...t.c),np);LASTMV={from:from.slice(),to:t.c.slice(),p:pc.p};
   moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+5).join('·')} ${cap?'×':'–'} ${t.c.map(v=>v+5).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
   sel=t.c;targets=genMoves(...t.c);render();}
 function place(c){pushHist();if(pal.t==='x')S.delete(key(...c));else S.set(key(...c),{t:pal.t,p:pal.p,m:false});sel=null;targets=[];render();}
@@ -435,7 +448,7 @@ function gameMove(from,to){
   hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice(),GM:snapGM()});
   S.delete(fk);const np={t:pc.t,p:pc.p,m:true};let promo='';
   if(pc.t==='P'&&promoZone(pc.p,to)){np.t='Q';promo=' = Dame';}
-  S.set(tk,np);if(cap)GM.capt=true;
+  S.set(tk,np);if(cap)GM.capt=true;GM.lastMove={from,to,p:pc.p};
   GM.lastBy=GM.ctrl[pc.p]==='human'||GM.ctrl[pc.p]==='open'?pc.p:(GM.online?ON.seat:null);GM.lastMoverSeat=pc.p;GM.lastText=`${PNAME[pc.p]}: ${PNAMES[pc.t]} ${to.map(v=>v+5).join('·')}`;GM.quiet=cap||pc.t==='P'||!GM.capt?0:(GM.quiet||0)+1;
   moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+5).join('·')} ${cap?'×':'–'} ${to.map(v=>v+5).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
   sel=null;targets=[];
