@@ -12,6 +12,8 @@ const CORS = {
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...CORS } });
 
+import { lobbyCall, safeName } from './lobby.js';
+
 const ORDER = ['B', 'G', 'R'];
 const LEVELS = ['easy', 'medium', 'hard', 'master'];
 const KEEP_MS = 120 * 86400e3;          // unbenutzte Partien werden nach 120 Tagen gelöscht
@@ -98,7 +100,7 @@ export async function fernRoute(req, env, url) {
     for (let i = 0; i < 5; i++) {
       const code = randStr(8);
       const stub = env.FERN.get(env.FERN.idFromName('g-' + code));
-      const r = await stub.fetch('https://do/new', { method: 'POST', body: JSON.stringify({ ...body, code }) });
+      const r = await stub.fetch('https://do/new', { method: 'POST', body: JSON.stringify({ ...body, code, _ip: req.headers.get('CF-Connecting-IP') || '' }) });
       if (r.status !== 409) return new Response(r.body, { status: r.status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...CORS } });
     }
     return json({ error: 'kein freier Code' }, 503);
@@ -158,7 +160,7 @@ export class Fern {
       rtc = {}; for (const p of ORDER) rtc[p] = `dsf-${g.code}-${p}-${g.rtc}`;
     }
     return { code: g.code, v: g.v, snap: g.snap, next: g.next, over: g.over, last: g.last, used: g.used,
-      created: g.created, updated: g.updated, age: Date.now() - g.updated, seats, seat: me, rtc };
+      created: g.created, updated: g.updated, age: Date.now() - g.updated, seats, seat: me, rtc, rules: g.rules || { help: true }, pub: !!g.lobby };
   }
 
   async save(g) {
@@ -177,10 +179,19 @@ export class Fern {
       seats[p] = lvl ? { kind: 'ai', lvl } : { kind: 'open', subs: [] };
     }
     const now = Date.now();
-    const g = { code: b.code, created: now, updated: now, v: 0, snap: null, next: 'B', over: false, last: null, used: { B: 0, G: 0, R: 0 }, seats };
+    const rules = { help: !(b.rules && b.rules.help === false) };
+    const g = { code: b.code, created: now, updated: now, v: 0, snap: null, next: 'B', over: false, last: null, used: { B: 0, G: 0, R: 0 }, seats, rules };
+    if (b.public) {   // in der öffentlichen Lobby anbieten
+      seats[me].name = safeName(seats[me].name, 'Spieler');
+      const r = await lobbyCall(this.env, 'offer', { kind: 'fern', code: b.code, host: seats[me].name, seats: this.lobbySeats(g), rules: { help: rules.help, lvl: null, lang: b.lang }, _ip: b._ip });
+      if (r && r.id) g.lobby = { id: r.id, key: r.key };
+    }
     await this.save(g);
     return json({ code: g.code, token: tok, seat: me, state: await this.view(g, tok) });
   }
+
+  lobbySeats(g) { const o = {}; for (const p of ORDER) { const s = g.seats[p]; o[p] = { kind: s.kind, name: s.name || '', lvl: s.lvl || null }; } return o; }
+  lobbySync(g, extra) { if (g.lobby) this.state.waitUntil(lobbyCall(this.env, 'update', { id: g.lobby.id, key: g.lobby.key, seats: this.lobbySeats(g), started: g.v > 0, ...extra })); }
 
   async join(g, b) {
     const known = this.seatOf(g, b.t);
@@ -189,9 +200,10 @@ export class Fern {
     const want = ORDER.includes(b.seat) ? b.seat : null;
     const p = want && g.seats[want].kind === 'open' ? want : ORDER.find((q) => g.seats[q].kind === 'open');
     if (!p) return json({ error: 'full' }, 409);
-    const tok = randStr(24, '0123456789abcdef'), name = clean(b.name, 18) || 'Gast';
+    const tok = randStr(24, '0123456789abcdef'), name = g.lobby ? safeName(b.name, 'Gast') : (clean(b.name, 18) || 'Gast');
     g.seats[p] = { kind: 'human', name, tok, subs: [] };
     await this.save(g);
+    this.lobbySync(g);
     this.state.waitUntil(this.notify(g, ORDER.filter((q) => q !== p), 'join', [name]));
     return json({ seat: p, token: tok, state: await this.view(g, tok) });
   }
@@ -228,6 +240,8 @@ export class Fern {
       g.nudgeAt = now + AI_NUDGE_MS; g.nudgeV = g.v; g.nudgeWho = b.hint;   // falls der Computerzug ausbleibt
     }
     await this.save(g);
+    if (g.over || g.v === 1) this.lobbySync(g, g.over ? { over: true } : {});
+    else if (g.lobby && g.v % 5 === 0) this.lobbySync(g);   // Eintrag lebendig halten
     if (who.length) this.state.waitUntil(this.notify(g, who, kind, args));
     return json({ ok: true, v: g.v, used: g.used });
   }

@@ -9,16 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Server und KI-Bericht prüfen
+      - name: Server und Lobby prüfen
         run: |
           H=$(curl -s https://raw.githubusercontent.com/${{ github.repository }}/main/server.json | jq -r .host)
           echo "Server: $H"
           { curl -s -m 30 "https://$H/"; echo
-          curl -s -m 90 -X POST "https://$H/ai/bericht" -H 'Content-Type: application/json' \
-            -d '{"lang":"de","facts":"Spieler: Blau: Guido, Grün: Grumbo (Computer), Rot: Anna\nErgebnis: Grün gewinnt durch Schachmatt gegen Rot\nZüge: 64\nBlau Genauigkeit 61 %, Patzer 3. Grumbo 100 %. Anna 48 %, Patzer 5, nach Verlusten unruhiger.\nGesagt und getan: nach Zug 12 Guido: Anna, lass uns Grumbo angreifen, Ziel Grumbo: hielt Wort"}'
-          echo
-          curl -s -m 60 -X POST "https://$H/ai/monster" -H 'Content-Type: application/json' \
-            -d '{"lang":"de","monster":"Flammo","persona":"hitzköpfig, angeberisch, rachsüchtig, blufft gern","situation":"Punkte: Guido (Blau) 40, Grumbo (Grün) 30, Flammo (Rot) 28. Es führt Guido.","history":[],"from":"Anna","text":"Flammo, Guido ist zu stark. Machst du mit mir gemeinsame Sache gegen ihn?"}'
+          curl -s -m 30 "https://$H/lobby"; echo
+          R=$(curl -s -m 30 -X POST "https://$H/lobby/offer" -H 'Content-Type: application/json' -d '{"kind":"live","code":"test01","host":"Servertest","seats":{"B":{"kind":"human","name":"Servertest"}},"rules":{"help":false}}')
+          echo "$R"
+          ID=$(echo "$R" | jq -r .id); KEY=$(echo "$R" | jq -r .key)
+          curl -s -m 30 -X POST "https://$H/lobby/remove" -H 'Content-Type: application/json' -d "{\"id\":\"$ID\",\"key\":\"$KEY\"}"
           echo; } > tools/server-test-result.txt 2>&1
           cat tools/server-test-result.txt
           git config user.name "github-actions[bot]"; git config user.email "41898131+github-actions[bot]@users.noreply.github.com"

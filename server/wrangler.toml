@@ -19,6 +19,14 @@ class_name = "Fern"
 tag = "v2"
 new_sqlite_classes = ["Fern"]
 
+[[durable_objects.bindings]]
+name = "LOBBY"
+class_name = "Lobby"
+
+[[migrations]]
+tag = "v3"
+new_sqlite_classes = ["Lobby"]
+
 # Sprachmodell für den KI-Bericht der Spielanalyse (Cloudflare Workers AI, kostenloses Tageskontingent)
 [ai]
 binding = "AI"

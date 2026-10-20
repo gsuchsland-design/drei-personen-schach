@@ -164,6 +164,15 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #lbShare { grid-column:1 / -1; background:#7a3fc4 !important; }
 #lbWa { background:#1f9c55; } #lbSms { background:#3a6ea8; } #lbMail { background:#666; } #lbFb { background:#3b5998; }
 .lbHint { font-size:12px; color:#aaa; margin-top:8px; }
+#pubTabs { display:flex; gap:6px; margin:10px 0; } #pubTabs button { flex:1; padding:6px; background:#333; color:#ddd; border:1px solid #555; border-radius:8px; cursor:pointer; font-size:13px; }
+#pubTabs button.on { background:#1f7a6a; color:#fff; border-color:#2fa58e; }
+#pubList { max-height:56vh; overflow:auto; }
+.pubCard { background:#262a33; border:1px solid #3a404c; border-radius:10px; padding:9px 11px; margin:8px 0; text-align:left; }
+.pubHead { font-size:14px; } .pubAge { color:#999; font-size:12px; float:right; }
+.pubSeats { margin:6px 0 4px; display:flex; gap:6px; flex-wrap:wrap; } .pubSeat { border:2px solid; border-radius:12px; padding:1px 9px; font-size:13px; }
+.pubRules,.pubState { font-size:12px; color:#bbb; } .pubState { color:#9fd09f; margin-top:2px; }
+.pubBtns { display:flex; gap:6px; margin-top:7px; } .pubBtns button { padding:6px 12px; border:none; border-radius:8px; background:#2a9d4a; color:#fff; font-size:14px; cursor:pointer; }
+.pubBtns button.alt { background:#3a5f9e; } .pubBtns button.rep { margin-left:auto; background:#444; padding:6px 10px; }
 #lbQR { text-align:center; margin-top:8px; } #lbQR svg { background:#fff; border-radius:6px; width:150px; height:150px; }
 .lbMedia { display:flex; gap:6px; } .lbMedia button { flex:1; background:#2a6; } .lbMedia button.off { background:#a33; }
 .netBox .lbLeave { background:#444; font-size:13px; padding:7px; }
@@ -565,6 +574,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <div id="setupModal">
   <div id="setupBox">
     <div id="fnList"></div>
+    <button onclick="pubOpen()" style="background:#1f7a6a">🌍 Offene Spiele – mitspielen oder zuschauen</button>
     <h3>Neues Spiel</h3>
     <div class="row" style="font-weight:bold;margin-bottom:2px">Spieler</div>
     <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
@@ -581,6 +591,9 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
       <input type="number" id="tcGameMin" value="15" min="1"> Minuten</div>
     <div class="hint">Verbraucht → Spieler kann nicht mehr ziehen, bleibt aber schlagbar.</div>
     <div class="hint" style="margin-left:0">Nichts angehakt = ohne Zeitkontrolle.</div>
+    <div class="row" style="font-weight:bold;margin:14px 0 2px">Regeln</div>
+    <div class="row"><label><input type="checkbox" id="chkHelp" checked> 🆘 Hilfspflicht</label></div>
+    <div class="hint">Steht ein Spieler im Schach, muss der Dritte ihm helfen, statt ihn mattsetzen zu lassen. Ohne Hilfspflicht beendet jedes Matt sofort die Partie. Gilt auch für Online- und Fernpartien.</div>
     <button onclick="startFromSetup()">Spiel starten (an diesem Gerät)</button>
     <div class="row" style="font-weight:bold;margin:18px 0 2px;border-top:1px solid #444;padding-top:12px">🌐 Online mit Freunden</div>
     <div class="row"><span style="width:86px">Dein Name</span><input type="text" id="olName" maxlength="18" placeholder="Name"></div>
@@ -590,12 +603,15 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="row"><label><input type="checkbox" id="olRec" onchange="recSet(this.checked)"> 📝 Mitschrift für die Spielanalyse erlauben</label></div>
     <div class="hint" style="margin-left:0">Gesprochenes und Chat werden nur mitgeschrieben, wenn alle Mitspieler zustimmen.</div>
     <div class="hint" style="margin-left:0">Die Zeitkontrolle von oben gilt auch online.</div>
+    <div class="row"><label><input type="checkbox" id="olPublic"> 🌍 In der öffentlichen Lobby anbieten</label></div>
+    <div class="hint" style="margin-left:0">Dann sehen alle Besucher deine Einladung unter „Offene Spiele“ und können mitspielen oder zuschauen.</div>
     <button onclick="netCreate()" style="background:#7a3fc4">🌐 Online-Spiel erstellen &amp; einladen</button>
     <div class="row" style="font-weight:bold;margin:18px 0 2px;border-top:1px solid #444;padding-top:12px">✉️ Fernpartie – jeder zieht, wann er Zeit hat</div>
     <div class="hint" style="margin-left:0">Der Spielstand wird auf dem Server gespeichert. Ihr müsst nicht gleichzeitig online sein: Wer dran ist, bekommt eine Benachrichtigung.</div>
     <div class="row"><span style="width:86px">Dein Name</span><input type="text" id="fnName" maxlength="18" placeholder="Name"></div>
     <div class="row"><span style="width:86px">Deine Farbe</span><select id="fnColor" onchange="fernSeatRows()"><option value="B">Blau (beginnt)</option><option value="G">Grün</option><option value="R">Rot</option></select></div>
     <div id="fnSeats"></div>
+    <div class="row"><label><input type="checkbox" id="fnPublic"> 🌍 In der öffentlichen Lobby anbieten</label></div>
     <button id="fnCreateBtn" onclick="fernCreate()" style="background:#b06a1f">✉️ Fernpartie erstellen &amp; einladen</button>
     <button class="installBtn" onclick="doInstall()" style="display:none;background:#555">📲 Als App installieren</button>
     <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
@@ -634,6 +650,14 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <div class="lbMedia"><button id="lbCam" onclick="camStream?camOff():camOn()">📷</button><button id="lbMic" onclick="toggleMic()">🎤</button></div>
   <button class="lbLeave" onclick="netTest()" style="background:#3a3a55">🔧 Verbindung testen</button>
   <button class="lbLeave" onclick="netLeave()">Abbrechen</button>
+</div></div>
+<div id="pubModal" class="netModal"><div class="netBox" style="max-width:560px">
+  <h3>🌍 Offene Spiele <button class="lbMin" onclick="pubClose()" title="Schließen">✕</button></h3>
+  <div class="lbHint" style="margin-top:0">Einladungen, die andere öffentlich gemacht haben: mitspielen, zuschauen – oder selbst eine Partie anbieten (Häkchen „In der öffentlichen Lobby anbieten“ beim Erstellen).</div>
+  <div id="pubTabs"><button data-f="all" class="on" onclick="pubFilter('all')">Alle</button><button data-f="live" onclick="pubFilter('live')">🌐 Live</button><button data-f="fern" onclick="pubFilter('fern')">✉️ Fernpartien</button></div>
+  <div id="pubList"></div>
+  <button class="lbLeave" onclick="pubLoad()">🔄 Aktualisieren</button>
+  <button class="lbLeave" onclick="pubClose()">Zurück</button>
 </div></div>
 <div id="fernModal" class="netModal"><div class="netBox">
   <h3>✉️ Fernpartie <span id="fnCode" style="font-weight:normal;color:#bbb;font-size:13px"></span><button class="lbMin" onclick="fernMini()" title="Verkleinern/vergrößern">–</button></h3>
@@ -765,7 +789,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102003"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102004"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -797,7 +821,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-20 03:45';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-20 05:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -1278,7 +1302,8 @@ async function netCreate(){
   const mOn=document.getElementById('tcMoveOn').checked,gOn=document.getElementById('tcGameOn').checked;
   const ms=Math.max(5,+document.getElementById('tcMoveSec').value||60),gm=Math.max(1,+document.getElementById('tcGameMin').value||15);
   const lvl=document.getElementById('olAI').value||'medium';
-  NET.cfg={tc:{move:mOn?ms*1000:0,game:gOn?gm*60000:0},lvl};
+  RULES={help:document.getElementById('chkHelp').checked};
+  NET.cfg={tc:{move:mOn?ms*1000:0,game:gOn?gm*60000:0},lvl,rules:RULES,pub:document.getElementById('olPublic').checked};
   document.body.classList.add('online');setTimeout(resizeCanvas,0);
   document.body.classList.add('netgame');
   NET.on=true;NET.host=true;NET.seat=me;NET.started=false;
@@ -1311,6 +1336,7 @@ function hostLobby(){
   netBroadcast({t:'lobby',lobby:L,specs:NET.specList,started:NET.started,lvl:NET.cfg.lvl});
   renderLobby();netAttach();hostSave();
   if(NET.started){updateStatus();renderClocks();}
+  pubUpdate();
 }
 function hostAccept(conn){
   conn.on('iceStateChanged',st=>{if(st==='failed'&&!conn.open&&!NET.iceWarned){NET.iceWarned=true;setTimeout(()=>NET.iceWarned=false,30000);
@@ -1415,7 +1441,7 @@ function specAnswer(ok){
   else{netSend(r.conn,{t:'full',denied:true});setTimeout(()=>{try{r.conn.close();}catch(e){}},500);}
 }
 function setSpecMode(v){
-  NET.specMode=v;try{localStorage.setItem('dreiSchach.specMode',v);}catch(e){}
+  NET.specMode=v;setTimeout(()=>pubUpdate(),0);try{localStorage.setItem('dreiSchach.specMode',v);}catch(e){}
   for(const id of['lbSpec','avSpec']){const e=document.getElementById(id);if(e)e.value=v;}
   if(v!=='ask')while(NET.specReqs.length)specAnswer(v==='always');
 }
@@ -1481,7 +1507,7 @@ function hostSaved(){
 async function netResumeHost(d){
   document.body.classList.add('online');setTimeout(resizeCanvas,0);
   document.body.classList.add('netgame');
-  NET.on=true;NET.host=true;NET.seat=d.seat;NET.code=d.code;NET.cfg=d.cfg;NET.specMode=d.specMode||'ask';
+  NET.on=true;NET.host=true;NET.seat=d.seat;NET.code=d.code;NET.cfg=d.cfg;RULES=rulesOf(d.cfg&&d.cfg.rules);NET.specMode=d.specMode||'ask';
   NET.specTokens=d.specTokens||new Set();NET.banned=d.banned||new Set();
   for(const p of TURN_ORDER){const x=d.seats[p]||{kind:'open'};NET.seats[p]={kind:x.kind,name:x.name,token:x.token};if(x.kind==='away')startAway(p,NET.seats[p]);}
   document.getElementById('setupModal').classList.remove('show');
@@ -1527,14 +1553,14 @@ function netStart(){
   NET.started=true;
   const ai={};
   for(const p of TURN_ORDER){const s=NET.seats[p];if(s.kind==='open'){s.kind='ai';}ai[p]=s.kind==='ai'||s.kind==='dropped'?NET.cfg.lvl:null;}
-  const cfg={tc:NET.cfg.tc,ai};
+  const cfg={tc:NET.cfg.tc,ai,rules:RULES};
   hostLobby();
   netBroadcast({t:'start',cfg});
   netBeginGame(cfg);
 }
 function netSyncData(){
   replayExit();
-  return{talk:TALK,dlog:DIPLO.log,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,tc,clock,timeUsed,flagged,
+  return{rules:RULES,talk:TALK,dlog:DIPLO.log,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,capturedBy,moveLog,tc,clock,timeUsed,flagged,
     moveLeft,aiPlayers,eliminated,status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
 // ---------- Gast ----------
@@ -1704,7 +1730,7 @@ function camFix(){   // eigenes Kamerabild gehört zum eigenen Platz
 }
 function netApplySync(d){
   replayExit();
-  if(d.talk)TALK=d.talk;if(d.dlog)DIPLO.log=d.dlog;
+  if(d.talk)TALK=d.talk;if(d.dlog)DIPLO.log=d.dlog;if(d.rules)RULES=rulesOf(d.rules);
   cancelAI();moveAnim=null;kicks=[];NET.q=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
   gameOver=d.gameOver;turnNote=d.turnNote||'';capturedBy=d.capturedBy;moveLog=d.moveLog||[];history=[];
@@ -1724,7 +1750,7 @@ function hideNetModals(){
   setupOpen=false;document.getElementById('startBtn').classList.remove('show');
 }
 function netBeginGame(cfg){
-  NET.started=true;tc=cfg.tc;aiPlayers=cfg.ai;
+  NET.started=true;tc=cfg.tc;aiPlayers=cfg.ai;RULES=rulesOf(cfg.rules);
   hideNetModals();waitingStart=false;
   rotation=Math.max(0,TURN_ORDER.indexOf(NET.seat));
   initGame();
@@ -1804,10 +1830,76 @@ function netLeave(){
   NET.leaving=true;
   if(NET.host){try{localStorage.removeItem(HOST_KEY);}catch(e){}}
   try{if(NET.host)netBroadcast({t:'bye'});else netToHost({t:'bye'});}catch(e){}
+  pubRemove();
   try{NET.peer&&NET.peer.destroy();}catch(e){}
   location.href=location.pathname;
   return true;
 }
+
+// ================= Öffentliche Lobby =================
+// Wer einlädt, kann seine Partie öffentlich anbieten; alle sehen die Liste unter „Offene Spiele“.
+const PUB={id:null,key:null,timer:null,last:'',busy:false};
+async function pubApi(path,body){
+  if(!await fernSrvLoad())throw{msg:T('Der Spielserver für Fernpartien ist noch nicht eingerichtet.')};
+  let r;try{r=await fetch(fernBase()+'/lobby'+(path?'/'+path:''),body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});}
+  catch(e){throw{net:true,msg:T('Server nicht erreichbar – bitte Internetverbindung prüfen.')};}
+  const j=await r.json().catch(()=>({}));j._status=r.status;return j;
+}
+function pubSeatsLive(){const o={};for(const p of TURN_ORDER){const s=NET.seats[p]||{};
+  o[p]=s.kind==='me'||s.kind==='peer'||s.kind==='away'?{kind:'human',name:s.name||''}:s.kind==='ai'||s.kind==='dropped'||NET.started?{kind:'ai',lvl:NET.cfg.lvl}:{kind:'open'};}return o;}
+function pubRules(){const t=NET.cfg.tc||{};return{help:RULES.help,tcMove:Math.round((t.move||0)/1000),tcGame:Math.round((t.game||0)/60000),lvl:NET.cfg.lvl,cam:!!camStream,spec:NET.specMode,lang:LANG_SET||'de'};}
+async function pubOffer(){
+  if(PUB.busy||PUB.id||!NET.host||!NET.code)return;PUB.busy=true;
+  try{const j=await pubApi('offer',{kind:'live',code:NET.code,host:(NET.seats[NET.seat]||{}).name,seats:pubSeatsLive(),rules:pubRules(),started:NET.started});
+    if(j.id){PUB.id=j.id;PUB.key=j.key;PUB.last='';clearInterval(PUB.timer);PUB.timer=setInterval(()=>pubUpdate(true),30000);
+      if(!PUB.told){PUB.told=true;toast(T('🌍 Deine Partie steht jetzt in der öffentlichen Lobby.'),3500);}}
+    else if(j._status===429)toast(T('Du hast schon mehrere offene Einladungen in der Lobby.'),4000);
+  }catch(e){}finally{PUB.busy=false;}
+}
+function pubUpdate(force){
+  if(!NET.on||!NET.host||!NET.cfg||!NET.cfg.pub)return;
+  if(!PUB.id){pubOffer();return;}
+  if((gameOver&&NET.started)||(NET.started&&NET.specMode==='never')){pubRemove();NET.cfg.pub=false;return;}
+  const body={id:PUB.id,key:PUB.key,seats:pubSeatsLive(),rules:pubRules(),started:NET.started},sig=JSON.stringify([body.seats,body.rules,body.started]);
+  if(!force&&sig===PUB.last)return;PUB.last=sig;
+  pubApi('update',body).then(j=>{if(j._status===404){PUB.id=null;pubOffer();}}).catch(()=>{});
+}
+function pubRemove(){if(!PUB.id)return;const b=JSON.stringify({id:PUB.id,key:PUB.key});PUB.id=null;clearInterval(PUB.timer);
+  try{navigator.sendBeacon(fernBase()+'/lobby/remove',b);}catch(e){}}
+// ---------- Liste „Offene Spiele“ ----------
+let PUBF='all',PUBL=[],pubTimer=null;
+function pubOpen(){document.getElementById('setupModal').classList.remove('show');setupOpen=true;
+  document.getElementById('pubModal').classList.add('show');pubLoad();
+  clearInterval(pubTimer);pubTimer=setInterval(()=>{if(document.visibilityState==='visible'&&document.getElementById('pubModal').classList.contains('show'))pubLoad();},10000);}
+function pubClose(){clearInterval(pubTimer);document.getElementById('pubModal').classList.remove('show');openSetup();}
+function pubFilter(f){PUBF=f;for(const b of document.querySelectorAll('#pubTabs button'))b.classList.toggle('on',b.dataset.f===f);pubRender();}
+async function pubLoad(){
+  const el=document.getElementById('pubList');if(!PUBL.length)el.innerHTML='<div class="lbHint">'+T('Einen Moment …')+'</div>';
+  try{const j=await pubApi('',null);PUBL=j.list||[];pubRender();}
+  catch(e){el.innerHTML='<div class="lbHint">⚠️ '+esc(e.msg||'')+'</div>';}
+}
+function pubAge(ms){const m=Math.round(ms/60000);return m<1?T('gerade eben'):m<60?T('vor {0} Min.',[m]):m<1440?T('vor {0} Std.',[Math.round(m/60)]):T('vor {0} Tagen',[Math.round(m/1440)]);}
+const PUB_LVL={easy:'leicht',medium:'mittel',hard:'stark',master:'Meister'};
+function pubRender(){
+  const el=document.getElementById('pubList'),L=PUBL.filter(e=>e.game==='dps'&&(PUBF==='all'||e.kind===PUBF));
+  if(!L.length){el.innerHTML='<div class="lbHint">'+T('Gerade gibt es keine offenen Spiele. Biete selbst eine Partie an – oder schau später noch einmal vorbei.')+'</div>';return;}
+  el.innerHTML=L.map(e=>{
+    const seats=e.seats.map(s=>`<span class="pubSeat" style="border-color:${PCOLOR[s.p]}">${s.kind==='human'?esc(s.name):s.kind==='ai'?'🤖 '+T(PUB_LVL[s.lvl]||'Computer'):'<i>'+T('frei')+'</i>'}</span>`).join('');
+    const r=e.rules||{},parts=[r.help===false?T('ohne Hilfspflicht'):T('mit Hilfspflicht')];
+    if(e.kind==='live'){if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));if(!r.tcMove&&!r.tcGame)parts.push(T('ohne Zeitlimit'));
+      parts.push(r.cam?T('mit Kamera'):T('ohne Kamera'));}
+    const lg=r.lang&&r.lang!=='de'?' '+((LANGS.find(l=>l[0]===r.lang)||[])[2]||''):'';
+    const canPlay=e.open>0&&(e.kind==='fern'||!e.started),canWatch=e.kind==='fern'?e.started||!e.open:r.spec!=='never'&&(e.started||!e.open);
+    const st=e.started?(e.kind==='fern'&&e.open?T('läuft – freie Plätze können noch besetzt werden'):T('läuft')):T('wartet auf Mitspieler');
+    const code=String(e.code).replace(/[^a-z0-9]/g,''),kind=e.kind==='fern'?'fern':'live';
+    return `<div class="pubCard"><div class="pubHead">${kind==='fern'?'✉️ '+T('Fernpartie'):'🌐 '+T('Live')} · <b>${T('Partie von {0}',[esc(e.host)])}</b>${lg}<span class="pubAge">${pubAge(e.age)}</span></div>
+      <div class="pubSeats">${seats}</div><div class="pubRules">${parts.join(' · ')}</div><div class="pubState">${st}</div>
+      <div class="pubBtns">${canPlay?`<button onclick="pubGo('${kind}','${code}')">▶ ${T('Mitspielen')}</button>`:''}${canWatch?`<button class="alt" onclick="pubGo('${kind}','${code}')">👀 ${T('Zuschauen')}</button>`:''}<button class="rep" onclick="pubReport('${esc(e.id)}')" title="${T('Unangemessenen Namen melden')}">⚑</button></div></div>`;
+  }).join('');
+}
+function pubGo(kind,code){location.href=kind==='fern'?fernLink(code):location.pathname+'?spiel='+code+srvParam()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'')+fernQS();}
+async function pubReport(id){if(!confirm(T('Diesen Eintrag als unangemessen melden? Nach mehreren Meldungen wird er ausgeblendet.')))return;
+  try{await pubApi('report',{id});toast(T('Danke – gemeldet.'),2500);}catch(e){}}
 // ---------- Warteraum-Anzeige ----------
 function showLobby(){
   const ls=document.getElementById('lbSpec');if(ls)ls.value=NET.specMode;
@@ -2469,6 +2561,8 @@ let gameState={},movedPieces=new Set(),epTarget=null,promoPending=null,castleMap
 let turnIdx=0,selected=null,validMoves=new Set(),capturedBy={B:[],R:[],G:[]},eliminated=new Set();
 // capturedBy[capturingPlayer] = [{piece, fromPlayer}]
 let gameOver=false,helpDuty=null,turnNote='',waitingStart=false;
+let RULES={help:true};   // vom Gastgeber festgelegte Regeln (help = Hilfspflicht)
+const rulesOf=r=>Object.assign({help:true},r||{});
 let history=[],moveLog=[];
 // Zeitkontrolle
 let tc={move:0,game:0};            // ms; 0 = aus
@@ -2547,6 +2641,9 @@ function setHelpDuty(helper,ep){
   helpDuty=null;
   const i=TURN_ORDER.indexOf(helper),victim=TURN_ORDER[(i+1)%3],mater=TURN_ORDER[(i+2)%3];
   if(!isInCheck(victim,gameState))return null;
+  if(!RULES.help){   // ohne Hilfspflicht: Matt beendet die Partie sofort
+    if(isMated(victim,gameState,ep))return{winner:mateWinner(victim,mater,gameState),victim,note:''};
+    return null;}
   const mated=isMated(victim,gameState,ep);
   if(!mated){
     // Kann sich der Bedrohte ohnehin selbst helfen, egal was der Helfer zieht, gibt es keine Pflicht:
@@ -3763,13 +3860,13 @@ function ser(v){return JSON.stringify(v,(k,x)=>x instanceof Set?{__set:[...x]}:x
 function deser(t){return JSON.parse(t,(k,x)=>x&&typeof x==='object'&&Array.isArray(x.__set)?new Set(x.__set):x);}
 function gameData(){
   replayExit();
-  return{v:1,saved:new Date().toISOString(),talk:TALK,dlog:DIPLO.log,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
+  return{v:1,saved:new Date().toISOString(),rules:RULES,talk:TALK,dlog:DIPLO.log,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
     capturedBy,moveLog,history,tc,clock,timeUsed,flagged,moveLeft,aiPlayers,rotation,
     status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
 function applyGameData(d){
   replayExit();
-  TALK=d.talk||[];DIPLO.log=d.dlog||[];
+  TALK=d.talk||[];DIPLO.log=d.dlog||[];RULES=rulesOf(d.rules);
   resetEmos();
   cancelAI();moveAnim=null;kicks=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
@@ -3909,7 +4006,7 @@ function openSetup(){
 function startFromSetup(){
   const mOn=document.getElementById('tcMoveOn').checked,gOn=document.getElementById('tcGameOn').checked;
   const ms=Math.max(5,+document.getElementById('tcMoveSec').value||60),gm=Math.max(1,+document.getElementById('tcGameMin').value||15);
-  tc={move:mOn?ms*1000:0,game:gOn?gm*60000:0};
+  tc={move:mOn?ms*1000:0,game:gOn?gm*60000:0};RULES={help:document.getElementById('chkHelp').checked};
   for(const p of TURN_ORDER)aiPlayers[p]=document.getElementById('pl'+p).value||null;
   document.getElementById('setupModal').classList.remove('show');setupOpen=false;
   waitingStart=true;
@@ -4698,7 +4795,8 @@ async function fernCreate(){
   for(const p of TURN_ORDER)if(p!==seat){const e=document.getElementById('fnP'+p);ai[p]=e&&e.value||null;}
   btn.disabled=true;const old=btn.textContent;btn.textContent=T('Einen Moment …');
   try{
-    const j=await fernApi('new',{name,seat,ai});
+    RULES={help:document.getElementById('chkHelp').checked};
+    const j=await fernApi('new',{name,seat,ai,rules:RULES,public:document.getElementById('fnPublic').checked,lang:LANG_SET||'de'});
     if(!j.code)throw{msg:j.error||'Fehler'};
     fernStore(j.code,{t:j.token,seat:j.seat});
     try{window.history.replaceState(null,'','?fern='+j.code+fernQS());}catch(e){}
@@ -4776,6 +4874,7 @@ function fernEnter(st,token,fresh){
 // ---------- Stand vom Server übernehmen ----------
 function fernApply(st,anim){
   if(st.rtc)FERN.rtc=st.rtc;
+  RULES=rulesOf(st.rules);
   FERN.seats=st.seats;FERN.next=st.next;FERN.over=st.over;FERN.used=st.used;FERN.age=st.age||0;FERN.loadedAt=Date.now();
   renderFernPanel();setTimeout(fernBarFix,50);
   if(FERN.rtc&&FERN.seat&&!FV.on&&fvWanted())fvStart();
