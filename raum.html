@@ -72,9 +72,9 @@ a { color:#8fb6ff; }
   <div class="row">Springer: <select id="oN" onchange="optChg()"><option value="1">2 + 1 in zwei Achsen (24 Ziele)</option><option value="2">zusätzlich 2 + 1 + 1 (48 Ziele)</option></select></div>
   <div class="row">Bauer schlägt: <select id="oP" onchange="optChg()"><option value="4">schräg vorwärts über Flächen (4)</option><option value="8">auch über Raumdiagonalen (8)</option></select></div>
   <div class="row">Bauer zieht: <select id="oS" onchange="optChg()"><option value="first">1 Feld, beim ersten Zug 2</option><option value="home" selected>im eigenen Quader immer bis zu 2</option><option value="always">immer bis zu 2 Felder</option></select></div>
-  <div class="row">Bauern je Spieler: <select id="oF" onchange="optChg(true)"><option value="1">eine Reihe (8)</option><option value="2">zwei Reihen (16)</option><option value="44" selected>Fläche 4 × 4 (16)</option></select></div>
+  <div class="row">Bauern je Spieler: <select id="oF" onchange="optChg(true)"><option value="1">eine Reihe (8)</option><option value="2">zwei Reihen (16)</option><option value="44" selected>Fläche 4 × 4 (16)</option><option value="88">8 × 8 Bauern + 64 Admiräle</option></select></div>
   <div class="row">Umwandlung: <select id="oU" onchange="optChg()"><option value="in">beim Betreten des Quaders gegenüber</option><option value="end">auf der hintersten Ebene gegenüber</option></select></div>
-  <div class="hint">Einhorn 🦄 (aus dem Raumschach von 1907): zieht nur über die Raumdiagonalen. Im Setzen-Werkzeug verfügbar.</div>
+  <div class="hint">Zusätzliche Figuren im Setzen-Werkzeug: Einhorn 🦄 (nur Raumdiagonalen, aus dem Raumschach von 1907), Herzogin ♜🦄 (Turm + Einhorn), Gouverneur ♝🦄 (Läufer + Einhorn), Erzbischof ♝♞ (Läufer + Springer), Kanzler ♜♞ (Turm + Springer), Amazone ♛♞ (Dame + Springer), Nachtreiter ♞» (mehrere Springersprünge in einer Linie).</div>
 
   <h2>Auswahl</h2>
   <div id="info">Noch nichts ausgewählt.</div>
@@ -99,8 +99,11 @@ const PCOL={B:'#3b7bff',G:'#35c935',R:'#ff4a33',Y:'#f2c418',L:'#b05cff',T:'#1fc9
 // Heimatquader: Achse k (0=x,1=y oben,2=z), Seite s (−1/+1)
 const HOME={B:[0,-1],G:[0,1],R:[2,-1],Y:[2,1],L:[1,-1],T:[1,1]};
 const SETS={2:['B','G'],3:['B','R','L'],4:['B','G','R','Y'],6:PL};
-const GLYPH={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟',U:'🦄'};
-const PNAMES={K:'König',Q:'Dame',R:'Turm',B:'Läufer',N:'Springer',P:'Bauer',U:'Einhorn'};
+const GLYPH={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟',U:'🦄',H:'♜',V:'♝',A:'♝',C:'♜',M:'♛',W:'♞'};
+const BADGE={H:'🦄',V:'🦄',A:'♞',C:'♞',M:'♞',W:'»'};   // Zusatzzeichen für zusammengesetzte Figuren
+const PLAB=t=>GLYPH[t]+(BADGE[t]||'');
+const PNAMES={K:'König',Q:'Dame',R:'Turm',B:'Läufer',N:'Springer',P:'Bauer',U:'Einhorn',H:'Herzogin',V:'Gouverneur',A:'Erzbischof',C:'Kanzler',M:'Amazone',W:'Nachtreiter'};
+const PDESC={H:'Turm + Einhorn',V:'Läufer + Einhorn',A:'Läufer + Springer',C:'Turm + Springer',M:'Dame + Springer',W:'mehrere Springersprünge in einer Linie',U:'nur Raumdiagonalen'};
 const inCube=v=>v>=0&&v<N;
 function valid(x,y,z){const o=[x,y,z].filter(v=>!inCube(v));
   if(o.length===0)return true;if(o.length>1)return false;const v=o[0];return v>=LO&&v<=HI;}
@@ -123,8 +126,11 @@ function setup(n){lastN=n;
     // Achsen im Querschnitt: die waagerechte Achse für die Grundreihe, Höhe 3 bei senkrechten Quadern
     let u=o[0],v=o[1];if(k!==1){u=o.find(a=>a!==1);v=1;}
     const layer=d=>s<0?LO+d:HI-d;   // d=0 äußerste Ebene
-    'RNBQKBNR'.split('').forEach((t,i)=>{const c=[0,0,0];c[k]=layer(0);c[u]=i;c[v]=3;S.set(key(...c),{t,p,m:false});});
-    const pawns=OPT.F==='44'?[2,3,4,5].flatMap(a=>[2,3,4,5].map(b=>[a,b])):OPT.F==='2'?[0,1,2,3,4,5,6,7].flatMap(a=>[[a,3],[a,4]]):[0,1,2,3,4,5,6,7].map(a=>[a,3]);
+    // Admiräle: eine Reihe – oder bei 8 × 8 die ganze äußerste Ebene, König nur in der Mitte
+    const ROWS=OPT.F==='88'?{0:'RNWUUWNR',1:'RNBQUBNR',2:'HAVMUVAH',3:'RNBQKBNR',4:'HCVMUVCH',5:'RNBQUBNR',6:'WAVUUVAW',7:'RNWUUWNR'}:{3:'RNBQKBNR'};
+    for(const[row,line]of Object.entries(ROWS))line.split('').forEach((t,i)=>{const c=[0,0,0];c[k]=layer(0);c[u]=i;c[v]=+row;S.set(key(...c),{t,p,m:false});});
+    const all8=[];for(let a=0;a<8;a++)for(let b=0;b<8;b++)all8.push([a,b]);
+    const pawns=OPT.F==='88'?all8:OPT.F==='44'?[2,3,4,5].flatMap(a=>[2,3,4,5].map(b=>[a,b])):OPT.F==='2'?[0,1,2,3,4,5,6,7].flatMap(a=>[[a,3],[a,4]]):[0,1,2,3,4,5,6,7].map(a=>[a,3]);
     for(const[a,b]of pawns){const q=[0,0,0];q[k]=layer(1);q[u]=a;q[v]=b;S.set(key(...q),{t:'P',p,m:false});}
   }
   render();
@@ -139,6 +145,16 @@ function slides(x,y,z,ds,p,max){const out=[];
   for(const d of ds){let a=x,b=y,c=z;for(let i=0;i<(max||99);i++){a+=d[0];b+=d[1];c+=d[2];if(!valid(a,b,c))break;const o=S.get(key(a,b,c));
     if(o){if(o.p!==p)out.push({c:[a,b,c],cap:true});break;}out.push({c:[a,b,c],cap:false});}}
   return out;}
+function knightVecs(){const jumps=[],seen=new Set();
+  for(const a of[-2,2])for(const b of[-1,1])for(const[i,j]of[[0,1],[0,2],[1,0],[1,2],[2,0],[2,1]]){const v=[0,0,0];v[i]=a;v[j]=b;jumps.push(v);
+    if(OPT.N==='2')for(const c of[-1,1]){const w=v.slice();w[3-i-j]=c;jumps.push(w);}}
+  return jumps.filter(v=>{const k=v.join();if(seen.has(k))return false;seen.add(k);return true;});}
+// Springersprünge; max>1 = Nachtreiter (mehrere gleiche Sprünge hintereinander, bis etwas im Weg steht)
+function leaps(x,y,z,p,max){const out=[];
+  for(const v of knightVecs()){let a=x,b=y,c=z;for(let i=0;i<max;i++){a+=v[0];b+=v[1];c+=v[2];if(!valid(a,b,c))break;const o=S.get(key(a,b,c));
+    if(o){if(o.p!==p)out.push({c:[a,b,c],cap:true});break;}out.push({c:[a,b,c],cap:false});}}
+  return out;}
+function uniq(l){const seen=new Set();return l.filter(m=>{const k=m.c.join();if(seen.has(k))return false;seen.add(k);return true;});}
 function genMoves(x,y,z){
   const pc=S.get(key(x,y,z));if(!pc)return[];const p=pc.p;
   const ax=dirs('ax'),fd=dirs('fd'),rd=dirs('rd');
@@ -148,12 +164,13 @@ function genMoves(x,y,z){
     case'U':return slides(x,y,z,rd,p);
     case'Q':return slides(x,y,z,ax.concat(fd,OPT.Q==='1'?rd:[]),p);
     case'K':return slides(x,y,z,ax.concat(fd,OPT.K==='26'?rd:[]),p,1);
-    case'N':{const out=[],seen=new Set();
-      const jumps=[];for(const a of[-2,2])for(const b of[-1,1]){for(const[i,j]of[[0,1],[0,2],[1,0],[1,2],[2,0],[2,1]]){const v=[0,0,0];v[i]=a;v[j]=b;jumps.push(v);
-        if(OPT.N==='2')for(const c of[-1,1]){const w=v.slice();const k=3-i-j;w[k]=c;jumps.push(w);}}}
-      for(const v of jumps){const a=x+v[0],b=y+v[1],c=z+v[2],k=key(a,b,c);if(seen.has(k)||!valid(a,b,c))continue;seen.add(k);const o=S.get(k);
-        if(!o)out.push({c:[a,b,c],cap:false});else if(o.p!==p)out.push({c:[a,b,c],cap:true});}
-      return out;}
+    case'N':return leaps(x,y,z,p,1);
+    case'W':return leaps(x,y,z,p,99);
+    case'H':return slides(x,y,z,ax.concat(rd),p);
+    case'V':return slides(x,y,z,fd.concat(rd),p);
+    case'A':return uniq(slides(x,y,z,OPT.B==='r'?fd.concat(rd):fd,p).concat(leaps(x,y,z,p,1)));
+    case'C':return uniq(slides(x,y,z,ax,p).concat(leaps(x,y,z,p,1)));
+    case'M':return uniq(slides(x,y,z,ax.concat(fd,OPT.Q==='1'?rd:[]),p).concat(leaps(x,y,z,p,1)));
     case'P':{const out=[],f=fwd(p),fk=f.findIndex(v=>v),side=[0,1,2].filter(k=>k!==fk);
       const s1=[x+f[0],y+f[1],z+f[2]];
       if(valid(...s1)&&!S.get(key(...s1))){out.push({c:s1,cap:false});
@@ -203,7 +220,10 @@ function pieceTex(p,t){const k=p+t;if(TEX[k])return TEX[k];
   const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
   x.beginPath();x.arc(64,64,58,0,7);x.fillStyle=PCOL[p];x.fill();x.lineWidth=6;x.strokeStyle='#101010';x.stroke();
   x.font=(t==='U'?'64px':'84px')+' "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif';x.textAlign='center';x.textBaseline='middle';
-  x.lineWidth=7;x.strokeStyle='#000';if(t!=='U')x.strokeText(GLYPH[t],64,70);x.fillStyle='#fff';x.fillText(GLYPH[t],64,t==='U'?68:70);
+  const bd=BADGE[t],gx=bd?56:64,gy=bd?64:70;if(bd)x.font='70px "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif';
+  x.lineWidth=7;x.strokeStyle='#000';if(t!=='U')x.strokeText(GLYPH[t],gx,gy);x.fillStyle='#fff';x.fillText(GLYPH[t],gx,t==='U'?68:gy);
+  if(bd){x.beginPath();x.arc(94,94,24,0,7);x.fillStyle='#111';x.fill();x.lineWidth=3;x.strokeStyle='#fff';x.stroke();
+    x.font=(bd==='🦄'?'28px':'34px')+' "Segoe UI Symbol","Noto Sans Symbols2","DejaVu Sans",sans-serif';x.fillStyle='#fff';x.fillText(bd,94,bd==='»'?92:97);}
   const tx=new THREE.CanvasTexture(c);TEX[k]=tx;return tx;}
 function sprite(p,t,op){const m=new THREE.SpriteMaterial({map:pieceTex(p,t),transparent:true,opacity:op,depthWrite:op>0.9});const s=new THREE.Sprite(m);s.scale.set(0.82,0.82,1);return s;}
 const inSlice=c=>slice.ax<0||c[slice.ax]===slice.v;
@@ -235,7 +255,7 @@ function updInfo(){const el=document.getElementById('info');
   if(!sel){el.textContent='Noch nichts ausgewählt.';return;}
   const pc=S.get(key(...sel));if(!pc){el.textContent='';return;}
   const n=targets.length,c=targets.filter(t=>t.cap).length;
-  el.innerHTML=`<b style="color:${PCOL[pc.p]}">${PNAMES[pc.t]} ${PNAME[pc.p]}</b> auf ${cname(...sel)}<br>${n} Zugmöglichkeiten`+(c?`, davon ${c} mit Schlagen`:'');}
+  el.innerHTML=`<b style="color:${PCOL[pc.p]}">${PNAMES[pc.t]} ${PNAME[pc.p]}</b>${PDESC[pc.t]?' <span class=hint>('+PDESC[pc.t]+')</span>':''} auf ${cname(...sel)}<br>${n} Zugmöglichkeiten`+(c?`, davon ${c} mit Schlagen`:'');}
 function updLog(){document.getElementById('log').innerHTML=moves.map((m,i)=>`${i+1}. ${m}`).join('<br>')||'<span class="hint">noch keine</span>';
   const l=document.getElementById('log');l.scrollTop=l.scrollHeight;}
 let raf=0;function draw(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;applyCam();R.render(scene,camera);});}
@@ -261,7 +281,7 @@ function buildPalette(){
   const pr=document.getElementById('plRow');pr.innerHTML='';
   for(const p of PL){const b=document.createElement('button');b.className='pl'+(pal.p===p?' on':'');b.style.background=PCOL[p];b.title=PNAME[p];b.onclick=()=>{pal.p=p;buildPalette();};pr.appendChild(b);}
   const cr=document.getElementById('pcRow');cr.innerHTML='';
-  for(const t of['K','Q','R','B','N','P','U','x']){const b=document.createElement('button');b.textContent=t==='x'?'✕':GLYPH[t];b.title=t==='x'?'Figur entfernen':PNAMES[t];
+  for(const t of['K','Q','R','B','N','P','U','H','V','A','C','M','W','x']){const b=document.createElement('button');b.textContent=t==='x'?'✕':PLAB(t);b.title=t==='x'?'Figur entfernen':PNAMES[t]+(PDESC[t]?' – '+PDESC[t]:'');
     if(pal.t===t)b.classList.add('on');b.onclick=()=>{pal.t=t;buildPalette();};cr.appendChild(b);}
 }
 // Teilen: Optionen + Figuren (Spieler, Typ, x,y,z hexadezimal ab −4)
