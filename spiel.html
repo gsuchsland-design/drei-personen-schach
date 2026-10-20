@@ -164,15 +164,15 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #lbShare { grid-column:1 / -1; background:#7a3fc4 !important; }
 #lbWa { background:#1f9c55; } #lbSms { background:#3a6ea8; } #lbMail { background:#666; } #lbFb { background:#3b5998; }
 .lbHint { font-size:12px; color:#aaa; margin-top:8px; }
-#pubTabs { display:flex; gap:6px; margin:10px 0; } #pubTabs button { flex:1; padding:6px; background:#333; color:#ddd; border:1px solid #555; border-radius:8px; cursor:pointer; font-size:13px; }
-#pubTabs button.on { background:#1f7a6a; color:#fff; border-color:#2fa58e; }
+#pubTabs { display:flex; gap:6px; margin:10px 0; } #pubModal #pubTabs button { flex:1; padding:6px; background:#333; color:#ddd; border:1px solid #555; border-radius:8px; cursor:pointer; font-size:13px; }
+#pubModal #pubTabs button.on { background:#1f7a6a; color:#fff; border-color:#2fa58e; }
 #pubList { max-height:56vh; overflow:auto; }
 .pubCard { background:#262a33; border:1px solid #3a404c; border-radius:10px; padding:9px 11px; margin:8px 0; text-align:left; }
 .pubHead { font-size:14px; } .pubAge { color:#999; font-size:12px; float:right; }
 .pubSeats { margin:6px 0 4px; display:flex; gap:6px; flex-wrap:wrap; } .pubSeat { border:2px solid; border-radius:12px; padding:1px 9px; font-size:13px; }
 .pubRules,.pubState { font-size:12px; color:#bbb; } .pubState { color:#9fd09f; margin-top:2px; }
 .pubBtns { display:flex; gap:6px; margin-top:7px; } .pubBtns button { padding:6px 12px; border:none; border-radius:8px; background:#2a9d4a; color:#fff; font-size:14px; cursor:pointer; }
-.pubBtns button.alt { background:#3a5f9e; } .pubBtns button.rep { margin-left:auto; background:#444; padding:6px 10px; }
+#pubModal .pubBtns button.alt { background:#3a5f9e; } .pubBtns button.rep { margin-left:auto; background:#444; padding:6px 10px; }
 #lbQR { text-align:center; margin-top:8px; } #lbQR svg { background:#fff; border-radius:6px; width:150px; height:150px; }
 .lbMedia { display:flex; gap:6px; } .lbMedia button { flex:1; background:#2a6; } .lbMedia button.off { background:#a33; }
 .netBox .lbLeave { background:#444; font-size:13px; padding:7px; }
@@ -187,6 +187,11 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #fernModal .netBox { pointer-events:auto; width:min(370px,94vw); max-height:calc(100vh - 60px); box-shadow:0 6px 30px rgba(0,0,0,.6); background:rgba(30,30,34,.96); border-color:#b06a1f; }
 #fernModal h3 { display:flex; align-items:center; gap:6px; }
 #fernModal h3 .lbMin { margin:0 0 0 auto !important; width:auto !important; padding:2px 10px !important; font-size:15px !important; background:#444 !important; }
+#pubModal h3 { display:flex; align-items:center; gap:8px; }
+#pubModal h3 .lbMin { margin:0 0 0 auto !important; width:auto !important; padding:2px 10px !important; font-size:15px !important; background:#444 !important; }
+#pubModal #pubTabs button { width:auto; margin-top:0; padding:6px; font-size:13px; }
+#pubModal .pubBtns button { width:auto; flex:1; margin-top:0; padding:7px 10px; font-size:14px; }
+#pubModal .pubBtns button.rep { flex:0 0 auto; background:#444; }
 #fernModal.mini .netBox > *:not(h3) { display:none !important; }
 #fernModal.mini .netBox { padding:8px 14px; }
 #fernModal.mini h3 { margin:0; }
