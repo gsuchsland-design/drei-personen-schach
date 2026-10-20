@@ -261,8 +261,39 @@ function lattice(x0,x1,y0,y1,z0,z1,col,op){
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));
   return new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false}));
 }
-const gridGroup=new THREE.Group(),sliceGroup=new THREE.Group(),pieceGroup=new THREE.Group(),markGroup=new THREE.Group();
-scene.add(gridGroup,sliceGroup,pieceGroup,markGroup);
+const gridGroup=new THREE.Group(),sliceGroup=new THREE.Group(),pieceGroup=new THREE.Group(),markGroup=new THREE.Group(),animGroup=new THREE.Group();
+scene.add(gridGroup,sliceGroup,pieceGroup,markGroup,animGroup);
+// ---------- Animation: Figur gleitet/springt, geschlagene Figur fliegt mit Überschlag aus dem Würfel ----------
+let ANIM=null;
+function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
+  if(!mv||!mv.from||!mv.to)return;
+  const a=new THREE.Vector3(...mv.from),b=new THREE.Vector3(...mv.to),len=a.distanceTo(b);
+  const d=[0,1,2].map(i=>Math.abs(mv.to[i]-mv.from[i])).sort((x,y)=>y-x),leap='NWACM'.includes(mv.t)&&!(d[1]===0||d[0]===d[1]);
+  const dur=Math.min(900,280+len*45);
+  ANIM={mv,a,b,len,hop:(leap?1.1:0)+Math.min(1.6,len*0.12),dur,t0:performance.now(),kick:null};
+  if(mv.cap){   // Ziel des Flugs: hinter dem Quader dessen, der geschlagen hat
+    const[k,sg]=HOME[mv.p]||[0,-1],tg=new THREE.Vector3(3.5,3.5,3.5);tg.setComponent(k,sg<0?LO-2.5:HI+2.5);
+    tg.x+=(Math.random()-0.5)*6;tg.z+=(Math.random()-0.5)*6;tg.y+=(Math.random()-0.5)*4;
+    ANIM.kick={p:mv.cap.p,t:mv.cap.t,from:b.clone(),to:tg,dir:b.clone().sub(a).normalize(),t0:ANIM.t0+dur*0.75,dur:1000};}
+  animGroup.clear();ANIM.sp=sprite(mv.p,mv.t,1);animGroup.add(ANIM.sp);
+  if(ANIM.kick){ANIM.ksp=sprite(ANIM.kick.p,ANIM.kick.t,1);ANIM.ksp.visible=false;animGroup.add(ANIM.ksp);}
+  animStep();
+}
+const animBusy=()=>!!ANIM;
+const animLeft=()=>ANIM?Math.max(0,(ANIM.kick?ANIM.kick.t0+ANIM.kick.dur:ANIM.t0+ANIM.dur)-performance.now()):0;
+function animStep(){if(!ANIM)return;const now=performance.now();
+  let e=Math.min(1,(now-ANIM.t0)/ANIM.dur);const s=e<0.5?2*e*e:1-Math.pow(-2*e+2,2)/2;
+  const P=ANIM.a.clone().lerp(ANIM.b,s);P.y+=Math.sin(Math.PI*s)*ANIM.hop;ANIM.sp.position.copy(P);
+  if(ANIM.kick&&now>=ANIM.kick.t0){const K=ANIM.kick,k=Math.min(1,(now-K.t0)/K.dur),u=1-Math.pow(1-k,2);
+    ANIM.ksp.visible=true;
+    // Stoß in Zugrichtung, hoher Bogen, Überschlag, wird kleiner und verblasst
+    const c=K.from.clone().addScaledVector(K.dir,2.2).add(new THREE.Vector3(0,3,0));
+    const Q=K.from.clone().multiplyScalar((1-u)*(1-u)).addScaledVector(c,2*u*(1-u)).addScaledVector(K.to,u*u);
+    ANIM.ksp.position.copy(Q);ANIM.ksp.material.rotation=u*Math.PI*4;const sc=0.82*(1-0.6*u);ANIM.ksp.scale.set(sc,sc,1);ANIM.ksp.material.opacity=k<0.7?1:1-(k-0.7)/0.3;}
+  draw();
+  const done=e>=1&&(!ANIM.kick||now>=ANIM.kick.t0+ANIM.kick.dur);
+  if(done){ANIM=null;animGroup.clear();render();}else requestAnimationFrame(animStep);
+}
 gridGroup.add(lattice(0,7,0,7,0,7,'#8090b0',0.16));
 for(const p of PL){const[k,s]=HOME[p],r=[[0,7],[0,7],[0,7]];r[k]=s<0?[LO,-1]:[N,HI];
   gridGroup.add(lattice(r[0][0],r[0][1],r[1][0],r[1][1],r[2][0],r[2][1],PCOL[p],0.22));
@@ -297,7 +328,8 @@ function render(){
   }
   // Figuren
   pieceGroup.clear();
-  for(const[k,pc]of S){const v=VIS[pc.p]??2;if(!v)continue;const c=unkey(k),s=sprite(pc.p,pc.t,v===1?0.13:inSlice(c)?1:0.22);s.position.set(...c);s.userData.cell=c;s.userData.piece=true;pieceGroup.add(s);}
+  const hideK=ANIM?key(...ANIM.mv.to):null;
+  for(const[k,pc]of S){const v=VIS[pc.p]??2;if(!v||k===hideK)continue;const c=unkey(k),s=sprite(pc.p,pc.t,v===1?0.13:inSlice(c)?1:0.22);s.position.set(...c);s.userData.cell=c;s.userData.piece=true;pieceGroup.add(s);}
   visUI();
   // Auswahl und Ziele
   markGroup.clear();
@@ -339,6 +371,7 @@ function undo(){
   const h=hist.pop();if(!h)return;S=h.S;moves=h.moves;sel=null;targets=[];render();}
 function select(c){const pc=S.get(key(...c));if(!pc){sel=null;targets=[];render();return;}sel=c;targets=GM?(pc.p===gCur()&&!GM.over&&myTurn()?legalFrom(c):[]):genMoves(...c);render();}
 function doMove(t){const from=sel,pc=S.get(key(...from)),cap=S.get(key(...t.c));pushHist();
+  animStart({from:from.slice(),to:t.c.slice(),p:pc.p,t:pc.t,cap:cap?{p:cap.p,t:cap.t}:null});
   S.delete(key(...from));const np={t:pc.t,p:pc.p,m:true};let promo='';
   if(pc.t==='P'&&promoZone(pc.p,t.c)){np.t='Q';promo=' = Dame';}
   S.set(key(...t.c),np);LASTMV={from:from.slice(),to:t.c.slice(),p:pc.p};
@@ -462,13 +495,14 @@ function advance(){
 }
 let aiT=0;
 function turnStart(){sel=null;targets=[];render();const p=gCur();
-  if(GM&&!GM.over&&GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'&&(!GM.online||GM.lastBy===ON.seat)){clearTimeout(aiT);aiT=setTimeout(()=>aiMove(p),GM.order.every(q=>GM.ctrl[q]!=='human')?150:450);}}
+  if(GM&&!GM.over&&GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'&&(!GM.online||GM.lastBy===ON.seat)){clearTimeout(aiT);aiT=setTimeout(()=>aiMove(p),(GM.order.every(q=>GM.ctrl[q]!=='human')?150:450)+animLeft());}}
 function gameMove(from,to){
   const fk=key(...from),tk=key(...to),pc=S.get(fk),cap=S.get(tk);if(!pc)return;
   hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice(),GM:snapGM()});
   S.delete(fk);const np={t:pc.t,p:pc.p,m:true};let promo='';
+  GM.lastCap=cap?{p:cap.p,t:cap.t}:null;animStart({from,to,p:pc.p,t:pc.t,cap:GM.lastCap});
   if(pc.t==='P'&&promoZone(pc.p,to)){np.t='Q';promo=' = Dame';}
-  S.set(tk,np);if(cap)GM.capt=true;GM.lastMove={from,to,p:pc.p};
+  S.set(tk,np);if(cap)GM.capt=true;GM.lastMove={from,to,p:pc.p,t:pc.t,cap:GM.lastCap};
   GM.lastBy=GM.ctrl[pc.p]==='human'||GM.ctrl[pc.p]==='open'?pc.p:(GM.online?ON.seat:null);GM.lastMoverSeat=pc.p;GM.lastText=`${PNAME[pc.p]}: ${PNAMES[pc.t]} ${to.map(v=>v+5).join('·')}`;GM.quiet=cap||pc.t==='P'||!GM.capt?0:(GM.quiet||0)+1;
   moves.push(`${PNAME[pc.p]} ${PNAMES[pc.t]} ${from.map(v=>v+5).join('·')} ${cap?'×':'–'} ${to.map(v=>v+5).join('·')}${cap?' ('+PNAMES[cap.t]+' '+PNAME[cap.p]+')':''}${promo}`);
   sel=null;targets=[];
@@ -589,8 +623,9 @@ async function onPoll(){if(!ON.code||pushing)return;
     ON.seats=st.seats;if(st.v>ON.v)onApply(st);else{onStateUI();renderTurn();}}catch(e){}}
 function onApply(st,force){
   ON.seats=st.seats;ON.v=st.v;
-  if(st.snap){try{const d=JSON.parse(st.snap);setOpts(st.rules&&st.rules.opts);decode(d.pos);const keepSeat=ON.seat;
-      GM=Object.assign(d.gm,{online:true});moves=d.moves||[];ON.seat=keepSeat;}catch(e){}}
+  if(st.snap){try{const d=JSON.parse(st.snap);setOpts(st.rules&&st.rules.opts);const prevN=moves.length;decode(d.pos);const keepSeat=ON.seat;
+      GM=Object.assign(d.gm,{online:true});moves=d.moves||[];ON.seat=keepSeat;
+      if(moves.length===prevN+1&&GM.lastMove)animStart(GM.lastMove);}catch(e){}}
   clearTimeout(aiT);sel=null;targets=[];onStateUI();render();turnStart();
 }
 // Partie über Link öffnen
