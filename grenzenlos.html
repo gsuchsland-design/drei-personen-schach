@@ -520,7 +520,7 @@ function g3Render(){if(!G3.ready)return;const T=THREE;
   G3.board.clear();const rad=Math.min(45,Math.ceil(c.r*1.9)),cx=Math.round(V.cx),cy=Math.round(V.cy),n=(2*rad+1)**2;
   const geo=new T.BoxGeometry(1,0.12,1),im=new T.InstancedMesh(geo,new T.MeshLambertMaterial({color:0xffffff}),n),m4=new T.Matrix4(),col=new T.Color();let i=0;
   for(let x=cx-rad;x<=cx+rad;x++)for(let y=cy-rad;y<=cy+rad;y++){if((x-cx)**2+(y-cy)**2>rad*rad)continue;
-    m4.makeTranslation(x,-0.06,-y);im.setMatrixAt(i,m4);const dark=(x+y)%2===0,z=zoneOf(x,y);col.set(dark?'#5a4a38':'#b8a27e');if(z)col.lerp(new T.Color(PCOL[z]),dark?0.3:0.25);
+    m4.makeTranslation(x,-0.06,-y);im.setMatrixAt(i,m4);const dark=(x+y)%2===0,z=zoneOf(x,y);col.set(dark?'#5a4a38':'#b8a27e');if(z)col.lerp(new T.Color(PCOL[z]),dark?0.3:0.25);col.multiplyScalar(0.8);
     im.setColorAt(i,col);i++;}
   im.count=i;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;G3.board.add(im);
   // Figuren
