@@ -522,7 +522,9 @@ function g3Sprite(p,t,op){const k=p+t+(KIT.symOn?'s':'');let tx=G3.tex[k];
     tx=G3.tex[k]=new THREE.CanvasTexture(c);}
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,opacity:op==null?1:op}));sp.scale.set(0.82,0.82,1);return sp;}
 function g3Piece(p,t){if(G3.style==='sym'){const s=g3Sprite(p,t);s.position.y=0.45;const g=new THREE.Group();g.add(s);return g;}
-  const f=(LAY&&LAY.seats[p]||SEAT4[p]).f;return R3.object(G3.style,t,PCOL[p],[f[0],0,-f[1]]);}
+  const f=(LAY&&LAY.seats[p]||SEAT4[p]).f,o=R3.object(G3.style,t,PCOL[p],[f[0],0,-f[1]]);
+  // Die 3D-Figuren sind für die Würfelfelder des Schachs der 6 Reiche gebaut (Mitte des Feldes = 0): auf das Brett stellen
+  const b=new THREE.Box3().setFromObject(o);o.position.y=-b.min.y+0.005;const g=new THREE.Group();g.add(o);return g;}
 function g3Render(){if(!G3.ready)return;const T=THREE;
   // Kamera folgt dem Blickpunkt und der Drehung des Bretts
   if(G3.rotK!==ROTK){G3.cam.th+=(ROTK-G3.rotK)*Math.PI/2;G3.rotK=ROTK;}

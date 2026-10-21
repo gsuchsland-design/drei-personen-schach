@@ -242,6 +242,16 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #setupBox .hint { font-size:11px; color:#999; margin:-4px 0 6px 26px; }
 #setupBox select { padding:3px; background:#333; color:#fff; border:1px solid #666; border-radius:4px; }
 #setupBox button { margin-top:14px; width:100%; padding:8px; font-size:15px; cursor:pointer; background:#2a6; color:#fff; border:none; border-radius:6px; }
+/* Startfenster: drei Spielarten als Reiter, Einstellungen zum Aufklappen, kleine Knöpfe unten */
+.modeTabs { display:flex; gap:6px; margin:4px 0 8px; }
+#setupBox .modeTabs button { margin:0; flex:1; padding:8px 4px; font-size:13px; background:#3a3a3a; border:1px solid #555; }
+#setupBox .modeTabs button.on { background:#2a6; border-color:#3cc463; }
+.modeSec { display:none; } .modeSec.on { display:block; }
+details.setOpts { margin-top:12px; border-top:1px solid #444; padding-top:8px; }
+details.setOpts > summary { cursor:pointer; font-weight:bold; color:#ccc; }
+.smallRow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:12px; font-size:13px; color:#aaa; }
+#setupBox .smallRow button { width:auto; margin:0; padding:6px 10px; font-size:13px; }
+
 #logBox { position:fixed; top:6px; right:6px; width:230px; z-index:140; background:rgba(28,28,28,.94);
   border:1px solid #555; border-radius:6px; color:#ddd; font-size:12px; box-shadow:0 2px 10px rgba(0,0,0,.5); }
 #logHead { display:flex; align-items:center; gap:6px; padding:5px 7px; border-bottom:1px solid #444; }
@@ -586,8 +596,11 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <div id="setupModal">
   <div id="setupBox">
     <div id="fnList"></div>
+    <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
     <button onclick="pubOpen()" style="background:#1f7a6a">🌍 Offene Spiele – mitspielen oder zuschauen</button>
     <h3>Neues Spiel</h3>
+    <div class="modeTabs"><button data-m="local" onclick="setupMode('local')">🤖 Hier am Gerät</button><button data-m="live" onclick="setupMode('live')">🌐 Online live</button><button data-m="fern" onclick="setupMode('fern')">✉️ Fernpartie</button></div>
+    <div class="modeSec" id="secLocal">
     <div class="row" style="font-weight:bold;margin-bottom:2px">Spieler</div>
     <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
     <div class="row"><span style="color:#44ee22;width:46px">Grün</span><select id="plG" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
@@ -595,6 +608,29 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="row"><label><input type="checkbox" id="chkDiplo" checked onchange="setDiplo(this.checked)"> 🤝 Computergegner verhandeln, verbünden sich und bluffen</label></div>
     <div class="row"><label><input type="checkbox" id="chkAIVoice" checked onchange="setAIVoice(this.checked)"> 🗣️ Computergegner sprechen laut</label></div>
     <div class="row"><label><input type="checkbox" id="chkOpp" checked onchange="setOppOn(this.checked)"> 🧠 Computergegner lernen eure Spielweise</label></div>
+          <button onclick="startFromSetup()">Spiel starten (an diesem Gerät)</button>
+    </div>
+    <div class="modeSec" id="secLive">
+    <div class="row"><span style="width:86px">Dein Name</span><input type="text" id="olName" maxlength="18" placeholder="Name"></div>
+    <div class="row"><span style="width:86px">Deine Farbe</span><select id="olColor"><option value="B">Blau (beginnt)</option><option value="G">Grün</option><option value="R">Rot</option></select></div>
+    <div class="row"><span style="width:86px">Freie Plätze</span><select id="olAI"><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
+    <div class="row"><label><input type="checkbox" id="olCam" checked> Kamera</label><label style="margin-left:14px"><input type="checkbox" id="olMic" checked> Mikrofon</label></div>
+    <div class="row"><label><input type="checkbox" id="olRec" onchange="recSet(this.checked)"> 📝 Mitschrift für die Spielanalyse erlauben</label></div>
+    <div class="hint" style="margin-left:0">Gesprochenes und Chat werden nur mitgeschrieben, wenn alle Mitspieler zustimmen.</div>
+    <div class="hint" style="margin-left:0">Die Zeitkontrolle von oben gilt auch online.</div>
+    <div class="row"><label><input type="checkbox" id="olPublic"> 🌍 In der öffentlichen Lobby anbieten</label></div>
+    <div class="hint" style="margin-left:0">Dann sehen alle Besucher deine Einladung unter „Offene Spiele“ und können mitspielen oder zuschauen.</div>
+          <button onclick="netCreate()" style="background:#7a3fc4">🌐 Online-Spiel erstellen &amp; einladen</button>
+    </div>
+    <div class="modeSec" id="secFern">
+    <div class="hint" style="margin-left:0">Der Spielstand wird auf dem Server gespeichert. Ihr müsst nicht gleichzeitig online sein: Wer dran ist, bekommt eine Benachrichtigung.</div>
+    <div class="row"><span style="width:86px">Dein Name</span><input type="text" id="fnName" maxlength="18" placeholder="Name"></div>
+    <div class="row"><span style="width:86px">Deine Farbe</span><select id="fnColor" onchange="fernSeatRows()"><option value="B">Blau (beginnt)</option><option value="G">Grün</option><option value="R">Rot</option></select></div>
+    <div id="fnSeats"></div>
+    <div class="row"><label><input type="checkbox" id="fnPublic"> 🌍 In der öffentlichen Lobby anbieten</label></div>
+          <button id="fnCreateBtn" onclick="fernCreate()" style="background:#b06a1f">✉️ Fernpartie erstellen &amp; einladen</button>
+    </div>
+    <details class="setOpts"><summary>⚙️ Zeitkontrolle &amp; Regeln</summary>
     <div class="row" style="font-weight:bold;margin:14px 0 2px">Zeitkontrolle</div>
     <div class="row"><input type="checkbox" id="tcMoveOn"><label for="tcMoveOn">Zeit pro Zug:</label>
       <input type="number" id="tcMoveSec" value="60" min="5" step="5"> Sekunden</div>
@@ -606,34 +642,17 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="row" style="font-weight:bold;margin:14px 0 2px">Regeln</div>
     <div class="row"><label><input type="checkbox" id="chkHelp" checked> 🆘 Hilfspflicht</label></div>
     <div class="hint">Steht ein Spieler im Schach, muss der Dritte ihm helfen, statt ihn mattsetzen zu lassen. Ohne Hilfspflicht beendet jedes Matt sofort die Partie. Gilt auch für Online- und Fernpartien.</div>
-    <button onclick="startFromSetup()">Spiel starten (an diesem Gerät)</button>
-    <div class="row" style="font-weight:bold;margin:18px 0 2px;border-top:1px solid #444;padding-top:12px">🌐 Online mit Freunden</div>
-    <div class="row"><span style="width:86px">Dein Name</span><input type="text" id="olName" maxlength="18" placeholder="Name"></div>
-    <div class="row"><span style="width:86px">Deine Farbe</span><select id="olColor"><option value="B">Blau (beginnt)</option><option value="G">Grün</option><option value="R">Rot</option></select></div>
-    <div class="row"><span style="width:86px">Freie Plätze</span><select id="olAI"><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
-    <div class="row"><label><input type="checkbox" id="olCam" checked> Kamera</label><label style="margin-left:14px"><input type="checkbox" id="olMic" checked> Mikrofon</label></div>
-    <div class="row"><label><input type="checkbox" id="olRec" onchange="recSet(this.checked)"> 📝 Mitschrift für die Spielanalyse erlauben</label></div>
-    <div class="hint" style="margin-left:0">Gesprochenes und Chat werden nur mitgeschrieben, wenn alle Mitspieler zustimmen.</div>
-    <div class="hint" style="margin-left:0">Die Zeitkontrolle von oben gilt auch online.</div>
-    <div class="row"><label><input type="checkbox" id="olPublic"> 🌍 In der öffentlichen Lobby anbieten</label></div>
-    <div class="hint" style="margin-left:0">Dann sehen alle Besucher deine Einladung unter „Offene Spiele“ und können mitspielen oder zuschauen.</div>
-    <button onclick="netCreate()" style="background:#7a3fc4">🌐 Online-Spiel erstellen &amp; einladen</button>
-    <div class="row" style="font-weight:bold;margin:18px 0 2px;border-top:1px solid #444;padding-top:12px">✉️ Fernpartie – jeder zieht, wann er Zeit hat</div>
-    <div class="hint" style="margin-left:0">Der Spielstand wird auf dem Server gespeichert. Ihr müsst nicht gleichzeitig online sein: Wer dran ist, bekommt eine Benachrichtigung.</div>
-    <div class="row"><span style="width:86px">Dein Name</span><input type="text" id="fnName" maxlength="18" placeholder="Name"></div>
-    <div class="row"><span style="width:86px">Deine Farbe</span><select id="fnColor" onchange="fernSeatRows()"><option value="B">Blau (beginnt)</option><option value="G">Grün</option><option value="R">Rot</option></select></div>
-    <div id="fnSeats"></div>
-    <div class="row"><label><input type="checkbox" id="fnPublic"> 🌍 In der öffentlichen Lobby anbieten</label></div>
-    <button id="fnCreateBtn" onclick="fernCreate()" style="background:#b06a1f">✉️ Fernpartie erstellen &amp; einladen</button>
-    <button class="installBtn" onclick="doInstall()" style="display:none;background:#555">📲 Als App installieren</button>
-    <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
-    <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie aus Datei laden</button>
-    <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
-    <button onclick="aboardOpen()" style="background:#355f8a" title="Stellungen aufbauen, Züge prüfen und teilen – unabhängig von einer Partie">🔬 Analysebrett</button>
-    <button onclick="location.href='raum.html?v='+Date.now()" style="background:#5a3f8a" title="Schach im Würfel für 2 bis 6 Spieler: 8 × 8 × 8 Felder mit sechs Heimatquadern">👑 Schach der 6 Reiche</button>
-    <button onclick="location.href='grenzenlos.html?v='+Date.now()" style="background:#2f6a5a" title="Normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler">♾️ Schach ohne Grenzen</button>
-    <button onclick="location.href='stern.html?v='+Date.now()" style="background:#7a3f5f" title="Schach im Sterntetraeder, dem räumlichen Davidstern, für 2 bis 8 Spieler">⭐ Sternschach</button>
-    <button onclick="tourFromSetup()" style="background:#7a6420" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
+    </details>
+    <div class="smallRow"><span>Weitere Varianten:</span>
+      <button onclick="location.href='raum.html?v='+Date.now()" style="background:#5a3f8a" title="Schach im Würfel für 2 bis 6 Spieler: 8 × 8 × 8 Felder mit sechs Heimatquadern">👑 6 Reiche</button>
+      <button onclick="location.href='grenzenlos.html?v='+Date.now()" style="background:#2f6a5a" title="Normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler">♾️ Ohne Grenzen</button>
+      <button onclick="location.href='stern.html?v='+Date.now()" style="background:#7a3f5f" title="Schach im Sterntetraeder, dem räumlichen Davidstern, für 2 bis 8 Spieler">⭐ Sternschach</button></div>
+    <div class="smallRow">
+      <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
+      <button onclick="tourFromSetup()" style="background:#7a6420" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
+      <button onclick="aboardOpen()" style="background:#355f8a" title="Stellungen aufbauen, Züge prüfen und teilen – unabhängig von einer Partie">🔬 Analysebrett</button>
+      <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie laden</button>
+      <button class="installBtn" onclick="doInstall()" style="display:none;background:#555">📲 Als App installieren</button></div>
     <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · <a href="index.html#start" style="color:#8fb6ff">Startseite</a> · <a href="regeln.html" style="color:#8fb6ff">Regeln</a> · <a href="strategie.html" style="color:#8fb6ff">Strategie</a> · <a href="impressum.html" style="color:#8fb6ff">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
   </div>
 </div>
@@ -2703,7 +2722,8 @@ function mySeats3(){if(NET.on)return NET.spec||!NET.seat||eliminated.has(NET.sea
   return TURN_ORDER.filter(q=>!aiPlayers[q]&&!eliminated.has(q));}
 const myTurn3=()=>!gameOver&&!REPLAY&&!AB&&!waitingStart&&!(NET.on&&!NET.started)&&mySeats3().includes(cur());
 function renderEndBar(){const el=document.getElementById('endBar');if(!el)return;
-  if(gameOver||REPLAY||AB||waitingStart||(NET.on&&!NET.started)||setupOpen&&!FERN.on&&!NET.on&&!moveLog.length){el.innerHTML='';return;}
+  const sm=document.getElementById('setupModal');
+  if(gameOver||REPLAY||AB||waitingStart||(NET.on&&!NET.started)||(sm&&sm.classList.contains('show'))||setupOpen&&!FERN.on&&!NET.on&&!moveLog.length){el.innerHTML='';return;}
   const pend=drawPending(),mine=mySeats3();let h='';
   if(pend&&myTurn3()&&!pend.yes.includes(cur())){
     h+=drawMark==='yes'?`<span>🤝 ${T('Du nimmst das Remis an – mach jetzt deinen Zug.')}</span>`:drawMark==='no'?`<span>✋ ${T('Abgelehnt.')}</span>`:
@@ -4142,7 +4162,7 @@ setInterval(()=>{
   renderClocks();
 },200);
 function openSetup(){
-  replayExit();
+  replayExit();setTimeout(()=>{try{renderEndBar();}catch(e){}},0);
   let has=false;try{has=!!localStorage.getItem(SAVE_KEY);}catch(e){}
   document.getElementById('btnResume').style.display=has?'':'none';
   cancelAI();setupOpen=true;document.getElementById('startBtn').classList.remove('show');document.getElementById('setupModal').classList.add('show');
@@ -6262,6 +6282,11 @@ recUI();diploUI();oppUI();colorsMaybe();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
 translateDom(document.body);
+// Startfenster: Spielart wählen (am Gerät, online live, Fernpartie); die Wahl wird gemerkt
+function setupMode(m){if(!['local','live','fern'].includes(m))m='local';try{localStorage.setItem('dreiSchach.setupMode',m);}catch(e){}
+  document.querySelectorAll('.modeTabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  for(const[id,k]of[['secLocal','local'],['secLive','live'],['secFern','fern']])document.getElementById(id).classList.toggle('on',k===m);}
+setTimeout(()=>{let m='local';try{m=localStorage.getItem('dreiSchach.setupMode')||'local';}catch(e){}setupMode(m);},0);
 let demoEntry=false;   // von der Regelseite (?demo=…) direkt ins Übungsbrett
 function startFlow(){if(QS.get('demo')!==null){demo.idx=Math.max(0,Math.min(DEMOS.length-1,parseInt(QS.get('demo'))||0));demoEntry=true;openRules();setTimeout(()=>{const c=document.getElementById('demoBtns');if(c)c.scrollIntoView({block:'start'});},300);return;}if(QS.get('lobby')){pubOpen();return;}if(QS.get('pos')){aboardOpen(QS.get('pos'));return;}if(QS.get('fern')){fernOpen(QS.get('fern'));return;}if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else if(tourSeen()||QS.get('pos'))openSetup();else tourStart(openSetup);}
 function tourFromSetup(){document.getElementById('setupModal').classList.remove('show');setupOpen=false;tourStart(openSetup);}
