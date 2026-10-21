@@ -1329,4 +1329,9 @@ U = {'Start': 'Forsíða',
  'Kontakt': 'Hafa samband',
  'Spielregeln': 'Reglur',
  'Drei-Personen-Schach': 'Þriggja manna skák',
- 'Sprache': 'Tungumál'}
+ 'Sprache': 'Tungumál',
+ 'Spielen': 'Spila',
+ 'Schach der 6 Reiche': 'Skák konungsríkjanna 6',
+ 'Schach ohne Grenzen': 'Skák án landamæra',
+ 'Sternschach': 'Stjörnuskák',
+ 'Offene Spiele': 'Opnir leikir'}

@@ -33,6 +33,7 @@ button:hover { background:#353a47; } button.on { background:#2a9d4a; border-colo
 a { color:#8fb6ff; }
 @media (max-width:700px){ #ui { width:auto; right:8px; bottom:auto; max-height:50vh; } #mini { width:110px; height:110px; } }
 </style>
+<style>#varNav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 2px}#varNav .varSel{flex:1;min-width:0;font-weight:700}#varNav .varLink{color:#8fb6ff;text-decoration:none;font-size:13px;white-space:nowrap}</style>
 </head><body>
 <canvas id="cv"></canvas>
 <canvas id="cv3" style="position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:none"></canvas>
@@ -50,6 +51,7 @@ a { color:#8fb6ff; }
 <div id="ui">
  <h1>♾️ Schach ohne Grenzen <span class="hint">Entwurf</span><button id="minBtn" onclick="toggleUI()" title="Leiste ein-/ausklappen">▴</button></h1>
  <div class="body">
+  <div id="varNav"></div>
   <div class="hint">Normales Schach auf einem unendlichen Brett. Ziehen = verschieben, Rad/zwei Finger = Zoom, Doppelklick = alle Figuren einpassen. Die Übersicht unten rechts zeigt das ganze Geschehen.</div>
   <h2>Partie</h2>
   <div id="gameSetup">
@@ -86,6 +88,7 @@ a { color:#8fb6ff; }
  </div>
 </div>
 <script src="lib/monsters.js?v=2026102010"></script>
+<script src="lib/varnav.js?v=2026102105"></script>
 <script src="lib/monvoice.js?v=2026102104"></script>
 <script src="lib/kit.js?v=2026102104"></script>
 <script>
@@ -672,5 +675,6 @@ gSeats();resize();
 if(!(QS.get('try')&&tryShow(QS.get('try')))){setup(2);fitAll();}
 if(QS.get('g'))onOpen(QS.get('g'));
 window.GZ={get S(){return S;},get GM(){return GM;},legalMoves,aiMove,gameMove,setup,inCheck,promotes,attackers};
+varNav('grenzenlos.html',document.getElementById('varNav'));
 </script>
 </body></html>

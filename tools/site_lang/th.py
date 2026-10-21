@@ -598,4 +598,9 @@ U = {'Start': 'หน้าแรก',
  'Kontakt': 'ติดต่อ',
  'Spielregeln': 'กติกา',
  'Drei-Personen-Schach': 'หมากรุกสามคน',
- 'Sprache': 'ภาษา'}
+ 'Sprache': 'ภาษา',
+ 'Spielen': 'เล่น',
+ 'Schach der 6 Reiche': 'หมากรุก 6 อาณาจักร',
+ 'Schach ohne Grenzen': 'หมากรุกไร้พรมแดน',
+ 'Sternschach': 'หมากรุกดาว',
+ 'Offene Spiele': 'เกมที่เปิดอยู่'}

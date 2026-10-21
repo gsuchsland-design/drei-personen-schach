@@ -39,6 +39,7 @@ input[type=range] { flex:1; }
 a { color:#8fb6ff; }
 @media (max-width:700px){ #ui { width:auto; right:8px; bottom:auto; max-height:52vh; } }
 </style>
+<style>#varNav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 2px}#varNav .varSel{flex:1;min-width:0;font-weight:700}#varNav .varLink{color:#8fb6ff;text-decoration:none;font-size:13px;white-space:nowrap}</style>
 </head><body>
 <canvas id="cv"></canvas>
 <div id="tip"></div>
@@ -54,6 +55,7 @@ a { color:#8fb6ff; }
 <div id="ui">
  <h1>⭐ Sternschach <span class="hint">Schach im Sterntetraeder · Entwurf</span><button id="minBtn" onclick="toggleUI()" title="Leiste ein-/ausklappen">▴</button></h1>
  <div class="body">
+  <div id="varNav"></div>
   <div class="hint">Der Sterntetraeder ist der räumliche Davidstern mit 8 Spitzen. In jeder Spitze liegen 4 × 4 × 4 gleiche Rhomboeder-Felder, dazwischen sechs Zwischenräume. Jedes Heer steht in einer Spitze. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom, Rechtsklick-Ziehen/zwei Finger = verschieben.</div>
 
   <h2>Partie</h2>
@@ -136,6 +138,7 @@ a { color:#8fb6ff; }
 <script src="lib/three.min.js"></script>
 <script src="lib/reiche3d.js"></script>
 <script src="lib/monsters.js?v=2026102010"></script>
+<script src="lib/varnav.js?v=2026102105"></script>
 <script src="lib/monvoice.js?v=2026102104"></script>
 <script src="lib/kit.js?v=2026102104"></script>
 <script src="lib/sternbrett.js?v=2026102103"></script>
@@ -970,5 +973,6 @@ if(!(qs.get('try')&&tryShow(qs.get('try')))&&!(qs.get('r')&&decode(qs.get('r')))
 render();
 if(qs.get('g'))onOpen(qs.get('g'));
 window.RS={SB,W,P,CFG:()=>CFG,cornerOf,S,genMoves,setup,decode,encode,select,OPT,get state(){return S;},legalMoves,gameStart,get GM(){return GM;},aiMove,inCheck,attackers,gameMove};
+varNav('stern.html',document.getElementById('varNav'));
 </script>
 </body></html>

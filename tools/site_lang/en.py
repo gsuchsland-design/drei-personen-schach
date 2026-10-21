@@ -1499,4 +1499,9 @@ U = {'Start': 'Home',
  'Kontakt': 'Contact',
  'Spielregeln': 'Rules',
  'Drei-Personen-Schach': 'Three-Player Chess',
- 'Sprache': 'Language'}
+ 'Sprache': 'Language',
+ 'Spielen': 'Play',
+ 'Schach der 6 Reiche': 'Chess of the 6 Realms',
+ 'Schach ohne Grenzen': 'Chess Without Borders',
+ 'Sternschach': 'Star Chess',
+ 'Offene Spiele': 'Open games'}

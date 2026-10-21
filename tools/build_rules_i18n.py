@@ -76,6 +76,7 @@ def run():
             h = re.sub(r'<select class="lang".*?</select>', lambda _: switcher(code, f, 1), h, flags=re.S)
             for de, x in sorted(m.U.items(), key=lambda kv: -len(kv[0])):
                 h = re.sub(r'(<a[^>]*>(?:<img[^>]*>)?)' + re.escape(de) + '</a>', lambda mm: mm.group(1) + x + '</a>', h)
+                h = h.replace('<summary>' + de + '</summary>', '<summary>' + x + '</summary>')
             h = relink(h)
             h = h.replace('</body>', "<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');"
                           f"if(a&&/(spiel|raum|grenzenlos|stern)\\.html/.test(a.getAttribute('href')||''))try{{localStorage.setItem('dreiSchach.lang','{code}')}}catch(_){{}}}});</script>\n</body>")

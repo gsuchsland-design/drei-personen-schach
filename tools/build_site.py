@@ -7,7 +7,21 @@ SITE = 'Drei-Personen-Schach'
 DOMAIN = 'dreipersonenschach.de'
 LIVE = os.path.exists(os.path.join(ROOT, 'CNAME'))   # erst mit eigener Domain: kanonische Adressen setzen
 PAGES = []
-NAV = [('index.html#start', 'Start'), ('regeln.html', 'Regeln'), ('strategie.html', 'Strategie'), ('reiche-regeln.html', '6 Reiche'), ('grenzenlos-regeln.html', 'Ohne Grenzen'), ('stern-regeln.html', 'Sternschach'), ('ueber.html', 'Über das Spiel')]
+# Hauptmenü: zwei Klappmenüs (Spielen, Regeln) und „Über das Spiel“
+NAV = [('Spielen', [('spiel.html', 'Drei-Personen-Schach'), ('raum.html', 'Schach der 6 Reiche'), ('grenzenlos.html', 'Schach ohne Grenzen'),
+                    ('stern.html', 'Sternschach'), ('spiel.html?lobby=1', 'Offene Spiele')]),
+       ('Regeln', [('regeln.html', 'Drei-Personen-Schach'), ('reiche-regeln.html', 'Schach der 6 Reiche'), ('grenzenlos-regeln.html', 'Schach ohne Grenzen'),
+                   ('stern-regeln.html', 'Sternschach'), ('strategie.html', 'Strategie')]),
+       ('ueber.html', 'Über das Spiel')]
+def navhtml(fn):
+    out = ''
+    for a, b in NAV:
+        if isinstance(b, list):
+            on = any(h == fn for h, _ in b)
+            out += f'<details class="dd{" on" if on else ""}"><summary>{a}</summary><div>' + ''.join(f'<a href="{h}"{" class=on" if h == fn else ""}>{t}</a>' for h, t in b) + '</div></details>'
+        else:
+            out += f'<a href="{a}"{" class=on" if a == fn else ""}>{b}</a>'
+    return out
 
 # Bilder der Regelseiten, die zum Ausprobieren ins Spiel führen (Stellung aufgebaut, Figur ausgewählt)
 TRY = {'img/brett-2d.webp': 'spiel.html?demo=0',
@@ -29,7 +43,7 @@ def trylinks(body):
 
 def page(fn, title, desc, body, redirect=False):
     body = trylinks(body)
-    nav = ''.join(f'<a href="{h}"{" class=on" if h.split("#")[0] == fn else ""}>{t}</a>' for h, t in NAV)
+    nav = navhtml(fn)
     rd = ''
     if redirect:   # Einladungs-, Fernpartie- und Stellungslinks sowie wiederkehrende Spieler direkt ins Spiel
         rd = """<script>(function(){var q=location.search,h=location.hash;
@@ -64,6 +78,7 @@ def page(fn, title, desc, body, redirect=False):
 <span>© 2026 Guido Suchsland</span>
 <a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="ueber.html#kontakt">Kontakt</a><a href="regeln.html">Spielregeln</a><a href="strategie.html">Strategie</a>
 </div></footer>
+<script>document.addEventListener('click',function(e){{document.querySelectorAll('details.dd[open]').forEach(function(d){{if(!d.contains(e.target))d.removeAttribute('open');}});}});</script>
 </body></html>
 """
     open(os.path.join(ROOT, fn), 'w', encoding='utf-8').write(html)

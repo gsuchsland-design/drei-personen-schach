@@ -273,4 +273,9 @@ U = {'Start': '首页',
  'Kontakt': '联系',
  'Spielregeln': '规则',
  'Drei-Personen-Schach': '三人象棋',
- 'Sprache': '语言'}
+ 'Sprache': '语言',
+ 'Spielen': '开始游戏',
+ 'Schach der 6 Reiche': '六国象棋',
+ 'Schach ohne Grenzen': '无界象棋',
+ 'Sternschach': '星形象棋',
+ 'Offene Spiele': '公开对局'}

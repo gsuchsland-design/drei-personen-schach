@@ -1608,4 +1608,9 @@ U = {'Start': 'Accueil',
  'Kontakt': 'Contact',
  'Spielregeln': 'Règles',
  'Drei-Personen-Schach': 'Échecs à trois',
- 'Sprache': 'Langue'}
+ 'Sprache': 'Langue',
+ 'Spielen': 'Jouer',
+ 'Schach der 6 Reiche': 'Échecs des 6 royaumes',
+ 'Schach ohne Grenzen': 'Échecs sans frontières',
+ 'Sternschach': 'Échecs étoilés',
+ 'Offene Spiele': 'Parties ouvertes'}

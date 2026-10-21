@@ -1213,4 +1213,9 @@ U = {'Start': 'Ana sayfa',
  'Kontakt': 'İletişim',
  'Spielregeln': 'Kurallar',
  'Drei-Personen-Schach': 'Üç Kişilik Satranç',
- 'Sprache': 'Dil'}
+ 'Sprache': 'Dil',
+ 'Spielen': 'Oyna',
+ 'Schach der 6 Reiche': '6 Krallığın Satrancı',
+ 'Schach ohne Grenzen': 'Sınırsız Satranç',
+ 'Sternschach': 'Yıldız Satrancı',
+ 'Offene Spiele': 'Açık oyunlar'}

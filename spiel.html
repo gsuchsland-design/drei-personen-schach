@@ -409,6 +409,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   body:not(.variant) #rpVarAI { grid-column:1 / -1; }
 }
 </style>
+<style>#varNav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 2px}#varNav .varSel{flex:1;min-width:0;font-weight:700}#varNav .varLink{color:#8fb6ff;text-decoration:none;font-size:13px;white-space:nowrap}</style>
 </head><body>
 <button id="menuBtn" onclick="toggleMenu()" title="Menü ein-/ausblenden">☰</button>
 <button id="btn3d" onclick="V3.toggle()" title="Ansicht wechseln: 2D → 3D → 3D+ (Würfel)">3D</button>
@@ -451,6 +452,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
 <h2>Drei-Personen-Schach</h2>
+<div id="varNav"></div>
 <div id="controls">
   <label><input type="checkbox" id="chkLabels"> Koordinaten</label>
   <label><input type="checkbox" id="chkPieces" checked> Figuren</label>
@@ -6164,6 +6166,7 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
+<script src="lib/varnav.js?v=2026102105"></script>
 <script src="lib/monvoice.js?v=2026102104"></script>
 <script src="lib/three.min.js"></script>
 <script>
@@ -6780,5 +6783,6 @@ window.V3={on:false};
     if(V3.on){lastCur=cur();preset(cur(),true);}
   };
 })();
+varNav('spiel.html',document.getElementById('varNav'));
 </script>
 </body></html>

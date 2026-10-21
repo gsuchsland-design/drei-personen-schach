@@ -1182,4 +1182,9 @@ U = {'Start': 'الرئيسية',
  'Kontakt': 'اتصل بنا',
  'Spielregeln': 'القواعد',
  'Drei-Personen-Schach': 'شطرنج الثلاثة',
- 'Sprache': 'اللغة'}
+ 'Sprache': 'اللغة',
+ 'Spielen': 'العب',
+ 'Schach der 6 Reiche': 'شطرنج الممالك الست',
+ 'Schach ohne Grenzen': 'شطرنج بلا حدود',
+ 'Sternschach': 'شطرنج النجمة',
+ 'Offene Spiele': 'مباريات مفتوحة'}

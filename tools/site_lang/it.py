@@ -1481,4 +1481,9 @@ U = {'Start': 'Home',
  'Kontakt': 'Contatti',
  'Spielregeln': 'Regole',
  'Drei-Personen-Schach': 'Scacchi a tre',
- 'Sprache': 'Lingua'}
+ 'Sprache': 'Lingua',
+ 'Spielen': 'Gioca',
+ 'Schach der 6 Reiche': 'Scacchi dei 6 regni',
+ 'Schach ohne Grenzen': 'Scacchi senza confini',
+ 'Sternschach': 'Scacchi stellari',
+ 'Offene Spiele': 'Partite aperte'}

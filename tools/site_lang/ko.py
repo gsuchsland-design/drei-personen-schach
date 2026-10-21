@@ -1013,4 +1013,9 @@ U = {'Start': '홈',
  'Kontakt': '연락처',
  'Spielregeln': '규칙',
  'Drei-Personen-Schach': '3인 체스',
- 'Sprache': '언어'}
+ 'Sprache': '언어',
+ 'Spielen': '플레이',
+ 'Schach der 6 Reiche': '6왕국 체스',
+ 'Schach ohne Grenzen': '경계 없는 체스',
+ 'Sternschach': '별 체스',
+ 'Offene Spiele': '공개 게임'}

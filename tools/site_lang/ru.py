@@ -1264,4 +1264,9 @@ U = {'Start': 'Главная',
  'Kontakt': 'Контакты',
  'Spielregeln': 'Правила',
  'Drei-Personen-Schach': 'Шахматы на троих',
- 'Sprache': 'Язык'}
+ 'Sprache': 'Язык',
+ 'Spielen': 'Играть',
+ 'Schach der 6 Reiche': 'Шахматы 6 царств',
+ 'Schach ohne Grenzen': 'Шахматы без границ',
+ 'Sternschach': 'Звёздные шахматы',
+ 'Offene Spiele': 'Открытые партии'}

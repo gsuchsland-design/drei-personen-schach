@@ -1358,4 +1358,9 @@ U = {'Start': 'Start',
  'Kontakt': 'Kontakt',
  'Spielregeln': 'Regler',
  'Drei-Personen-Schach': 'Skak for tre',
- 'Sprache': 'Sprog'}
+ 'Sprache': 'Sprog',
+ 'Spielen': 'Spil',
+ 'Schach der 6 Reiche': 'De 6 rigers skak',
+ 'Schach ohne Grenzen': 'Skak uden grænser',
+ 'Sternschach': 'Stjerneskak',
+ 'Offene Spiele': 'Åbne partier'}

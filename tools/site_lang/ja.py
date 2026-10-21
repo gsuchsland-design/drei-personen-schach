@@ -326,4 +326,9 @@ U = {'Start': 'ホーム',
  'Kontakt': 'お問い合わせ',
  'Spielregeln': 'ルール',
  'Drei-Personen-Schach': '三人チェス',
- 'Sprache': '言語'}
+ 'Sprache': '言語',
+ 'Spielen': 'プレイ',
+ 'Schach der 6 Reiche': '6つの王国のチェス',
+ 'Schach ohne Grenzen': '境界のないチェス',
+ 'Sternschach': '星のチェス',
+ 'Offene Spiele': '公開対局'}

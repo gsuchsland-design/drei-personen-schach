@@ -49,3 +49,14 @@ a.try:hover img, a.try:focus-visible img { transform:scale(1.01); box-shadow:0 0
 .tryBadge { position:absolute; right:10px; bottom:10px; background:#ffd23f; color:#111; border-radius:999px; padding:4px 11px; font-weight:700; font-size:15px; box-shadow:0 2px 8px rgba(0,0,0,.45); pointer-events:none; }
 .tryGrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr)); gap:14px; }
 .tryGrid figure { margin:0; }
+/* Klappmenüs im Kopf (Spielen ▾, Regeln ▾) – per Tippen, ohne Maus-Hover */
+nav.main { align-items:center; }
+details.dd { position:relative; }
+details.dd summary { list-style:none; cursor:pointer; color:var(--muted); user-select:none; }
+details.dd summary::-webkit-details-marker { display:none; }
+details.dd summary::after { content:" ▾"; font-size:.8em; }
+details.dd[open] summary, details.dd.on summary, details.dd summary:hover { color:#fff; }
+details.dd > div { position:absolute; top:calc(100% + 8px); left:-10px; min-width:220px; background:#1d2028; border:1px solid var(--line); border-radius:10px; padding:6px; box-shadow:0 10px 30px rgba(0,0,0,.5); display:flex; flex-direction:column; z-index:20; }
+details.dd > div a { padding:8px 10px; border-radius:7px; white-space:nowrap; }
+details.dd > div a:hover, details.dd > div a.on { background:#2a2e38; color:#fff; }
+[dir=rtl] details.dd > div { left:auto; right:-10px; }

@@ -1534,4 +1534,9 @@ U = {'Start': 'Inicio',
  'Kontakt': 'Contacto',
  'Spielregeln': 'Reglas',
  'Drei-Personen-Schach': 'Ajedrez a tres',
- 'Sprache': 'Idioma'}
+ 'Sprache': 'Idioma',
+ 'Spielen': 'Jugar',
+ 'Schach der 6 Reiche': 'Ajedrez de los 6 reinos',
+ 'Schach ohne Grenzen': 'Ajedrez sin fronteras',
+ 'Sternschach': 'Ajedrez estelar',
+ 'Offene Spiele': 'Partidas abiertas'}
