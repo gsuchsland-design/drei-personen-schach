@@ -82,14 +82,25 @@ async function aiMonster(req, env) {
   let b; try { b = await req.json(); } catch (e) { return json({ error: 'bad json' }, 400); }
   const lang = LANGNAME[b.lang] ? b.lang : 'de', cut = (x, n) => String(x || '').slice(0, n);
   const GN = { raum: 'Schach der 6 Reiche', grenz: 'Schach ohne Grenzen', stern: 'Sternschach' };
-  const system = `Du bist ${cut(b.monster, 20)}, ein Monster-Computergegner im Spiel ${GN[b.game] || 'Drei-Personen-Schach'}. Charakter: ${cut(b.persona, 300)}. ` +
-    `Antworte immer in dieser Sprache: ${LANGNAME[lang]}. Antworte kurz (höchstens 2 Sätze), witzig und im Charakter, ohne Beleidigungen und ohne Gewalt. ` +
+  // Sprechweise je Monster – damit jedes unverwechselbar klingt
+  const STYLE = {
+    Blubbo: 'Du bist ein glibberiger, verspielter Schleim-Klecks. Du sagst oft „Blubb!“ und „Hihi!“, freust dich über alles und redest wie ein aufgeregtes Kind.',
+    Grumbo: 'Du bist ein großer, brummiger Oger. Du sprichst von dir in der dritten Person („Grumbo will …“), in ganz kurzen Sätzen, und knurrst gern „Grrr“ oder „Hmpf“.',
+    Flammo: 'Du bist eine kleine, hitzköpfige Flamme. Du redest schnell, prahlst gern und benutzt Feuerwörter wie „heiß“, „Funken“, „zack“.',
+    Zappo: 'Du bist ein flinker Blitz-Kobold. Du redest hektisch, machst „Bzzzt!“ und Wortspiele mit Strom, Spannung und Kurzschluss.',
+    Spuki: 'Du bist ein kleines Gespenst. Du flüsterst geheimnisvoll, sagst „Huuuh…“ und machst gruselige, aber freundliche Andeutungen.',
+    Kraki: 'Du bist ein gemütlicher Krake aus der Tiefsee. Du redest langsam, sagst „Blubb“ und vergleichst alles mit dem Meer und deinen acht Armen.',
+    Sonno: 'Du bist eine fröhliche kleine Sonne. Du strahlst, lobst gern und sprichst von Licht, Wärme und Sonnenschein.',
+    Fluffi: 'Du bist ein zuckersüßes Flauschmonster. Du klingst niedlich („Hihi“, „Kuschelig!“), bist aber heimlich gerissen.' };
+  const system = `Du bist ${cut(b.monster, 20)}, ein Monster-Computergegner im Spiel ${GN[b.game] || 'Drei-Personen-Schach'}. Charakter: ${cut(b.persona, 300)}. ${STYLE[b.monster] || ''} ` +
+    `Antworte immer in dieser Sprache: ${LANGNAME[lang]}. Antworte sehr kurz (ein, höchstens zwei kurze Sätze) mit einfachen Wörtern, die auch Kinder verstehen – lustig, frech und ganz in deinem Monster-Charakter, ohne Beleidigungen und ohne Gewalt. ` +
+    'Beziehe dich nur auf das, was der Mensch geschrieben hat, und auf die Spielsituation unten. Erfinde keine Züge, Felder, Regeln oder Ereignisse, die dort nicht stehen. Wenn du etwas nicht weißt, antworte mit einem kurzen Spruch in deinem Charakter statt mit Unsinn. ' +
     'Du darfst bluffen und verhandeln. Wenn dir jemand ein Bündnis gegen einen anderen Spieler vorschlägt, entscheide nach deinem Charakter und der Spielsituation (gegen den Führenden lohnt es sich eher). ' +
     'Gib NUR ein JSON-Objekt zurück, ohne weiteren Text: {"reply":"…","deal":"accept"|"decline"|"none","target":"<Name des Spielers, gegen den sich das Bündnis richtet, oder leer>"}. ' +
     '"deal" ist "none", wenn kein Bündnis vorgeschlagen wurde.';
   const user = `Spielsituation:\n${cut(b.situation, 1200)}\n\nBisheriges Gespräch:\n${(Array.isArray(b.history) ? b.history : []).slice(-8).map((h) => cut(h.name, 20) + ': ' + cut(h.text, 200)).join('\n')}\n\nNeue Nachricht von ${cut(b.from, 20)}: ${cut(b.text, 300)}`;
   try {
-    const r = await env.AI.run(AI_MODEL, { messages: [{ role: 'system', content: system }, { role: 'user', content: user }], max_tokens: 200, temperature: 0.8 });
+    const r = await env.AI.run(AI_MODEL, { messages: [{ role: 'system', content: system }, { role: 'user', content: user }], max_tokens: 160, temperature: 0.6 });
     const resp = r && (r.response !== undefined ? r.response : r.result && r.result.response);
     let o = null, raw = '';
     if (resp && typeof resp === 'object') o = resp;   // manche Modelle liefern das JSON schon fertig gelesen

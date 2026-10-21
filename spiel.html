@@ -2908,6 +2908,8 @@ function setEmo(p,emo,dur=3600,force=false){
   if(!force&&(a.emo==='cheer'||a.emo==='cry'))return;           // Spielende bleibt stehen
   const lines=(isAIPlayer(p)?MONSTERS[p].lines:HUMAN_LINES)[emo]||[''];
   a.emo=emo;a.since=now;a.until=dur?now+dur:Infinity;a.line=emo==='neutral'?'':T(lines[Math.floor(Math.random()*lines.length)]||'');
+  // Monstergeräusch (Blubbern, Grollen, Knistern …), höchstens eins pro Augenblick
+  try{if(emo!=='neutral'&&emo!=='fear'&&isAIPlayer(p)&&AIVOICE&&window.MV&&now-(setEmo.last||0)>700){setEmo.last=now;MV.sound(p,emo);}}catch(e){}
 }
 function resetEmos(){for(const p of ['B','G','R'])setEmo(p,'neutral',0,true);}
 function isAIPlayer(p){return typeof aiPlayers!=='undefined'&&!!aiPlayers[p];}
@@ -5400,11 +5402,8 @@ function aiSay(p,k,args,extra){
 }
 function speakMonster(p,text){
   if(!AIVOICE||!window.speechSynthesis||!text)return;
-  try{const lang=myLang(),u=new SpeechSynthesisUtterance(text.replace(/[\u{1F300}-\u{1FAFF}☀-➿]/gu,''));u.lang=BCP[lang]||lang;
-    const vc=DPERS[p]?DPERS[p].voice:{pitch:1,rate:1};u.pitch=vc.pitch;u.rate=vc.rate;
-    const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith(lang));if(v)u.voice=v;
-    u.onstart=()=>{ttsBusy=true;if(typeof srStop==='function')srStop();};u.onend=u.onerror=()=>{ttsBusy=false;setTimeout(()=>{if(typeof trTick==='function')trTick();},300);};
-    speechSynthesis.speak(u);}catch(e){}
+  const lang=myLang();if(!window.MV)return;
+  MV.speak(p,text,lang,{bcp:BCP[lang]||lang,onstart:()=>{ttsBusy=true;if(typeof srStop==='function')srStop();},onend:()=>{ttsBusy=false;setTimeout(()=>{if(typeof trTick==='function')trTick();},300);}});
 }
 function pactOf(p){return DIPLO.pacts.find(x=>x.a===p||x.b===p)||null;}
 function allyOf(p){const x=pactOf(p);return x?(x.a===p?x.b:x.a):null;}
@@ -6163,6 +6162,7 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
+<script src="lib/monvoice.js?v=2026102104"></script>
 <script src="lib/three.min.js"></script>
 <script>
 // ================= 3D-Ansicht (three.js) =================
