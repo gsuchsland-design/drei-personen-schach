@@ -927,11 +927,26 @@ function tourStart(){const ui=document.getElementById('ui');if(ui.classList.cont
   {t:'Gegner und Uhr',x:'Für jeden Platz: Mensch, online eingeladen oder Computer in vier Stärken (leicht, mittel, stark, Meister). Mit Zeit pro Zug oder pro Partie – oder ohne Uhr.',el:'#gSeatRows'},
   {t:'Online: live oder als Fernpartie',x:'Live spielt ihr gleichzeitig mit Monitoren hinter jeder Spitze, Kamera, Mikrofon, Chat und automatischer Übersetzung. Eine Fernpartie zieht jeder, wann er Zeit hat.'},
   {t:'Nach der Partie',x:'„🔬 Auswertung“ zeigt Fehler, Schlüsselmomente und eine psychologische Auswertung; auf Wunsch schreibt eine KI einen professionellen Bericht. Viel Spaß!'}]);}
+// ---------- Ausprobieren: von den Bildern der Regelseite aus (stern.html?try=…) ----------
+const CID=(ti,a,b,c)=>CELLS.findIndex(x=>x.tip===ti&&x.loc.join()===[a,b,c].join());
+const camSet=(th,ph,r)=>{TGT.copy(C0);cam.th=th;cam.ph=ph;cam.r=r;draw();};
+const put=(id,t,p)=>S.set(key(id),{t,p,m:true});
+const TRY={
+  brett:{t:'Acht Heere',x:'So stehen die Heere zu acht in allen Spitzen. Tippe eine Figur an: Ihre Züge leuchten grün, Schlagzüge rot. Tippe ein grünes Feld an, um zu ziehen – hier darfst du jede Farbe bewegen.',run:()=>{setup(8);camSet(0.95,1.0,27);}},
+  oben:{t:'Der Stern von oben',x:'Von oben gesehen ist der Sterntetraeder genau der Davidstern des Drei-Personen-Schachs. Ziehe auf dem Brett, um den Stern zu drehen.',run:()=>{setup(6);camSet(0.95,0.03,27);}},
+  zwei:{t:'Zu zweit',x:'Zu zweit stehen sich Blau und Grün an den Polen gegenüber. Tippe Figuren an und ziehe.',run:()=>{setup(2);camSet(0.95,1.15,27);}},
+  armee:{t:'Ein Heer in seiner Spitze',x:'Ganz außen der König, davor Dame und Türme, dann Läufer, Springer und Einhörner, davor zehn Bauern. Die Dame ist ausgewählt – tippe andere Figuren an.',run:()=>{setup(4);viewArmy('B');const q=[...S].find(([k,v])=>v.p==='B'&&v.t==='Q');if(q)select(unkey(q[0]));}},
+  dame:{t:'Die Dame',x:'Die Dame steht in einem Zwischenraum. Ihre Linien laufen von Feld zu Feld und knicken unterwegs. Tippe ein grünes Feld an, um sie zu ziehen, und schau dir die Linien von dort an.',run:()=>{setup(0);const id=GAP0+100;put(id,'Q','B');select([id]);camSet(0.95,1.0,25);}},
+  bauer:{t:'Der Bauer',x:'Der blaue Bauer zieht ein Feld weiter weg von seiner Spitze (grün) und schlägt schräg nach vorn (rot). Probiere beides aus.',run:()=>{lastN=2;CFG=CORN[2];setup(0);const id=CID(0,1,1,1);put(id,'P','B');S.get(key(id)).m=false;const c=SB.PCAP[0][id];put(c[0],'N','G');put(c[1],'R','G');select([id]);viewArmy('B');cam.r=11;draw();}},
+  wurmloch:{t:'Das Wurmloch',x:'Die Dame steht kurz vor der Mitte. Über den Mittelpunkt kann sie in jede der 7 anderen Spitzen weiterziehen – bis ganz nach außen. Dort warten zwei Könige.',run:()=>{lastN=8;CFG=CORN[8];setup(0);const id=CID(0,2,2,2);put(id,'Q','B');put(CID(1,0,0,0),'K','L');put(CID(2,0,0,0),'K','R');select([id]);camSet(0.95,1.0,27);}}
+};
+function tryShow(k){const d=TRY[k];if(!d)return false;{const u=document.getElementById('ui');if(u&&!u.classList.contains('min')&&innerWidth<900)toggleUI();}d.run();KIT.tryBar(d,()=>tryShow(k),()=>{setup(2);viewReset();},'stern-regeln.html');return true;}
 buildPalette();gSeats();xUI();
 document.getElementById('styleSel').value=STYLE;document.getElementById('spaceChk').checked=SPACE_ON;R3.space(scene,SPACE_ON);
 const qs=new URLSearchParams(location.search);
-if(!(qs.get('r')&&decode(qs.get('r'))))setup(2);
-resize();render();
+resize();
+if(!(qs.get('try')&&tryShow(qs.get('try')))&&!(qs.get('r')&&decode(qs.get('r'))))setup(2);
+render();
 if(qs.get('g'))onOpen(qs.get('g'));
 window.RS={SB,W,P,CFG:()=>CFG,cornerOf,S,genMoves,setup,decode,encode,select,OPT,get state(){return S;},legalMoves,gameStart,get GM(){return GM;},aiMove,inCheck,attackers,gameMove};
 </script>

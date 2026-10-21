@@ -170,7 +170,7 @@ function promotes(p,c){const M=LAY.M,{f}=LAY.seats[p];
   if(LAY.two)return false;
   for(const q of Object.keys(LAY.seats)){if(q===p||(GM&&GM.out.includes(q)))continue;const s=LAY.seats[q];
     const u=(c[0]-M[0])*s.r[0]+(c[1]-M[1])*s.r[1],w=-((c[0]-M[0])*s.f[0]+(c[1]-M[1])*s.f[1]);
-    if(Math.abs(u)<=3.5&&(GM&&GM.promo==='zone'?w>=LAY.dPawn-1e-9&&w<=LAY.dOff+1e-9:Math.abs(w-LAY.dOff)<1e-9))return true;}
+    if(Math.abs(u)<=3.5&&((GM?GM.promo:'zone')==='zone'?w>=LAY.dPawn-1e-9&&w<=LAY.dOff+1e-9:Math.abs(w-LAY.dOff)<1e-9))return true;}
   return false;}
 // ================= Partie =================
 const LVLN={human:'Mensch (an diesem Gerät)',open:'Mensch – online eingeladen',easy:'Computer – leicht',medium:'Computer – mittel',hard:'Computer – stark',master:'Computer – Meister'};
@@ -461,6 +461,7 @@ const up=e=>{ptrs.delete(e.pointerId);if(pinch){if(ptrs.size<2)pinch=null;down=n
   down=null;};
 function clickCell(c){const t=targets.find(t=>t.c[0]===c[0]&&t.c[1]===c[1]);
   if(GM&&t&&sel&&!t.view&&!GM.over&&myTurn())gameMove(sel,t);
+  else if(!GM&&TRYON&&t&&sel)tryMove(sel,t);
   else if(S.get(key(...c)))select(c);else{sel=null;targets=[];render();}}
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
 cv.addEventListener('wheel',e=>{e.preventDefault();const[bx,by]=scr2b(e.clientX,e.clientY);
@@ -648,7 +649,27 @@ function tourStart(){const ui=document.getElementById('ui');if(ui.classList.cont
   {t:'Gegner und Uhr',x:'Für jeden Platz: Mensch, online eingeladen oder Computer in vier Stärken (leicht, mittel, stark, Meister). Mit Zeit pro Zug oder pro Partie – oder ganz ohne Uhr.',el:'#gSeatRows'},
   {t:'Online: live oder als Fernpartie',x:'Wähle bei einem Platz „online eingeladen“. Live spielt ihr gleichzeitig, mit Monitoren, Kamera, Mikrofon, Chat und automatischer Übersetzung. Eine Fernpartie zieht jeder, wann er Zeit hat.'},
   {t:'Nach der Partie',x:'„🔬 Auswertung“ zeigt Fehler, Schlüsselmomente und eine psychologische Auswertung eurer Spielweise. Auf Wunsch schreibt eine KI einen professionellen Bericht. Viel Spaß!'}]);}
-gSeats();setup(2);resize();fitAll();
+// ---------- Ausprobieren: von den Bildern der Regelseite aus (grenzenlos.html?try=…) ----------
+// Ohne laufende Partie dürfen hier alle Figuren frei gezogen werden.
+let TRYON=null;
+function tryMove(from,m){const fk=key(...from),tk=key(...m.c),pc=S.get(fk);if(!pc)return;let cap=S.get(tk);
+  if(m.ep){cap=S.get(key(...m.ep));S.delete(key(...m.ep));}
+  animStart(from,m.c,pc,cap);S.delete(fk);const np={t:pc.t,p:pc.p,m:true};if(pc.t==='P'&&promotes(pc.p,m.c))np.t='Q';S.set(tk,np);
+  if(m.castle){const r=S.get(key(...m.castle.from));S.delete(key(...m.castle.from));S.set(key(...m.castle.to),Object.assign({},r,{m:true}));}
+  LASTMV={from,to:m.c,p:pc.p};select(m.c);}
+const put=(x,y,t,p,m)=>S.set(key(x,y),{t,p,m:!!m});
+const TRY={
+  '2p':{t:'Zu zweit',x:'Ganz normales Schach – nur das Brett hat keinen Rand. Tippe eine Figur an und ziehe; hier darfst du beide Farben bewegen.',run:()=>{setup(2);fitAll();}},
+  '3p':{t:'Zu dritt',x:'Drei Heere sitzen wie an einem Tisch. Jeder Bauer zieht auf den Spieler gegenüber zu. Tippe Figuren an und ziehe.',run:()=>{setup(3);fitAll();}},
+  '4p':{t:'Zu viert',x:'Vier Heere, jedes an einer Seite. Die farbigen Flächen sind die Startzonen. Tippe Figuren an und ziehe.',run:()=>{setup(4);fitAll();}},
+  dame:{t:'Die Dame im freien Raum',x:'Ohne Rand reichen die Linien der Dame unbegrenzt weit – angezeigt wird ein Stück davon. Ziehe sie und schau dir die Linien von dort an.',run:()=>{setup(2);for(const[k,v]of[...S])if(v.t==='Q'&&v.p==='B')S.delete(k);put(4,-4,'Q','B',1);fitAll();select([4,-4]);}},
+  rochade:{t:'Die Rochade',x:'Der König hat freie Bahn: Die blau markierten Felder sind die beiden Rochaden. Tippe eines an.',run:()=>{setup(2);for(const[k,v]of[...S]){const[x,y]=unkey(k);if(v.p==='B'&&y===1&&'NBQ'.includes(v.t))S.delete(k);}fitAll();select([5,1]);}},
+  umwandlung:{t:'Die Umwandlung',x:'Der blaue Bauer steht vor der gelben Startzone. Schlägt er schräg den gelben Bauern, betritt er die Zone und wird zur Dame. Probier es aus.',run:()=>{setup(4);put(5,-4,'P','B',1);fitAll();select([5,-4]);}},
+  '3d':{t:'Die 3D-Ansicht',x:'Dasselbe Spiel mit 3D-Figuren. Ziehe auf dem Brett, um die Ansicht zu drehen; tippe Figuren an und ziehe.',run:()=>{setup(4);fitAll();if(typeof set3D==='function')set3D(true);}}
+};
+function tryShow(k){const d=TRY[k];if(!d)return false;{const u=document.getElementById('ui');if(u&&!u.classList.contains('min')&&innerWidth<900)toggleUI();}TRYON=k;d.run();KIT.tryBar(d,()=>tryShow(k),()=>{TRYON=null;setup(2);fitAll();},'grenzenlos-regeln.html');return true;}
+gSeats();resize();
+if(!(QS.get('try')&&tryShow(QS.get('try')))){setup(2);fitAll();}
 if(QS.get('g'))onOpen(QS.get('g'));
 window.GZ={get S(){return S;},get GM(){return GM;},legalMoves,aiMove,gameMove,setup,inCheck,promotes,attackers};
 </script>

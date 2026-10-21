@@ -3887,6 +3887,7 @@ let rulesWasPaused=false;
 function closeRules(){
   document.getElementById('rulesModal').classList.remove('show');
   paused=rulesWasPaused;lastTick=performance.now();renderClocks();if(!paused)maybeAI();
+  if(demoEntry){demoEntry=false;openSetup();}
 }
 
 // ---------- Speichern / Laden ----------
@@ -6148,7 +6149,8 @@ recUI();diploUI();oppUI();colorsMaybe();
 if(window.innerWidth<700){document.getElementById('panel').classList.add('hidden');resizeCanvas();}
 try{document.getElementById('olName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
 translateDom(document.body);
-function startFlow(){if(QS.get('lobby')){pubOpen();return;}if(QS.get('pos')){aboardOpen(QS.get('pos'));return;}if(QS.get('fern')){fernOpen(QS.get('fern'));return;}if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else if(tourSeen()||QS.get('pos'))openSetup();else tourStart(openSetup);}
+let demoEntry=false;   // von der Regelseite (?demo=…) direkt ins Übungsbrett
+function startFlow(){if(QS.get('demo')!==null){demo.idx=Math.max(0,Math.min(DEMOS.length-1,parseInt(QS.get('demo'))||0));demoEntry=true;openRules();setTimeout(()=>{const c=document.getElementById('demoBtns');if(c)c.scrollIntoView({block:'start'});},300);return;}if(QS.get('lobby')){pubOpen();return;}if(QS.get('pos')){aboardOpen(QS.get('pos'));return;}if(QS.get('fern')){fernOpen(QS.get('fern'));return;}if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else if(tourSeen()||QS.get('pos'))openSetup();else tourStart(openSetup);}
 function tourFromSetup(){document.getElementById('setupModal').classList.remove('show');setupOpen=false;tourStart(openSetup);}
 function afterLang(){startFlow();}
 if(!LANG_SET)openLang();else startFlow();

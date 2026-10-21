@@ -1,5 +1,5 @@
 """Erzeugt die übersetzten Regelseiten <sprache>/<seite>.html aus den deutschen Seiten.
-Übersetzungen: tools/site_lang/<sprache>.py mit L (Liste in der Reihenfolge der Abschnitte) und U (Kopf/Fuß).
+Übersetzungen: tools/site_lang/<sprache>.py mit D (deutscher Abschnitt → Übersetzung) und U (Kopf/Fuß).
 Aufruf: python3 tools/build_rules_i18n.py  (wird auch am Ende von build_site.py aufgerufen)."""
 import os, re, sys, importlib.util, collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -46,9 +46,9 @@ def relink(html):
     def fix(m):
         attr, url = m.group(1), m.group(2)
         if re.match(r'(https?:|#|/|\.\./|mailto:|data:)', url): return m.group(0)
-        if url.split('#')[0] in PAGES: return m.group(0)
+        if url.split('#')[0].split('?')[0] in PAGES: return m.group(0)
         return f'{attr}="../{url}"'
-    return re.sub(r'\b(href|src|content)="([^"]*?\.(?:html|png|webp|jpg|css|webmanifest|svg)(?:#[^"]*)?)"', fix, html)
+    return re.sub(r'\b(href|src|content)="([^"]*?\.(?:html|png|webp|jpg|css|webmanifest|svg)(?:\?[^"#]*)?(?:#[^"]*)?)"', fix, html)
 
 def run():
     segs = german_segments(); bad = 0
@@ -60,12 +60,10 @@ def run():
     for code, _ in LANGS[1:]:
         m = load(code)
         if not m: print(code, 'fehlt'); continue
-        if hasattr(m, 'I'):
-            miss = [i for i in range(len(segs)) if i not in m.I]
-            if miss: print(code, 'fehlende Abschnitte', miss[:20]); bad += 1; continue
-            m.L = [m.I[i] for i in range(len(segs))]
-        if len(m.L) != len(segs): print(code, 'Anzahl falsch', len(m.L), len(segs)); bad += 1; continue
-        tr = dict(zip(segs, m.L))
+        # D: deutscher Abschnitt → Übersetzung. Fehlt ein Abschnitt, bleibt er vorerst deutsch (wird gemeldet).
+        miss = [x for x in segs if x not in m.D]
+        if miss: print(code, len(miss), 'Abschnitte noch ohne Übersetzung, z. B.:', miss[0][:70])
+        tr = {x: m.D.get(x, x) for x in segs}
         for de, x in tr.items():
             if tags(de) != tags(x): print(code, 'Tags weichen ab:', de[:60], '|', x[:60]); bad += 1
         os.makedirs(os.path.join(ROOT, code), exist_ok=True)
@@ -80,7 +78,7 @@ def run():
                 h = re.sub(r'(<a[^>]*>(?:<img[^>]*>)?)' + re.escape(de) + '</a>', lambda mm: mm.group(1) + x + '</a>', h)
             h = relink(h)
             h = h.replace('</body>', "<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');"
-                          f"if(a&&/(spiel|raum|grenzenlos)\\.html/.test(a.getAttribute('href')||''))try{{localStorage.setItem('dreiSchach.lang','{code}')}}catch(_){{}}}});</script>\n</body>")
+                          f"if(a&&/(spiel|raum|grenzenlos|stern)\\.html/.test(a.getAttribute('href')||''))try{{localStorage.setItem('dreiSchach.lang','{code}')}}catch(_){{}}}});</script>\n</body>")
             open(os.path.join(ROOT, code, f), 'w', encoding='utf-8').write(h)
     print('Regelseiten übersetzt' + (f' – {bad} Fehler' if bad else ''))
 
