@@ -2133,29 +2133,30 @@ function crossBishop(sec,col,dc){
   return[col===4?LOW_NBR[sec]:HIGH_NBR[sec]];   // schräg an der Mitte vorbei, z. B. Rot D6 ↔ Grün D4
 }
 
-function rookRay(sec,row,col,dr,dc,maxN,state,player,forAtk){
-  const out=[];
+// tr (optional): Map Zielfeld → Liste der Felder, über die die Linie dorthin führt (für Animation und Markierung)
+function rookRay(sec,row,col,dr,dc,maxN,state,player,forAtk,tr){
+  const out=[],pre=[];const put=(c,via)=>{out.push(c);if(tr&&!tr.has(c))tr.set(c,via.slice());};
   for(let n=1;n<=maxN;n++){
     const r=row+n*dr,c=col+n*dc;
     if(c<1||c>8)break;
     if(r>=1&&r<=4){
       const coord2=sec+IDX_ROW[r]+c,occ=state[coord2];
-      if(!occ)out.push(coord2);
-      else{if(forAtk||occ.player!==player)out.push(coord2);break;}
+      if(!occ){put(coord2,pre);pre.push(coord2);}
+      else{if(forAtk||occ.player!==player)put(coord2,pre);break;}
     } else if(r>4&&dr>0){
       const nr=9-r,crossCol=dc===0?col:c,nc=dc===0?9-col:9-c;
       if(nr>=1&&nr<=4&&nc>=1&&nc<=8){
         for(const ns of crossRook(sec,crossCol)){
           const entry=ns+IDX_ROW[nr]+nc,occ0=state[entry];
           if(!occ0){
-            out.push(entry);
+            put(entry,pre);const p2=pre.concat(entry);
             for(let m=1;m<maxN;m++){
               const r2=nr-m;if(r2<1)break;
               const c3=ns+IDX_ROW[r2]+nc,occ2=state[c3];
-              if(!occ2)out.push(c3);
-              else{if(forAtk||occ2.player!==player)out.push(c3);break;}
+              if(!occ2){put(c3,p2);p2.push(c3);}
+              else{if(forAtk||occ2.player!==player)put(c3,p2);break;}
             }
-          } else if(forAtk||occ0.player!==player)out.push(entry);
+          } else if(forAtk||occ0.player!==player)put(entry,pre);
         }
       }
       break;
@@ -2164,15 +2165,15 @@ function rookRay(sec,row,col,dr,dc,maxN,state,player,forAtk){
   return out;
 }
 
-function bishopRay(sec,row,col,dr,dc,maxN,state,player,forAtk){
-  const out=[];
+function bishopRay(sec,row,col,dr,dc,maxN,state,player,forAtk,tr){
+  const out=[],pre=[];const put=(c,via)=>{out.push(c);if(tr&&!tr.has(c))tr.set(c,via.slice());};
   for(let n=1;n<=maxN;n++){
     const r=row+n*dr,c=col+n*dc;
     if(c<1||c>8)break;
     if(r>=1&&r<=4){
       const coord2=sec+IDX_ROW[r]+c,occ=state[coord2];
-      if(!occ)out.push(coord2);
-      else{if(forAtk||occ.player!==player)out.push(coord2);break;}
+      if(!occ){put(coord2,pre);pre.push(coord2);}
+      else{if(forAtk||occ.player!==player)put(coord2,pre);break;}
     } else if(r>4){
       const nr=9-r,nc=9-c;
       if(nr<1||nr>4||nc<1||nc>8)break;
@@ -2180,20 +2181,30 @@ function bishopRay(sec,row,col,dr,dc,maxN,state,player,forAtk){
       for(const ns of nbs){
         const entry=ns+IDX_ROW[nr]+nc,occ0=state[entry];
         if(!occ0){
-          out.push(entry);
+          put(entry,pre);const p2=pre.concat(entry);
           for(let m=1;m<maxN;m++){
             const r2=nr+m*(-dr),c2=nc+m*(-dc);
             if(r2<1||r2>4||c2<1||c2>8)break;
             const c3=ns+IDX_ROW[r2]+c2,occ2=state[c3];
-            if(!occ2)out.push(c3);
-            else{if(forAtk||occ2.player!==player)out.push(c3);break;}
+            if(!occ2){put(c3,p2);p2.push(c3);}
+            else{if(forAtk||occ2.player!==player)put(c3,p2);break;}
           }
-        } else if(forAtk||occ0.player!==player)out.push(entry);
+        } else if(forAtk||occ0.player!==player)put(entry,pre);
       }
       break;
     } else break;
   }
   return out;
+}
+// Felder zwischen Start und Ziel eines Zuges (gerade oder schräge Linie, auch über die Mitte); Springer: keine.
+// Wird mit dem Stand nach dem Zug berechnet: Die Zwischenfelder sind dann noch frei, auf dem Ziel steht die eigene Figur.
+function movePath(from,to,piece,player,state){
+  if(!from||!to||piece==='N')return[];
+  const sec=from[0],row=ROW_IDX[from[1]],col=parseInt(from.slice(2)),tr=new Map();
+  const st=Object.assign({},state);delete st[from];
+  if(piece!=='B')for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]])rookRay(sec,row,col,dr,dc,12,st,player,true,tr);
+  if(!tr.has(to))for(const[dr,dc]of[[1,1],[1,-1],[-1,1],[-1,-1]])bishopRay(sec,row,col,dr,dc,12,st,player,true,tr);
+  return tr.get(to)||[];
 }
 
 // En-passant-Einträge: {pawnCoord, landCoord, by}; gültig für beide Gegner, bis der Verursacher wieder zieht
@@ -4457,12 +4468,12 @@ function kickPath(k,start,target,dirv,lift){
          h:Math.sin(Math.PI*e)*lift,spin:e*Math.PI*2.5,t,e};
 }
 function startMoveAnim(from,to,done){
-  const pd=gameState[from],items=[{piece:pd.piece,player:pd.player,from,to}];
+  const pd=gameState[from],path=[from].concat(movePath(from,to,pd.piece,pd.player,gameState),[to]),items=[{piece:pd.piece,player:pd.player,from,to,path}];
   const cm=castleMap[C2F[to]];
   if(cm)items.push({piece:'R',player:pd.player,from:cm.rookFrom,to:cm.rookTo});
   const allAI=TURN_ORDER.every(p=>aiPlayers[p]);
   const who=pd.player;
-  moveAnim={items,t0:performance.now(),dur:allAI?900:(aiPlayers[pd.player]?650:380),done:()=>{
+  moveAnim={items,t0:performance.now(),dur:Math.min(1800,(allAI?900:(aiPlayers[pd.player]?650:380))+(path.length-2)*170),done:()=>{
     if(cur()!==who||gameOver)return;
     const n=moveLog.length;done();
     const e=moveLog[n];   // neuer Protokolleintrag dieses Zuges
@@ -4484,6 +4495,8 @@ function animFrame(){
   }
   draw();requestAnimationFrame(animFrame);
 }
+// Lage auf einem Weg aus mehreren Feldern: Fortschritt e (0…1) gleichmäßig auf die Teilstrecken verteilt
+function pathAt(pts,e){const n=pts.length-1;if(n<1)return{i:0,u:0};const f=Math.min(n-1e-6,Math.max(0,e)*n),i=Math.floor(f);return{i,u:f-i};}
 function animHidden(coord){return moveAnim&&moveAnim.items.some(it=>it.from===coord);}
 
 // Goldenes Kreuz über dem König (2D)
@@ -4500,7 +4513,9 @@ function drawKingCross(ctx,x,y,size){
 // Start- und Zielfeld des letzten Zuges
 function lastMoveFids(){
   const e=moveLog[moveLog.length-1];
-  return e&&e.from?{from:C2F[e.from],to:C2F[e.to]}:{from:null,to:null};
+  if(!e||!e.from)return{from:null,to:null,via:new Set()};
+  if(e._via===undefined)e._via=movePath(e.from,e.to,e.piece,e.player,gameState).map(c=>C2F[c]);   // beim ersten Zeichnen nach dem Zug merken
+  return{from:C2F[e.from],to:C2F[e.to],via:new Set(e._via)};
 }
 function draw(){
   if(CANVAS_ID==='c'&&window.V3&&V3.on){V3.sync();return;}
@@ -4528,7 +4543,7 @@ function draw(){
     else if(isCastle){ctx.fillStyle=hl(fid).castle;ctx.globalAlpha=0.75;ctx.shadowColor=hl(fid).castle;ctx.shadowBlur=8;}
     else if(isEnemy){ctx.fillStyle=capCol(fid);ctx.shadowColor=capCol(fid);ctx.shadowBlur=8;}
     else if(isV){ctx.fillStyle=validFill(fid);ctx.shadowColor=hl(fid).valid;ctx.shadowBlur=6;}
-    else if(fid===lm.from||fid===lm.to){ctx.fillStyle=lastMoveFill(fid,fid===lm.to);ctx.shadowBlur=0;}
+    else if(fid===lm.from||fid===lm.to||lm.via.has(fid)){ctx.fillStyle=lastMoveFill(fid,fid===lm.to);ctx.shadowBlur=0;}
     else{ctx.fillStyle=fieldFill(fid);ctx.shadowBlur=0;}
     ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.strokeStyle='#444';ctx.lineWidth=0.5;ctx.stroke();
     if(checkedKings.has(fid)){   // Schach: roter Rahmen – auf roten Feldern weiß, damit man ihn dort sieht
@@ -4558,8 +4573,9 @@ function draw(){
   if(moveAnim&&showPieces){
     const e=animProgress();
     for(const it of moveAnim.items){
-      const a=FIELDS[C2F[it.from]],b=FIELDS[C2F[it.to]];if(!a||!b)continue;
-      const x=a.cx+(b.cx-a.cx)*e,y=a.cy+(b.cy-a.cy)*e,sc=1+0.25*Math.sin(Math.PI*e);
+      const P=(it.path||[it.from,it.to]).map(c=>FIELDS[C2F[c]]);if(P.some(d=>!d))continue;
+      const{i,u}=pathAt(P,e),a=P[i],b=P[i+1]||a;
+      const x=a.cx+(b.cx-a.cx)*u,y=a.cy+(b.cy-a.cy)*u,sc=1+0.25*Math.sin(Math.PI*(P.length>2?u:e));
       ctx.font=`${Math.max(13,26*zoom)*sc}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=10;
       drawPiece(ctx,it.piece,it.player,x,y,Math.max(13,26*zoom)*sc);ctx.shadowBlur=0;
@@ -6461,7 +6477,7 @@ window.V3={on:false};
       else if(isV&&castleMap[fid]){col=H.castle;em=H.castle;ei=0.3;}
       else if(isV&&gameState[coord]&&gameState[coord].player!==cur()){col=capCol(fid);em=col;ei=0.35;}
       else if(isV){col=mixHex(H.valid,'#000000',0.1);em=H.valid;ei=0.25;}
-      if((fid===lm.from||fid===lm.to)&&ei===0){col=lastMoveFill(fid,fid===lm.to);}
+      if((fid===lm.from||fid===lm.to||lm.via.has(fid))&&ei===0){col=lastMoveFill(fid,fid===lm.to);}
       if(checked.has(fid)){em=H.chk;ei=0.75;}
       m.material.color.set(col);m.material.emissive.set(em);m.material.emissiveIntensity=ei;
     }
@@ -6482,14 +6498,15 @@ window.V3={on:false};
     if(moveAnim){
       const e=animProgress();
       for(const it of moveAnim.items){
-        if(PLUS){const fa=C2F[it.from],fb=C2F[it.to];if(!PF[fa]||!PF[fb])continue;
+        const F=(it.path||[it.from,it.to]).map(c=>C2F[c]),{i,u}=pathAt(F,e),fa=F[i],fb=F[i+1]||F[i],hop=F.length>2?0.25*Math.sin(Math.PI*u):Math.sin(Math.PI*e);
+        if(PLUS){if(!PF[fa]||!PF[fb])continue;
           const A=plusPose(fa),B=plusPose(fb),g=makePiece(it.piece,it.player,'');
-          const o=plusWrap(g,{pos:A.pos.clone().lerp(B.pos,e).addScaledVector(Y(),0.8*Math.sin(Math.PI*e)),q:A.q.clone().slerp(B.q,e)});
+          const o=plusWrap(g,{pos:A.pos.clone().lerp(B.pos,u).addScaledVector(Y(),0.8*hop),q:A.q.clone().slerp(B.q,u)});
           pieceGroup.add(o);continue;}
-        const a=fieldMesh[C2F[it.from]],b=fieldMesh[C2F[it.to]];if(!a||!b)continue;
+        const a=fieldMesh[fa],b=fieldMesh[fb];if(!a||!b)continue;
         const g=makePiece(it.piece,it.player,'');
-        g.position.set(a.userData.c[0]+(b.userData.c[0]-a.userData.c[0])*e,0.55*Math.sin(Math.PI*e),
-                       a.userData.c[1]+(b.userData.c[1]-a.userData.c[1])*e);
+        g.position.set(a.userData.c[0]+(b.userData.c[0]-a.userData.c[0])*u,0.55*hop,
+                       a.userData.c[1]+(b.userData.c[1]-a.userData.c[1])*u);
         pieceGroup.add(g);
       }
       return;   // Rest ändert sich während der Animation nicht

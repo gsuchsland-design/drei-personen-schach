@@ -201,7 +201,8 @@ function dirs(type){const out=[];
   return out;}
 function slides(x,y,z,ds,p,max){const out=[];
   for(const d of ds){let a=x,b=y,c=z;for(let i=0;i<(max||99);i++){a+=d[0];b+=d[1];c+=d[2];if(!valid(a,b,c))break;const o=S.get(key(a,b,c));
-    if(o){if(o.p!==p)out.push({c:[a,b,c],cap:true});break;}out.push({c:[a,b,c],cap:false});}}
+    const hops=[];for(let j=1;j<=i;j++)hops.push([x+d[0]*j,y+d[1]*j,z+d[2]*j]);
+    if(o){if(o.p!==p)out.push({c:[a,b,c],cap:true,hops});break;}out.push({c:[a,b,c],cap:false,hops});}}
   return out;}
 function knightVecs(){const jumps=[],seen=new Set();
   for(const a of[-2,2])for(const b of[-1,1])for(const[i,j]of[[0,1],[0,2],[1,0],[1,2],[2,0],[2,1]]){const v=[0,0,0];v[i]=a;v[j]=b;jumps.push(v);
@@ -292,9 +293,9 @@ function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
   const a=new THREE.Vector3(...mv.from),b=new THREE.Vector3(...mv.to),len=a.distanceTo(b);
   const d=[0,1,2].map(i=>Math.abs(mv.to[i]-mv.from[i])).sort((x,y)=>y-x),leap='NWACM'.includes(mv.t)&&!(d[1]===0||d[0]===d[1]);
   const pts=[mv.from].concat(mv.hops||[],[mv.to]).map(c=>new THREE.Vector3(...c));
-  const dur=pts.length>2?Math.min(1600,260*(pts.length-1)):Math.min(900,280+len*45);
+  const dur=pts.length>2?Math.min(1800,(leap?260:170)*(pts.length-1)):Math.min(900,280+len*45);
   const ship=STYLE==='ship';
-  ANIM={mv,a,b,len,pts,hop:ship?Math.min(1.2,len*0.08):pts.length>2?0.9:(leap?1.1:0)+Math.min(1.6,len*0.12),dur:ship&&mv.cap?Math.max(1200,dur):dur,t0:performance.now(),kick:null,ship};
+  ANIM={mv,a,b,len,pts,hop:ship?Math.min(1.2,len*0.08):leap?(pts.length>2?0.9:1.1+Math.min(1.6,len*0.12)):0.12,dur:ship&&mv.cap?Math.max(1200,dur):dur,t0:performance.now(),kick:null,ship};
   if(ship&&mv.cap){   // Raumschiff: anfliegen, feuern, Ziel explodiert
     animGroup.clear();ANIM.sp=R3.object('ship',mv.t,PCOL[mv.p],fwd(mv.p));animGroup.add(ANIM.sp);
     ANIM.victim=R3.object('ship',mv.cap.t,PCOL[mv.cap.p],fwd(mv.cap.p));ANIM.victim.position.copy(b);animGroup.add(ANIM.victim);

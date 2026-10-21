@@ -207,8 +207,8 @@ function fill(n){S=new Map();if(CORN[n])CFG=CORN[n];
 // ================= Zugregeln =================
 // Alle Strahlen sind in lib/sternbrett.js vorberechnet.
 function slides(rays,p,max){const out=[];
-  for(const r of rays)for(let i=0;i<Math.min(r.length,max||99);i++){const x=r[i],o=S.get(key(x));
-    if(o){if(o.p!==p)out.push({c:[x],cap:true});break;}out.push({c:[x],cap:false});}
+  for(const r of rays)for(let i=0;i<Math.min(r.length,max||99);i++){const x=r[i],o=S.get(key(x)),hops=r.slice(0,i).map(v=>[v]);
+    if(o){if(o.p!==p)out.push({c:[x],cap:true,hops});break;}out.push({c:[x],cap:false,hops});}
   return out;}
 function knights(id,p){const out=[];for(const x of SB.KN[id]){const o=S.get(key(x));if(o&&o.p===p)continue;out.push({c:[x],cap:!!o,hops:[],jump:1});}return out;}
 function riders(id,p){const out=[];
@@ -298,9 +298,9 @@ function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
   const a=P(mv.from),b=P(mv.to),len=a.distanceTo(b);
   const leap='NW'.includes(mv.t)||('ACM'.includes(mv.t)&&SB.KN[mv.from[0]].includes(mv.to[0]));
   const pts=[mv.from].concat(mv.hops||[],[mv.to]).map(c=>P(c));
-  const dur=pts.length>2?Math.min(1600,260*(pts.length-1)):Math.min(900,280+len*45);
+  const dur=pts.length>2?Math.min(1800,(leap?260:170)*(pts.length-1)):Math.min(900,280+len*45);
   const ship=STYLE==='ship';
-  ANIM={mv,a,b,len,pts,hop:ship?Math.min(1.2,len*0.08):pts.length>2?0.9:(leap?1.1:0)+Math.min(1.6,len*0.12),dur:ship&&mv.cap?Math.max(1200,dur):dur,t0:performance.now(),kick:null,ship};
+  ANIM={mv,a,b,len,pts,hop:ship?Math.min(1.2,len*0.08):leap?(pts.length>2?0.9:1.1+Math.min(1.6,len*0.12)):0.12,dur:ship&&mv.cap?Math.max(1200,dur):dur,t0:performance.now(),kick:null,ship};
   if(ship&&mv.cap){   // Raumschiff: anfliegen, feuern, Ziel explodiert
     animGroup.clear();ANIM.sp=R3.object('ship',mv.t,PCOL[mv.p],fwd(mv.p));animGroup.add(ANIM.sp);
     ANIM.victim=R3.object('ship',mv.cap.t,PCOL[mv.cap.p],fwd(mv.cap.p));ANIM.victim.position.copy(b);animGroup.add(ANIM.victim);

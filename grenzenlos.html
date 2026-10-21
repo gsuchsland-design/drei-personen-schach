@@ -374,7 +374,8 @@ function paint(){
   // letzter Zug
   const lm=RPLM!==null?RPLM:GM?GM.lastMove:LASTMV;
   if(lm){for(const c of[lm.from,lm.to]){const[sx,sy]=toScr(...c);ctx.fillStyle=PCOL[lm.p]+'66';ctx.fillRect(sx-s/2,sy-s/2,s,s);}
-    const[a,b]=toScr(...lm.from),[c,d]=toScr(...lm.to);ctx.strokeStyle=PCOL[lm.p];ctx.lineWidth=Math.max(2,s*0.06);ctx.globalAlpha=0.8;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();ctx.globalAlpha=1;}
+    const[a,b]=toScr(...lm.from),[c,d]=toScr(...lm.to);ctx.strokeStyle=PCOL[lm.p];ctx.lineWidth=Math.max(2,s*0.06);ctx.globalAlpha=0.8;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();ctx.globalAlpha=1;
+    ctx.fillStyle=PCOL[lm.p];for(const q of passed(lm.from,lm.to)){const[px,py]=toScr(...q);ctx.beginPath();ctx.arc(px,py,Math.max(2.5,s*0.11),0,7);ctx.fill();}}
   // Schach
   if(GM&&!GM.over)for(const q of alive()){if(!inCheck(q))continue;const k=kingOf(q),[sx,sy]=toScr(...k);
     const g=ctx.createRadialGradient(sx,sy,2,sx,sy,s*0.7);g.addColorStop(0,'rgba(255,40,20,.85)');g.addColorStop(1,'rgba(255,40,20,0)');ctx.fillStyle=g;ctx.fillRect(sx-s,sy-s,2*s,2*s);}
@@ -423,8 +424,11 @@ function renderTurn(){const el=document.getElementById('turn');if(!GM){el.style.
 function seatName(p){if(!GM)return PNAME[p];if(GM.online&&ON.seats&&ON.seats[p]){const s=ON.seats[p];return s.kind==='human'?(p===ON.seat?KIT.myName():s.name||PNAME[p]):s.kind==='ai'?KIT.monName(p)+' · '+(KIT.LVL[s.lvl]||''):'frei';}
   const c=GM.ctrl[p];return c==='human'?(GM.order.filter(q=>GM.ctrl[q]==='human').length===1?KIT.myName():'Mensch'):KIT.monName(p)+' · '+(KIT.LVL[c]||'');}
 // ---------- Animation ----------
+// Felder, über die eine Figur auf gerader oder schräger Linie gezogen ist (ohne Start und Ziel); Springer: keine
+function passed(f,t){const dx=t[0]-f[0],dy=t[1]-f[1];if(!(dx===0||dy===0||Math.abs(dx)===Math.abs(dy)))return[];
+  const n=Math.max(Math.abs(dx),Math.abs(dy)),sx=Math.sign(dx),sy=Math.sign(dy),out=[];for(let i=1;i<n;i++)out.push([f[0]+sx*i,f[1]+sy*i]);return out;}
 let ANIM=null;
-function animStart(from,to,pc,cap){ANIM={from,to,pc:{t:pc.t,p:pc.p},cap:cap?{t:cap.t,p:cap.p}:null,t0:performance.now(),dur:Math.min(700,220+Math.hypot(to[0]-from[0],to[1]-from[1])*40)};animStep();}
+function animStart(from,to,pc,cap){ANIM={from,to,pc:{t:pc.t,p:pc.p},cap:cap?{t:cap.t,p:cap.p}:null,t0:performance.now(),dur:Math.min(1500,220+Math.max(Math.abs(to[0]-from[0]),Math.abs(to[1]-from[1]))*110)};animStep();}
 const animLeft=()=>ANIM?Math.max(0,ANIM.t0+ANIM.dur+(ANIM.cap?500:0)-performance.now()):0;
 function animStep(){if(!ANIM)return;render();if(performance.now()-ANIM.t0>=ANIM.dur+(ANIM.cap?500:0)){ANIM=null;render();return;}requestAnimationFrame(animStep);}
 function animPaint(){const now=performance.now(),e=Math.min(1,(now-ANIM.t0)/ANIM.dur),s=e<0.5?2*e*e:1-Math.pow(-2*e+2,2)/2;
@@ -532,7 +536,8 @@ function g3Render(){if(!G3.ready)return;const T=THREE;
   const lm=RPLM!==null?RPLM:GM?GM.lastMove:LASTMV;
   if(lm&&lm.from){box(lm.from,PCOL[lm.p],0.45);box(lm.to,PCOL[lm.p],0.7);
     const a=W3(lm.from[0],lm.from[1],0.08),b=W3(lm.to[0],lm.to[1],0.08),len=a.distanceTo(b);if(len>0.1){const cyl=new T.Mesh(new T.CylinderGeometry(0.05,0.05,len,8),new T.MeshBasicMaterial({color:PCOL[lm.p]}));
-      cyl.position.copy(a).add(b).multiplyScalar(0.5);cyl.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),b.clone().sub(a).normalize());G3.marks.add(cyl);}}
+      cyl.position.copy(a).add(b).multiplyScalar(0.5);cyl.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),b.clone().sub(a).normalize());G3.marks.add(cyl);}
+    for(const q of passed(lm.from,lm.to)){const d=new T.Mesh(new T.SphereGeometry(0.14,10,8),new T.MeshBasicMaterial({color:PCOL[lm.p]}));d.position.copy(W3(q[0],q[1],0.1));G3.marks.add(d);}}
   if(GM&&!GM.over)for(const q of alive()){if(!inCheck(q))continue;const k=kingOf(q);if(k)box(k,'#ff2a1a',0.35,1.05,1.2);}
   if(sel)box(sel,'#ffdd00',0.8,1,0.06);if(HINT)box(HINT,'#ffd23f',0.6,1,0.06);
   for(const t of targets){const m=new T.Mesh(new T.SphereGeometry(t.cap?0.32:0.16,14,10),new T.MeshBasicMaterial({color:t.view?(t.cap?'#ff9a3a':'#7fb8ff'):(t.cap?'#ff3322':t.castle?'#50c8ff':'#3ee05a'),transparent:true,opacity:0.9}));
