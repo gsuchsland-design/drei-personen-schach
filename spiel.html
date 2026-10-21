@@ -29,6 +29,10 @@ body.fullscreen #info { display:none; }
 body.fullscreen #captured { margin:2px 0; }
 #info { color:#aaa; font-size:11px; margin:2px 0; }
 #status { color:#fff; font-size:14px; font-weight:bold; margin:4px 0; min-height:20px; text-align:center; }
+#endBar { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; align-items:center; margin:2px 0 4px; font-size:13px; }
+#endBar:empty { display:none; }
+#endBar button { padding:3px 10px; font-size:12px; cursor:pointer; background:#3a3a3a; color:#eee; border:1px solid #666; border-radius:6px; }
+#endBar button.on { background:#2a7a3e; border-color:#3cc463; }
 #msgRow { display:none; align-items:center; justify-content:center; gap:8px; max-width:96vw; margin:-2px auto 4px; }
 body.online #msgRow { display:flex; }
 #chatBtn { display:none; position:relative; padding:1px 8px; font-size:14px; background:#333; color:#eee; border:1px solid #666; border-radius:12px; cursor:pointer; flex:none; }
@@ -474,6 +478,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <div id="info">Klick auf Figur → Züge · Zweiter Klick → Ziehen · Rad = Zoom · Ziehen = Bewegen · Doppelklick = Einpassen</div>
 </div>
 <div id="status">Blau am Zug</div>
+<div id="endBar"></div>
 <div id="msgRow"><span id="recBadge" title="Gesprochenes und Chat werden für die Spielanalyse mitgeschrieben – alle haben zugestimmt">📝</span><div id="msgLine"></div><button id="chatBtn" onclick="toggleChat()" title="Chat und Reaktionen">💬<span id="chatBadge"></span></button></div>
 <div id="askBar"><span id="askTxt"></span><span id="askBtns"></span></div>
 <div id="specReq"><span id="specReqTxt"></span><button onclick="specAnswer(true)">Ja</button><button onclick="specAnswer(false)" style="background:#a33">Nein</button></div>
@@ -663,6 +668,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <div id="pubModal" class="netModal"><div class="netBox" style="max-width:560px">
   <h3>🌍 Offene Spiele <button class="lbMin" onclick="pubClose()" title="Schließen">✕</button></h3>
   <div class="lbHint" style="margin-top:0">Einladungen, die andere öffentlich gemacht haben: mitspielen, zuschauen – oder selbst eine Partie anbieten (Häkchen „In der öffentlichen Lobby anbieten“ beim Erstellen).</div>
+  <div id="pubMine"></div>
   <div id="pubTabs"><button data-f="all" class="on" onclick="pubFilter('all')">Alle</button><button data-f="live" onclick="pubFilter('live')">🌐 Live</button><button data-f="fern" onclick="pubFilter('fern')">✉️ Fernpartien</button><button data-f="raum" onclick="pubFilter('raum')">👑 6 Reiche</button><button data-f="grenz" onclick="pubFilter('grenz')">♾️ Ohne Grenzen</button><button data-f="stern" onclick="pubFilter('stern')">⭐ Sternschach</button></div>
   <div id="pubList"></div>
   <button class="lbLeave" onclick="pubLoad()">🔄 Aktualisieren</button>
@@ -1413,7 +1419,7 @@ function hostRecv(conn,m){
   if(m.t==='undoAns'){undoAnswer(p,m.id,m.ok);return;}
   if(m.t==='bye'){hostDrop(conn,true);try{conn.close();}catch(e){}return;}
   if(m.t==='av'){NET.avs[p]={cam:m.cam,mic:m.mic,rec:!!m.rec,col:m.col||null};netBroadcast({t:'av',p,cam:m.cam,mic:m.mic,rec:!!m.rec,col:m.col||null},conn);hostLobby();return;}
-  if(m.t==='mv'||m.t==='promo'){m.p=p;m.fromConn=conn;NET.q.push(m);netPump();return;}
+  if(m.t==='mv'||m.t==='promo'||m.t==='resign'||m.t==='drawok'){m.p=p;m.fromConn=conn;NET.q.push(m);netPump();return;}
   if(m.t==='resync'){netSend(conn,{t:'sync',data:netSyncData()});return;}
 }
 function hostAddSpec(conn,m){
@@ -1731,7 +1737,7 @@ function joinRecv(m){
   if(m.t==='seat'){aiPlayers[m.p]=m.ai;updateStatus();renderClocks();return;}
   if(m.t==='av'){NET.avs[m.p]={cam:m.cam,mic:m.mic,rec:!!m.rec,col:m.col||null};netAttach();renderLobby();return;}
   if(m.t==='pause'){paused=m.on;lastTick=performance.now();renderClocks();toast(paused?T('⏸ Der Gastgeber hat die Uhr angehalten.'):T('▶ Weiter geht’s!'),2200);return;}
-  if(m.t==='mv'||m.t==='promo'||m.t==='to'){NET.q.push(m);netPump();return;}
+  if(m.t==='mv'||m.t==='promo'||m.t==='to'||m.t==='resign'||m.t==='drawok'){NET.q.push(m);netPump();return;}
 }
 function camFix(){   // eigenes Kamerabild gehört zum eigenen Platz
   if(!NET.on||!NET.seat)return;
@@ -1798,8 +1804,9 @@ function netPump(){
         if(NET.host&&m.fromConn)netSend(m.fromConn,{t:'sync',data:netSyncData()});else if(!NET.host)netToHost({t:'resync'});
         continue;
       }
-      if(NET.host){netBroadcast({t:'mv',p,from:m.from,to:m.to,clock,timeUsed},m.fromConn);}
+      if(NET.host){netBroadcast({t:'mv',p,from:m.from,to:m.to,draw:m.draw||null,clock,timeUsed},m.fromConn);}
       else if(m.clock){clock=m.clock;timeUsed=m.timeUsed;}
+      drawMark=m.draw||null;
       cancelAI();
       selected=C2F[m.from];validMoves=vm.moves;castleMap=vm.castles;draw();
       startMoveAnim(m.from,m.to,()=>{netApplying=true;try{doMove(m.from,m.to);}finally{netApplying=false;}setTimeout(netPump,0);});
@@ -1809,6 +1816,12 @@ function netPump(){
       if(!promoPending)continue;
       if(NET.host)netBroadcast({t:'promo',piece:m.piece},m.fromConn);
       netApplying=true;try{finishPromotion(m.piece);}finally{netApplying=false;}
+      continue;
+    }
+    if(m.t==='resign'||m.t==='drawok'){
+      if(gameOver)continue;
+      if(NET.host)netBroadcast({t:m.t,p:m.p},m.fromConn);
+      netApplying=true;try{if(m.t==='resign')resignDo(m.p);else drawFinish(m.p);}finally{netApplying=false;}
       continue;
     }
     if(m.t==='to'){
@@ -1878,8 +1891,25 @@ function pubRemove(){if(!PUB.id)return;const b=JSON.stringify({id:PUB.id,key:PUB
 // ---------- Liste „Offene Spiele“ ----------
 let PUBF='all',PUBL=[],pubTimer=null;
 function pubOpen(){document.getElementById('setupModal').classList.remove('show');setupOpen=true;
-  document.getElementById('pubModal').classList.add('show');pubLoad();
+  document.getElementById('pubModal').classList.add('show');pubLoad();pubMine();
   clearInterval(pubTimer);pubTimer=setInterval(()=>{if(document.visibilityState==='visible'&&document.getElementById('pubModal').classList.contains('show'))pubLoad();},10000);}
+// Deine laufenden Online-Partien aller Varianten (auf diesem Gerät gespeichert) – zum Hin- und Herwechseln
+async function pubMine(){const box=document.getElementById('pubMine');if(!box)return;
+  const G={dps:['♟',T('Drei-Personen-Schach')],raum:['👑',T('Schach der 6 Reiche')],grenz:['♾️',T('Schach ohne Grenzen')],stern:['⭐',T('Sternschach')]};
+  const page={raum:'raum.html',grenz:'grenzenlos.html',stern:'stern.html'},list=[];
+  for(const[c,e]of Object.entries(fernList()))if(e&&e.t)list.push({g:'dps',code:c,t:e.t});
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i),m=k&&k.match(/^(raum|grenz|stern)\.t\.([a-z0-9]{6,12})$/);if(m)list.push({g:m[1],code:m[2],t:localStorage.getItem(k)});}}catch(e){}
+  if(!list.length){box.innerHTML='';return;}
+  if(!await fernSrvLoad())return;
+  const rows=(await Promise.all(list.map(async x=>{try{const st=await fernApi('g/'+x.code+(x.g==='dps'?'':'/state')+'?t='+x.t);return st&&st._status===200&&!st.over&&st.seat?Object.assign(x,{st}):null;}catch(e){return null;}}))).filter(Boolean);
+  rows.sort((a,b)=>(b.st.next===b.st.seat)-(a.st.next===a.st.seat)||(a.st.age||0)-(b.st.age||0));
+  if(!rows.length){box.innerHTML='';return;}
+  box.innerHTML=`<div class="lbHint" style="margin:0 0 6px"><b>${T('Deine laufenden Partien')}</b> – ${T('antippen, um weiterzuspielen; mit „🌍 Lobby“ im Spiel kommst du jederzeit hierher zurück.')}</div>`+
+    rows.slice(0,12).map(x=>{const st=x.st,me=st.seat,turn=st.next===me,href=x.g==='dps'?fernLink(x.code,x.t):page[x.g]+'?g='+x.code+fernQS();
+      const col=PCOLOR[me]||RCOL[me]||'#bbb',who=st.order.filter(p=>p!==me).map(p=>st.seats[p].kind==='ai'?'🤖':st.seats[p].kind==='open'?T('frei'):esc(st.seats[p].name||'')).join(' · ');
+      return `<div class="pubCard" style="border-color:${turn?'#3cc463':'#555'};cursor:pointer" onclick="location.href='${href}'"><div class="pubHead">${G[x.g][0]} ${esc(G[x.g][1])} · <span style="color:${col}">●</span> ${who}</div>`+
+        `<div>${turn?'<b style="color:#3cc463">'+T('♟ Du bist dran!')+'</b>':st.next&&st.seats[st.next]&&st.seats[st.next].kind==='open'?T('wartet auf einen Mitspieler'):T('die anderen sind dran')} · ${pubAge(st.age||0)}</div></div>`;}).join('')+
+    `<div style="border-bottom:1px solid #444;margin:10px 0"></div>`;}
 function pubClose(){clearInterval(pubTimer);document.getElementById('pubModal').classList.remove('show');openSetup();}
 function pubFilter(f){PUBF=f;for(const b of document.querySelectorAll('#pubTabs button'))b.classList.toggle('on',b.dataset.f===f);pubRender();}
 async function pubLoad(){
@@ -2658,6 +2688,63 @@ function advanceTurn(newEP=null){
   if(gameOver)endByPoints();
   else{maybeAI();if(NET.on&&!NET.spec&&!REPLAY&&cur()===NET.seat)notifyTurn();}
 }
+
+// ================= Aufgeben und Remis =================
+// Ein Remis-Angebot hängt am Zug des Anbietenden; wer danach am Zug ist, nimmt an (Markierung 'yes' am eigenen Zug) oder lehnt ab.
+// Nehmen alle Übrigen an, endet die Partie sofort remis. Kommt das Angebot reihum zurück, ist es verfallen.
+let drawMark=null;
+function drawPending(){const yes=[];for(let i=moveLog.length-1;i>=0;i--){const e=moveLog[i];if(!e||e.timeout||e.resign||e.draw==='agreed')return null;
+  if(e.draw==='offer'){if(cur()===e.player)return null;return{by:e.player,yes:[e.player].concat(yes)};}
+  if(e.draw==='yes'){yes.push(e.player);continue;}return null;}return null;}
+const alive3=()=>TURN_ORDER.filter(q=>!eliminated.has(q));
+function mySeats3(){if(NET.on)return NET.spec||!NET.seat||eliminated.has(NET.seat)?[]:[NET.seat];if(FERN.on)return FERN.seat&&!eliminated.has(FERN.seat)?[FERN.seat]:[];
+  return TURN_ORDER.filter(q=>!aiPlayers[q]&&!eliminated.has(q));}
+const myTurn3=()=>!gameOver&&!REPLAY&&!AB&&!waitingStart&&!(NET.on&&!NET.started)&&mySeats3().includes(cur());
+function renderEndBar(){const el=document.getElementById('endBar');if(!el)return;
+  if(gameOver||REPLAY||AB||waitingStart||(NET.on&&!NET.started)||setupOpen&&!FERN.on&&!NET.on&&!moveLog.length){el.innerHTML='';return;}
+  const pend=drawPending(),mine=mySeats3();let h='';
+  if(pend&&myTurn3()&&!pend.yes.includes(cur())){
+    h+=drawMark==='yes'?`<span>🤝 ${T('Du nimmst das Remis an – mach jetzt deinen Zug.')}</span>`:drawMark==='no'?`<span>✋ ${T('Abgelehnt.')}</span>`:
+      `<span>🤝 ${T('{0} bietet Remis an.',[PNAMES[pend.by]])}</span><button class="on" onclick="drawAnswer3(true)">${T('Annehmen')}</button><button onclick="drawAnswer3(false)">${T('Ablehnen')}</button>`;}
+  else if(pend)h+=`<span style="color:#bbb">🤝 ${T('Remis angeboten von {0}',[PNAMES[pend.by]])}</span>`;
+  else if(myTurn3())h+=drawMark==='offer'?`<span>🤝 ${T('Remis angeboten – mach jetzt deinen Zug.')}</span>`:`<button onclick="drawOffer3()" title="${T('Die anderen werden reihum gefragt')}">🤝 ${T('Remis anbieten')}</button>`;
+  if(mine.length)h+=`<button onclick="resign3()" title="${T('Du scheidest aus; die anderen spielen weiter')}">🏳 ${T('Aufgeben')}</button>`;
+  el.innerHTML=h;}
+function drawOffer3(){if(!myTurn3()||drawPending())return;drawMark='offer';renderEndBar();}
+function drawAnswer3(yes){const pend=drawPending();if(!pend||!myTurn3())return;
+  if(!yes){drawMark='no';renderEndBar();return;}
+  if(alive3().every(q=>q===cur()||pend.yes.includes(q))){const p=cur();drawFinish(p);netOrigin({t:'drawok',p});return;}
+  drawMark='yes';renderEndBar();}
+// Computer: nimmt an, wenn er deutlich hinten liegt oder die Partie schon sehr lang ist; gibt true zurück, wenn die Partie damit endet
+function drawAI3(){const pend=drawPending(),p=cur();if(!pend||pend.yes.includes(p)||!aiPlayers[p])return false;
+  const others=alive3().filter(q=>q!==p).map(q=>score(q)),yes=score(p)<Math.max(...others)-2||moveLog.length>150;
+  if(yes&&alive3().every(q=>q===p||pend.yes.includes(q))){drawFinish(p);netOrigin({t:'drawok',p});return true;}
+  drawMark=yes?'yes':'no';return false;}
+function drawFinish(p){if(gameOver)return;cancelAI();
+  moveLog.push({player:p,draw:'agreed',mark:''});gameOver=true;
+  for(const q of TURN_ORDER)setEmo(q,'happy',0,true);
+  const el=document.getElementById('status');el.textContent=T('🤝 Remis vereinbart – alle haben zugestimmt.');el.style.color='#fff';
+  renderLog();renderClocks();draw();renderEndBar();autosave();
+  gameEndPrompt(T('🤝 Remis vereinbart – alle haben zugestimmt.'));}
+// Aufgeben: jederzeit; wer aufgibt, scheidet aus (seine Figuren verschwinden), die anderen spielen weiter
+function resign3(){const mine=mySeats3();const p=mine.includes(cur())?cur():mine[0];if(!p||gameOver)return;
+  if(!confirm(T('{0}: Willst du wirklich aufgeben?',[PNAMES[p]])))return;
+  resignDo(p);netOrigin({t:'resign',p});}
+function resignDo(p){if(gameOver||eliminated.has(p))return;cancelAI();
+  const wasCur=cur()===p;
+  moveLog.push({player:p,resign:true,mark:''});eliminated.add(p);
+  for(const c of Object.keys(gameState))if(gameState[c]&&gameState[c].player===p)delete gameState[c];
+  drawMark=null;selected=null;validMoves=new Set();setEmo(p,'cry',0,true);
+  const rest=alive3();renderLog();
+  // Bleiben nur Computer übrig, lohnt kein Weiterspielen: Es gewinnt, wer die meisten Punkte hat
+  if(rest.length>1&&rest.every(q=>aiPlayers[q])){const w=rest.slice().sort((x,y)=>score(y)-score(x))[0];gameOver=true;setEmo(w,'cheer',0,true);
+    const el=document.getElementById('status');el.textContent=T('🏳 {0} gibt auf – es spielen nur noch Computer. {1} gewinnt nach Punkten!',[PNAMES[p],PNAMES[w]]);el.style.color=PCOLOR[w];
+    updateCaptured();renderClocks();draw();renderEndBar();autosave();gameEndPrompt(el.textContent);return;}
+  if(rest.length===1){gameOver=true;const w=rest[0];setEmo(w,'cheer',0,true);
+    const el=document.getElementById('status');el.textContent=T('🏳 {0} gibt auf – {1} gewinnt!',[PNAMES[p],PNAMES[w]]);el.style.color=PCOLOR[w];
+    updateCaptured();renderClocks();draw();renderEndBar();autosave();gameEndPrompt(T('🏳 {0} gibt auf – {1} gewinnt!',[PNAMES[p],PNAMES[w]]));return;}
+  pendingNote=T('{0} hat aufgegeben. ',[PNAMES[p]]);
+  if(wasCur){advanceTurn(null);autosave();}else{turnNote=pendingNote;pendingNote='';updateStatus();updateCaptured();draw();autosave();maybeAI();}}
 let titleFlash=null;
 function notifyTurn(){
   try{if(navigator.vibrate)navigator.vibrate([90,60,90]);}catch(e){}
@@ -2706,7 +2793,7 @@ function recheckHelpDuty(){
   updateStatus();draw();return false;
 }
 function endGame(winner,loser){
-  gameOver=true;
+  gameOver=true;renderEndBar();
   for(const p of TURN_ORDER)setEmo(p,p===winner?'cheer':'cry',0,true);setTimeout(()=>snd('mate'),250);
   const el=document.getElementById('status');
   el.textContent=T(`{0}SCHACHMATT gegen {1} – {2} gewinnt!`,[turnNote,PNAMES[loser],PNAMES[winner]]);
@@ -2720,10 +2807,23 @@ function gameEndPrompt(text){
   if(typeof oppSave==='function')oppSave();
   if(REPLAY){toast(text,4000);return;}   // Ende in einer Variante: nur Hinweis, keine Revanche
   const an={label:T('🔬 Analysieren'),bg:'#7a6420',fn:()=>setTimeout(analyseGame,50)};
-  if(FERN.on){FERN.endShown=true;ask('end',text,[an,{label:'OK',fn:()=>{}}]);return;}
+  if(FERN.on){FERN.endShown=true;ask('end',text,[{label:FERN.rematch?T('🔄 Zur Revanche'):T('🔄 Revanche'),fn:fernRematch},an,{label:'OK',bg:'#555',fn:()=>{}}]);return;}
   if(NET.on&&!NET.host){ask('end',text,[an,{label:'OK',fn:()=>{}}]);if(!NET.spec)setTimeout(()=>toast(T('Der Gastgeber kann eine Revanche starten.'),5000),1500);return;}
   ask('end',text,[{label:NET.on?T('🔄 Revanche'):T('🔄 Noch eine Partie'),fn:rematch},an,{label:T('Schließen'),bg:'#555',fn:()=>{}}]);
 }
+// Revanche einer Fernpartie: neue Partie mit denselben Plätzen anlegen; die anderen sehen sie in der alten Partie
+async function fernRematch(){unask('end');
+  if(FERN.rematch){location.href=fernLink(FERN.rematch);return;}
+  if(!FERN.seat){toast(T('Nur Mitspieler können eine Revanche anlegen.'),4000);return;}
+  try{const old=await fernApi('g/'+FERN.code+'?t='+FERN.token);if(old.rematch){location.href=fernLink(old.rematch);return;}
+    const ai={};for(const p of TURN_ORDER)ai[p]=old.seats[p].kind==='ai'?(old.seats[p].lvl||'medium'):null;
+    let name='';try{name=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
+    const j=await fernApi('new',{name:name||T('Spieler'),seat:FERN.seat,ai,rules:RULES,public:!!old.pub,lang:LANG_SET||'de'});
+    if(!j.code)throw{msg:j.error||'Fehler'};
+    fernStore(j.code,{t:j.token,seat:j.seat});
+    await fernApi('g/'+FERN.code+'/rematch',{t:FERN.token,code:j.code});
+    location.href=fernLink(j.code,j.token);
+  }catch(e){toast('⚠️ '+(e.msg||e),5000);}}
 function rematch(){
   unask('end');
   if(NET.on){
@@ -2749,6 +2849,7 @@ function updateStatus(){
     if(helpDuty&&helpDuty.helper===p)txt+=helpDuty.mated?T(` — HILFSPFLICHT: {0} ist matt – du musst ihn befreien!`,[PNAMES[helpDuty.victim]]):T(` — HILFSPFLICHT: Manche deiner Züge würden {0} mattsetzen – die sind gesperrt.`,[PNAMES[helpDuty.victim]]);
   }
   el.textContent=txt;el.style.color=PCOLOR[p];
+  renderEndBar();
 }
 function updateCaptured(){
   for(const cp of['B','R','G']){
@@ -2854,6 +2955,8 @@ function fmtMs(ms){const t=Math.round(ms/1000);return t<60?t+' s':Math.floor(t/6
 function moveText(e){
   let t;
   if(e.timeout)return `<i style="color:#bbb">${e.timeout==='move'?T('Zugzeit abgelaufen'):T('Partiezeit verbraucht')}</i>`;
+  if(e.resign)return `<i style="color:#bbb">🏳 ${T('gibt auf')}</i>`;
+  if(e.draw==='agreed')return `<i style="color:#bbb">🤝 ${T('Remis vereinbart')}</i>`;
   if(e.castle)t=e.castle;
   else{
     t=`<span class="pc">${PIECES[e.piece]}</span> ${e.from}${e.cap?'×':'–'}${e.to}`;
@@ -3964,6 +4067,7 @@ function ranking(){
     .sort((a,b)=>b.pts-a.pts||a.sec-b.sec);
 }
 function endByPoints(){
+  renderEndBar();
   {const r=ranking(),top=r.filter(x=>x.pts===r[0].pts&&x.sec===r[0].sec);
    for(const x of r)setEmo(x.p,top.includes(x)?(top.length>1?'happy':'cheer'):'cry',0,true);}
   setTimeout(()=>snd('end'),250);
@@ -4074,6 +4178,7 @@ function maybeAI(){
   if(FERN.on&&!fernMayAI())return;   // Fernpartie: nur ein Gerät rechnet
   // reiner Computer-Durchlauf: mindestens 5 Sekunden pro Zug, damit man zuschauen kann
   const onlyAI=TURN_ORDER.every(p=>aiPlayers[p]);
+  if(drawAI3())return;
   aiTimer=setTimeout(()=>{aiTimer=null;aiMove();},onlyAI?2600:400+Math.random()*300);
 }
 function allLegalMoves(p){
@@ -4236,7 +4341,7 @@ function aiPlay(p,best){
   aiTimer=setTimeout(()=>{
     aiTimer=null;
     if(gameOver||paused||cur()!==p){selected=null;validMoves=new Set();draw();return;}
-    netOrigin({t:'mv',p,from:best.from,to:best.to});
+    netOrigin({t:'mv',p,from:best.from,to:best.to,draw:drawMark});
     startMoveAnim(best.from,best.to,()=>{doMove(best.from,best.to);if(promoPending)finishPromotion('Q');});
   },allAI?1700:800);
 }
@@ -4251,6 +4356,7 @@ function doMove(fromCoord,toCoord){
   let newEP=null;
   history.push(snapshot());
   const entry={player,piece:pd.piece,from:fromCoord,to:toCoord,cap:null,capFrom:null,ep:false,castle:null,promo:null,mark:''};
+  if(drawMark&&!REPLAY&&!AB){entry.draw=drawMark;}drawMark=null;
   if(!FERN.on&&!REPLAY&&typeof turnUsed0==='number')entry.ms=Math.max(0,Math.round((timeUsed[player]||0)-turnUsed0));
 
   // Castling?
@@ -4658,7 +4764,7 @@ function onFieldClick(fid){
   // Sicherheitsnetz: Sperrt die Hilfspflicht alle Züge, Pflicht neu prüfen (Matt bleibt bzw. Pflicht entfällt)
   if(helpDuty&&helpDuty.helper===player&&!playerHasValidMove(player,epTarget)){recheckHelpDuty();if(gameOver)return;}
   if(selected){
-    if(validMoves.has(fid)){const from=COORD_LABELS[selected];netOrigin({t:'mv',p:player,from,to:coord});startMoveAnim(from,coord,()=>doMove(from,coord));}
+    if(validMoves.has(fid)){const from=COORD_LABELS[selected];netOrigin({t:'mv',p:player,from,to:coord,draw:drawMark});startMoveAnim(from,coord,()=>doMove(from,coord));}
     else if(pd&&pd.player===player&&fid!==selected){
       const{moves,castles}=getValidMoves(coord,movedPieces,epTarget);
       selected=fid;validMoves=moves;castleMap=castles;draw();
@@ -4919,6 +5025,7 @@ function fernApply(st,anim){
   if(st.rtc)FERN.rtc=st.rtc;
   RULES=rulesOf(st.rules);
   FERN.seats=st.seats;FERN.next=st.next;FERN.over=st.over;FERN.used=st.used;FERN.age=st.age||0;FERN.loadedAt=Date.now();
+  if(st.rematch&&FERN.rematch!==st.rematch){FERN.rematch=st.rematch;if(st.over)ask('rematch',T('🔄 Revanche! Eine neue Partie mit denselben Plätzen wartet.'),[{label:T('🔄 Zur Revanche'),fn:()=>{location.href=fernLink(st.rematch);}},{label:T('Später'),bg:'#555',fn:()=>{}}]);}
   renderFernPanel();setTimeout(fernBarFix,50);
   if(FERN.rtc&&FERN.seat&&!FV.on&&fvWanted())fvStart();
   fvUI();
@@ -4980,6 +5087,8 @@ function fernMayAI(){
 
 // ---------- eigenen Zug speichern ----------
 function fernMoveText(e){
+  if(e.resign)return `${PNAMES[e.player]}: ${T('gibt auf')}`;
+  if(e.draw==='agreed')return T('Remis vereinbart');
   if(e.castle)return `${PNAMES[e.player]}: ${e.castle}`;
   return `${PNAMES[e.player]}: ${PIECES[e.piece].replace('︎','')} ${e.from}${e.cap?'×':'–'}${e.to}${e.promo?'='+PIECES[e.promo].replace('︎',''):''}${e.mark||''}`;
 }
@@ -5002,7 +5111,7 @@ function fernAfterMove(){
         if(epoch!==FERN.epoch||!FERN.on)return;   // inzwischen neu geladen → verwerfen
         body.v=FERN.v;
         let j;
-        try{j=await fernApi('g/'+FERN.code+'/move',body);}
+        try{j=await fernApi('g/'+FERN.code+'/'+(e.resign?'resign':'move'),body);}
         catch(err){if(i===1)showBanner(T('⚠️ Zug noch nicht gespeichert – keine Verbindung zum Server. Ich versuche es weiter …'));await sleep(Math.min(30000,2000*(i+1)));continue;}
         hideBanner();
         if(j.ok){FERN.v=j.v;FERN.used=j.used;FERN.next=next;FERN.over=gameOver;FERN.age=0;FERN.loadedAt=Date.now();return;}

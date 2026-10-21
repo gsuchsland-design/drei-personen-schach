@@ -83,6 +83,7 @@ a { color:#8fb6ff; }
     <div class="hint" id="onState"></div>
     <div class="row"><input type="text" id="onLink" readonly style="flex:1" onclick="this.select()"><button onclick="onShare()">📤</button></div>
    </div>
+   <div class="row" id="endBox" style="flex-wrap:wrap"></div>
    <div class="row"><button onclick="undo()" title="Zurück bis zu deinem letzten Zug">↶ Zug zurück</button><button onclick="gameStop()">■ Partie beenden</button><button onclick="KIT.anaOpen()">🔬 Auswertung</button></div>
    <div id="kitBox"></div>
   </div>
@@ -638,7 +639,7 @@ const dutyOk=m=>!DUTY||!DUTY.allowed||DUTY.allowed.has(key(...m.from)+'>'+key(..
 function mateFinal(q,extra){const k=kingOf(q),att=k?attackers(k,x=>x!==q&&!GM.out.includes(x)):[];
   if(GM.end==='first'){GM.over=true;GM.winner=att.includes(GM.lastMoverSeat)?GM.lastMoverSeat:(att[0]||GM.lastMoverSeat);GM.note+=(extra||'')+`${PNAME[q]} ist schachmatt! `;return;}
   GM.note+=(extra||'')+`${PNAME[q]} ist schachmatt und scheidet aus. `;eliminate(q);}
-function turnStart(){sel=null;targets=[];DUTY=null;
+function turnStart(){drawTurn();sel=null;targets=[];DUTY=null;
   if(GM&&!GM.over&&helpOn()){const p0=gCur(),d=dutyFor(p0);
     if(d&&d.fail.length){let elim=false;for(const q of d.fail){if(GM.out.includes(q))continue;mateFinal(q,`${PNAME[p0]} kann ${PNAME[q]} nicht helfen. `);elim=true;if(GM.over)break;}
       if(GM.online&&(p0===ON.seat||(KIT.isAI(p0)&&GM.lastBy===ON.seat))){GM.lastMoverSeat=p0;onPush();}
@@ -647,7 +648,7 @@ function turnStart(){sel=null;targets=[];DUTY=null;
   render();const p=gCur();
   if(GM&&!GM.over&&GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'&&(!GM.online||GM.lastBy===ON.seat)){clearTimeout(aiT);aiT=setTimeout(()=>aiMove(p),(GM.order.every(q=>GM.ctrl[q]!=='human')?150:450)+animLeft());}}
 function gameMove(from,to){
-  const fk=key(...from),tk=key(...to),pc=S.get(fk),cap=S.get(tk);if(!pc)return;
+  const fk=key(...from),tk=key(...to),pc=S.get(fk),cap=S.get(tk);if(!pc)return;if(GM.draw&&!GM.draw.yes.includes(pc.p))GM.draw=null;
   hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice(),GM:snapGM()});
   const ms=KIT.clockSpend(pc.p),outB=GM.out.slice();
   S.delete(fk);const np={t:pc.t,p:pc.p,m:true};let promo='';
@@ -738,11 +739,12 @@ function anaPos(i){if(!REAL)REAL={S,out:GM.out};
     for(const q of e.elim||[]){if(!GM.out.includes(q))GM.out.push(q);for(const[k,v]of[...S])if(v.p===q)S.delete(k);}}}
 function anaScores(p){return aiEval(p,'medium',legalMoves(p),false).map(o=>({f:o.m.from,t:o.m.to,pc:(S.get(key(...o.m.from))||{}).t,v:o.v/10}));}
 function anaRestore(){if(!REAL)return;S=REAL.S;GM.out=REAL.out;REAL=null;}
-function moveText(e){if(e.to&&!e.f)return e.to==='move'?'Zugzeit abgelaufen':'Partiezeit verbraucht';return `${PNAMES[e.pc]||''} ${cellLbl(e.f)} – ${cellLbl(e.t)}`;}
+function moveText(e){if(e.to&&!e.f)return e.to==='resign'?'gibt auf':e.to==='draw'?'Remis vereinbart':e.to==='move'?'Zugzeit abgelaufen':'Partiezeit verbraucht';return `${PNAMES[e.pc]||''} ${cellLbl(e.f)} – ${cellLbl(e.t)}`;}
 function renderTurn(){const el=document.getElementById('turn'),tb=document.getElementById('turnBox');
+  endUI();
   if(!GM){el.style.display='none';return;}
   let h;
-  if(GM.over)h=`🏁 <span style="color:${PCOL[GM.winner]}">${PNAME[GM.winner]}</span> gewinnt!`;
+  if(GM.over)h=GM.winner?`🏁 <span style="color:${PCOL[GM.winner]}">${PNAME[GM.winner]}</span> gewinnt!`:'🏁 Remis!';
   else{const p=gCur(),chk=inCheck(p),nm=GM.online&&ON.seats&&ON.seats[p]&&ON.seats[p].name?' ('+esc(ON.seats[p].name)+')':'';
     const wait=GM.ctrl[p]==='open'&&ON.seats&&ON.seats[p]&&ON.seats[p].kind==='open';
     h=`<span style="color:${PCOL[p]}">●</span> ${PNAME[p]}${nm} ${wait?'– Platz noch frei, warte auf Mitspieler':'ist am Zug'}${GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'?' 🤖':''}${GM.online&&p===ON.seat?' – <b>du</b>':''}${chk?' – <span style="color:#ff6a50">Schach!</span>':''}${KIT.clockHTML(p)}`;}
@@ -750,9 +752,71 @@ function renderTurn(){const el=document.getElementById('turn'),tb=document.getEl
   if(GM.tc)out+=`<br><span class="hint">Uhren: ${alive().map(q=>`<span style="color:${PCOL[q]}">${PNAME[q]}</span>${KIT.clockHTML(q)}`).join(' · ')}</span>`;
   out+=`<br><span class="hint">Material: ${alive().map(q=>`<span style="color:${PCOL[q]}">${material(q)}</span>`).join(' · ')}${!GM.over&&GM.quiet>QUIET*alive().length/2?` · ruhige Züge ${GM.quiet}/${QUIET*alive().length}`:''}</span>`;
   el.innerHTML=h+(GM.note?`<div class="hint" style="font-weight:400">${GM.note}</div>`:'')+dutyTxt();el.style.display='block';
-  el.style.borderColor=GM.over?PCOL[GM.winner]:PCOL[gCur()];
+  el.style.borderColor=GM.over?(PCOL[GM.winner]||'#bbb'):PCOL[gCur()];
   tb.innerHTML=h+out+(GM.note?`<div class="hint">${GM.note}</div>`:'');}
 
+// ================= Aufgeben, Remis, Revanche =================
+const winText=()=>GM&&GM.winner?`${PNAME[GM.winner]} gewinnt`:'Remis';
+// Plätze, die an diesem Gerät gespielt werden
+const mySeats=()=>!GM?[]:GM.online?(ON.seat&&!GM.out.includes(ON.seat)?[ON.seat]:[]):GM.order.filter(q=>GM.ctrl[q]==='human'&&!GM.out.includes(q));
+function endRec(p,kind,note){const e={p,to:kind,elim:[],mat:{}};for(const q of GM.order)e.mat[q]=material(q);GM.rec.push(e);
+  moves.push((kind==='resign'?'🏳 ':'🤝 ')+note.trim());GM.note=note;GM.lastText=note;return e;}
+// Aufgeben – jederzeit; wer aufgibt, scheidet aus (zu zweit gewinnt der andere)
+function resign(p){if(!GM||GM.over)return;const mine=mySeats();p=p||(mine.includes(gCur())?gCur():mine[0]);if(!p||GM.out.includes(p))return;
+  if(!confirm(`${PNAME[p]}: Willst du wirklich aufgeben?`))return;clearTimeout(aiT);
+  hist.push({S:new Map([...S].map(([k,v])=>[k,Object.assign({},v)])),moves:moves.slice(),GM:JSON.parse(JSON.stringify(GM))});
+  const wasCur=gCur()===p;GM.draw=null;eliminate(p);const e=endRec(p,'resign',`${PNAME[p]} gibt auf. `);e.elim=[p];GM.lastMoverSeat=p;GM.lastBy=GM.online?ON.seat:null;
+  sel=null;targets=[];
+  // bleiben nur Computer übrig, endet die Partie: es gewinnt, wer das meiste Material hat
+  if(!GM.over&&alive().every(q=>GM.ctrl[q]!=='human'&&GM.ctrl[q]!=='open')){const a=alive();let best=a[0];for(const q of a)if(material(q)>material(best))best=q;GM.over=true;GM.winner=best;GM.note+='Es spielen nur noch Computer – es entscheidet das Material. ';}
+  if(GM.over){GM.note+=`${winText()}! `;}
+  if(!GM.over&&wasCur)advance();else if(!GM.over)turnStart();else render();
+  KIT.fx(e);KIT.autosave();if(GM.online)onSend('resign',p);}
+// Remis anbieten: geht reihum; jeder, der danach am Zug ist, nimmt an oder lehnt ab. Nehmen alle an, endet die Partie remis.
+function drawOffer(){if(!GM||GM.over||GM.draw||!myTurn())return;const p=gCur();GM.draw={by:p,yes:[p]};GM.note=`${PNAME[p]} bietet Remis an – nach dem Zug sind die anderen gefragt. `;render();}
+function drawAnswer(q,yes){if(!GM||!GM.draw||GM.over)return;
+  if(!yes){GM.draw=null;GM.note=`${PNAME[q]} lehnt das Remis ab. `;render();return;}
+  if(!GM.draw.yes.includes(q))GM.draw.yes.push(q);
+  if(alive().every(x=>GM.draw.yes.includes(x))){GM.over=true;GM.winner=null;GM.draw=null;const e=endRec(q,'draw','Remis vereinbart – alle haben zugestimmt. ');
+    GM.lastMoverSeat=q;GM.lastBy=GM.online?ON.seat:null;clearTimeout(aiT);render();KIT.fx(e);KIT.autosave();if(GM.online)onPush();return;}
+  GM.note=`${PNAME[q]} nimmt das Remis an – jetzt sind die anderen gefragt. `;render();}
+// Computer: nimmt an, wenn er deutlich hinten liegt oder die Partie schon sehr lang ist
+function drawAI(q){const others=alive().filter(x=>x!==q).map(material);return material(q)<Math.max(...others)-2||GM.rec.length>40*GM.order.length;}
+// vor jedem Zug: offenes Angebot prüfen (eigenes Angebot verfällt, wenn es reihum zurückkommt)
+function drawTurn(){if(!GM||!GM.draw||GM.over)return;const p=gCur();
+  if(GM.draw.by===p){GM.draw=null;return;}
+  if(GM.draw.yes.includes(p))return;
+  const ai=GM.ctrl[p]!=='human'&&GM.ctrl[p]!=='open'&&(!GM.online||GM.lastBy===ON.seat);
+  if(ai)drawAnswer(p,drawAI(p));}
+function endUI(){const el=document.getElementById('endBox');if(!el)return;if(!GM){el.innerHTML='';return;}
+  let h='';
+  if(GM.over){h=`<button class="on" onclick="rematch()">🔁 Revanche</button>`;if(GM.online&&ON.rematch)h=`<button class="on" onclick="rematchJoin()">🔁 Zur Revanche</button>`;}
+  else{const mine=mySeats();
+    if(GM.draw&&!GM.draw.yes.includes(gCur())&&myTurn())h+=`<div class="hint" style="flex-basis:100%">🤝 ${PNAME[GM.draw.by]} bietet Remis an.</div><button class="on" onclick="drawAnswer(gCur(),true)">🤝 Annehmen</button><button onclick="drawAnswer(gCur(),false)">✋ Ablehnen</button>`;
+    else if(GM.draw)h+=`<div class="hint" style="flex-basis:100%">🤝 Remis angeboten von ${PNAME[GM.draw.by]} – zugestimmt: ${GM.draw.yes.map(x=>PNAME[x]).join(', ')}</div>`;
+    else if(myTurn())h+=`<button onclick="drawOffer()" title="Die anderen werden reihum gefragt">🤝 Remis anbieten</button>`;
+    if(mine.length)h+=`<button onclick="resign()" title="Du scheidest aus; zu zweit gewinnt der andere">🏳 Aufgeben</button>`;}
+  el.innerHTML=h;}
+// Revanche: gleiche Einstellungen, neue Partie. Online legt der Erste die neue Partie an, die anderen sehen „Zur Revanche“.
+async function rematch(){if(!GM||!GM.over)return;
+  if(!GM.online){gameStart();return;}
+  if(ON.rematch){rematchJoin();return;}
+  let st;try{st=await api('/fern/g/'+ON.code+'/state'+(ON.token?'?t='+ON.token:''));}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
+  if(st.rematch){ON.rematch=st.rematch;rematchJoin();return;}
+  if(!ON.seat){alert('Nur Mitspieler können eine Revanche anlegen.');return;}
+  const ai={};for(const p of st.order)if(st.seats[p].kind==='ai')ai[p]=st.seats[p].lvl||'medium';
+  const name=KIT.myName();
+  let j;try{j=await api('/fern/new',{game:'stern',order:st.order,seat:ON.seat,name,ai,rules:st.rules,public:!!st.pub,lang:KIT.myLang()});}catch(e){alert('⚠️ '+e.message);return;}
+  if(!j.code){alert('⚠️ '+(j.error||'Fehler beim Anlegen'));return;}
+  try{localStorage.setItem('stern.t.'+j.code,j.token);}catch(e){}
+  try{await api('/fern/g/'+ON.code+'/rematch',{t:ON.token,code:j.code});}catch(e){}
+  location.href=location.pathname+'?g='+j.code+fernQS();}
+function rematchJoin(){if(ON.rematch)location.href=location.pathname+'?g='+ON.rematch+fernQS();}
+// Stand außerhalb der Reihe senden (Aufgeben)
+function onSend(action,mover){if(!ON.code)return;
+  const body={t:ON.token,mover,snap:onSnap(),next:GM.over?null:gCur(),over:GM.over,last:{text:GM.lastText||''},hint:ON.seat,result:GM.over?winText()+'.':''};
+  pushing++;ON.chain=(ON.chain||Promise.resolve()).then(async()=>{try{body.v=ON.v;const j=await api('/fern/g/'+ON.code+'/'+action,body);
+    if(j.ok)ON.v=j.v;else if(j.state){clearTimeout(aiT);onApply(j.state);}}catch(e){}finally{pushing--;}});}
 // ================= Online: Spielstand auf dem Server (live oder als Fernpartie) =================
 let ON={};
 const QS=new URLSearchParams(location.search);
@@ -809,7 +873,7 @@ let pushing=0;
 function onPush(init,isTimeout){
   if(!ON.code||init)return;   // der erste Stand entsteht beim ersten Zug
   const body={t:ON.token,mover:GM.lastMoverSeat,snap:onSnap(),next:GM.over?null:gCur(),over:GM.over,last:{text:GM.lastText||''},hint:ON.seat,timeout:!!isTimeout,
-    result:GM.over?`${PNAME[GM.winner]} gewinnt.`:''};
+    result:GM.over?winText()+'.':''};
   pushing++;
   ON.chain=(ON.chain||Promise.resolve()).then(async()=>{
     try{body.v=ON.v;const j=await api('/fern/g/'+ON.code+'/move',body);
@@ -818,7 +882,7 @@ function onPush(init,isTimeout){
 }
 async function onPoll(){if(!ON.code||pushing)return;
   try{const st=await api('/fern/g/'+ON.code+'/state'+(ON.token?'?t='+ON.token:''));if(st._status!==200)return;
-    ON.seats=st.seats;if(st.rtc)ON.rtc=st.rtc;if(st.v>ON.v)onApply(st);else{onStateUI();renderTurn();}KIT.tbTick();}catch(e){}}
+    ON.seats=st.seats;if(st.rtc)ON.rtc=st.rtc;if(st.rematch&&ON.rematch!==st.rematch){ON.rematch=st.rematch;endUI();}if(st.v>ON.v)onApply(st);else{onStateUI();renderTurn();}KIT.tbTick();}catch(e){}}
 function onApply(st,force){if(KIT.busy())return;
   ON.seats=st.seats;ON.v=st.v;if(st.rtc)ON.rtc=st.rtc;
   if(st.snap){try{const d=JSON.parse(st.snap);setOpts(st.rules&&st.rules.opts);const prevN=moves.length;decode(d.pos);const keepSeat=ON.seat;

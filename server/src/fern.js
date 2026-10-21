@@ -136,6 +136,8 @@ export class Fern {
     if (action === 'move') return this.move(g, body);
     if (action === 'push') return this.push(g, body);
     if (action === 'rename') return this.rename(g, body);
+    if (action === 'resign') return this.resign(g, body);
+    if (action === 'rematch') return this.rematch(g, body);
     return json({ error: 'not found' }, 404);
   }
 
@@ -164,7 +166,7 @@ export class Fern {
     const hide = !me && g.rules && g.rules.spec === 'never' && !g.over;   // Zuschauen nicht erlaubt
     return { code: g.code, v: g.v, snap: hide ? null : g.snap, next: g.next, over: g.over, last: g.last, used: g.used,
       created: g.created, updated: g.updated, age: Date.now() - g.updated, seats, seat: me, rtc, rules: g.rules || { help: true }, pub: !!g.lobby,
-      game: g.game || 'dps', order: ord(g) };
+      game: g.game || 'dps', order: ord(g), rematch: g.rematch || null };
   }
 
   async save(g) {
@@ -264,6 +266,34 @@ export class Fern {
     else if (g.lobby && g.v % 5 === 0) this.lobbySync(g);   // Eintrag lebendig halten
     if (who.length) this.state.waitUntil(this.notify(g, who, kind, args));
     return json({ ok: true, v: g.v, used: g.used });
+  }
+
+  // Aufgeben geht jederzeit, auch wenn man nicht am Zug ist: der eigene Spieler schickt den neuen Stand
+  async resign(g, b) {
+    const me = this.seatOf(g, b.t);
+    if (!me) return json({ error: 'forbidden' }, 403);
+    if (b.v !== g.v) return json({ error: 'conflict', state: await this.view(g, b.t) }, 409);
+    if (g.over) return json({ error: 'over', state: await this.view(g, b.t) }, 409);
+    if (typeof b.snap !== 'string' || b.snap.length > MAX_SNAP) return json({ error: 'snap' }, 400);
+    const now = Date.now();
+    g.v += 1; g.snap = b.snap; g.updated = now; g.over = !!b.over;
+    g.next = g.over ? null : (ord(g).includes(b.next) ? b.next : g.next);
+    g.last = { p: me, from: '', to: '', text: clean(b.last && b.last.text, 60) };
+    g.nudgeAt = null;
+    await this.save(g);
+    if (g.over) { this.lobbySync(g, { over: true }); this.state.waitUntil(this.notify(g, ord(g).filter((q) => q !== me), 'over', [clean(b.result, 120)])); }
+    else if (g.next && g.next !== me && g.seats[g.next].kind === 'human') this.state.waitUntil(this.notify(g, [g.next], 'turn', [g.last.text]));
+    return json({ ok: true, v: g.v, used: g.used });
+  }
+
+  // Revanche: Ein Mitspieler hat eine neue Partie angelegt; die anderen sehen den Link in der alten Partie
+  async rematch(g, b) {
+    const me = this.seatOf(g, b.t);
+    if (!me) return json({ error: 'forbidden' }, 403);
+    const code = String(b.code || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (code.length < 6 || code.length > 12) return json({ error: 'bad code' }, 400);
+    if (!g.rematch) { g.rematch = code; await this.save(g); }
+    return json({ ok: true, rematch: g.rematch });
   }
 
   async push(g, b) {
