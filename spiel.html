@@ -1894,6 +1894,7 @@ function pubRender(){
   el.innerHTML=L.map(e=>{
     const seats=e.seats.map(s=>`<span class="pubSeat" style="border-color:${PCOLOR[s.p]||RCOL[s.p]}">${s.kind==='human'?esc(s.name):s.kind==='ai'?'🤖 '+T(PUB_LVL[s.lvl]||'Computer'):'<i>'+T('frei')+'</i>'}</span>`).join('');
     const r=e.rules||{},raum=e.game==='raum'||e.game==='grenz'||e.game==='stern',grenz=e.game==='grenz',stern=e.game==='stern',parts=raum?[T('{0} Spieler',[e.seats.length]),r.end==='last'?T('wer matt ist, scheidet aus'):T('erstes Matt entscheidet')]:[r.help===false?T('ohne Hilfspflicht'):T('mit Hilfspflicht')];
+    if(raum&&!grenz)parts.push(...pubRuleParts(e.game,r.opts));
     if(raum){if(r.help&&e.seats.length>=3)parts.push(T('mit Hilfspflicht'));parts.push(r.live===false?T('Fernpartie'):T('Live'));if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));}
     if(e.kind==='live'){if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));if(!r.tcMove&&!r.tcGame)parts.push(T('ohne Zeitlimit'));
       parts.push(r.cam?T('mit Kamera'):T('ohne Kamera'));}
@@ -1906,6 +1907,18 @@ function pubRender(){
       <div class="pubBtns">${canPlay?`<button onclick="pubGo('${raum?e.game:kind}','${code}')">▶ ${T('Mitspielen')}</button>`:''}${canWatch?`<button class="alt" onclick="pubGo('${raum?e.game:kind}','${code}')">👀 ${T('Zuschauen')}</button>`:''}<button class="rep" onclick="pubReport('${esc(e.id)}')" title="${T('Unangemessenen Namen melden')}">⚑</button></div></div>`;
   }).join('');
 }
+// Lobby: aus den Einstellungen des Gastgebers lesen, auf welche Untervariante man sich einlässt
+const FAIRY={U:'🦄 Einhorn',W:'Nachtreiter',H:'Herzogin',V:'Gouverneur',A:'Erzbischof',C:'Kanzler',M:'Amazone'};
+function pubRuleParts(game,opts){const o=String(opts||'').split('.'),[B,Q,K,N,P,U,S,F,X]=o,out=[];
+  if(game==='raum'){
+    out.push(F==='1'?T('eine Reihe Bauern (8)'):F==='2'?T('zwei Reihen Bauern (16)'):F==='44'?T('Bauern 4 × 4 (16)'):T('64 Bauern + 64 Admiräle'));
+    if(!F||F==='88')out.push(X===undefined||X==='UWHVACM'?T('alle Märchenfiguren'):X==='-'?T('nur klassische Figuren'):T('Märchenfiguren: {0}',[X.split('').map(t=>T(FAIRY[t]||t)).join(', ')]));
+    if(B==='r')out.push(T('Läufer auch über Raumdiagonalen'));if(Q==='0')out.push(T('Dame ohne Raumdiagonalen'));if(K==='18')out.push(T('König ohne Raumdiagonalen'));
+    if(N==='2')out.push(T('Springer auch 2 + 1 + 1'));if(P==='8')out.push(T('Bauer schlägt auch über Raumdiagonalen'));
+    if(S==='first')out.push(T('Bauer: Doppelschritt nur beim ersten Zug'));else if(S==='always')out.push(T('Bauer: immer bis zu 2 Felder'));
+    if(U==='end')out.push(T('Umwandlung erst auf der hintersten Ebene'));}
+  if(game==='stern')out.push(X==='-'?T('ohne Einhorn'):T('mit Einhorn'));
+  return out;}
 function pubGo(kind,code){location.href=kind==='raum'?'raum.html?g='+code+fernQS():kind==='grenz'?'grenzenlos.html?g='+code+fernQS():kind==='stern'?'stern.html?g='+code+fernQS():kind==='fern'?fernLink(code):location.pathname+'?spiel='+code+srvParam()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'')+fernQS();}
 async function pubReport(id){if(!confirm(T('Diesen Eintrag als unangemessen melden? Nach mehreren Meldungen wird er ausgeblendet.')))return;
   try{await pubApi('report',{id});toast(T('Danke – gemeldet.'),2500);}catch(e){}}

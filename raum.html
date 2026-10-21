@@ -61,6 +61,7 @@ a { color:#8fb6ff; }
    <div id="resumeBox"></div>
    <div class="row">Spieler: <select id="gN" onchange="gSeats()"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></select></div>
    <div id="gSeatRows"></div>
+   <div class="row" id="xRow" style="flex-wrap:wrap"></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
    <div class="hint">Es gelten die Zugregeln und die Bauernaufstellung von unten. Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Wer nur noch den König hat, ist geschlagen. Sobald einmal geschlagen wurde, gilt: Nach 30 Runden ohne Schlagen und ohne Bauernzug entscheidet das Material.</div>
    <div class="row" id="helpRow"><label title="Steht ein Spieler im Schach, muss jeder, der vor ihm zieht, ihm helfen: Ist er matt, muss der Zug ihn befreien – ist er nicht matt, darf der Zug ihn nicht mattsetzen."><input type="checkbox" id="gHelp"> 🆘 Hilfspflicht (ab 3 Spielern)</label></div>
@@ -169,8 +170,20 @@ function cname(x,y,z){const r=region(x,y,z);return `${x+5}·${y+5}·${z+5}`+(r?`
 
 // ================= Zustand =================
 let S=new Map();          // "x,y,z" → {t,p,m}  m = schon gezogen
-let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'88'};let lastN=2;
-const OK=['B','Q','K','N','P','U','S','F'];
+let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'88',X:'UWHVACM'};let lastN=2;
+const OK=['B','Q','K','N','P','U','S','F','X'];
+// Märchenfiguren: Der Gastgeber wählt, welche dabei sind (X = erlaubte Buchstaben, '-' = keine).
+// Abgewählte Figuren werden in der Aufstellung durch klassische ersetzt – so entsteht eine eigene Untervariante.
+const EXO='UWHVACM',EXO_REPL={U:'B',W:'N',H:'R',V:'B',A:'B',C:'R',M:'Q'};
+const exoUsed=()=>OPT.F==='88';   // nur die volle 8 × 8-Aufstellung enthält Märchenfiguren
+const exoOk=t=>!EXO.includes(t)||OPT.X.includes(t);
+const exoPiece=t=>exoOk(t)?t:EXO_REPL[t];
+// kurze Beschreibung der gewählten Figuren für Einladung und Lobby
+const exoText=()=>(typeof exoUsed==='function'&&!exoUsed())?'':OPT.X==='-'?', nur klassische Figuren':OPT.X===EXO?(EXO.length>1?', mit allen Märchenfiguren':', mit '+PNAMES[EXO]):', mit '+OPT.X.split('').map(t=>PNAMES[t]).join(', ');
+function xUI(){const box=document.getElementById('xRow');if(!box)return;
+  box.innerHTML='Märchenfiguren: '+EXO.split('').map(t=>`<label title="${PNAMES[t]}${PDESC[t]?' – '+PDESC[t]:''}" style="white-space:nowrap"><input type="checkbox" data-x="${t}"${OPT.X.includes(t)?' checked':''}> ${PLAB(t)} ${PNAMES[t]}</label>`).join(' ')+'<div class="hint" style="flex-basis:100%">Abgewählte Märchenfiguren werden in der Aufstellung durch klassische ersetzt: '+EXO.split('').map(t=>PNAMES[t]+' → '+PNAMES[EXO_REPL[t]]).join(' · ')+'.</div>';
+  box.style.display=(typeof exoUsed==='function'&&!exoUsed())?'none':'flex';
+  box.querySelectorAll('input').forEach(i=>i.onchange=()=>{OPT.X=[...box.querySelectorAll('input:checked')].map(x=>x.dataset.x).join('')||'-';if(!GM&&!moves.length)setup(lastN);});}
 let LASTMV=null;
 let hist=[],moves=[],sel=null,targets=[],tool='move',pal={p:'B',t:'Q'},slice={ax:-1,v:3};
 
@@ -187,7 +200,7 @@ function fill(n){S=new Map();
     const layer=d=>s<0?LO+d:HI-d;   // d=0 äußerste Ebene
     // Admiräle: eine Reihe – oder bei 8 × 8 die ganze äußerste Ebene, König nur in der Mitte
     const ROWS=OPT.F==='88'?{0:'RNWUUWNR',1:'RNBQUBNR',2:'HAVMUVAH',3:'RNBQKBNR',4:'HCVMUVCH',5:'RNBQUBNR',6:'WAVUUVAW',7:'RNWUUWNR'}:{3:'RNBQKBNR'};
-    for(const[row,line]of Object.entries(ROWS))line.split('').forEach((t,i)=>{const c=[0,0,0];c[k]=layer(0);c[u]=i;c[v]=+row;S.set(key(...c),{t,p,m:false});});
+    for(const[row,line]of Object.entries(ROWS))line.split('').forEach((t,i)=>{const c=[0,0,0];c[k]=layer(0);c[u]=i;c[v]=+row;S.set(key(...c),{t:exoPiece(t),p,m:false});});
     const all8=[];for(let a=0;a<8;a++)for(let b=0;b<8;b++)all8.push([a,b]);
     const pawns=OPT.F==='88'?all8:OPT.F==='44'?[2,3,4,5].flatMap(a=>[2,3,4,5].map(b=>[a,b])):OPT.F==='2'?[0,1,2,3,4,5,6,7].flatMap(a=>[[a,3],[a,4]]):[0,1,2,3,4,5,6,7].map(a=>[a,3]);
     for(const[a,b]of pawns){const q=[0,0,0];q[k]=layer(1);q[u]=a;q[v]=b;S.set(key(...q),{t:'P',p,m:false});}
@@ -452,7 +465,7 @@ function setTool(t){tool=t;document.getElementById('tMove').classList.toggle('on
   document.getElementById('palette').style.display=t==='set'?'block':'none';
   if(t==='set'&&slice.ax<0){document.getElementById('axSel').value='1';setSlice();}}
 function setSlice(){slice.ax=+document.getElementById('axSel').value;slice.v=+document.getElementById('slSel').value;document.getElementById('slRow').style.display=slice.ax<0?'none':'flex';render();}
-function optChg(re){for(const k of OK)OPT[k]=document.getElementById('o'+k).value;if(re&&!moves.length){setup(lastN);return;}if(sel)targets=genMoves(...sel);render();}
+function optChg(re){for(const k of OK){const e=document.getElementById('o'+k);if(e)OPT[k]=e.value;}xUI();if(re&&!moves.length){setup(lastN);return;}if(sel)targets=genMoves(...sel);render();}
 function toggleUI(){const u=document.getElementById('ui');u.classList.toggle('min');document.getElementById('minBtn').textContent=u.classList.contains('min')?'▾':'▴';}
 function buildPalette(){
   const pr=document.getElementById('plRow');pr.innerHTML='';
@@ -716,7 +729,7 @@ async function api(path,body){const b=await srvBase();
   const r=await fetch(b+path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});
   const j=await r.json().catch(()=>({}));j._status=r.status;return j;}
 const optStr=()=>OK.map(k=>OPT[k]).join('.');
-function setOpts(str){const ov=String(str||'').split('.');OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});}
+function setOpts(str){const ov=String(str||'').split('.');OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});xUI();}
 function onLink(){return location.origin+location.pathname+'?g='+ON.code+fernQS()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'');}
 function onSnap(){const g=Object.assign({},GM);delete g.online;return JSON.stringify({pos:encode(),gm:g,moves});}
 async function onCreate(order,ctrl){
@@ -785,7 +798,7 @@ async function onOpen(code){
   if(!st.seat&&!free.length&&st.rules&&st.rules.spec==='never'&&!st.over){alert('Bei dieser Partie ist Zuschauen nicht erlaubt.');ON={};return;}
   if(!st.seat&&free.length&&!st.over){
     const who=st.order.filter(p=>st.seats[p].kind==='human').map(p=>st.seats[p].name).join(' und ');
-    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Schach der 6 Reiche ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}${tcText(st.rules)}${st.rules&&st.rules.live===false?', Fernpartie':''}${st.rules&&st.rules.help&&st.order.length>=3?', mit Hilfspflicht':''}). Du spielst ${PNAME[free[0]]}.`;
+    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Schach der 6 Reiche ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}${tcText(st.rules)}${st.rules&&st.rules.live===false?', Fernpartie':''}${st.rules&&st.rules.help&&st.order.length>=3?', mit Hilfspflicht':''}${exoText()}). Du spielst ${PNAME[free[0]]}.`;
     try{document.getElementById('joinName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
     document.getElementById('joinBox').style.display='flex';return;}
   onBegin(st);
@@ -898,7 +911,7 @@ function tourStart(){const ui=document.getElementById('ui');if(ui.classList.cont
   {t:'Gegner und Uhr',x:'Für jeden Platz: Mensch, online eingeladen oder Computer in vier Stärken (leicht, mittel, stark, Meister). Mit Zeit pro Zug oder pro Partie – oder ohne Uhr.',el:'#gSeatRows'},
   {t:'Online: live oder als Fernpartie',x:'Live spielt ihr gleichzeitig mit Monitoren hinter jedem Reich, Kamera, Mikrofon, Chat und automatischer Übersetzung. Eine Fernpartie zieht jeder, wann er Zeit hat.'},
   {t:'Nach der Partie',x:'„🔬 Auswertung“ zeigt Fehler, Schlüsselmomente und eine psychologische Auswertung; auf Wunsch schreibt eine KI einen professionellen Bericht. Viel Spaß!'}]);}
-buildPalette();gSeats();
+buildPalette();gSeats();xUI();
 document.getElementById('styleSel').value=STYLE;document.getElementById('spaceChk').checked=SPACE_ON;R3.space(scene,SPACE_ON);
 const qs=new URLSearchParams(location.search);
 if(!(qs.get('r')&&decode(qs.get('r'))))setup(2);

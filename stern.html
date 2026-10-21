@@ -61,6 +61,7 @@ a { color:#8fb6ff; }
    <div id="resumeBox"></div>
    <div class="row">Spieler: <select id="gN" onchange="gSeats()"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select></div>
    <div id="gSeatRows"></div>
+   <div class="row" id="xRow" style="flex-wrap:wrap"></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
    <div class="hint">Zu zweit stehen die Heere an den Polen, zu dritt und zu viert an den Spitzen eines Tetraeders, zu sechst im Ring um die Mitte, zu acht in allen Spitzen. Alle 8 Spitzen sind gleichwertig. Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Wer nur noch den König hat, ist geschlagen. Sobald einmal geschlagen wurde, gilt: Nach 30 Runden ohne Schlagen und ohne Bauernzug entscheidet das Material.</div>
    <div class="row" id="helpRow"><label title="Steht ein Spieler im Schach, muss jeder, der vor ihm zieht, ihm helfen: Ist er matt, muss der Zug ihn befreien – ist er nicht matt, darf der Zug ihn nicht mattsetzen."><input type="checkbox" id="gHelp"> 🆘 Hilfspflicht (ab 3 Spielern)</label></div>
@@ -179,8 +180,19 @@ function cname(id){const r=region(id),k=cornerOf([id]);return cellLbl([id])+(r?`
 // ================= Zustand =================
 let S=new Map();          // Feldnummer → {t,p,m}  m = schon gezogen
 // Zugregeln wie im Schach der 6 Reiche (feste Einstellung)
-let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'s'};let lastN=2;
-const OK=['B','Q','K','N','P','U','S','F'];
+let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'s',X:'U'};let lastN=2;
+const OK=['B','Q','K','N','P','U','S','F','X'];
+// Märchenfiguren: Der Gastgeber wählt, welche dabei sind (X = erlaubte Buchstaben, '-' = keine).
+// Abgewählte Figuren werden in der Aufstellung durch klassische ersetzt – so entsteht eine eigene Untervariante.
+const EXO='U',EXO_REPL={U:'B',W:'N',H:'R',V:'B',A:'B',C:'R',M:'Q'};
+const exoOk=t=>!EXO.includes(t)||OPT.X.includes(t);
+const exoPiece=t=>exoOk(t)?t:EXO_REPL[t];
+// kurze Beschreibung der gewählten Figuren für Einladung und Lobby
+const exoText=()=>(typeof exoUsed==='function'&&!exoUsed())?'':OPT.X==='-'?', nur klassische Figuren':OPT.X===EXO?(EXO.length>1?', mit allen Märchenfiguren':', mit '+PNAMES[EXO]):', mit '+OPT.X.split('').map(t=>PNAMES[t]).join(', ');
+function xUI(){const box=document.getElementById('xRow');if(!box)return;
+  box.innerHTML='Märchenfiguren: '+EXO.split('').map(t=>`<label title="${PNAMES[t]}${PDESC[t]?' – '+PDESC[t]:''}" style="white-space:nowrap"><input type="checkbox" data-x="${t}"${OPT.X.includes(t)?' checked':''}> ${PLAB(t)} ${PNAMES[t]}</label>`).join(' ')+'<div class="hint" style="flex-basis:100%">Abgewählte Märchenfiguren werden in der Aufstellung durch klassische ersetzt: '+EXO.split('').map(t=>PNAMES[t]+' → '+PNAMES[EXO_REPL[t]]).join(' · ')+'.</div>';
+  box.style.display=(typeof exoUsed==='function'&&!exoUsed())?'none':'flex';
+  box.querySelectorAll('input').forEach(i=>i.onchange=()=>{OPT.X=[...box.querySelectorAll('input:checked')].map(x=>x.dataset.x).join('')||'-';if(!GM&&!moves.length)setup(lastN);});}
 let LASTMV=null;
 let hist=[],moves=[],sel=null,targets=[],tool='move',pal={p:'B',t:'Q'},slice={ax:-1,v:''};
 
@@ -192,7 +204,7 @@ function setup(n){lastN=n||lastN;
   render();
 }
 // Aufstellung in der eigenen Spitze, geordnet nach Abstand d zur Spitze:
-// d=0 König · d=1 Dame und zwei Türme · d=2 zwei Läufer, zwei Springer, zwei Einhörner · d=3 sieben Bauern
+// d=0 König · d=1 Dame und zwei Türme · d=2 zwei Läufer, zwei Springer, zwei Einhörner · d=3 zehn Bauern
 const ARMY={0:'K',1:'QRR',2:'BBNNUU'};
 function fill(n){S=new Map();if(CORN[n])CFG=CORN[n];
   for(const p of(SETS[n]||[])){const ti=tipIdx(p);const cells={0:[],1:[],2:[],3:[]};
@@ -200,7 +212,7 @@ function fill(n){S=new Map();if(CORN[n])CFG=CORN[n];
     for(let d=0;d<=2;d++){const line=ARMY[d].split('');
       // gleiche Figuren gegenüber verteilen: Reihenfolge der Felder nach Achse
       cells[d].sort((u,v)=>u[1].join()<v[1].join()?1:-1);
-      cells[d].forEach(([id],i)=>{if(line[i])S.set(key(id),{t:line[i],p,m:false});});}
+      cells[d].forEach(([id],i)=>{if(line[i])S.set(key(id),{t:exoPiece(line[i]),p,m:false});});}
     for(const[id]of cells[3])S.set(key(id),{t:'P',p,m:false});}
 }
 
@@ -731,7 +743,7 @@ async function api(path,body){const b=await srvBase();
   const r=await fetch(b+path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});
   const j=await r.json().catch(()=>({}));j._status=r.status;return j;}
 const optStr=()=>OK.map(k=>OPT[k]).join('.');
-function setOpts(str){const ov=String(str||'').split('.');OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});}
+function setOpts(str){const ov=String(str||'').split('.');OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});xUI();}
 function onLink(){return location.origin+location.pathname+'?g='+ON.code+fernQS()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'');}
 function onSnap(){const g=Object.assign({},GM);delete g.online;return JSON.stringify({pos:encode(),gm:g,moves});}
 async function onCreate(order,ctrl){
@@ -800,7 +812,7 @@ async function onOpen(code){
   if(!st.seat&&!free.length&&st.rules&&st.rules.spec==='never'&&!st.over){alert('Bei dieser Partie ist Zuschauen nicht erlaubt.');ON={};return;}
   if(!st.seat&&free.length&&!st.over){
     const who=st.order.filter(p=>st.seats[p].kind==='human').map(p=>st.seats[p].name).join(' und ');
-    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Sternschach ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}${tcText(st.rules)}${st.rules&&st.rules.live===false?', Fernpartie':''}${st.rules&&st.rules.help&&st.order.length>=3?', mit Hilfspflicht':''}). Du spielst ${PNAME[free[0]]}.`;
+    document.getElementById('joinTxt').textContent=`${who||'Jemand'} lädt dich zu einer Partie Sternschach ein (${st.order.length} Spieler, ${st.rules&&st.rules.end==='last'?'wer matt ist, scheidet aus':'erstes Matt entscheidet'}${tcText(st.rules)}${st.rules&&st.rules.live===false?', Fernpartie':''}${st.rules&&st.rules.help&&st.order.length>=3?', mit Hilfspflicht':''}${exoText()}). Du spielst ${PNAME[free[0]]}.`;
     try{document.getElementById('joinName').value=localStorage.getItem('dreiSchach.name')||'';}catch(e){}
     document.getElementById('joinBox').style.display='flex';return;}
   onBegin(st);
@@ -909,12 +921,12 @@ function tourStart(){const ui=document.getElementById('ui');if(ui.classList.cont
   {t:'Drehen, zoomen, verschieben',x:'Ziehen dreht den Stern, Mausrad oder zwei Finger zoomen, Rechtsklick-Ziehen verschiebt. Doppelklick zeigt wieder den ganzen Stern. Mit „🎯 Meine Armee“ schaust du von außen in deine Spitze.'},
   {t:'Figur antippen',x:'Grüne Kugeln: freie Felder. Rote Kugeln: Schlagen. Gerade Linien laufen von Feld zu Feld weiter und knicken in den Zwischenräumen – wie im Drei-Personen-Schach über die Mitte. Gegnerische Figuren zeigen ihre Züge hellblau und orange, nur zur Ansicht.'},
   {t:'Das Wurmloch',x:'Im Mittelpunkt berühren sich die innersten Felder aller 8 Spitzen mit einer Ecke. Wer über diese Ecke zieht – Dame, Einhorn oder König –, kann in jede der 7 anderen Spitzen weiter, entlang ihrer Diagonale bis ganz nach außen. Achtung: Jeder König steht auf so einer Diagonale.'},
-  {t:'Die Figuren',x:'König ganz außen in der Spitze, davor Dame und zwei Türme, dann Läufer, Springer und Einhörner, davor sieben Bauern. Die Bauern ziehen immer weiter weg von der eigenen Spitze und schlagen schräg nach vorn. In einer fremden Spitze werden sie zur Dame.'},
+  {t:'Die Figuren',x:'König ganz außen in der Spitze, davor Dame und zwei Türme, dann Läufer, Springer und Einhörner, davor zehn Bauern. Die Bauern ziehen immer weiter weg von der eigenen Spitze und schlagen schräg nach vorn. In einer fremden Spitze werden sie zur Dame.'},
   {t:'Übersicht behalten',x:'Unter „Farben“ blendest du einzelne Heere blass oder aus, unter „Bereich“ greifst du eine Spitze oder einen Zwischenraum heraus. Figuren gibt es als Symbole, 3D-Schachfiguren, Sternfiguren oder Raumschiffe – auf Wunsch vor dem Weltall.',el:'#styleSel'},
   {t:'Gegner und Uhr',x:'Für jeden Platz: Mensch, online eingeladen oder Computer in vier Stärken (leicht, mittel, stark, Meister). Mit Zeit pro Zug oder pro Partie – oder ohne Uhr.',el:'#gSeatRows'},
   {t:'Online: live oder als Fernpartie',x:'Live spielt ihr gleichzeitig mit Monitoren hinter jeder Spitze, Kamera, Mikrofon, Chat und automatischer Übersetzung. Eine Fernpartie zieht jeder, wann er Zeit hat.'},
   {t:'Nach der Partie',x:'„🔬 Auswertung“ zeigt Fehler, Schlüsselmomente und eine psychologische Auswertung; auf Wunsch schreibt eine KI einen professionellen Bericht. Viel Spaß!'}]);}
-buildPalette();gSeats();
+buildPalette();gSeats();xUI();
 document.getElementById('styleSel').value=STYLE;document.getElementById('spaceChk').checked=SPACE_ON;R3.space(scene,SPACE_ON);
 const qs=new URLSearchParams(location.search);
 if(!(qs.get('r')&&decode(qs.get('r'))))setup(2);
