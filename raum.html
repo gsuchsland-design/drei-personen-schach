@@ -40,6 +40,7 @@ a { color:#8fb6ff; }
 @media (max-width:700px){ #ui { width:auto; right:8px; bottom:auto; max-height:52vh; } }
 </style>
 <style>#varNav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 2px}#varNav .varSel{flex:1;min-width:0;font-weight:700}#varNav .varLink{color:#8fb6ff;text-decoration:none;font-size:13px;white-space:nowrap}</style>
+<style>#ui details.mSec{border-top:1px solid #353a48;margin:6px 0 0;padding-top:4px}#ui details.mSec>summary{cursor:pointer;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#9aa1ad;padding:4px 0;list-style:none}#ui details.mSec>summary::before{content:"▸ ";}#ui details.mSec[open]>summary::before{content:"▾ ";}#ui details.mSec>summary::-webkit-details-marker{display:none}@media (max-width:700px){#ui h1 .hint{display:none}}</style>
 </head><body>
 <canvas id="cv"></canvas>
 <div id="tip"></div>
@@ -147,9 +148,9 @@ a { color:#8fb6ff; }
 <script src="lib/three.min.js"></script>
 <script src="lib/reiche3d.js"></script>
 <script src="lib/monsters.js?v=2026102010"></script>
-<script src="lib/varnav.js?v=2026102105"></script>
+<script src="lib/varnav.js?v=2026102106"></script>
 <script src="lib/monvoice.js?v=2026102104"></script>
-<script src="lib/kit.js?v=2026102104"></script>
+<script src="lib/kit.js?v=2026102106"></script>
 <script>
 'use strict';
 // ================= Spielfeld =================
@@ -1022,5 +1023,6 @@ render();
 if(qs.get('g'))onOpen(qs.get('g'));
 window.RS={S,genMoves,setup,decode,encode,select,OPT,get state(){return S;},legalMoves,gameStart,get GM(){return GM;},aiMove,inCheck,attackers,gameMove};
 varNav('raum.html',document.getElementById('varNav'));
+slimMenu('raum');
 </script>
 </body></html>

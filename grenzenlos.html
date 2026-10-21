@@ -34,6 +34,7 @@ a { color:#8fb6ff; }
 @media (max-width:700px){ #ui { width:auto; right:8px; bottom:auto; max-height:50vh; } #mini { width:110px; height:110px; } }
 </style>
 <style>#varNav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 2px}#varNav .varSel{flex:1;min-width:0;font-weight:700}#varNav .varLink{color:#8fb6ff;text-decoration:none;font-size:13px;white-space:nowrap}</style>
+<style>#ui details.mSec{border-top:1px solid #353a48;margin:6px 0 0;padding-top:4px}#ui details.mSec>summary{cursor:pointer;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#9aa1ad;padding:4px 0;list-style:none}#ui details.mSec>summary::before{content:"▸ ";}#ui details.mSec[open]>summary::before{content:"▾ ";}#ui details.mSec>summary::-webkit-details-marker{display:none}@media (max-width:700px){#ui h1 .hint{display:none}}</style>
 </head><body>
 <canvas id="cv"></canvas>
 <canvas id="cv3" style="position:fixed;inset:0;width:100%;height:100%;touch-action:none;display:none"></canvas>
@@ -89,9 +90,9 @@ a { color:#8fb6ff; }
  </div>
 </div>
 <script src="lib/monsters.js?v=2026102010"></script>
-<script src="lib/varnav.js?v=2026102105"></script>
+<script src="lib/varnav.js?v=2026102106"></script>
 <script src="lib/monvoice.js?v=2026102104"></script>
-<script src="lib/kit.js?v=2026102104"></script>
+<script src="lib/kit.js?v=2026102106"></script>
 <script>
 'use strict';
 // ================= Spieler, Aufstellung =================
@@ -740,5 +741,6 @@ if(!(QS.get('try')&&tryShow(QS.get('try')))){setup(2);fitAll();}
 if(QS.get('g'))onOpen(QS.get('g'));
 window.GZ={get S(){return S;},get GM(){return GM;},legalMoves,aiMove,gameMove,setup,inCheck,promotes,attackers};
 varNav('grenzenlos.html',document.getElementById('varNav'));
+slimMenu('grenz');
 </script>
 </body></html>

@@ -40,6 +40,7 @@ a { color:#8fb6ff; }
 @media (max-width:700px){ #ui { width:auto; right:8px; bottom:auto; max-height:52vh; } }
 </style>
 <style>#varNav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 2px}#varNav .varSel{flex:1;min-width:0;font-weight:700}#varNav .varLink{color:#8fb6ff;text-decoration:none;font-size:13px;white-space:nowrap}</style>
+<style>#ui details.mSec{border-top:1px solid #353a48;margin:6px 0 0;padding-top:4px}#ui details.mSec>summary{cursor:pointer;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#9aa1ad;padding:4px 0;list-style:none}#ui details.mSec>summary::before{content:"▸ ";}#ui details.mSec[open]>summary::before{content:"▾ ";}#ui details.mSec>summary::-webkit-details-marker{display:none}@media (max-width:700px){#ui h1 .hint{display:none}}</style>
 </head><body>
 <canvas id="cv"></canvas>
 <div id="tip"></div>
@@ -139,9 +140,9 @@ a { color:#8fb6ff; }
 <script src="lib/three.min.js"></script>
 <script src="lib/reiche3d.js"></script>
 <script src="lib/monsters.js?v=2026102010"></script>
-<script src="lib/varnav.js?v=2026102105"></script>
+<script src="lib/varnav.js?v=2026102106"></script>
 <script src="lib/monvoice.js?v=2026102104"></script>
-<script src="lib/kit.js?v=2026102104"></script>
+<script src="lib/kit.js?v=2026102106"></script>
 <script src="lib/sternbrett.js?v=2026102103"></script>
 <script>
 'use strict';
@@ -329,8 +330,8 @@ function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
   // Felder, über die die Figur zieht, leuchten beim Durchziehen kurz auf (auch das Zielfeld)
   for(let i=1;i<pts.length;i++)ANIM.glows.push({at:cum[i]/L,c:i<pts.length-1?mv.hops[i-1]:mv.to,m:null,t0:0});
   if(ship&&mv.cap){   // Raumschiff: Triebwerke zünden, beschleunigen, feuern, Ziel explodiert, langsam landen
-    animGroup.clear();ANIM.sp=R3.object('ship',mv.t,PCOL[mv.p],fwd(mv.p));animGroup.add(ANIM.sp);addFlame(ANIM.sp);
-    ANIM.victim=R3.object('ship',mv.cap.t,PCOL[mv.cap.p],fwd(mv.cap.p));ANIM.victim.position.copy(b);animGroup.add(ANIM.victim);
+    animGroup.clear();ANIM.sp=R3.object('ship',mv.t,PCOL[mv.p],fwd(mv.p));ANIM.sp.scale.multiplyScalar(0.72);animGroup.add(ANIM.sp);addFlame(ANIM.sp);
+    ANIM.victim=R3.object('ship',mv.cap.t,PCOL[mv.cap.p],fwd(mv.cap.p));ANIM.victim.scale.multiplyScalar(0.72);ANIM.victim.position.copy(b);animGroup.add(ANIM.victim);
     ANIM.laser=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,1,6),new THREE.MeshBasicMaterial({color:PCOL[mv.p],transparent:true,opacity:0.9,blending:THREE.AdditiveBlending}));
     ANIM.laser.visible=false;animGroup.add(ANIM.laser);
     animStep();return;}
@@ -338,7 +339,7 @@ function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
     const sg=CFG[mv.p]||[1,1,1],tg=tipP(sg).multiplyScalar(1.45);
     tg.x+=(Math.random()-0.5)*4;tg.z+=(Math.random()-0.5)*4;tg.y+=(Math.random()-0.5)*3;
     ANIM.kick={p:mv.cap.p,t:mv.cap.t,from:b.clone(),to:tg,dir:b.clone().sub(a).normalize(),t0:ANIM.t0+dur*0.75,dur:1000};}
-  const mk=(p,t)=>STYLE==='sym'?sprite(p,t,1):R3.object(STYLE,t,PCOL[p],fwd(p));
+  const mk=(p,t)=>{if(STYLE==='sym')return sprite(p,t,1);const o=R3.object(STYLE,t,PCOL[p],fwd(p));o.scale.multiplyScalar(0.72);return o;};
   animGroup.clear();ANIM.sp=mk(mv.p,mv.t);animGroup.add(ANIM.sp);if(ship)addFlame(ANIM.sp);
   if(ANIM.kick){ANIM.ksp=mk(ANIM.kick.p,ANIM.kick.t);ANIM.ksp.visible=false;animGroup.add(ANIM.ksp);}
   animStep();
@@ -448,7 +449,8 @@ function render(){
   }else{   // 3D: gleiche Figuren derselben Farbe gebündelt zeichnen
     const groups={};
     for(const[k,pc]of S){const v=VIS[pc.p]??2;if(!v||k===hideK)continue;const c=unkey(k),f=v===1||!inSlice(c)?1:0;(groups[pc.t+'|'+pc.p+'|'+f]=groups[pc.t+'|'+pc.p+'|'+f]||[]).push(c);}
-    const m4=new THREE.Matrix4(),q=new THREE.Quaternion(),one=new THREE.Vector3(1,1,1),Z=new THREE.Vector3(0,0,1);
+    // die Felder im Stern sind kleiner als im Würfel: 3D-Figuren etwas verkleinern
+    const m4=new THREE.Matrix4(),q=new THREE.Quaternion(),one=new THREE.Vector3(0.72,0.72,0.72),Z=new THREE.Vector3(0,0,1);
     for(const gk in groups){const[t,p,f]=gk.split('|'),cells=groups[gk],parts=R3.geo(STYLE,t);
       if(STYLE==='ship')q.setFromUnitVectors(Z,new THREE.Vector3(...fwd(p)));else q.identity();
       for(const kind in parts){const im=new THREE.InstancedMesh(parts[kind],R3.mat(PCOL[p],kind,f==='1'),cells.length);
@@ -1045,5 +1047,6 @@ render();
 if(qs.get('g'))onOpen(qs.get('g'));
 window.RS={SB,W,P,CFG:()=>CFG,cornerOf,S,genMoves,setup,decode,encode,select,OPT,get state(){return S;},legalMoves,gameStart,get GM(){return GM;},aiMove,inCheck,attackers,gameMove};
 varNav('stern.html',document.getElementById('varNav'));
+slimMenu('stern');
 </script>
 </body></html>
