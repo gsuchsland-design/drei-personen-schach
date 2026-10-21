@@ -248,8 +248,18 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #setupBox .modeTabs button.on { background:#2a6; border-color:#3cc463; }
 .modeSec { display:none; } .modeSec.on { display:block; }
 details.setOpts { margin-top:12px; border-top:1px solid #444; padding-top:8px; }
-details.setOpts > summary { cursor:pointer; font-weight:bold; color:#ccc; }
+details.setOpts > summary { cursor:pointer; font-weight:bold; color:#ccc; font-size:14px; }
 .smallRow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:12px; font-size:13px; color:#aaa; }
+.setHead { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:800; color:#fff; margin-bottom:12px; }
+.setHead img { width:40px; height:40px; border-radius:8px; }
+.setLbl { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:#999; margin:12px 0 6px; }
+.varTabs { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:8px; }
+#setupBox .varTabs button { margin:0; padding:7px 4px; font-size:12.5px; background:#333; border:1px solid #4a4a4a; color:#ccc; }
+#setupBox .varTabs button.on { background:#3a3f55; border-color:#8fb6ff; color:#fff; cursor:default; }
+.linkRow { display:flex; flex-wrap:wrap; justify-content:center; gap:2px 4px; margin-top:16px; padding-top:10px; border-top:1px solid #444; }
+#setupBox .linkRow button { width:auto; margin:0; padding:4px 8px; font-size:13px; background:none !important; color:#8fb6ff; border:none; }
+#setupBox .linkRow button:hover { text-decoration:underline; }
+@media (max-width:520px){ .varTabs { grid-template-columns:repeat(2,1fr); } }
 #setupBox .smallRow button { width:auto; margin:0; padding:6px 10px; font-size:13px; }
 
 #logBox { position:fixed; top:6px; right:6px; width:230px; z-index:140; background:rgba(28,28,28,.94);
@@ -595,19 +605,23 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <button id="startBtn" onclick="startPlay()">▶ Start</button>
 <div id="setupModal">
   <div id="setupBox">
+    <div class="setHead"><img src="icon-192.png" alt=""><span>Drei-Personen-Schach</span></div>
     <div id="fnList"></div>
     <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
-    <button onclick="pubOpen()" style="background:#1f7a6a">🌍 Offene Spiele – mitspielen oder zuschauen</button>
-    <h3>Neues Spiel</h3>
+    <div class="setLbl">Neues Spiel – Spielart</div>
+    <div class="varTabs">
+      <button class="on" title="Drei Spieler auf dem sechszackigen Stern">♟ Drei Personen</button>
+      <button onclick="location.href='raum.html?v='+Date.now()" title="Schach im Würfel für 2 bis 6 Spieler: 8 × 8 × 8 Felder mit sechs Heimatquadern">👑 6 Reiche</button>
+      <button onclick="location.href='grenzenlos.html?v='+Date.now()" title="Normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler">♾️ Ohne Grenzen</button>
+      <button onclick="location.href='stern.html?v='+Date.now()" title="Schach im Sterntetraeder, dem räumlichen Davidstern, für 2 bis 8 Spieler">⭐ Sternschach</button>
+    </div>
+    <div class="setLbl">Wo wird gespielt?</div>
     <div class="modeTabs"><button data-m="local" onclick="setupMode('local')">🤖 Hier am Gerät</button><button data-m="live" onclick="setupMode('live')">🌐 Online live</button><button data-m="fern" onclick="setupMode('fern')">✉️ Fernpartie</button></div>
     <div class="modeSec" id="secLocal">
-    <div class="row" style="font-weight:bold;margin-bottom:2px">Spieler</div>
+    <div class="setLbl">Spieler</div>
     <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
     <div class="row"><span style="color:#44ee22;width:46px">Grün</span><select id="plG" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
     <div class="row"><span style="color:#ff5533;width:46px">Rot</span><select id="plR" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
-    <div class="row"><label><input type="checkbox" id="chkDiplo" checked onchange="setDiplo(this.checked)"> 🤝 Computergegner verhandeln, verbünden sich und bluffen</label></div>
-    <div class="row"><label><input type="checkbox" id="chkAIVoice" checked onchange="setAIVoice(this.checked)"> 🗣️ Computergegner sprechen laut</label></div>
-    <div class="row"><label><input type="checkbox" id="chkOpp" checked onchange="setOppOn(this.checked)"> 🧠 Computergegner lernen eure Spielweise</label></div>
           <button onclick="startFromSetup()">Spiel starten (an diesem Gerät)</button>
     </div>
     <div class="modeSec" id="secLive">
@@ -617,7 +631,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="row"><label><input type="checkbox" id="olCam" checked> Kamera</label><label style="margin-left:14px"><input type="checkbox" id="olMic" checked> Mikrofon</label></div>
     <div class="row"><label><input type="checkbox" id="olRec" onchange="recSet(this.checked)"> 📝 Mitschrift für die Spielanalyse erlauben</label></div>
     <div class="hint" style="margin-left:0">Gesprochenes und Chat werden nur mitgeschrieben, wenn alle Mitspieler zustimmen.</div>
-    <div class="hint" style="margin-left:0">Die Zeitkontrolle von oben gilt auch online.</div>
+    <div class="hint" style="margin-left:0">Zeit und Regeln stellst du unten unter „Mehr Einstellungen“ ein. Sie gelten auch online.</div>
     <div class="row"><label><input type="checkbox" id="olPublic"> 🌍 In der öffentlichen Lobby anbieten</label></div>
     <div class="hint" style="margin-left:0">Dann sehen alle Besucher deine Einladung unter „Offene Spiele“ und können mitspielen oder zuschauen.</div>
           <button onclick="netCreate()" style="background:#7a3fc4">🌐 Online-Spiel erstellen &amp; einladen</button>
@@ -630,7 +644,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="row"><label><input type="checkbox" id="fnPublic"> 🌍 In der öffentlichen Lobby anbieten</label></div>
           <button id="fnCreateBtn" onclick="fernCreate()" style="background:#b06a1f">✉️ Fernpartie erstellen &amp; einladen</button>
     </div>
-    <details class="setOpts"><summary>⚙️ Zeitkontrolle &amp; Regeln</summary>
+    <details class="setOpts"><summary>⚙️ Mehr Einstellungen: Zeit, Regeln, Computergegner</summary>
     <div class="row" style="font-weight:bold;margin:14px 0 2px">Zeitkontrolle</div>
     <div class="row"><input type="checkbox" id="tcMoveOn"><label for="tcMoveOn">Zeit pro Zug:</label>
       <input type="number" id="tcMoveSec" value="60" min="5" step="5"> Sekunden</div>
@@ -642,17 +656,18 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="row" style="font-weight:bold;margin:14px 0 2px">Regeln</div>
     <div class="row"><label><input type="checkbox" id="chkHelp" checked> 🆘 Hilfspflicht</label></div>
     <div class="hint">Steht ein Spieler im Schach, muss der Dritte ihm helfen, statt ihn mattsetzen zu lassen. Ohne Hilfspflicht beendet jedes Matt sofort die Partie. Gilt auch für Online- und Fernpartien.</div>
+    <div class="row" style="font-weight:bold;margin:14px 0 2px">Computergegner</div>
+    <div class="row"><label><input type="checkbox" id="chkDiplo" checked onchange="setDiplo(this.checked)"> 🤝 verhandeln, verbünden sich und bluffen</label></div>
+    <div class="row"><label><input type="checkbox" id="chkAIVoice" checked onchange="setAIVoice(this.checked)"> 🗣️ sprechen laut</label></div>
+    <div class="row"><label><input type="checkbox" id="chkOpp" checked onchange="setOppOn(this.checked)"> 🧠 lernen eure Spielweise</label></div>
     </details>
-    <div class="smallRow"><span>Weitere Varianten:</span>
-      <button onclick="location.href='raum.html?v='+Date.now()" style="background:#5a3f8a" title="Schach im Würfel für 2 bis 6 Spieler: 8 × 8 × 8 Felder mit sechs Heimatquadern">👑 6 Reiche</button>
-      <button onclick="location.href='grenzenlos.html?v='+Date.now()" style="background:#2f6a5a" title="Normales Schach auf einem unendlichen Brett für 2 bis 4 Spieler">♾️ Ohne Grenzen</button>
-      <button onclick="location.href='stern.html?v='+Date.now()" style="background:#7a3f5f" title="Schach im Sterntetraeder, dem räumlichen Davidstern, für 2 bis 8 Spieler">⭐ Sternschach</button></div>
-    <div class="smallRow">
+    <div class="linkRow">
+      <button onclick="pubOpen()" title="Offene Einladungen anderer Spieler – mitspielen oder zuschauen">🌍 Offene Spiele</button>
+      <button onclick="document.getElementById('loadFile').click()">📂 Partie laden</button>
+      <button onclick="aboardOpen()" title="Stellungen aufbauen, Züge prüfen und teilen – unabhängig von einer Partie">🔬 Analysebrett</button>
+      <button onclick="tourFromSetup()" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
       <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
-      <button onclick="tourFromSetup()" style="background:#7a6420" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
-      <button onclick="aboardOpen()" style="background:#355f8a" title="Stellungen aufbauen, Züge prüfen und teilen – unabhängig von einer Partie">🔬 Analysebrett</button>
-      <button onclick="document.getElementById('loadFile').click()" style="background:#555">📂 Partie laden</button>
-      <button class="installBtn" onclick="doInstall()" style="display:none;background:#555">📲 Als App installieren</button></div>
+      <button class="installBtn" onclick="doInstall()" style="display:none">📲 Als App installieren</button></div>
     <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · <a href="index.html#start" style="color:#8fb6ff">Startseite</a> · <a href="regeln.html" style="color:#8fb6ff">Regeln</a> · <a href="strategie.html" style="color:#8fb6ff">Strategie</a> · <a href="impressum.html" style="color:#8fb6ff">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
   </div>
 </div>
