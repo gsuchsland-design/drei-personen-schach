@@ -54,7 +54,7 @@ a { color:#8fb6ff; }
 <div id="ui">
  <h1>⭐ Sternschach <span class="hint">Schach im Sterntetraeder · Entwurf</span><button id="minBtn" onclick="toggleUI()" title="Leiste ein-/ausklappen">▴</button></h1>
  <div class="body">
-  <div class="hint">Der Sterntetraeder ist der räumliche Davidstern mit 8 Spitzen. In jeder Spitze liegen 3 × 3 × 3 gleiche Rhomboeder-Felder, dazwischen sechs Zwischenräume. Jedes Heer steht in einer Spitze. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom, Rechtsklick-Ziehen/zwei Finger = verschieben.</div>
+  <div class="hint">Der Sterntetraeder ist der räumliche Davidstern mit 8 Spitzen. In jeder Spitze liegen 4 × 4 × 4 gleiche Rhomboeder-Felder, dazwischen sechs Zwischenräume. Jedes Heer steht in einer Spitze. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom, Rechtsklick-Ziehen/zwei Finger = verschieben.</div>
 
   <h2>Partie</h2>
   <div id="gameSetup">
@@ -136,12 +136,12 @@ a { color:#8fb6ff; }
 <script src="lib/reiche3d.js"></script>
 <script src="lib/monsters.js?v=2026102010"></script>
 <script src="lib/kit.js?v=2026102101"></script>
-<script src="lib/sternbrett.js?v=2026102101"></script>
+<script src="lib/sternbrett.js?v=2026102102"></script>
 <script>
 'use strict';
 // ================= Spielfeld =================
-// Der Sterntetraeder (räumlicher Davidstern) mit 864 Feldern, siehe lib/sternbrett.js:
-// in jeder der 8 Spitzen 3 × 3 × 3 gleiche Rhomboeder, dazwischen 6 Zwischenräume aus je 4 × 27 Feldern.
+// Der Sterntetraeder (räumlicher Davidstern) mit 2.048 Feldern, siehe lib/sternbrett.js:
+// in jeder der 8 Spitzen 4 × 4 × 4 gleiche Rhomboeder, dazwischen 6 Zwischenräume aus je 4 × 64 Feldern.
 // Ein Feld ist [nummer]; key() macht daraus den Schlüssel für die Stellung.
 const NC=SB.NC,CELLS=SB.CELLS;
 const PL=['B','G','R','Y','L','T','O','I'];
@@ -482,11 +482,11 @@ function buildPalette(){
     if(pal.t===t)b.classList.add('on');b.onclick=()=>{pal.t=t;buildPalette();};cr.appendChild(b);}
 }
 // Teilen: Spielerzahl + Figuren (Spieler, Typ, x,y,z als Ziffern 0–9)
-function encode(){const ps=[...S].map(([k,v])=>v.p+v.t+(+k).toString(36).padStart(2,'0')+(v.m?'m':'')).join('-');
-  return 's2_'+lastN+'_'+ps;}
-function decode(s){try{const[ver,n,ps]=s.split('_');if(ver!=='s2')return false;
+function encode(){const ps=[...S].map(([k,v])=>v.p+v.t+(+k).toString(36).padStart(3,'0')+(v.m?'m':'')).join('-');
+  return 's3_'+lastN+'_'+ps;}
+function decode(s){try{const[ver,n,ps]=s.split('_');if(ver!=='s3')return false;
   if(CORN[+n]){lastN=+n;CFG=CORN[lastN];}
-  S=new Map();for(const e of(ps||'').split('-').filter(Boolean)){const p=e[0],t=e[1],id=parseInt(e.slice(2,4),36);if(PL.includes(p)&&GLYPH[t]&&valid(id))S.set(key(id),{p,t,m:e[4]==='m'});}
+  S=new Map();for(const e of(ps||'').split('-').filter(Boolean)){const p=e[0],t=e[1],id=parseInt(e.slice(2,5),36);if(PL.includes(p)&&GLYPH[t]&&valid(id))S.set(key(id),{p,t,m:e[5]==='m'});}
   if(typeof buildGrid==='function')buildGrid();
   return true;}catch(e){return false;}}
 function share(){const u=location.origin+location.pathname+'?r='+encode();const f=document.getElementById('shareTxt');f.style.display='block';f.value=u;
@@ -895,7 +895,7 @@ addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.prevent
 
 // ================= Start =================
 function gridOp(){gridGroup.traverse(o=>{if(o.material&&o.material.opacity!==undefined){if(o.userData.op0===undefined)o.userData.op0=o.material.opacity;o.material.opacity=o.userData.op0*(SPACE_ON?0.7:1);}});}
-KIT.init({game:'stern',title:'Sternschach',descr:'Schach im Sterntetraeder, dem räumlichen Davidstern: ein 864 Felder, in den 8 Spitzen gleiche Rhomboeder; 2 bis 8 Heere in den Spitzen, mit Einhorn',
+KIT.init({game:'stern',title:'Sternschach',descr:'Schach im Sterntetraeder, dem räumlichen Davidstern mit 2.048 Feldern; in den 8 Spitzen gleiche Rhomboeder; 2 bis 8 Heere in den Spitzen, mit Einhorn',
   PCOL,PNAME,VAL,material,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,mon3d:monDraw,clockShow:()=>renderTurn(),
   onColors:()=>{for(const k in TEX)delete TEX[k];buildGrid();buildPalette();render();},
   snap:snapGame,load:loadGame,moveList:()=>moves,replayShow,resume:()=>{if(GM&&!GM.over)turnStart();},poll:()=>onPoll(),varEnter,varExit,varUndo:()=>undo(),varAI,showMove});
@@ -905,7 +905,7 @@ for(const k in TEX)delete TEX[k];buildGrid();
 // ---------- Einführung ----------
 function tourStart(){const ui=document.getElementById('ui');if(ui.classList.contains('min'))toggleUI();
   KIT.tour([
-  {t:'⭐ Willkommen im Sternschach',x:'Der Sterntetraeder ist der räumliche Davidstern – von oben gesehen genau das Brett des Drei-Personen-Schachs. In jeder seiner 8 Spitzen liegen 3 × 3 × 3 gleiche Rhomboeder-Felder; die Spitzen treffen sich in der Mitte, dazwischen liegen sechs Zwischenräume. Jedes Heer steht in einer Spitze.',run:()=>viewReset()},
+  {t:'⭐ Willkommen im Sternschach',x:'Der Sterntetraeder ist der räumliche Davidstern – von oben gesehen genau das Brett des Drei-Personen-Schachs. In jeder seiner 8 Spitzen liegen 4 × 4 × 4 gleiche Rhomboeder-Felder; die Spitzen treffen sich in der Mitte, dazwischen liegen sechs Zwischenräume. Jedes Heer steht in einer Spitze.',run:()=>viewReset()},
   {t:'Drehen, zoomen, verschieben',x:'Ziehen dreht den Stern, Mausrad oder zwei Finger zoomen, Rechtsklick-Ziehen verschiebt. Doppelklick zeigt wieder den ganzen Stern. Mit „🎯 Meine Armee“ schaust du von außen in deine Spitze.'},
   {t:'Figur antippen',x:'Grüne Kugeln: freie Felder. Rote Kugeln: Schlagen. Gerade Linien laufen von Feld zu Feld weiter und knicken in den Zwischenräumen – wie im Drei-Personen-Schach über die Mitte. Gegnerische Figuren zeigen ihre Züge hellblau und orange, nur zur Ansicht.'},
   {t:'Die Figuren',x:'König ganz außen in der Spitze, davor Dame und zwei Türme, dann Läufer, Springer und Einhörner, davor sieben Bauern. Die Bauern ziehen immer weiter weg von der eigenen Spitze und schlagen schräg nach vorn. In einer fremden Spitze werden sie zur Dame.'},
