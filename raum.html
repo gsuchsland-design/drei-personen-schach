@@ -307,11 +307,15 @@ function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
   const a=new THREE.Vector3(...mv.from),b=new THREE.Vector3(...mv.to),len=a.distanceTo(b);
   const d=[0,1,2].map(i=>Math.abs(mv.to[i]-mv.from[i])).sort((x,y)=>y-x),leap='NWACM'.includes(mv.t)&&!(d[1]===0||d[0]===d[1]);
   const pts=[mv.from].concat(mv.hops||[],[mv.to]).map(c=>new THREE.Vector3(...c));
-  const dur=pts.length>2?Math.min(1800,(leap?260:170)*(pts.length-1)):Math.min(900,280+len*45);
-  const ship=STYLE==='ship';
-  ANIM={mv,a,b,len,pts,hop:ship?Math.min(1.2,len*0.08):leap?(pts.length>2?0.9:1.1+Math.min(1.6,len*0.12)):0.12,dur:ship&&mv.cap?Math.max(1200,dur):dur,t0:performance.now(),kick:null,ship};
-  if(ship&&mv.cap){   // Raumschiff: anfliegen, feuern, Ziel explodiert
-    animGroup.clear();ANIM.sp=R3.object('ship',mv.t,PCOL[mv.p],fwd(mv.p));animGroup.add(ANIM.sp);
+  const ship=STYLE==='ship',cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+pts[i].distanceTo(pts[i-1]));const L=cum[cum.length-1]||1;
+  // gleitende Figuren: Dauer nach Weglänge; Raumschiffe brauchen mit Schuss und Explosion etwas länger
+  let dur=leap?(pts.length>2?Math.min(1800,260*(pts.length-1)):Math.min(900,280+len*45)):Math.min(1700,320+L*95);
+  if(ship&&!leap)dur=Math.min(2600,700+L*110)+(mv.cap?500:0);
+  ANIM={mv,a,b,len,pts,cum,L,leap,hop:leap?(pts.length>2?0.9:1.1+Math.min(1.6,len*0.12)):0,dur,t0:performance.now(),kick:null,ship,glows:[]};
+  // Felder, über die die Figur zieht, leuchten beim Durchziehen kurz auf (auch das Zielfeld)
+  for(let i=1;i<pts.length;i++)ANIM.glows.push({at:cum[i]/L,c:i<pts.length-1?mv.hops[i-1]:mv.to,m:null,t0:0});
+  if(ship&&mv.cap){   // Raumschiff: Triebwerke zünden, beschleunigen, feuern, Ziel explodiert, langsam landen
+    animGroup.clear();ANIM.sp=R3.object('ship',mv.t,PCOL[mv.p],fwd(mv.p));animGroup.add(ANIM.sp);addFlame(ANIM.sp);
     ANIM.victim=R3.object('ship',mv.cap.t,PCOL[mv.cap.p],fwd(mv.cap.p));ANIM.victim.position.copy(b);animGroup.add(ANIM.victim);
     ANIM.laser=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,1,6),new THREE.MeshBasicMaterial({color:PCOL[mv.p],transparent:true,opacity:0.9,blending:THREE.AdditiveBlending}));
     ANIM.laser.visible=false;animGroup.add(ANIM.laser);
@@ -321,24 +325,41 @@ function animStart(mv){   // mv={from,to,p,t,cap:{p,t}|null}
     tg.x+=(Math.random()-0.5)*6;tg.z+=(Math.random()-0.5)*6;tg.y+=(Math.random()-0.5)*4;
     ANIM.kick={p:mv.cap.p,t:mv.cap.t,from:b.clone(),to:tg,dir:b.clone().sub(a).normalize(),t0:ANIM.t0+dur*0.75,dur:1000};}
   const mk=(p,t)=>STYLE==='sym'?sprite(p,t,1):R3.object(STYLE,t,PCOL[p],fwd(p));
-  animGroup.clear();ANIM.sp=mk(mv.p,mv.t);animGroup.add(ANIM.sp);
+  animGroup.clear();ANIM.sp=mk(mv.p,mv.t);animGroup.add(ANIM.sp);if(ship)addFlame(ANIM.sp);
   if(ANIM.kick){ANIM.ksp=mk(ANIM.kick.p,ANIM.kick.t);ANIM.ksp.visible=false;animGroup.add(ANIM.ksp);}
   animStep();
 }
+// Lage auf dem Weg nach Anteil q der Weglänge, Flugrichtung dort
+function pathAt(q){const A=ANIM,d=Math.max(0,Math.min(1,q))*A.L;let i=1;while(i<A.cum.length-1&&A.cum[i]<d)i++;
+  const seg=A.cum[i]-A.cum[i-1]||1;return A.pts[i-1].clone().lerp(A.pts[i],(d-A.cum[i-1])/seg);}
+function pathDir(q){const A=ANIM,d=Math.max(0,Math.min(1,q))*A.L;let i=1;while(i<A.cum.length-1&&A.cum[i]<d)i++;return A.pts[i].clone().sub(A.pts[i-1]).normalize();}
+function glowMesh(c,col){const m=(()=>{const m=new THREE.Mesh(new THREE.BoxGeometry(0.96,0.96,0.96),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.42,depthWrite:false}));m.position.set(...c);return m;})();m.material.blending=THREE.AdditiveBlending;return m;}
+// Triebwerksflamme hinten am Raumschiff (zeigt nach −z, die Nase nach +z)
+function addFlame(sp){const g=new THREE.ConeGeometry(0.15,1.0,14);g.rotateX(-Math.PI/2);g.translate(0,0,-0.5);
+  const outer=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:'#ff8a2a',transparent:true,opacity:0.85,blending:THREE.AdditiveBlending,depthWrite:false}));
+  const core=new THREE.Mesh(g.clone().scale(0.5,0.5,0.7),new THREE.MeshBasicMaterial({color:'#fff3b0',transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false}));
+  const f=new THREE.Group();f.add(outer,core);f.position.z=-0.45;sp.add(f);sp.userData.flame=f;}
 const animBusy=()=>!!ANIM;
 const animLeft=()=>ANIM?Math.max(0,(ANIM.kick?ANIM.kick.t0+ANIM.kick.dur:ANIM.t0+ANIM.dur+(ANIM.ship&&ANIM.mv.cap?700:0))-performance.now()):0;
 function animStep(){if(!ANIM)return;const now=performance.now();
   let e=Math.min(1,(now-ANIM.t0)/ANIM.dur);const s=e<0.5?2*e*e:1-Math.pow(-2*e+2,2)/2;
-  let P;
-  if(ANIM.pts.length>2){const n=ANIM.pts.length-1,f=Math.min(n-1e-6,e*n),i=Math.floor(f),u=f-i;   // Sprung für Sprung
-    P=ANIM.pts[i].clone().lerp(ANIM.pts[i+1],u);P.y+=Math.sin(Math.PI*u)*ANIM.hop;}
-  else{P=ANIM.a.clone().lerp(ANIM.b,s);P.y+=Math.sin(Math.PI*s)*ANIM.hop;}
+  let P,q;
+  if(ANIM.leap&&ANIM.pts.length>2){const n=ANIM.pts.length-1,f=Math.min(n-1e-6,e*n),i=Math.floor(f),u=f-i;   // Springer-Ketten: Sprung für Sprung
+    P=ANIM.pts[i].clone().lerp(ANIM.pts[i+1],u);P.y+=Math.sin(Math.PI*u)*ANIM.hop;q=(i+u)/n;}
+  else if(ANIM.leap){P=ANIM.a.clone().lerp(ANIM.b,s);P.y+=Math.sin(Math.PI*s)*ANIM.hop;q=s;}
+  else{   // gleiten auf den Linien des Bretts – Raumschiffe beschleunigen kräftig und bremsen zum Landen ab
+    q=ANIM.ship?(e<0.5?4*e*e*e:1-Math.pow(-2*e+2,3)/2):s;P=pathAt(q);}
+  // Felder leuchten beim Durchziehen auf
+  for(const g of ANIM.glows){if(!g.m&&q>=g.at-1e-6){g.m=glowMesh(g.c,PCOL[ANIM.mv.p]);g.t0=now;animGroup.add(g.m);}
+    if(g.m&&!g.done){const k=(now-g.t0)/650;if(k>=1){g.done=true;animGroup.remove(g.m);}else g.m.material.opacity=0.42*(1-k);}}
   if(ANIM.ship){const prev=ANIM.sp.position.clone();ANIM.sp.position.copy(P);   // Raumschiff: Nase in Flugrichtung
-    if(P.distanceTo(prev)>1e-4&&e<1){const look=P.clone().add(P.clone().sub(prev));ANIM.sp.lookAt(look);}
+    const dir=ANIM.leap?P.clone().sub(prev):pathDir(q);if(dir.lengthSq()>1e-8&&e<1)ANIM.sp.lookAt(P.clone().add(dir));
+    // Triebwerksflamme: groß beim Beschleunigen, klein beim Abbremsen, aus nach der Landung
+    if(ANIM.sp.userData.flame){const th=e>=1?0:e<0.5?0.6+0.9*Math.min(1,e*3):Math.max(0.15,1.5*(1-e)*2*0.5);ANIM.sp.userData.flame.scale.set(1,1,th*(0.85+0.3*Math.random()));ANIM.sp.userData.flame.visible=th>0;}
     if(ANIM.mv.cap){const tgt=ANIM.b;
-      if(e>0.45&&!ANIM.expl){const from=P.clone(),dist=from.distanceTo(tgt);ANIM.laser.visible=dist>0.3&&((now/60|0)%2===0);
+      if(e>0.3&&!ANIM.expl){const from=P.clone(),dist=from.distanceTo(tgt);ANIM.laser.visible=dist>0.3&&((now/60|0)%2===0);
         if(dist>0.3){ANIM.laser.scale.set(1,dist,1);ANIM.laser.position.copy(from).add(tgt).multiplyScalar(0.5);ANIM.laser.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tgt.clone().sub(from).normalize());}}
-      if(e>0.7&&!ANIM.expl){ANIM.expl=R3.explosion(animGroup,tgt.clone(),PCOL[ANIM.mv.cap.p]);ANIM.victim.visible=false;ANIM.laser.visible=false;}
+      if(e>0.52&&!ANIM.expl){ANIM.expl=R3.explosion(animGroup,tgt.clone(),PCOL[ANIM.mv.cap.p]);ANIM.victim.visible=false;ANIM.laser.visible=false;}
       if(ANIM.expl&&!ANIM.expl.update(now))ANIM.expl.done=true;}}
   else ANIM.sp.position.copy(P);
   if(ANIM.kick&&now>=ANIM.kick.t0){const K=ANIM.kick,k=Math.min(1,(now-K.t0)/K.dur),u=1-Math.pow(1-k,2);
@@ -350,7 +371,7 @@ function animStep(){if(!ANIM)return;const now=performance.now();
     if(ANIM.ksp.isSprite){ANIM.ksp.material.rotation=u*Math.PI*4;const sc=0.82*(1-0.6*u);ANIM.ksp.scale.set(sc,sc,1);ANIM.ksp.material.opacity=k<0.7?1:1-(k-0.7)/0.3;}
     else{ANIM.ksp.rotation.set(u*Math.PI*4,u*Math.PI*2,0);ANIM.ksp.scale.setScalar(Math.max(0.01,1-0.85*u));}}
   draw();
-  const done=e>=1&&(!ANIM.kick||now>=ANIM.kick.t0+ANIM.kick.dur)&&(!ANIM.ship||!ANIM.mv.cap||(ANIM.expl&&ANIM.expl.done));
+  const done=e>=1&&(!ANIM.kick||now>=ANIM.kick.t0+ANIM.kick.dur)&&(!ANIM.ship||!ANIM.mv.cap||(ANIM.expl&&ANIM.expl.done))&&ANIM.glows.every(g=>g.done);
   if(done){ANIM=null;animGroup.clear();render();}else requestAnimationFrame(animStep);
 }
 function buildGrid(){gridGroup.clear();
