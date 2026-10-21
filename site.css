@@ -60,3 +60,6 @@ details.dd > div { position:absolute; top:calc(100% + 8px); left:-10px; min-widt
 details.dd > div a { padding:8px 10px; border-radius:7px; white-space:nowrap; }
 details.dd > div a:hover, details.dd > div a.on { background:#2a2e38; color:#fff; }
 [dir=rtl] details.dd > div { left:auto; right:-10px; }
+/* Varianten-Karten auf der Startseite */
+.grid.vars .card img { width:100%; height:auto; border-radius:10px; border:1px solid var(--line); margin-bottom:8px; }
+.cta.small { font-size:15px; padding:7px 14px; margin:6px 10px 0 0; }
