@@ -1927,6 +1927,7 @@ function pubRender(){
     const seats=e.seats.map(s=>`<span class="pubSeat" style="border-color:${PCOLOR[s.p]||RCOL[s.p]}">${s.kind==='human'?esc(s.name):s.kind==='ai'?'🤖 '+T(PUB_LVL[s.lvl]||'Computer'):'<i>'+T('frei')+'</i>'}</span>`).join('');
     const r=e.rules||{},raum=e.game==='raum'||e.game==='grenz'||e.game==='stern',grenz=e.game==='grenz',stern=e.game==='stern',parts=raum?[T('{0} Spieler',[e.seats.length]),r.end==='last'?T('wer matt ist, scheidet aus'):T('erstes Matt entscheidet')]:[r.help===false?T('ohne Hilfspflicht'):T('mit Hilfspflicht')];
     if(raum&&!grenz)parts.push(...pubRuleParts(e.game,r.opts));
+    parts.push(...pubUnfair(e));
     if(raum){if(r.help&&e.seats.length>=3)parts.push(T('mit Hilfspflicht'));parts.push(r.live===false?T('Fernpartie'):T('Live'));if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));}
     if(e.kind==='live'){if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));if(!r.tcMove&&!r.tcGame)parts.push(T('ohne Zeitlimit'));
       parts.push(r.cam?T('mit Kamera'):T('ohne Kamera'));}
@@ -1951,6 +1952,7 @@ function pubRuleParts(game,opts){const o=String(opts||'').split('.'),[B,Q,K,N,P,
     if(U==='end')out.push(T('Umwandlung erst auf der hintersten Ebene'));}
   if(game==='stern')out.push(X==='-'?T('ohne Einhorn'):T('mit Einhorn'));
   return out;}
+function pubUnfair(e){return e.game==='stern'&&(e.seats.length===5||e.seats.length===7)?[T('⚠️ nicht ganz ausgeglichen')]:[];}
 function pubGo(kind,code){location.href=kind==='raum'?'raum.html?g='+code+fernQS():kind==='grenz'?'grenzenlos.html?g='+code+fernQS():kind==='stern'?'stern.html?g='+code+fernQS():kind==='fern'?fernLink(code):location.pathname+'?spiel='+code+srvParam()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'')+fernQS();}
 async function pubReport(id){if(!confirm(T('Diesen Eintrag als unangemessen melden? Nach mehreren Meldungen wird er ausgeblendet.')))return;
   try{await pubApi('report',{id});toast(T('Danke – gemeldet.'),2500);}catch(e){}}
