@@ -20,6 +20,17 @@ html,body { height:100%; overflow:hidden; }
 body { background:#1e1e1e; display:flex; flex-direction:column; align-items:center; padding:8px; font-family:sans-serif; }
 h2 { color:#eee; margin:4px 0; font-size:15px; }
 #controls { margin:4px 0; display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center; }
+#controls .cb { padding:4px 12px; font-size:13px; cursor:pointer; background:#333; color:#eee; border:1px solid #555; border-radius:6px; list-style:none; user-select:none; }
+#controls .cb:hover { background:#3d3d3d; }
+#controls details.dd { position:relative; }
+#controls details.dd > summary::-webkit-details-marker { display:none; }
+#controls details.dd > summary::after { content:" ▾"; font-size:11px; opacity:.7; }
+#controls details.dd[open] > summary { background:#3a3f55; border-color:#8fb6ff; }
+#controls .ddBox { position:absolute; z-index:60; top:calc(100% + 4px); left:50%; transform:translateX(-50%); min-width:220px; background:#262626; border:1px solid #555; border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:4px; box-shadow:0 6px 20px rgba(0,0,0,.5); text-align:left; }
+#controls .ddBox label { font-size:13px; padding:3px 2px; white-space:nowrap; }
+#controls .ddBox button { padding:5px 8px; font-size:13px; text-align:left; background:#333; color:#eee; border:1px solid #4a4a4a; border-radius:5px; cursor:pointer; }
+#controls .ddBox hr { border:none; border-top:1px solid #444; margin:4px 0; width:100%; }
+#controls .ddBox #info { margin:4px 2px 0; white-space:normal; display:block !important; }
 label { color:#ccc; font-size:12px; cursor:pointer; }
 canvas { display:block; cursor:default; }
 #c { touch-action:none; }
@@ -260,6 +271,9 @@ details.setOpts > summary { cursor:pointer; font-weight:bold; color:#ccc; font-s
 #setupBox .linkRow button { width:auto; margin:0; padding:4px 8px; font-size:13px; background:none !important; color:#8fb6ff; border:none; }
 #setupBox .linkRow button:hover { text-decoration:underline; }
 @media (max-width:520px){ .varTabs { grid-template-columns:repeat(2,1fr); } }
+#contBox { padding-bottom:6px; border-bottom:1px solid #444; margin-bottom:4px; }
+#contBox .setLbl { margin-top:0; }
+#setupBox #btnResume { margin-top:6px; background:transparent; border:1px solid #5b8fd9; color:#cfe0ff; font-size:14px; }
 #setupBox .smallRow button { width:auto; margin:0; padding:6px 10px; font-size:13px; }
 
 #logBox { position:fixed; top:6px; right:6px; width:230px; z-index:140; background:rgba(28,28,28,.94);
@@ -475,27 +489,30 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 </div>
 <div id="selfView"><canvas id="selfCv" width="320" height="240"></canvas><button onclick="document.getElementById('chkSelf').checked=false;showSelf=false;updateSelfView()" title="Vorschau schließen">✕</button></div>
 <div id="panel">
-<h2>Drei-Personen-Schach</h2>
 <div id="varNav"></div>
 <div id="controls">
-  <label><input type="checkbox" id="chkLabels"> Koordinaten</label>
-  <label><input type="checkbox" id="chkPieces" checked> Figuren</label>
-  <label><input type="checkbox" id="chkHints" checked> Zugvorschau</label>
-  <button id="btnReset" style="padding:3px 10px;font-size:12px;cursor:pointer;">Neu</button>
-  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="saveGameFile()" title="Partie als Datei speichern">💾 Speichern</button>
-  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="document.getElementById('loadFile').click()" title="Gespeicherte Partie laden">📂 Laden</button>
-  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="exportMoves()" title="Zugliste teilen oder speichern">📄 Zugliste</button>
+  <button id="btnReset" class="cb" title="Neues Spiel oder andere Spielart">＋ Neues Spiel</button>
+  <details class="dd"><summary class="cb">📁 Partie</summary><div class="ddBox">
+    <button onclick="saveGameFile()" title="Partie als Datei speichern">💾 Speichern</button>
+    <button onclick="document.getElementById('loadFile').click()" title="Gespeicherte Partie laden">📂 Laden</button>
+    <button onclick="exportMoves()" title="Zugliste teilen oder speichern">📄 Zugliste</button>
+  </div></details>
   <input type="file" id="loadFile" accept=".json,application/json" style="display:none" onchange="loadGameFile(this)">
-  <button id="fullscreenBtn" onclick="toggleFullscreen()" title="Vollbild (Esc beendet)">⛶ Vollbild</button>
-  <button id="btnFit" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="if(window.V3&&V3.on)V3.view('cur');else{fitBoard();draw();}">⤢ Einpassen</button>
-  <button id="btnRotate" style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="rotateBoard()">↻ Brett drehen</button>
-  <label><input type="checkbox" id="chkCoordRing" checked> Koordinaten-Ring</label>
-  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="colOpen()" title="Spielerfarben selbst wählen">🎨 Farben</button>
-  <label><input type="checkbox" id="chkFollow2d"> Brett folgt Spieler am Zug</label>
-  <button style="padding:3px 10px;font-size:12px;cursor:pointer;" onclick="toggleAvMenu()">👥 Mitspieler &amp; Kamera</button>
-  <label title="Wenn oben etwas die Knöpfe verdeckt"><input type="checkbox" id="chkBarBottom" onchange="setBarBottom(this.checked)"> Knopfleiste unten</label>
+  <details class="dd"><summary class="cb">👁 Ansicht</summary><div class="ddBox">
+    <label><input type="checkbox" id="chkPieces" checked> Figuren</label>
+    <label><input type="checkbox" id="chkHints" checked> Zugvorschau</label>
+    <label><input type="checkbox" id="chkLabels"> Koordinaten</label>
+    <label><input type="checkbox" id="chkCoordRing" checked> Koordinaten-Ring</label>
+    <label><input type="checkbox" id="chkFollow2d"> Brett folgt Spieler am Zug</label>
+    <label title="Wenn oben etwas die Knöpfe verdeckt"><input type="checkbox" id="chkBarBottom" onchange="setBarBottom(this.checked)"> Knopfleiste unten</label>
+    <hr>
+    <button id="btnFit" onclick="if(window.V3&&V3.on)V3.view('cur');else{fitBoard();draw();}">⤢ Einpassen</button>
+    <button id="btnRotate" onclick="rotateBoard()">↻ Brett drehen</button>
+    <button onclick="colOpen()" title="Spielerfarben selbst wählen">🎨 Farben</button>
+    <button id="fullscreenBtn" onclick="toggleFullscreen()" title="Vollbild (Esc beendet)">⛶ Vollbild</button>
+    <div id="info">Klick auf Figur → Züge · Zweiter Klick → Ziehen · Rad = Zoom · Ziehen = Bewegen · Doppelklick = Einpassen</div>
+  </div></details>
 </div>
-<div id="info">Klick auf Figur → Züge · Zweiter Klick → Ziehen · Rad = Zoom · Ziehen = Bewegen · Doppelklick = Einpassen</div>
 </div>
 <div id="status">Blau am Zug</div>
 <div id="endBar"></div>
@@ -606,8 +623,9 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <div id="setupModal">
   <div id="setupBox">
     <div class="setHead"><img src="icon-192.png" alt=""><span>Drei-Personen-Schach</span></div>
+    <div id="contBox" style="display:none"><div class="setLbl">Weiterspielen</div>
     <div id="fnList"></div>
-    <button id="btnResume" onclick="resumeAutosave()" style="display:none;background:#2c5d9e">↺ Letzte Partie fortsetzen</button>
+    <button id="btnResume" onclick="resumeAutosave()" style="display:none">↺ Letzte Partie fortsetzen</button></div>
     <div class="setLbl">Neues Spiel – Spielart</div>
     <div class="varTabs">
       <button class="on" title="Drei Spieler auf dem sechszackigen Stern">♟ Drei Personen</button>
@@ -4179,9 +4197,16 @@ setInterval(()=>{
 function openSetup(){
   replayExit();setTimeout(()=>{try{renderEndBar();}catch(e){}},0);
   let has=false;try{has=!!localStorage.getItem(SAVE_KEY);}catch(e){}
-  document.getElementById('btnResume').style.display=has?'':'none';
+  const rb=document.getElementById('btnResume');rb.style.display=has?'':'none';
+  if(has){try{const d=deser(localStorage.getItem(SAVE_KEY)),n=(d.moveLog||[]).length,t=d.saved?new Date(d.saved):null;
+    rb.textContent=T('↺ Angefangene Partie hier am Gerät fortsetzen')+(n?' · '+(n===1?T('1 Zug'):T('{0} Züge',[n])):'')+(t?' · '+t.toLocaleString(undefined,{weekday:'short',hour:'2-digit',minute:'2-digit'}):'');}catch(e){}}
+  contUpd();
   cancelAI();setupOpen=true;document.getElementById('startBtn').classList.remove('show');document.getElementById('setupModal').classList.add('show');
   fernSeatRows();renderFernList();}
+// „Weiterspielen“ nur zeigen, wenn es etwas fortzusetzen gibt (angefangene Partie oder laufende Fern-/Online-Partien)
+function contUpd(){const fl=document.getElementById('fnList'),rb=document.getElementById('btnResume');
+  document.getElementById('contBox').style.display=(rb.style.display!=='none'||(fl&&fl.textContent.trim()))?'':'none';}
+setTimeout(()=>{const fl=document.getElementById('fnList');if(fl&&window.MutationObserver)new MutationObserver(contUpd).observe(fl,{childList:true,subtree:true});},0);
 function startFromSetup(){
   const mOn=document.getElementById('tcMoveOn').checked,gOn=document.getElementById('tcGameOn').checked;
   const ms=Math.max(5,+document.getElementById('tcMoveSec').value||60),gm=Math.max(1,+document.getElementById('tcGameMin').value||15);
@@ -6936,4 +6961,6 @@ window.V3={on:false};
 })();
 varNav('spiel.html',document.getElementById('varNav'));
 </script>
+<script>document.addEventListener('click',e=>{document.querySelectorAll('#controls details.dd[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.ddBox button'))d.removeAttribute('open');});});
+document.querySelectorAll('#controls details.dd').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)document.querySelectorAll('#controls details.dd[open]').forEach(o=>{if(o!==d)o.removeAttribute('open');});}));</script>
 </body></html>
