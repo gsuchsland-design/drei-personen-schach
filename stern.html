@@ -57,7 +57,7 @@ a { color:#8fb6ff; }
  <h1>⭐ Sternschach <span class="hint">Schach im Sterntetraeder · Entwurf</span><button id="minBtn" onclick="toggleUI()" title="Leiste ein-/ausklappen">▴</button></h1>
  <div class="body">
   <div id="varNav"></div>
-  <div class="hint">Der Sterntetraeder ist der räumliche Davidstern mit 8 Spitzen. In jeder Spitze liegen 4 × 4 × 4 gleiche Rhomboeder-Felder, dazwischen sechs Zwischenräume. Jedes Heer steht in einer Spitze. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom, Rechtsklick-Ziehen/zwei Finger = verschieben.</div>
+  <div class="hint">Der Sterntetraeder ist der räumliche Davidstern mit 8 Spitzen. Das Brett ist ein 8 × 8 × 8-Würfel, zum Stern gefaltet: 512 Felder mit je 6 Flächen, jede Würfelecke ist eine Spitze. Jedes Heer steht in einer Spitze. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom, Rechtsklick-Ziehen/zwei Finger = verschieben.</div>
 
   <h2>Partie</h2>
   <div id="gameSetup">
@@ -65,6 +65,7 @@ a { color:#8fb6ff; }
    <div class="row">Spieler: <select id="gN" onchange="gSeats()"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 ⚠️</option><option value="6">6</option><option value="7">7 ⚠️</option><option value="8">8</option></select></div>
    <div id="gSeatRows"></div>
    <div class="row" id="xRow" style="flex-wrap:wrap"></div>
+   <div class="row"><label title="Wer auf einer Raumdiagonale eines der 8 Mittelfelder erreicht, darf durch den Mittelpunkt in jede andere Raumdiagonale weiterziehen – bis in jede Spitze. Gilt für Einhorn, Dame und König."><input type="checkbox" id="gWorm" onchange="OPT.W=this.checked?'1':'0';wUI();if(!GM&&!moves.length)setup(lastN);else render();"> 🌀 Wurmloch in der Mitte</label></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
    <div class="hint">Zu zweit stehen die Heere an den Polen, zu dritt und zu viert an den Spitzen eines Tetraeders, zu sechst im Ring um die Mitte, zu acht in allen Spitzen. Alle 8 Spitzen sind gleichwertig. Zu fünft und zu siebt geht es auch, ist aber nicht ganz ausgeglichen (⚠️). Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Wer nur noch den König hat, ist geschlagen. Sobald einmal geschlagen wurde, gilt: Nach 30 Runden ohne Schlagen und ohne Bauernzug entscheidet das Material.</div>
    <div class="row" id="helpRow"><label title="Steht ein Spieler im Schach, muss jeder, der vor ihm zieht, ihm helfen: Ist er matt, muss der Zug ihn befreien – ist er nicht matt, darf der Zug ihn nicht mattsetzen."><input type="checkbox" id="gHelp"> 🆘 Hilfspflicht (ab 3 Spielern)</label></div>
@@ -109,8 +110,6 @@ a { color:#8fb6ff; }
     <option value="">alle Bereiche</option>
     <option value="t0">Spitze S1</option><option value="t1">Spitze S2</option><option value="t2">Spitze S3</option><option value="t3">Spitze S4</option>
     <option value="t4">Spitze S5</option><option value="t5">Spitze S6</option><option value="t6">Spitze S7</option><option value="t7">Spitze S8</option>
-    <option value="g0">Zwischenraum M1</option><option value="g1">Zwischenraum M2</option><option value="g2">Zwischenraum M3</option>
-    <option value="g3">Zwischenraum M4</option><option value="g4">Zwischenraum M5</option><option value="g5">Zwischenraum M6</option>
    </select>
   </div>
   <div class="hint">Zum Setzen von Figuren einen Bereich wählen – dann sind seine Felder anklickbar.</div>
@@ -123,7 +122,7 @@ a { color:#8fb6ff; }
   </div>
 
   <h2>Die Figuren</h2>
-  <div class="hint">Turm ♜: durch die Flächen der Felder geradeaus. Läufer ♝: über die Kanten schräg. Einhorn 🦄: über die Ecken. Wurmloch: Wer über den Mittelpunkt zieht, kann in jede der 7 anderen Spitzen weiter (Dame, Einhorn, König). Dame ♛: alles davon. König ♚: ein Schritt wie die Dame. Springer ♞: 2 + 1 quer. Bauer ♟: ein Feld weiter weg von der eigenen Spitze, schlägt schräg nach vorn; in einer fremden Spitze wird er zur Dame. Im Setzen-Werkzeug gibt es außerdem die Märchenfiguren aus dem Schach der 6 Reiche.</div>
+  <div class="hint">Turm ♜: durch die Flächen der Felder geradeaus. Läufer ♝: über die Kanten schräg. Einhorn 🦄: über die Ecken. Wurmloch (falls der Gastgeber es einschaltet): Wer auf einer Raumdiagonale eines der 8 Mittelfelder erreicht, kann durch den Mittelpunkt in jede andere Raumdiagonale weiter. Dame ♛: alles davon. König ♚: ein Schritt wie die Dame. Springer ♞: 2 + 1 quer. Bauer ♟: ein Feld weiter weg von der eigenen Spitze, schlägt schräg nach vorn; in den drei äußersten Schichten einer fremden Spitze wird er zur Dame. Im Setzen-Werkzeug gibt es außerdem die Märchenfiguren aus dem Schach der 6 Reiche.</div>
 
   <h2>Auswahl</h2>
   <div id="info">Noch nichts ausgewählt.</div>
@@ -147,8 +146,8 @@ a { color:#8fb6ff; }
 <script>
 'use strict';
 // ================= Spielfeld =================
-// Der Sterntetraeder (räumlicher Davidstern) mit 2.048 Feldern, siehe lib/sternbrett.js:
-// in jeder der 8 Spitzen 4 × 4 × 4 gleiche Rhomboeder, dazwischen 6 Zwischenräume aus je 4 × 64 Feldern.
+// Der Sterntetraeder (räumlicher Davidstern): ein 8 × 8 × 8-Würfel, zum Stern gefaltet, siehe lib/sternbrett.js.
+// Jedes Achtel (64 Felder) gehört zu einer Spitze; Raumschach-Regeln.
 // Ein Feld ist [nummer]; key() macht daraus den Schlüssel für die Stellung.
 const NC=SB.NC,CELLS=SB.CELLS;
 const PL=['B','G','R','Y','L','T','O','I'];
@@ -178,28 +177,28 @@ const key=(...a)=>a.join(',');
 const unkey=k=>[+k];
 const tipIdx=p=>CFG[p]?SB.TIPS.indexOf(CFG[p].join()):-1;
 const apexOf=sg=>CELLS.findIndex(c=>c.tip===SB.TIPS.indexOf(sg.join())&&c.d===0);
-// Spitze eines Feldes als Vorzeichen-Schlüssel, sonst null
-function cornerOf(c){const x=CELLS[c[0]];return x&&x.tip!==undefined?SB.TIPS[x.tip]:null;}
+// Spitze eines Feldes als Vorzeichen-Schlüssel (nur die äußeren 4 Schichten = Heimatbereich, 20 Felder), sonst null
+function cornerOf(c){const x=CELLS[c[0]];return x&&x.d<=3?SB.TIPS[x.tip]:null;}
 function region(id){const k=cornerOf([id]);if(!k)return null;for(const p in CFG)if(CFG[p].join()===k)return p;return null;}
-// Bereiche: 8 Spitzen (S1–S8) und 6 Zwischenräume (M1–M6, je mit 4 Kissen a–d)
-const GAP0=CELLS.findIndex(c=>c.gap!==undefined),PILN=SB.n*SB.n*SB.m;
-function zoneOf(id){const x=CELLS[id];return x.tip!==undefined?'t'+x.tip:'g'+x.gap;}
-function cellLbl(c){const id=c[0],x=CELLS[id];if(!x)return'?';const l=x.loc.map(v=>v+1).join('');
-  return x.tip!==undefined?'S'+(x.tip+1)+'·'+l:'M'+(x.gap+1)+'abcd'[Math.floor((id-GAP0)/PILN)%4]+'·'+l;}
-function cname(id){const r=region(id),k=cornerOf([id]);return cellLbl([id])+(r?` (Spitze ${PNAME[r]})`:k?' (freie Spitze)':' (Zwischenraum)');}
+// Bereiche: 8 Achtel (S1–S8), je von der Spitze bis zur Mitte; Feldname = Achtel · Abstand von der Spitze je Achse
+function zoneOf(id){return't'+CELLS[id].tip;}
+function cellLbl(c){const x=CELLS[c[0]];if(!x)return'?';return'S'+(x.tip+1)+'·'+x.loc.map(v=>v+1).join('');}
+function cname(id){const r=region(id),k=cornerOf([id]);return cellLbl([id])+(r?` (Spitze ${PNAME[r]})`:k?' (freie Spitze)':SB.MID.includes(id)?' (Mitte)':'');}
 
 // ================= Zustand =================
 let S=new Map();          // Feldnummer → {t,p,m}  m = schon gezogen
 // Zugregeln wie im Schach der 6 Reiche (feste Einstellung)
-let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'s',X:'U'};let lastN=2;
-const OK=['B','Q','K','N','P','U','S','F','X'];
+let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'s',X:'U',W:'0'};let lastN=2;
+const OK=['B','Q','K','N','P','U','S','F','X','W'];
+// Wurmloch (W='1'): Option des Gastgebers
+function wUI(){SB.setWorm(OPT.W==='1');const c=document.getElementById('gWorm');if(c)c.checked=OPT.W==='1';}
 // Märchenfiguren: Der Gastgeber wählt, welche dabei sind (X = erlaubte Buchstaben, '-' = keine).
 // Abgewählte Figuren werden in der Aufstellung durch klassische ersetzt – so entsteht eine eigene Untervariante.
 const EXO='U',EXO_REPL={U:'B',W:'N',H:'R',V:'B',A:'B',C:'R',M:'Q'};
 const exoOk=t=>!EXO.includes(t)||OPT.X.includes(t);
 const exoPiece=t=>exoOk(t)?t:EXO_REPL[t];
 // kurze Beschreibung der gewählten Figuren für Einladung und Lobby
-const exoText=()=>(typeof exoUsed==='function'&&!exoUsed())?'':OPT.X==='-'?', nur klassische Figuren':OPT.X===EXO?(EXO.length>1?', mit allen Märchenfiguren':', mit '+PNAMES[EXO]):', mit '+OPT.X.split('').map(t=>PNAMES[t]).join(', ');
+const exoText=()=>(OPT.W==='1'?', mit Wurmloch':'')+((typeof exoUsed==='function'&&!exoUsed())?'':OPT.X==='-'?', nur klassische Figuren':OPT.X===EXO?(EXO.length>1?', mit allen Märchenfiguren':', mit '+PNAMES[EXO]):', mit '+OPT.X.split('').map(t=>PNAMES[t]).join(', '));
 function xUI(){const box=document.getElementById('xRow');if(!box)return;
   box.innerHTML='Märchenfiguren: '+EXO.split('').map(t=>`<label title="${PNAMES[t]}${PDESC[t]?' – '+PDESC[t]:''}" style="white-space:nowrap"><input type="checkbox" data-x="${t}"${OPT.X.includes(t)?' checked':''}> ${PLAB(t)} ${PNAMES[t]}</label>`).join(' ')+'<div class="hint" style="flex-basis:100%">Abgewählte Märchenfiguren werden in der Aufstellung durch klassische ersetzt: '+EXO.split('').map(t=>PNAMES[t]+' → '+PNAMES[EXO_REPL[t]]).join(' · ')+'.</div>';
   box.style.display=(typeof exoUsed==='function'&&!exoUsed())?'none':'flex';
@@ -263,8 +262,8 @@ function genMoves(id){
   }
   return[];
 }
-// Umwandlung: sobald der Bauer eine fremde Spitze betritt
-function promoZone(p,c){const k=cornerOf(c);return!!k&&CFG[p]&&k!==CFG[p].join();}
+// Umwandlung: sobald der Bauer die drei äußersten Schichten einer fremden Spitze erreicht
+function promoZone(p,c){const x=CELLS[c[0]];return!!x&&x.d<=2&&!!CFG[p]&&SB.TIPS[x.tip]!==CFG[p].join();}
 
 // ---------- Lage im Raum ----------
 // Die Pole liegen oben und unten; die Spitze (+,−,−) zeigt nach vorn.
@@ -404,7 +403,6 @@ for(const sx of[-1,1])for(const sy of[-1,1])for(const sz of[-1,1]){const sg=[sx,
   // Spitze (Heimat) als Gitter
   const ti=SB.TIPS.indexOf(k);
   gridGroup.add(cellEdges(CELLS.filter(c=>c.tip===ti).map(c=>c.id),own?PCOL[own]:'#8090b0',own?0.32:0.14));}
-gridGroup.add(cellEdges(CELLS.filter(c=>c.gap!==undefined).map(c=>c.id),'#8090b0',0.09));
 if(typeof SPACE_ON!=='undefined'&&SPACE_ON&&typeof gridOp==='function')gridOp();}
 buildGrid();
 
@@ -529,8 +527,8 @@ function buildPalette(){
 }
 // Teilen: Spielerzahl + Figuren (Spieler, Typ, x,y,z als Ziffern 0–9)
 function encode(){const ps=[...S].map(([k,v])=>v.p+v.t+(+k).toString(36).padStart(3,'0')+(v.m?'m':'')).join('-');
-  return 's3_'+lastN+'_'+ps;}
-function decode(s){try{const[ver,n,ps]=s.split('_');if(ver!=='s3')return false;
+  return 's4_'+lastN+'_'+ps;}
+function decode(s){try{const[ver,n,ps]=s.split('_');if(ver!=='s4')return false;
   if(CORN[+n]){lastN=+n;CFG=CORN[lastN];}
   S=new Map();for(const e of(ps||'').split('-').filter(Boolean)){const p=e[0],t=e[1],id=parseInt(e.slice(2,5),36);if(PL.includes(p)&&GLYPH[t]&&valid(id))S.set(key(id),{p,t,m:e[5]==='m'});}
   if(typeof buildGrid==='function')buildGrid();
@@ -841,7 +839,7 @@ async function api(path,body){const b=await srvBase();
   const r=await fetch(b+path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});
   const j=await r.json().catch(()=>({}));j._status=r.status;return j;}
 const optStr=()=>OK.map(k=>OPT[k]).join('.');
-function setOpts(str){const ov=String(str||'').split('.');OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});xUI();}
+function setOpts(str){const ov=String(str||'').split('.');OPT.W='0';OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});xUI();wUI();}
 function onLink(){return location.origin+location.pathname+'?g='+ON.code+fernQS()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'');}
 function onSnap(){const g=Object.assign({},GM);delete g.online;return JSON.stringify({pos:encode(),gm:g,moves});}
 async function onCreate(order,ctrl){
@@ -1005,7 +1003,7 @@ addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.prevent
 
 // ================= Start =================
 function gridOp(){gridGroup.traverse(o=>{if(o.material&&o.material.opacity!==undefined){if(o.userData.op0===undefined)o.userData.op0=o.material.opacity;o.material.opacity=o.userData.op0*(SPACE_ON?0.7:1);}});}
-KIT.init({game:'stern',title:'Sternschach',descr:'Schach im Sterntetraeder, dem räumlichen Davidstern mit 2.048 Feldern; in den 8 Spitzen gleiche Rhomboeder; 2 bis 8 Heere in den Spitzen, mit Einhorn',
+KIT.init({game:'stern',title:'Sternschach',descr:'Schach im Sterntetraeder, dem räumlichen Davidstern: ein zum Stern gefalteter 8 × 8 × 8-Würfel mit 512 Feldern und Raumschach-Regeln; 2 bis 8 Heere in den Spitzen, mit Einhorn, Wurmloch in der Mitte als Option',
   PCOL,PNAME,VAL,material,gm:()=>GM,on:()=>ON,seatName,render:()=>render(),srvBase,moveText,anaPos,anaScores,anaRestore,timeout,mon3d:monDraw,clockShow:()=>renderTurn(),
   onColors:()=>{for(const k in TEX)delete TEX[k];buildGrid();buildPalette();render();},
   snap:snapGame,load:loadGame,moveList:()=>moves,replayShow,resume:()=>{if(GM&&!GM.over)turnStart();},poll:()=>onPoll(),varEnter,varExit,varUndo:()=>undo(),varAI,showMove});
@@ -1015,12 +1013,12 @@ for(const k in TEX)delete TEX[k];buildGrid();
 // ---------- Einführung ----------
 function tourStart(){const ui=document.getElementById('ui');if(ui.classList.contains('min'))toggleUI();
   KIT.tour([
-  {t:'⭐ Willkommen im Sternschach',x:'Der Sterntetraeder ist der räumliche Davidstern – von oben gesehen genau das Brett des Drei-Personen-Schachs. In jeder seiner 8 Spitzen liegen 4 × 4 × 4 gleiche Rhomboeder-Felder; die Spitzen treffen sich in der Mitte, dazwischen liegen sechs Zwischenräume. Jedes Heer steht in einer Spitze.',run:()=>viewReset()},
+  {t:'⭐ Willkommen im Sternschach',x:'Der Sterntetraeder ist der räumliche Davidstern – von oben gesehen genau das Brett des Drei-Personen-Schachs. Das Brett ist ein 8 × 8 × 8-Würfel, zum Stern gefaltet: Jede Würfelecke wird zu einer Spitze. 512 Felder mit je 6 Flächen, und es gelten die Regeln des Raumschachs. Jedes Heer steht in einer Spitze.',run:()=>viewReset()},
   {t:'Drehen, zoomen, verschieben',x:'Ziehen dreht den Stern, Mausrad oder zwei Finger zoomen, Rechtsklick-Ziehen verschiebt. Doppelklick zeigt wieder den ganzen Stern. Mit „🎯 Meine Armee“ schaust du von außen in deine Spitze.'},
-  {t:'Figur antippen',x:'Grüne Kugeln: freie Felder. Rote Kugeln: Schlagen. Gerade Linien laufen von Feld zu Feld weiter und knicken in den Zwischenräumen – wie im Drei-Personen-Schach über die Mitte. Gegnerische Figuren zeigen ihre Züge hellblau und orange, nur zur Ansicht.'},
-  {t:'Das Wurmloch',x:'Im Mittelpunkt berühren sich die innersten Felder aller 8 Spitzen mit einer Ecke. Wer über diese Ecke zieht – Dame, Einhorn oder König –, kann in jede der 7 anderen Spitzen weiter, entlang ihrer Diagonale bis ganz nach außen. Achtung: Jeder König steht auf so einer Diagonale.'},
+  {t:'Figur antippen',x:'Grüne Kugeln: freie Felder. Rote Kugeln: Schlagen. Gerade Linien laufen von Feld zu Feld weiter und biegen sich mit dem Stern: Der Turm erreicht über die Kehlen die 3 Nachbarspitzen, der Läufer über die Mulden die 3 Spitzen über Eck, das Einhorn durch die Mitte die gegenüberliegende Spitze. Gegnerische Figuren zeigen ihre Züge hellblau und orange, nur zur Ansicht.'},
+  {t:'Das Wurmloch (Option)',x:'Im Mittelpunkt berühren sich 8 Mittelfelder mit einer Ecke. Schaltet der Gastgeber das Wurmloch ein, kann jede Figur mit Einhorn-Zügen – Dame, Einhorn – über diese Ecke in jede andere Raumdiagonale weiter, bis ganz nach außen in jede Spitze. Achtung: Jeder König steht auf so einer Diagonale.',el:'#gWorm'},
   {t:'Die Figuren',x:'König ganz außen in der Spitze, davor Dame und zwei Türme, dann Läufer, Springer und Einhörner, davor zehn Bauern. Die Bauern ziehen immer weiter weg von der eigenen Spitze und schlagen schräg nach vorn. In einer fremden Spitze werden sie zur Dame.'},
-  {t:'Übersicht behalten',x:'Unter „Farben“ blendest du einzelne Heere blass oder aus, unter „Bereich“ greifst du eine Spitze oder einen Zwischenraum heraus. Figuren gibt es als Symbole, 3D-Schachfiguren, Sternfiguren oder Raumschiffe – auf Wunsch vor dem Weltall.',el:'#styleSel'},
+  {t:'Übersicht behalten',x:'Unter „Farben“ blendest du einzelne Heere blass oder aus, unter „Bereich“ greifst du ein Achtel des Sterns heraus. Figuren gibt es als Symbole, 3D-Schachfiguren, Sternfiguren oder Raumschiffe – auf Wunsch vor dem Weltall.',el:'#styleSel'},
   {t:'Gegner und Uhr',x:'Für jeden Platz: Mensch, online eingeladen oder Computer in vier Stärken (leicht, mittel, stark, Meister). Mit Zeit pro Zug oder pro Partie – oder ohne Uhr.',el:'#gSeatRows'},
   {t:'Online: live oder als Fernpartie',x:'Live spielt ihr gleichzeitig mit Monitoren hinter jeder Spitze, Kamera, Mikrofon, Chat und automatischer Übersetzung. Eine Fernpartie zieht jeder, wann er Zeit hat.'},
   {t:'Nach der Partie',x:'„🔬 Auswertung“ zeigt Fehler, Schlüsselmomente und eine psychologische Auswertung; auf Wunsch schreibt eine KI einen professionellen Bericht. Viel Spaß!'}]);}
@@ -1033,12 +1031,12 @@ const TRY={
   oben:{t:'Der Stern von oben',x:'Von oben gesehen ist der Sterntetraeder genau der Davidstern des Drei-Personen-Schachs. Ziehe auf dem Brett, um den Stern zu drehen.',run:()=>{setup(6);camSet(0.95,0.03,27);}},
   zwei:{t:'Zu zweit',x:'Zu zweit stehen sich Blau und Grün an den Polen gegenüber. Tippe Figuren an und ziehe.',run:()=>{setup(2);camSet(0.95,1.15,27);}},
   armee:{t:'Ein Heer in seiner Spitze',x:'Ganz außen der König, davor Dame und Türme, dann Läufer, Springer und Einhörner, davor zehn Bauern. Die Dame ist ausgewählt – tippe andere Figuren an.',run:()=>{setup(4);viewArmy('B');const q=[...S].find(([k,v])=>v.p==='B'&&v.t==='Q');if(q)select(unkey(q[0]));}},
-  dame:{t:'Die Dame',x:'Die Dame steht in einem Zwischenraum. Ihre Linien laufen von Feld zu Feld und knicken unterwegs. Tippe ein grünes Feld an, um sie zu ziehen, und schau dir die Linien von dort an.',run:()=>{setup(0);const id=GAP0+100;put(id,'Q','B');select([id]);camSet(0.95,1.0,25);}},
+  dame:{t:'Die Dame',x:'Die Dame steht nahe der Mitte. Ihre Linien laufen von Feld zu Feld und biegen sich mit dem Stern – bis hinaus in die Spitzen und Mulden. Tippe ein grünes Feld an, um sie zu ziehen, und schau dir die Linien von dort an.',run:()=>{setup(0);const id=CID(0,3,2,1);put(id,'Q','B');select([id]);camSet(0.95,1.0,25);}},
   bauer:{t:'Der Bauer',x:'Der blaue Bauer zieht ein Feld weiter weg von seiner Spitze (grün) und schlägt schräg nach vorn (rot). Probiere beides aus.',run:()=>{lastN=2;CFG=CORN[2];setup(0);const id=CID(0,1,1,1);put(id,'P','B');S.get(key(id)).m=false;const c=SB.PCAP[0][id];put(c[0],'N','G');put(c[1],'R','G');select([id]);viewArmy('B');cam.r=11;draw();}},
-  wurmloch:{t:'Das Wurmloch',x:'Die Dame steht kurz vor der Mitte. Über den Mittelpunkt kann sie in jede der 7 anderen Spitzen weiterziehen – bis ganz nach außen. Dort warten zwei Könige.',run:()=>{lastN=8;CFG=CORN[8];setup(0);const id=CID(0,2,2,2);put(id,'Q','B');put(CID(1,0,0,0),'K','L');put(CID(2,0,0,0),'K','R');select([id]);camSet(0.95,1.0,27);}}
+  wurmloch:{t:'Das Wurmloch',x:'Hier ist das Wurmloch eingeschaltet. Die Dame steht kurz vor der Mitte. Über den Mittelpunkt kann sie in jede der 7 anderen Spitzen weiterziehen – bis ganz nach außen. Dort warten zwei Könige.',run:()=>{OPT.W='1';wUI();lastN=8;CFG=CORN[8];setup(0);const id=CID(0,2,2,2);put(id,'Q','B');put(CID(1,0,0,0),'K','L');put(CID(2,0,0,0),'K','R');select([id]);camSet(0.95,1.0,27);}}
 };
-function tryShow(k){const d=TRY[k];if(!d)return false;{const u=document.getElementById('ui');if(u&&!u.classList.contains('min')&&innerWidth<900)toggleUI();}d.run();KIT.tryBar(d,()=>tryShow(k),()=>{setup(2);viewReset();},'stern-regeln.html');return true;}
-buildPalette();gSeats();xUI();
+function tryShow(k){const d=TRY[k];if(!d)return false;OPT.W='0';wUI();{const u=document.getElementById('ui');if(u&&!u.classList.contains('min')&&innerWidth<900)toggleUI();}d.run();KIT.tryBar(d,()=>tryShow(k),()=>{setup(2);viewReset();},'stern-regeln.html');return true;}
+buildPalette();gSeats();xUI();wUI();
 document.getElementById('styleSel').value=STYLE;document.getElementById('spaceChk').checked=SPACE_ON;R3.space(scene,SPACE_ON);
 const qs=new URLSearchParams(location.search);
 resize();

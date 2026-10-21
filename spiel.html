@@ -1969,7 +1969,7 @@ function pubRuleParts(game,opts){const o=String(opts||'').split('.'),[B,Q,K,N,P,
     if(N==='2')out.push(T('Springer auch 2 + 1 + 1'));if(P==='8')out.push(T('Bauer schlägt auch über Raumdiagonalen'));
     if(S==='first')out.push(T('Bauer: Doppelschritt nur beim ersten Zug'));else if(S==='always')out.push(T('Bauer: immer bis zu 2 Felder'));
     if(U==='end')out.push(T('Umwandlung erst auf der hintersten Ebene'));}
-  if(game==='stern')out.push(X==='-'?T('ohne Einhorn'):T('mit Einhorn'));
+  if(game==='stern'){out.push(X==='-'?T('ohne Einhorn'):T('mit Einhorn'));if(o[9]==='1')out.push(T('mit Wurmloch'));}
   return out;}
 function pubUnfair(e){return e.game==='stern'&&(e.seats.length===5||e.seats.length===7)?[T('⚠️ nicht ganz ausgeglichen')]:[];}
 function pubGo(kind,code){location.href=kind==='raum'?'raum.html?g='+code+fernQS():kind==='grenz'?'grenzenlos.html?g='+code+fernQS():kind==='stern'?'stern.html?g='+code+fernQS():kind==='fern'?fernLink(code):location.pathname+'?spiel='+code+srvParam()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'')+fernQS();}
