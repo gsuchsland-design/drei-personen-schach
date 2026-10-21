@@ -118,7 +118,7 @@ a { color:#8fb6ff; }
   </div>
 
   <h2>Die Figuren</h2>
-  <div class="hint">Turm ♜: durch die Flächen der Felder geradeaus. Läufer ♝: über die Kanten schräg. Einhorn 🦄: über die Ecken. Dame ♛: alles davon. König ♚: ein Schritt wie die Dame. Springer ♞: 2 + 1 quer. Bauer ♟: ein Feld weiter weg von der eigenen Spitze, schlägt schräg nach vorn; in einer fremden Spitze wird er zur Dame. Im Setzen-Werkzeug gibt es außerdem die Märchenfiguren aus dem Schach der 6 Reiche.</div>
+  <div class="hint">Turm ♜: durch die Flächen der Felder geradeaus. Läufer ♝: über die Kanten schräg. Einhorn 🦄: über die Ecken. Wurmloch: Wer über den Mittelpunkt zieht, kann in jede der 7 anderen Spitzen weiter (Dame, Einhorn, König). Dame ♛: alles davon. König ♚: ein Schritt wie die Dame. Springer ♞: 2 + 1 quer. Bauer ♟: ein Feld weiter weg von der eigenen Spitze, schlägt schräg nach vorn; in einer fremden Spitze wird er zur Dame. Im Setzen-Werkzeug gibt es außerdem die Märchenfiguren aus dem Schach der 6 Reiche.</div>
 
   <h2>Auswahl</h2>
   <div id="info">Noch nichts ausgewählt.</div>
@@ -136,7 +136,7 @@ a { color:#8fb6ff; }
 <script src="lib/reiche3d.js"></script>
 <script src="lib/monsters.js?v=2026102010"></script>
 <script src="lib/kit.js?v=2026102101"></script>
-<script src="lib/sternbrett.js?v=2026102102"></script>
+<script src="lib/sternbrett.js?v=2026102103"></script>
 <script>
 'use strict';
 // ================= Spielfeld =================
@@ -221,7 +221,7 @@ function genMoves(id){
   switch(pc.t){
     case'R':return slides(R,p);
     case'B':return slides(B,p);
-    case'U':return slides(U,p);
+    case'U':return uniq(slides(U,p));
     case'Q':return uniq(slides(ALL,p));
     case'K':return uniq(slides(ALL,p,1));
     case'N':return knights(id,p);
@@ -908,6 +908,7 @@ function tourStart(){const ui=document.getElementById('ui');if(ui.classList.cont
   {t:'⭐ Willkommen im Sternschach',x:'Der Sterntetraeder ist der räumliche Davidstern – von oben gesehen genau das Brett des Drei-Personen-Schachs. In jeder seiner 8 Spitzen liegen 4 × 4 × 4 gleiche Rhomboeder-Felder; die Spitzen treffen sich in der Mitte, dazwischen liegen sechs Zwischenräume. Jedes Heer steht in einer Spitze.',run:()=>viewReset()},
   {t:'Drehen, zoomen, verschieben',x:'Ziehen dreht den Stern, Mausrad oder zwei Finger zoomen, Rechtsklick-Ziehen verschiebt. Doppelklick zeigt wieder den ganzen Stern. Mit „🎯 Meine Armee“ schaust du von außen in deine Spitze.'},
   {t:'Figur antippen',x:'Grüne Kugeln: freie Felder. Rote Kugeln: Schlagen. Gerade Linien laufen von Feld zu Feld weiter und knicken in den Zwischenräumen – wie im Drei-Personen-Schach über die Mitte. Gegnerische Figuren zeigen ihre Züge hellblau und orange, nur zur Ansicht.'},
+  {t:'Das Wurmloch',x:'Im Mittelpunkt berühren sich die innersten Felder aller 8 Spitzen mit einer Ecke. Wer über diese Ecke zieht – Dame, Einhorn oder König –, kann in jede der 7 anderen Spitzen weiter, entlang ihrer Diagonale bis ganz nach außen. Achtung: Jeder König steht auf so einer Diagonale.'},
   {t:'Die Figuren',x:'König ganz außen in der Spitze, davor Dame und zwei Türme, dann Läufer, Springer und Einhörner, davor sieben Bauern. Die Bauern ziehen immer weiter weg von der eigenen Spitze und schlagen schräg nach vorn. In einer fremden Spitze werden sie zur Dame.'},
   {t:'Übersicht behalten',x:'Unter „Farben“ blendest du einzelne Heere blass oder aus, unter „Bereich“ greifst du eine Spitze oder einen Zwischenraum heraus. Figuren gibt es als Symbole, 3D-Schachfiguren, Sternfiguren oder Raumschiffe – auf Wunsch vor dem Weltall.',el:'#styleSel'},
   {t:'Gegner und Uhr',x:'Für jeden Platz: Mensch, online eingeladen oder Computer in vier Stärken (leicht, mittel, stark, Meister). Mit Zeit pro Zug oder pro Partie – oder ohne Uhr.',el:'#gSeatRows'},
