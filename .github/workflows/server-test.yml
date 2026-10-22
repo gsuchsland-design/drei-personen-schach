@@ -19,6 +19,10 @@ jobs:
           echo "$R"
           ID=$(echo "$R" | jq -r .id); KEY=$(echo "$R" | jq -r .key)
           curl -s -m 30 -X POST "https://$H/fern/new" -H 'Content-Type: application/json' -d '{"game":"raum","order":["B","R","L"],"seat":"B","name":"Servertest","ai":{"L":"medium"},"rules":{"end":"last","opts":"f.1.26.1.4.in.home.1"}}' | head -c 400; echo
+          UID=$(printf 'dps-test-%s' "$(date +%s)" | sha256sum | cut -c1-64)
+          curl -s -m 30 -X POST "https://$H/umzug/put" -H 'Content-Type: application/json' -d "{\"id\":\"$UID\",\"data\":\"dGVzdA==\"}"; echo
+          curl -s -m 30 -X POST "https://$H/umzug/get" -H 'Content-Type: application/json' -d "{\"id\":\"$UID\"}"; echo
+          curl -s -m 30 -X POST "https://$H/umzug/get" -H 'Content-Type: application/json' -d "{\"id\":\"$UID\"}"; echo
           curl -s -m 30 -X POST "https://$H/lobby/remove" -H 'Content-Type: application/json' -d "{\"id\":\"$ID\",\"key\":\"$KEY\"}"
           echo; } > tools/server-test-result.txt 2>&1
           cat tools/server-test-result.txt
