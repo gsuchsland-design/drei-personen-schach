@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon3-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16181d">
-<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102201"><\/script>');})();</script>
+<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102202"><\/script>');})();</script>
 <style>
 :root { --bg:#16181d; --panel:rgba(28,30,38,.94); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
 * { box-sizing:border-box; }
@@ -146,12 +146,12 @@ a { color:#8fb6ff; }
  </div>
 </div>
 <script src="lib/three.min.js"></script>
-<script src="lib/reiche3d.js"></script>
-<script src="lib/monsters.js?v=2026102201"></script>
-<script src="lib/varnav.js?v=2026102201"></script>
-<script src="lib/monvoice.js?v=2026102201"></script>
-<script src="lib/mondata.js?v=2026102201"></script>
-<script src="lib/kit.js?v=2026102201"></script>
+<script src="lib/reiche3d.js?v=2026102202"></script>
+<script src="lib/monsters.js?v=2026102202"></script>
+<script src="lib/varnav.js?v=2026102202"></script>
+<script src="lib/monvoice.js?v=2026102202"></script>
+<script src="lib/mondata.js?v=2026102202"></script>
+<script src="lib/kit.js?v=2026102202"></script>
 <script>
 'use strict';
 // ================= Spielfeld =================
@@ -275,6 +275,7 @@ scene.add(new THREE.HemisphereLight(0xffffff,0x2a2f45,0.85));{const dl=new THREE
 // Figurenstil: sym = Symbole, chess = 3D-Schachfiguren, star = Sternfiguren, ship = Raumschiffe; Weltall im Hintergrund
 let STYLE='sym',SPACE_ON=false;try{STYLE=localStorage.getItem('reiche.style')||'sym';SPACE_ON=localStorage.getItem('reiche.space')==='1';}catch(e){}
 function setStyle(v){STYLE=v;try{localStorage.setItem('reiche.style',v);}catch(e){}if(v==='ship'&&!SPACE_ON){setSpace(true);document.getElementById('spaceChk').checked=true;}render();}
+addEventListener('r3space',()=>{try{draw();}catch(e){}});   // Sternenhimmel geladen → neu zeichnen
 function setSpace(on){SPACE_ON=on;try{localStorage.setItem('reiche.space',on?'1':'0');}catch(e){}R3.space(scene,on);gridOp();draw();}
 const camera=new THREE.PerspectiveCamera(45,1,0.1,400);
 const C0=new THREE.Vector3(3.5,3.5,3.5);
@@ -1001,6 +1002,9 @@ function tourStart(){const ui=document.getElementById('ui');if(ui.classList.cont
   {t:'Übersicht behalten',x:'Unter „Farben“ blendest du einzelne Reiche blass oder aus, unter „Ebene“ greifst du eine einzelne Schicht heraus. Figuren gibt es als Symbole, 3D-Schachfiguren, Sternfiguren oder Raumschiffe – auf Wunsch vor dem Weltall.',el:'#styleSel'},
   {t:'Gegner und Uhr',x:'Für jeden Platz: Mensch, online eingeladen oder Computer in vier Stärken (leicht, mittel, stark, Meister). Mit Zeit pro Zug oder pro Partie – oder ohne Uhr.',el:'#gSeatRows'},
   {t:'Online: live oder als Fernpartie',x:'Live spielt ihr gleichzeitig mit Monitoren hinter jedem Reich, Kamera, Mikrofon, Chat und automatischer Übersetzung. Eine Fernpartie zieht jeder, wann er Zeit hat.'},
+  {t:"🏠 Die Startseite",x:"Über „🏠 Startseite“ oben in der Leiste kommst du zur Startseite mit allen vier Spielen. Dort gibt es drei Menüs: „Spiele“ startet ein Spiel oder zeigt die offenen Spiele, „Regeln“ führt zu den Regeln jedes Spiels, zur Strategie und zu den Computergegnern, „Über das Spiel“ erzählt die Geschichte dahinter. „▶ Jetzt spielen“ startet sofort, daneben stellst du die Sprache ein."},
+  {t:"📖 Die Regelseiten",x:"Jede Regelseite erklärt von oben nach unten das Brett, die Aufstellung, die Figuren und das Spielende. Über das Menü „Regeln“ wechselst du jederzeit zu einem anderen Spiel; mit dem grünen Knopf oben und unten startest du es."},
+  {t:"👆 Ausprobieren",x:"Bilder mit „👆 ▶“ kannst du antippen: Das Spiel öffnet sich mit genau dieser Stellung, und du darfst sofort ziehen – auch mit den Figuren der anderen. Die Leiste unten erklärt, was zu tun ist: „↺ Nochmal“ baut die Stellung neu auf, „📖 Zurück zu den Regeln“ bringt dich zurück, „▶ Richtige Partie“ beginnt ein echtes Spiel. Unter „Figuren“ wechselst du dort zwischen Symbolen, Schachfiguren, Sternfiguren und Raumschiffen."},
   {t:'Nach der Partie',x:'„🔬 Auswertung“ zeigt Fehler, Schlüsselmomente und eine psychologische Auswertung; auf Wunsch schreibt eine KI einen professionellen Bericht. Viel Spaß!'}]);}
 // ---------- Ausprobieren: von den Bildern der Regelseite aus (raum.html?try=…) ----------
 const camSet=(th,ph,r,t)=>{TGT.copy(t||C0);cam.th=th;cam.ph=ph;cam.r=r;draw();};
@@ -1014,7 +1018,10 @@ const TRY={
 };
 for(const t of['R','B','U','Q','K','N','W','H','V','A','C','M'])TRY['fig-'+t]={t:PNAMES[t]+(PDESC[t]?' ('+PDESC[t]+')':''),x:'Die Figur steht in der Würfelmitte, alle Zielfelder leuchten. Tippe ein grünes Feld an, um sie zu ziehen, und schau dir ihre Züge von dort an.',
   run:()=>{setup(0);put([3,3,3],t,'B');select([3,3,3]);camSet(0.75,1.0,27);}};
-function tryShow(k){const d=TRY[k];if(!d)return false;{const u=document.getElementById('ui');if(u&&!u.classList.contains('min')&&innerWidth<900)toggleUI();}d.run();KIT.tryBar(d,()=>tryShow(k),()=>{setup(2);viewReset();},'reiche-regeln.html');return true;}
+// Beim Ausprobieren von den Regelseiten aus: Raumschiffe vor dem Weltall, solange niemand selbst Figuren gewählt hat
+function tryStyle(){let saved=null;try{saved=localStorage.getItem('reiche.style');}catch(e){}
+  if(!saved&&STYLE!=='ship'){STYLE='ship';SPACE_ON=true;R3.space(scene,true);gridOp();document.getElementById('styleSel').value='ship';document.getElementById('spaceChk').checked=true;}}
+function tryShow(k){const d=TRY[k];if(!d)return false;tryStyle();{const u=document.getElementById('ui');if(u&&!u.classList.contains('min')&&innerWidth<900)toggleUI();}d.run();KIT.tryBar(d,()=>tryShow(k),()=>{setup(2);viewReset();},'reiche-regeln.html');return true;}
 buildPalette();gSeats();xUI();
 document.getElementById('styleSel').value=STYLE;document.getElementById('spaceChk').checked=SPACE_ON;R3.space(scene,SPACE_ON);
 const qs=new URLSearchParams(location.search);

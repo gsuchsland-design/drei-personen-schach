@@ -297,3 +297,5 @@ D["<b>Computergegner mit Charakter:</b> Die Computergegner heißen Blubbo, Grumb
 D["<b>Die Computergegner</b> sind 8 KI-Gegner mit eigenem Aussehen, eigener Stimme und eigenem Spielstil: Blubbo, Grumbo, Flammo, Zappo, Spuki, Kraki, Sonno und Fluffi. Im Startfenster wählst du für jeden Computerplatz, welcher Computergegner spielt. Sie freuen sich, ärgern sich, verhandeln und verbünden sich – und mit „🎤“ kannst du einfach mit ihnen sprechen."]="<b>电脑对手</b>是8个AI对手，各有自己的外形、声音和棋风：Blubbo, Grumbo, Flammo, Zappo, Spuki, Kraki, Sonno, Fluffi。在开始窗口中，你可以为每个电脑座位选择由哪个电脑对手来下。它们会高兴、生气、谈判和结盟——用“🎤”就能直接和它们说话。"
 
 U['Spiele']='游戏'
+
+D["Die Bilder zeigen jede Figur in der Mitte des leeren Würfels; die grünen Punkte sind die Felder, die sie erreichen kann. Oben links ist die Figur als Raumschiff zu sehen; Märchenfiguren tragen goldene Spitzen oder zusätzliche Flügel. Im Spiel wählst du unter „Figuren“ zwischen Symbolen, Schachfiguren, Sternfiguren und Raumschiffen."]="图中每枚棋子都位于空立方体的中央；绿点是它能到达的格子。左上角是这枚棋子的飞船造型；童话棋子带有金色尖角或额外的翅膀。在游戏中可在“棋子”里选择符号、国际象棋棋子、星形棋子或飞船。"
