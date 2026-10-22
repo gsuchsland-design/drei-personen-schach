@@ -2698,7 +2698,11 @@ let clock={B:0,G:0,R:0},moveLeft=0,flagged=new Set(),paused=false,setupOpen=fals
 let rotation=0; // Index in TURN_ORDER: dieser Spieler sitzt unten (-1 = ungedreht, intern für 3D)
 let showCoordRing=true;
 
-function initGame(){
+// Merkmale der Computergegner je Partie (nie Angaben über Menschen)
+let OPPLOG=[];
+function oppRec(){if(!window.GEGNER)return;try{const seats=TURN_ORDER.filter(p=>isAIPlayer(p)).map(p=>({p,monId:SEATMON[p],level:aiPlayers[p]}));
+  GEGNER.record(OPPLOG,seats,moveLog.length,typeof AIVOICE!=='undefined'&&AIVOICE);}catch(e){}}
+function initGame(){OPPLOG=[];
   replayExit();
   TALK=[];
   if(typeof diploReset==='function')diploReset();
@@ -4062,13 +4066,13 @@ function ser(v){return JSON.stringify(v,(k,x)=>x instanceof Set?{__set:[...x]}:x
 function deser(t){return JSON.parse(t,(k,x)=>x&&typeof x==='object'&&Array.isArray(x.__set)?new Set(x.__set):x);}
 function gameData(){
   replayExit();
-  return{v:1,saved:new Date().toISOString(),rules:RULES,talk:TALK,dlog:DIPLO.log,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
+  return{v:1,saved:new Date().toISOString(),rules:RULES,talk:TALK,dlog:DIPLO.log,oppLog:OPPLOG,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
     capturedBy,moveLog,history,tc,clock,timeUsed,flagged,moveLeft,aiPlayers,rotation,
     status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
 function applyGameData(d){
   replayExit();
-  TALK=d.talk||[];DIPLO.log=d.dlog||[];RULES=rulesOf(d.rules);
+  TALK=d.talk||[];DIPLO.log=d.dlog||[];RULES=rulesOf(d.rules);OPPLOG=d.oppLog||[];
   resetEmos();
   cancelAI();moveAnim=null;kicks=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
@@ -4086,7 +4090,7 @@ function applyGameData(d){
   const sb=document.getElementById('startBtn');sb.textContent=T('▶ Fortsetzen');sb.classList.add('show');
   updateStatus();renderClocks();resizeCanvas();
 }
-function autosave(){if(REPLAY||AB)return;if(FERN.on){fernAfterMove();return;}if(NET.on){hostSave();return;}try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
+function autosave(){if(REPLAY||AB)return;oppRec();if(FERN.on){fernAfterMove();return;}if(NET.on){hostSave();return;}try{if(moveLog.length)localStorage.setItem(SAVE_KEY,ser(gameData()));}catch(e){}}
 function resumeAutosave(){
   try{const t=localStorage.getItem(SAVE_KEY);if(t)applyGameData(deser(t));}
   catch(e){alert(T('Die letzte Partie konnte nicht geladen werden.'));}
@@ -4231,7 +4235,7 @@ function startFromSetup(){
   for(const p of TURN_ORDER)aiPlayers[p]=document.getElementById('pl'+p).value||null;
   document.getElementById('setupModal').classList.remove('show');setupOpen=false;
   waitingStart=true;
-  initGame();paused=true;cancelAI();
+  initGame();oppRec();paused=true;cancelAI();
   document.getElementById('startBtn').textContent=T('▶ Start');
   document.getElementById('startBtn').classList.add('show');
   updateStatus();renderClocks();resizeCanvas();
@@ -5931,6 +5935,7 @@ function anaRender(){
     h+=`<div class="anaCard" style="border-color:${PCOLOR[p]}"><b style="color:${PCOLOR[p]}">${esc(anaName(p))}</b>${isAIPlayer(p)?' 🤖':''}<ul>${lines.map(l=>`<li>${l}</li>`).join('')}</ul></div>`;
   }
   h+='</div>';
+  if(window.GEGNER){h+=GEGNER.html(OPPLOG,p=>T(PNAMES[p]),p=>PCOLOR[p]);}
   {const seen=new Set(),rows=[];
     for(const p of TURN_ORDER){if(isAIPlayer(p))continue;const k=oppKey(p);if(seen.has(k))continue;seen.add(k);
       const d=oppDescribe(k);if(d)rows.push(`<li><b style="color:${PCOLOR[p]}">${esc(k)}</b>: ${d.map(esc).join(' · ')}</li>`);}
@@ -6401,6 +6406,7 @@ try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage
 <script src="lib/varnav.js?v=2026102206"></script>
 <script src="lib/tourbg.js?v=2026102206"></script>
 <script src="lib/bias.js?v=2026102209"></script>
+<script src="lib/gegner.js?v=2026102210"></script>
 <script src="lib/selbst.js?v=2026102209"></script>
 <script src="lib/monvoice.js?v=2026102206"></script>
 <script src="lib/three.min.js"></script>
