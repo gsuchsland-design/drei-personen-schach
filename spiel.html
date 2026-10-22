@@ -819,8 +819,8 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   </div>
   <ol id="logList"></ol>
 </div>
-<script src="lib/mondata.js?v=2026102205"></script>
-<script src="lib/monsters.js?v=2026102205"></script>
+<script src="lib/mondata.js?v=2026102206"></script>
+<script src="lib/monsters.js?v=2026102206"></script>
 <script>
 // ---------- Sprachen: Auswahl wird gemerkt; die Sprachdatei wird vor dem Spiel geladen ----------
 const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Français','🇫🇷'],['es','Español','🇪🇸'],['it','Italiano','🇮🇹'],['pt','Português','🇵🇹'],
@@ -828,7 +828,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';try{document.documentElement.lang=window.LANG;}catch(e){}
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102205"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102205"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102206"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102206"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -6277,10 +6277,10 @@ const TOUR=[
   {el:'#rulesBtn',t:'Über die Mitte',x:"Das Besondere: Figuren ziehen über die Mitte in die Nachbarsektionen. 📖 öffnet die Regeln mit allen Einzelheiten; im Startfenster findest du das 🎯 Übungsbrett, auf dem du jede Figur ausprobierst."},
   {el:'#menuBtn',t:'Die Knopfleiste',x:'☰ Einstellungen · 3D-Ansicht · 🔊 Ton · ⛶ Vollbild · 👥 Mitspieler, Kamera und Übersetzung.'},
   {el:'#logBox',t:'Die Züge',x:'Hier stehen alle Züge. ↶ nimmt einen Zug zurück. Mit 📼 spielst du die Partie Zug für Zug nach und kannst die Zugliste teilen.'},
-  {t:"🏠 Die Startseite",x:"Über „Startseite“ ganz unten im Startfenster kommst du zur Startseite mit allen vier Spielen. Dort gibt es drei Menüs: „Spiele“ startet ein Spiel oder zeigt die offenen Spiele, „Regeln“ führt zu den Regeln jedes Spiels, zur Strategie und zu den Computergegnern, „Über das Spiel“ erzählt die Geschichte dahinter. „▶ Jetzt spielen“ startet sofort, daneben stellst du die Sprache ein."},
-  {t:"📖 Die Regelseiten",x:"Jede Regelseite erklärt von oben nach unten das Brett, die Aufstellung, die Figuren und das Spielende. Über das Menü „Regeln“ wechselst du jederzeit zu einem anderen Spiel; mit dem grünen Knopf oben und unten startest du es."},
-  {t:"👆 Ausprobieren",x:"Bilder mit „👆 ▶“ kannst du antippen: Das Übungsbrett öffnet sich mit genau dieser Stellung, und du kannst die Figur sofort ziehen. Mit „📖 Regeln lesen“ geht es zurück zu den ausführlichen Regeln."},
-  {t:'Los geht’s!',x:"Gleich öffnet sich das Startfenster. Oben setzt du eine angefangene Partie fort, darunter wählst du die Spielart und wo gespielt wird: hier gegen Computergegner, online mit Freunden (live, mit Bild und Ton) oder als Fernpartie, bei der jeder zieht, wann er Zeit hat. Die Einführung findest du jederzeit im Startfenster unter 🎓 Einführung."},
+  {bg:"home",t:"🏠 Die Startseite",x:"Über „Startseite“ ganz unten im Startfenster kommst du zur Startseite mit allen vier Spielen. Im Hintergrund siehst du sie. Dort gibt es drei Menüs: „Spiele“ startet kein Spiel, sondern gibt dir eine Übersicht über alle Spiele und ihre Regeln, dazu die offenen Spiele, „Regeln“ führt zu den Regeln jedes Spiels, zur Strategie und zu den Computergegnern, „Über das Spiel“ erzählt die Geschichte dahinter. „▶ Jetzt spielen“ startet sofort, daneben stellst du die Sprache ein."},
+  {bg:"rules",t:"📖 Die Regelseiten",x:"Jede Regelseite erklärt von oben nach unten das Brett, die Aufstellung, die Figuren und das Spielende. Über das Menü „Regeln“ wechselst du jederzeit zu einem anderen Spiel; mit dem grünen Knopf oben und unten startest du es."},
+  {bg:"try",t:"👆 Ausprobieren",x:"Bilder mit „👆 ▶“ kannst du antippen: Das Übungsbrett öffnet sich mit genau dieser Stellung, und du kannst die Figur sofort ziehen. Mit „📖 Regeln lesen“ geht es zurück zu den ausführlichen Regeln."},
+  {el:'#setupBox',setup:true,t:'Los geht’s!',x:"Gleich öffnet sich das Startfenster. Oben setzt du eine angefangene Partie fort, darunter wählst du die Spielart und wo gespielt wird: hier gegen Computergegner, online mit Freunden (live, mit Bild und Ton) oder als Fernpartie, bei der jeder zieht, wann er Zeit hat. Die Einführung findest du jederzeit im Startfenster unter 🎓 Einführung."},
 ];
 let tourI=0,tourDone=null;
 function tourSeen(){try{return localStorage.getItem('dreiSchach.tour')==='1';}catch(e){return false;}}
@@ -6290,8 +6290,13 @@ function tourStart(then){
   if(then){paused=true;cancelAI();}   // erster Start: die Uhr läuft noch nicht
   document.getElementById('tour').classList.add('show');tourShow();
 }
+let tourSetupShown=false;   // Startfenster nur als Vorschau hinter der Einführung geöffnet
+function tourSetupPeek(on){const m=document.getElementById('setupModal');
+  if(on&&!m.classList.contains('show')){m.classList.add('show');tourSetupShown=true;}
+  else if(!on&&tourSetupShown){m.classList.remove('show');tourSetupShown=false;}}
 function tourEnd(){
   try{localStorage.setItem('dreiSchach.tour','1');}catch(e){}
+  if(window.TourBg)TourBg.hide();tourSetupPeek(false);
   document.getElementById('tour').classList.remove('show');
   const f=tourDone;tourDone=null;if(f)f();
 }
@@ -6304,6 +6309,15 @@ function tourShow(){
   document.getElementById('tourBack').style.visibility=tourI?'visible':'hidden';
   document.getElementById('tourNext').textContent=tourI===TOUR.length-1?T('Los geht’s'):T('Weiter');
   document.getElementById('tourSkip').style.visibility=tourI===TOUR.length-1?'hidden':'visible';
+  tourSetupPeek(!!s.setup);
+  if(s.bg&&window.TourBg){                // Beispielseite im Hintergrund, Karte darunter
+    const a=TourBg.layout(card.offsetWidth,card.offsetHeight);
+    TourBg.show(s.bg,'regeln.html',a,599);
+    hole.style.cssText=`left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;`;
+    card.style.left=a.cx+'px';card.style.top=a.cy+'px';
+    return;
+  }
+  if(window.TourBg)TourBg.hide();
   const el=s.el&&document.querySelector(s.el);
   const r=el&&el.getClientRects().length?el.getBoundingClientRect():null;   // (offsetParent taugt nicht: feste Knöpfe haben keinen)
   const W=innerWidth,H=innerHeight;
@@ -6372,8 +6386,9 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
-<script src="lib/varnav.js?v=2026102205"></script>
-<script src="lib/monvoice.js?v=2026102205"></script>
+<script src="lib/varnav.js?v=2026102206"></script>
+<script src="lib/tourbg.js?v=2026102206"></script>
+<script src="lib/monvoice.js?v=2026102206"></script>
 <script src="lib/three.min.js"></script>
 <script>
 // ================= 3D-Ansicht (three.js) =================
