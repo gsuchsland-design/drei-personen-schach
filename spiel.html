@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><head>
+<html lang="de"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1e1e1e">
@@ -827,7 +827,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
   ['nl','Nederlands','🇳🇱'],['pl','Polski','🇵🇱'],['tr','Türkçe','🇹🇷'],['ru','Русский','🇷🇺'],['uk','Українська','🇺🇦'],['zh','中文','🇨🇳'],['ja','日本語','🇯🇵'],['ko','한국어','🇰🇷'],['th','ไทย','🇹🇭'],['ar','العربية','🇸🇦'],['is','Íslenska','🇮🇸'],['da','Dansk','🇩🇰']];
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
-window.LANG=LANG_SET||'de';
+window.LANG=LANG_SET||'de';try{document.documentElement.lang=window.LANG;}catch(e){}
 if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102205"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102205"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
