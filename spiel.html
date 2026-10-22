@@ -515,7 +515,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <hr>
     <button id="btnFit" onclick="if(window.V3&&V3.on)V3.view('cur');else{fitBoard();draw();}">⤢ Einpassen</button>
     <button id="btnRotate" onclick="rotateBoard()">↻ Brett drehen</button>
-    <button onclick="colOpen()" title="Spielerfarben selbst wählen">🎨 Farben</button>
+    <button onclick="colOpen()" title="Spielerfarben und Figurenstil selbst wählen – auch während der Partie">🎨 Farben &amp; Figuren</button>
     <button id="fullscreenBtn" onclick="toggleFullscreen()" title="Vollbild (Esc beendet)">⛶ Vollbild</button>
     <div id="info">Klick auf Figur → Züge · Zweiter Klick → Ziehen · Rad = Zoom · Ziehen = Bewegen · Doppelklick = Einpassen</div>
   </div></details>
@@ -760,11 +760,14 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <div id="anaBody"></div>
 </div></div>
 <div id="colModal" class="netModal" onclick="if(event.target===this)colClose()"><div class="netBox" style="border-color:#c58bff">
-  <h3>🎨 Farben</h3>
+  <h3>🎨 Farben und Figuren</h3>
   <p class="lbHint" style="margin-top:0">Wähle für jeden Spieler die Farbe, die du am besten unterscheiden kannst. Das gilt nur auf deinem Gerät. Markierungen für Züge, Schlagen und Schach passen sich automatisch an, damit sie sich immer von den Feldern abheben.</p>
   <div id="colRows"></div>
   <label><input type="checkbox" id="colAuto" onchange="colAuto(this.checked)"> Wunschfarben der Mitspieler übernehmen (ihre Wunschfarbe bleibt als Rand ihres Fensters sichtbar)</label>
   <label title="Zusätzliche Zeichen für die Spielerfarben: Blau ■, Grün ▲, Rot ●"><input type="checkbox" id="chkSym" onchange="setSym(this.checked)"> zusätzlich Zeichen ■ ▲ ● (z. B. bei Farbsehschwäche)</label>
+  <label style="display:block;margin:10px 0">♞ Figuren: <select id="pieceStyle" onchange="setPieceStyle(this.value)">
+    <option value="classic">Klassisch</option><option value="outline">Mit Rand (kontrastreich)</option>
+    <option value="hollow">Hell mit farbigem Umriss</option><option value="letter">Spielsteine mit Buchstaben</option></select></label>
   <button onclick="colClose()">Fertig</button>
 </div></div>
 <div id="abBar">
@@ -816,8 +819,8 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   </div>
   <ol id="logList"></ol>
 </div>
-<script src="lib/mondata.js?v=2026102202"></script>
-<script src="lib/monsters.js?v=2026102202"></script>
+<script src="lib/mondata.js?v=2026102203"></script>
+<script src="lib/monsters.js?v=2026102203"></script>
 <script>
 // ---------- Sprachen: Auswahl wird gemerkt; die Sprachdatei wird vor dem Spiel geladen ----------
 const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Français','🇫🇷'],['es','Español','🇪🇸'],['it','Italiano','🇮🇹'],['pt','Português','🇵🇹'],
@@ -825,7 +828,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102202"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102202"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102203"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102203"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -2484,12 +2487,39 @@ const PIECES={K:'♚\uFE0E',Q:'♛\uFE0E',R:'♜\uFE0E',B:'♝\uFE0E',N:'♞\uFE
 // So stimmt die Farbe auch dann, wenn ein Gerät die Zeichen als (schwarze) Emojis darstellt.
 const PIECE_FONT='"Noto Sans Symbols 2","Segoe UI Symbol","DejaVu Sans","Apple Symbols",serif';
 let SPRITES={};const SPR=96;
+// Figurenstil (nur auf diesem Gerät, jederzeit änderbar – auch in laufenden Partien):
+// classic = gefüllte Figur in Spielerfarbe · outline = dazu ein heller/dunkler Rand · hollow = helle Figur mit farbigem Umriss · letter = Spielstein mit Buchstabe
+const PIECES_HOLLOW={K:'♔\uFE0E',Q:'♕\uFE0E',R:'♖\uFE0E',B:'♗\uFE0E',N:'♘\uFE0E',P:'♙\uFE0E'};
+let PIECE_STYLE='classic';try{PIECE_STYLE=localStorage.getItem('dreiSchach.pieceStyle')||'classic';}catch(e){}
+function pieceLetter(p){const de={K:'K',Q:'D',R:'T',B:'L',N:'S',P:'B'};const lg=(typeof LANG_SET==='string'&&LANG_SET)||'de';return lg==='de'?de[p]:p;}
+function setPieceStyle(v){PIECE_STYLE=v;try{localStorage.setItem('dreiSchach.pieceStyle',v);}catch(e){}SPRITES={};
+  const sel=document.getElementById('pieceStyle');if(sel&&sel.value!==v)sel.value=v;
+  try{draw();}catch(e){}try{if(window.V3&&V3.on&&V3.restyle)V3.restyle();}catch(e){}try{if(typeof renderDemo==='function'&&demo&&demo.state)renderDemo();}catch(e){}}
+function tintGlyph(ch,col,size){const c=document.createElement('canvas');c.width=c.height=SPR*1.5;
+  const x=c.getContext('2d');x.font=`${size||SPR}px ${PIECE_FONT}`;x.textAlign='center';x.textBaseline='middle';
+  x.fillStyle='#000';x.fillText(ch,c.width/2,c.height/2);x.globalCompositeOperation='source-in';x.fillStyle=col;x.fillRect(0,0,c.width,c.height);return c;}
+function lumOf(h){const m=/^#?([0-9a-f]{6})$/i.exec(h||'');if(!m)return .5;const n=parseInt(m[1],16);return((n>>16&255)*.299+(n>>8&255)*.587+(n&255)*.114)/255;}
 function pieceSprite(piece,player){
-  const k=piece+player;if(SPRITES[k])return SPRITES[k];
-  const c=document.createElement('canvas');c.width=c.height=SPR*1.5;
-  const x=c.getContext('2d');x.font=`${SPR}px ${PIECE_FONT}`;x.textAlign='center';x.textBaseline='middle';
-  x.fillStyle='#000';x.fillText(PIECES[piece],c.width/2,c.height/2);
-  x.globalCompositeOperation='source-in';x.fillStyle=PCOLOR[player];x.fillRect(0,0,c.width,c.height);
+  const k=piece+player+PIECE_STYLE;if(SPRITES[k])return SPRITES[k];
+  const col=PCOLOR[player],W=SPR*1.5,dark=lumOf(col)>0.55;
+  let c;
+  if(PIECE_STYLE==='outline'){
+    c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d');
+    const rim=tintGlyph(PIECES[piece],dark?'#111':'#f4f4f4');
+    for(let a=0;a<16;a++){const r=SPR*0.12;x.drawImage(rim,Math.cos(a*Math.PI/8)*r,Math.sin(a*Math.PI/8)*r);}
+    x.drawImage(tintGlyph(PIECES[piece],col),0,0);
+  }else if(PIECE_STYLE==='hollow'){
+    c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d');
+    x.drawImage(tintGlyph(PIECES[piece],'#f2efe6'),0,0);       // helle Füllung
+    x.drawImage(tintGlyph(PIECES_HOLLOW[piece],col),0,0);      // farbiger Umriss
+    const t=tintGlyph(PIECES_HOLLOW[piece],col);x.globalAlpha=.6;x.drawImage(t,1.5,0);x.drawImage(t,-1.5,0);x.globalAlpha=1;
+  }else if(PIECE_STYLE==='letter'){
+    c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d'),r=SPR*0.5;
+    x.beginPath();x.arc(W/2,W/2,r,0,Math.PI*2);x.fillStyle=col;x.fill();
+    x.lineWidth=SPR*0.06;x.strokeStyle=dark?'#111':'#f4f4f4';x.stroke();
+    x.fillStyle=dark?'#111':'#fff';x.font=`bold ${Math.round(SPR*0.66)}px system-ui,sans-serif`;x.textAlign='center';x.textBaseline='middle';
+    x.fillText(pieceLetter(piece),W/2,W/2+SPR*0.03);
+  }else c=tintGlyph(PIECES[piece],col);
   return SPRITES[k]=c;
 }
 function drawPiece(ctx,piece,player,x,y,size){const w=size*1.5;ctx.drawImage(pieceSprite(piece,player),x-w/2,y-w/2,w,w);}
@@ -2580,7 +2610,7 @@ function colorsApply(){
   try{renderClocks();renderLog();updateCaptured();updateStatus();draw();}catch(e){}
 }
 // ---------- Farbdialog ----------
-function colOpen(){CW.p=null;colRender();document.getElementById('colModal').classList.add('show');}
+function colOpen(){CW.p=null;colRender();{const sel=document.getElementById('pieceStyle');if(sel)sel.value=PIECE_STYLE;}document.getElementById('colModal').classList.add('show');}
 function colClose(){document.getElementById('colModal').classList.remove('show');}
 function colRender(){
   const box=document.getElementById('colRows');let h='';
@@ -6340,8 +6370,8 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
-<script src="lib/varnav.js?v=2026102202"></script>
-<script src="lib/monvoice.js?v=2026102202"></script>
+<script src="lib/varnav.js?v=2026102203"></script>
+<script src="lib/monvoice.js?v=2026102203"></script>
 <script src="lib/three.min.js"></script>
 <script>
 // ================= 3D-Ansicht (three.js) =================
