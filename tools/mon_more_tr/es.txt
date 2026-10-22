@@ -1,0 +1,224 @@
+¡Blubb, te pillé!
+¡Jiji, qué fácil!
+¡Ñam, ñam!
+¡Eh, eso era mío!
+¡Qué malo!
+¡Blubbo está enfurruñado!
+¡Jaque! ¡Salto, salto!
+¡Mira – jaque!
+¡Jaque, jiji, jaque!
+¡Uy, qué estrecho!
+¡Mamá Blubb, ayuda!
+¡No tan cerca!
+{0}, ¿somos amigos? ¡Juntos contra {1}! 🤝
+¡Oye, {0}! Tengo una idea: los dos contra {1}, ¿sí? ¿Sí?
+¡Yupi, {0}! Los dos contra {1}, ¡será divertido!
+¡Claro, {0}! ¡{1} se va a enterar! 🤝
+No, {0}, hoy no. ¡Quizá luego!
+Mmm… no, {0}. Blubbo quiere saltar solo.
+¡Jiji, {0}, lo de la alianza era broma! 😇
+Perdona, {0}… ¡no pude evitarlo!
+¡{0}! ¡Creía que éramos amigos! 😢
+¡Se lo diré a todos, {0}! ¡Traidor!
+¡Pausa de alianza, {0}! ¡Fue bonito contigo!
+Se acabó lo nuestro, {0}. ¡Ahora cada uno salta solo!
+¡Espera y verás, {0}! ¡Viene Blubbo!
+¡Me las pagarás, {0}! ¡Blubb!
+{0}, ni siquiera miro hacia ti… ¡de verdad! 😇
+Soy muy bueno, {0}. ¡De verdad, de verdad!
+Fuera.
+Bien.
+Hmpf. Hecho.
+¡Grumbo se enfada!
+¡Hmmmpf!
+Eso se paga.
+Jaque. Corre.
+Rey. Tiembla.
+Jaque. Hmpf.
+Hmpf. Estrecho.
+Grumbo vigila.
+Mal. Muy mal.
+{0}. {1} es demasiado fuerte. ¿Juntos?
+{0}. Grumbo y tú. Contra {1}. ¿Sí?
+Bien, {0}. {1} cae.
+Trato hecho, {0}. Grumbo cumple su palabra. Contra {1}.
+No, {0}.
+Sin alianza, {0}. Grumbo no confía en nadie.
+Se acabó, {0}. Grumbo toma lo que necesita.
+Alianza rota, {0}. Hmpf.
+{0}. Eso fue un error. Uno grande.
+Grumbo confió en ti, {0}. Nunca más.
+Alianza terminada, {0}. Gracias.
+Basta, {0}. Cada uno lucha solo otra vez.
+{0}. Tú eres el siguiente.
+Grumbo lo devuelve todo, {0}.
+{0}. Grumbo te observa.
+Tranquilo, {0}. Por ahora.
+¡Quemado!
+¡A las brasas!
+¡Fsss – te pillé!
+¡Hiervo de rabia!
+¡Voy a explotar!
+¡Fuego y ceniza!
+¡Jaque! ¿Sientes el calor?
+¡Jaque – esto se calienta!
+¡Jaque en llamas!
+¡Agua! ¡Agua no, por favor!
+¡Mi fuego parpadea!
+¡Uf, qué peligro!
+¡{0}! ¡Prendamos fuego a {1}, juntos! 🔥
+Oye, {0}, ¿tú y yo contra {1}? ¡Serán fuegos artificiales!
+¡Síii, {0}! ¡{1} arde en llamas! 🔥
+¡Fuego a discreción, {0}! ¡Juntos contra {1}!
+¡Olvídalo, {0}! ¡Flammo arde solo!
+¡No, {0}! ¿Contigo? ¡Demasiado tibio!
+¡Sorpresa, {0}! ¡El fuego no tiene amigos! 🔥
+Lo siento, {0}, ¡estabas demasiado cerca del fuego!
+¡TRAICIÓN, {0}! ¡Ahora arde el aire! 🔥
+¡{0}! ¡Esto será un incendio!
+¡Alianza calcinada, {0}! ¡Ahora cada uno a lo suyo!
+¡Se apagó la llama, {0}! ¡Ahora lucho solo!
+¡{0}, ahora te vas a quemar! 🔥
+¡La venganza quema más que nada, {0}!
+{0}, ya tengo algo en el horno… 🔥
+¿Hueles el humo, {0}? Jeje.
+¡En el blanco, bzzt!
+¡Un rayo y adiós!
+¡Zas – hecho!
+¡Bajada de tensión!
+¡Bzzzt – rabia!
+¡Fusible fundido!
+¡Jaque! ¡Carga completa!
+¡Jaque de alta tensión!
+¡Zas – jaque!
+¡Peligro de cortocircuito!
+¡Aislante, rápido!
+¡Alarma de chispas!
+{0}, rápido, rápido: ¿los dos contra {1}? ¿Sí? ¡Bzzt!
+¡{0}! Circuito en paralelo contra {1}, ¿qué dices?
+¡Bzzt – conectado, {0}! ¡{1} recibe una descarga!
+¡Carga completa, {0}! ¡Juntos contra {1}!
+¡No, {0}, frecuencia equivocada!
+Demasiada tensión, {0}, ¡no, gracias!
+¡Desenchufado, {0}! ¡Bzzt!
+¡Uy, {0}, he invertido los polos!
+¡{0}! ¡Eso fue una descarga en el corazón!
+¡Cortocircuito en la confianza, {0}!
+¡Línea cortada, {0}! ¡Cada uno a lo suyo!
+Alianza descargada, {0}. ¡Adiós!
+¡{0}, van a saltar chispas!
+¡Alta tensión para ti, {0}!
+{0}, solo un pequeño chisporroteo… ¡nada más!
+Todo a tierra, {0}. Totalmente inofensivo. Bzzt.
+¡Uuh – desaparecido!
+Un alma más…
+¡A través de la pared – y mío!
+Uuuh… ¡esto no me gusta nada!
+¡Hago sonar mis cadenas!
+¡Grrr… furia fantasmal!
+¡Jaque… de la nada!
+¡Bu! ¡Jaque!
+¿Oyes las cadenas? ¡Jaque!
+Demasiada luz aquí…
+Uuuh… ¡me vuelvo transparente!
+¡Vete, luz!
+{0}… susurro… ¿asustamos juntos a {1}?
+¿Me oyes, {0}? Dos sombras contra {1}…
+Uuuh… bien, {0}. {1} no volverá a encontrar paz.
+Así sea, {0}. Juntos acecharemos a {1}.
+No, {0}… me quedo en la sombra.
+Uuuh… no, {0}. Los fantasmas no necesitan a nadie.
+Sorpresa, {0}… ¡buuuh!
+{0}, los fantasmas no cumplen promesas… jiji.
+{0}… apareceré en tus sueños.
+Esto te perseguirá, {0}…
+Nuestro pacto se disuelve en la niebla, {0}…
+Hora de desaparecer, {0}… cada uno a lo suyo.
+{0}… esta noche voy a por ti.
+Uuuh… {0}, no te he olvidado.
+{0}… ni siquiera estoy aquí… jiji.
+No temas, {0}. Solo una brisa.
+¡A las profundidades!
+¡Pegado con ventosas!
+¡Una captura como con red!
+¡Marejada!
+¡Eso me enturbia el agua!
+¡Alarma de tinta!
+¡Jaque! ¡Con mis ocho brazos!
+¡Jaque – sube la marea!
+¡Atrapado – jaque!
+¡Cuidado, tiburón!
+¡Aquí hay muy poca agua!
+¡Me retiro a mi cueva!
+{0}, una oferta desde el fondo: ¿juntos contra {1}?
+{0}, la corriente es favorable. ¿Los dos contra {1}?
+Aceptado, {0}. {1} quedará envuelto.
+Trato hecho, {0}. Juntos arrastraremos a {1} al fondo.
+No, {0}. La marea no es buena.
+Sin contrato, {0}. Kraki prefiere esperar.
+Marea baja en el contrato, {0}.
+{0}, no leíste la letra pequeña.
+¡{0}! El mar no olvida nada.
+¡Incumplimiento de contrato, {0}! Te arrepentirás en el fondo.
+Contrato cumplido, {0}. Cada uno nada solo otra vez.
+La marea se retira, {0}. Alianza terminada.
+Un brazo para ti, {0}. Y otro más.
+Las profundidades te atraparán, {0}.
+{0}, solo estoy flotando un poco…
+Tranquilo, {0}. Solo un poco de oleaje.
+¡Pillado al sol!
+¡Radiante!
+¡Qué día!
+¡Se acerca una tormenta!
+¿Quién ha pedido nubes?
+¡Ola de calor!
+¡Jaque! ¡Sol a tope!
+¡Jaque – jugada deslumbrante!
+¡Jaque con un rayo de sol!
+¡Nubes no, por favor!
+Me estoy poniendo sombrío…
+¡Sombras! ¡Puaj!
+{0}, brillemos juntos, ¡contra {1}! ☀️
+{0}, ¡eres mi rayo de sol! ¿Juntos contra {1}?
+¡Maravilloso, {0}! ¡{1} quedará deslumbrado! ☀️
+¡Clarísimo, {0}! ¡Juntos contra {1}!
+Gracias, {0}, pero hoy brillo solo.
+Muy amable, {0}, pero no.
+¡Uy, {0}, una pequeña insolación! 🌇
+Lo siento, {0}, ¡cambio de tiempo!
+¡{0}! ¡Y yo que te iluminaba tanto!
+¡Eso nos hace sombra, {0}!
+¡Gracias por el buen rato, {0}! Ahora cada uno a lo suyo ☀️
+Atardecer, {0}. Nuestra alianza ha terminado.
+¡{0}, ahora va a hacer mucho calor!
+¡Se acabó el descanso del calor, {0}!
+{0}, solo quiero lo mejor para ti… ☀️
+Todo soleado, {0}. No te preocupes.
+¡Pillado, dulce como el azúcar!
+¡Patita encima – mío!
+¡Jiji, victoria esponjosa!
+¡Fluffi ya no es nada dulce!
+¡Araño, araño!
+¡Grrr… rabia de peluche!
+¡Jaque! ¡Alarma de mimos!
+¡Jaque con virutas de azúcar!
+¡Jaquecito!
+¡No me despeines!
+¡Mi pelo, mi precioso pelo!
+¡Puaj, pegajoso!
+{0}, ¿nos acurrucamos juntos? ¡Contra {1}! 💕
+Psst, {0}… ¿los dos contra {1}? ¡Muy esponjoso!
+¡Jiji, encantada, {0}! ¡A {1} lo vamos a achuchar! 💕
+¡Pacto esponjoso, {0}! ¡Contra {1}!
+No, {0}. Fluffi prefiere acurrucarse sola.
+Ay no, {0}… hoy no.
+¡Uy, {0}! ¡Fluffi ha sacado las garras! 😇
+Jiji, {0}, ¿de verdad creías que solo soy dulce?
+¡Buaa, {0}! ¡Fluffi está toda despeinada del susto!
+¡Malo, {0}! ¡Fluffi no lo olvidará!
+¡Se acabaron los mimos, {0}!
+¡Gracias por los mimos, {0}! Ahora cada uno a lo suyo.
+¡{0}, se acabaron los mimos!
+¡Fluffi se va a poner muy pinchuda, {0}!
+{0}, Fluffi solo quiere jugar… 💕
+Soy totalmente inofensiva, {0}. ¡Mira qué esponjosa!

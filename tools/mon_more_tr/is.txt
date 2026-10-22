@@ -1,0 +1,224 @@
+Blubb, náði þér!
+Híhí, þetta var auðvelt!
+Namm, namm!
+Hei, þetta var minn!
+Þetta er ljótt!
+Blubbo er í fýlu núna!
+Skák! Hopp, hopp!
+Sjáðu – skák!
+Skák, híhí, skák!
+Úff, þröngt hérna!
+Mamma Blubb, hjálp!
+Ekki svona nálægt!
+{0}, eigum við að vera vinir? Saman gegn {1}! 🤝
+Hæ {0}! Ég er með hugmynd: við tvö gegn {1}, já? Já?
+Jibbí, {0}! Við tvö gegn {1} – þetta verður gaman!
+Auðvitað, {0}! {1} fær að kenna á því! 🤝
+Nei, {0}, ekki í dag. Kannski seinna!
+Hmm… nei, {0}. Blubbo vill hoppa einn.
+Híhí, {0}, bandalagið var bara grín! 😇
+Fyrirgefðu, {0}… ég gat ekki annað!
+{0}! Ég hélt að við værum vinir! 😢
+Ég segi öllum frá, {0}! Svikari!
+Hlé á bandalaginu, {0}! Það var gaman með þér!
+Þetta er búið hjá okkur, {0}. Héðan í frá hoppar hver fyrir sig!
+Bíddu bara, {0}! Blubbo kemur!
+Þú færð þetta til baka, {0}! Blubb!
+{0}, ég horfi ekki einu sinni í áttina til þín… í alvöru! 😇
+Ég er alveg góður, {0}. Í alvöru, í alvöru!
+Burt með hann.
+Gott.
+Hmpf. Búið.
+Grumbo er að reiðast!
+Hmmmpf!
+Þetta hefnir sín.
+Skák. Hlauptu.
+Kóngur. Vaggar.
+Skák. Hmpf.
+Hmpf. Þröngt.
+Grumbo fylgist með.
+Ekki gott. Alls ekki gott.
+{0}. {1} er of sterkur. Saman?
+{0}. Grumbo og þú. Gegn {1}. Já?
+Gott, {0}. {1} fellur.
+Samþykkt, {0}. Grumbo stendur við orð sín. Gegn {1}.
+Nei, {0}.
+Ekkert bandalag, {0}. Grumbo treystir engum.
+Búið, {0}. Grumbo tekur það sem hann þarf.
+Bandalagið rofið, {0}. Hmpf.
+{0}. Þetta voru mistök. Stór.
+Grumbo treysti þér, {0}. Aldrei aftur.
+Bandalagið búið, {0}. Takk.
+Nóg, {0}. Hver berst einn aftur.
+{0}. Þú ert næstur.
+Grumbo borgar allt til baka, {0}.
+{0}. Grumbo fylgist með þér.
+Rólegur, {0}. Í bili.
+Brunninn!
+Í glóðina!
+Fss – náði þér!
+Ég sýð af reiði!
+Ég er að springa!
+Eldur og aska!
+Skák! Finnurðu hitann?
+Skák – það hitnar!
+Logaskák!
+Vatn! Allt nema vatn!
+Eldurinn minn flöktir!
+Púff, hættulegt!
+{0}! Kveikjum í {1} – saman! 🔥
+Hæ {0}, þú og ég gegn {1}? Það verður flugeldasýning!
+Jááá, {0}! {1} fuðrar upp! 🔥
+Skjótið, {0}! Saman gegn {1}!
+Gleymdu því, {0}! Flammo brennur einn!
+Nei, {0}! Með þér? Of volgt!
+Óvænt, {0}! Eldur á enga vini! 🔥
+Fyrirgefðu, {0} – þú stóðst of nálægt eldinum!
+SVIK, {0}! Nú brennur loftið! 🔥
+{0}! Þetta verður stórbruni!
+Bandalagið brunnið, {0}! Nú hver fyrir sig!
+Loginn slokknaður, {0}! Héðan í frá berst ég einn!
+{0}, nú verður heitt hjá þér! 🔥
+Hefnd brennur heitast, {0}!
+{0}, ég er þegar með eitthvað í ofninum… 🔥
+Finnurðu reykinn, {0}? Hehe.
+Beint í mark, bzzt!
+Elding og farinn!
+Zapp – búið!
+Spennufall!
+Bzzzt – reiði!
+Öryggið sprungið!
+Skák! Full hleðsla!
+Skák með háspennu!
+Zapp – skák!
+Hætta á skammhlaupi!
+Einangrun, fljótt!
+Neistaviðvörun!
+{0}, fljótt, fljótt: við tvö gegn {1}? Já? Bzzt!
+{0}! Hliðtenging gegn {1} – hvað segirðu?
+Bzzt – tengt, {0}! {1} fær straum!
+Full hleðsla, {0}! Saman gegn {1}!
+Nei, {0}, röng tíðni!
+Of mikil spenna, {0} – nei takk!
+Klónni kippt úr, {0}! Bzzt!
+Úps, {0}, ég sneri pólunum við!
+{0}! Þetta var raflost beint í hjartað!
+Skammhlaup í traustinu, {0}!
+Línan rofin, {0}! Hver fyrir sig!
+Bandalagið afhlaðið, {0}. Bless!
+{0}, nú fljúga neistarnir!
+Háspenna fyrir þig, {0}!
+{0}, bara smá snark… ekkert meira!
+Allt jarðtengt, {0}. Algjörlega hættulaust. Bzzt.
+Húú – horfinn!
+Ein sál í viðbót…
+Í gegnum vegginn – og minn!
+Húúú… mér líkar þetta alls ekki!
+Ég hringla hlekkjunum!
+Grrr… draugareiði!
+Skák… upp úr engu!
+Bú! Skák!
+Heyrirðu hlekkina? Skák!
+Of bjart hérna…
+Húúú… ég er að verða gegnsær!
+Farðu, ljós!
+{0}… hvísl… eigum við að hræða {1} saman?
+Heyrirðu í mér, {0}? Tveir skuggar gegn {1}…
+Húúú… gott, {0}. {1} mun aldrei finna frið aftur.
+Svo verði það, {0}. Saman ásækjum við {1}.
+Nei, {0}… ég verð í skugganum.
+Húúú… nei, {0}. Draugar þurfa engan.
+Óvænt, {0}… húhúúú!
+{0}, draugar standa ekki við loforð… híhí.
+{0}… ég mun birtast í draumum þínum.
+Þetta mun ásækja þig, {0}…
+Sáttmáli okkar leysist upp í þoku, {0}…
+Kominn tími til að hverfa, {0}… hver fyrir sig.
+{0}… í nótt kem ég.
+Húúú… {0}, ég hef ekki gleymt þér.
+{0}… ég er ekki einu sinni hér… híhí.
+Ekki vera hræddur, {0}. Bara vindblær.
+Niður í djúpið!
+Sogaður fastur!
+Fengur eins og í neti!
+Sjávarflóð!
+Þetta gruggar vatnið mitt!
+Blekviðvörun!
+Skák! Með öllum átta örmunum!
+Skák – flóðið kemur!
+Klemmdur – skák!
+Varúð, hákarl!
+Of grunnt hérna!
+Ég dreg mig inn í hellinn minn!
+{0}, tilboð úr djúpinu: saman gegn {1}?
+{0}, straumurinn er hagstæður. Við tvö gegn {1}?
+Samþykkt, {0}. {1} verður vafinn inn.
+Samþykkt, {0}. Saman drögum við {1} niður í djúpið.
+Nei, {0}. Sjávarföllin eru röng.
+Enginn samningur, {0}. Kraki bíður frekar.
+Fjara í samningnum, {0}.
+{0}, þú last ekki smáa letrið.
+{0}! Hafið gleymir engu.
+Samningsrof, {0}! Þú munt sjá eftir því í djúpinu.
+Samningurinn uppfylltur, {0}. Hver syndir einn aftur.
+Fjaran kemur, {0}. Bandalaginu lokið.
+Einn armur handa þér, {0}. Og annar.
+Djúpið tekur þig, {0}.
+{0}, ég er bara að reka aðeins um…
+Rólegur, {0}. Bara smá alda.
+Gripinn í sólskini!
+Geislandi fallegt!
+Þvílíkur dagur!
+Þrumuveður á leiðinni!
+Hver pantaði skýin?
+Hitabylgja!
+Skák! Sól í ríkum mæli!
+Skák – glæsilega leikið!
+Skák með sólargeisla!
+Engin ský, takk!
+Mér verður alveg þungt…
+Skuggar! Oj!
+{0}, skínum saman – gegn {1}! ☀️
+{0}, þú ert sólskinið mitt! Saman gegn {1}?
+Dásamlegt, {0}! {1} verður blindaður! ☀️
+Augljóst, {0}! Saman gegn {1}!
+Takk, {0}, en í dag skín ég einn.
+Fallegt af þér, {0}, en nei.
+Úps, {0}, smá sólsting! 🌇
+Fyrirgefðu, {0} – veðrabreyting!
+{0}! Og ég sem skein svo á þig!
+Þetta varpar skugga á okkur, {0}!
+Takk fyrir góðan tíma, {0}! Nú hver fyrir sig ☀️
+Sólsetur, {0}. Bandalagi okkar er lokið.
+{0}, nú verður virkilega heitt!
+Hitafríinu er lokið, {0}!
+{0}, ég vil þér bara allt það besta… ☀️
+Allt sólríkt, {0}. Engar áhyggjur.
+Sykursætt gripið!
+Loppa á – mitt!
+Híhí, dúnmjúkur sigur!
+Fluffi er alls ekki sæt núna!
+Klór, klór!
+Grrr… bangsareiði!
+Skák! Knúsviðvörun!
+Skák með kökuskrauti!
+Skákí-skák!
+Ekki rugla í mér!
+Feldurinn minn, fallegi feldurinn minn!
+Oj, klístrað!
+{0}, eigum við að knúsast saman? Gegn {1}! 💕
+Uss, {0}… við tvö gegn {1}? Alveg dúnmjúkt!
+Híhí, með ánægju, {0}! {1} verður knúsaður mjúkur! 💕
+Dúnsáttmáli, {0}! Gegn {1}!
+Nei, {0}. Fluffi knúsar frekar sjálfa sig.
+Æ nei, {0}… ekki í dag.
+Úpsí, {0}! Fluffi sýndi klærnar! 😇
+Híhí, {0}, hélstu í alvöru að ég væri bara sæt?
+Búhú, {0}! Fluffi er öll úfin af hræðslu!
+Ljótt, {0}! Fluffi man þetta!
+Knúspásunni er lokið, {0}!
+Takk fyrir knúsin, {0}! Nú hver fyrir sig.
+{0}, nú verður ekkert meira knúsað!
+Fluffi verður bráðum alveg broddótt, {0}!
+{0}, Fluffi vill bara leika… 💕
+Ég er alveg hættulaus, {0}. Sjáðu hvað ég er mjúk!

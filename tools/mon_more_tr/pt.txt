@@ -1,0 +1,224 @@
+Blubb, apanhei-te!
+Hihi, foi fácil!
+Nham, nham!
+Ei, isso era meu!
+Que maldade!
+O Blubbo está amuado!
+Xeque! Salta, salta!
+Olha – xeque!
+Xeque, hihi, xeque!
+Ui, está apertado aqui!
+Mamã Blubb, socorro!
+Não tão perto!
+{0}, vamos ser amigos? Juntos contra {1}! 🤝
+Ei, {0}! Tenho uma ideia: nós dois contra {1}, sim? Sim?
+Eba, {0}! Nós dois contra {1} – vai ser divertido!
+Claro, {0}! {1} vai levar! 🤝
+Não, {0}, hoje não. Talvez depois!
+Hmm… não, {0}. O Blubbo quer saltar sozinho.
+Hihi, {0}, a aliança era só brincadeira! 😇
+Desculpa, {0}… não consegui evitar!
+{0}! Pensava que éramos amigos! 😢
+Vou contar a todos, {0}! Traidor!
+Pausa na aliança, {0}! Foi bom estar contigo!
+Acabou entre nós, {0}. A partir de agora cada um salta sozinho!
+Espera só, {0}! O Blubbo vem aí!
+Vais pagar por isso, {0}! Blubb!
+{0}, nem estou a olhar para o teu lado… a sério! 😇
+Sou muito bonzinho, {0}. A sério, a sério!
+Fora.
+Bom.
+Hmpf. Feito.
+O Grumbo está a ficar zangado!
+Hmmmpf!
+Isso vai custar caro.
+Xeque. Foge.
+Rei. Treme.
+Xeque. Hmpf.
+Hmpf. Apertado.
+O Grumbo está atento.
+Mau. Muito mau.
+{0}. {1} é forte demais. Juntos?
+{0}. Grumbo e tu. Contra {1}. Sim?
+Bom, {0}. {1} cai.
+Combinado, {0}. O Grumbo cumpre a palavra. Contra {1}.
+Não, {0}.
+Sem aliança, {0}. O Grumbo não confia em ninguém.
+Chega, {0}. O Grumbo leva o que precisa.
+Aliança quebrada, {0}. Hmpf.
+{0}. Isso foi um erro. Dos grandes.
+O Grumbo confiou em ti, {0}. Nunca mais.
+Aliança acabada, {0}. Obrigado.
+Chega, {0}. Cada um luta sozinho outra vez.
+{0}. És o próximo.
+O Grumbo devolve tudo, {0}.
+{0}. O Grumbo está a observar-te.
+Calma, {0}. Por agora.
+Queimado!
+Para as brasas!
+Fsss – apanhei-te!
+Estou a ferver de raiva!
+Vou explodir!
+Fogo e cinzas!
+Xeque! Sentes o calor?
+Xeque – está a aquecer!
+Xeque em chamas!
+Água! Tudo menos água!
+O meu fogo está a tremeluzir!
+Ufa, perigoso!
+{0}! Vamos incendiar {1} – juntos! 🔥
+Ei, {0}, tu e eu contra {1}? Vai ser fogo de artifício!
+Siiim, {0}! {1} vai arder! 🔥
+Fogo à vontade, {0}! Juntos contra {1}!
+Esquece, {0}! O Flammo arde sozinho!
+Não, {0}! Contigo? Morno demais!
+Surpresa, {0}! O fogo não tem amigos! 🔥
+Desculpa, {0} – estavas perto demais do fogo!
+TRAIÇÃO, {0}! Agora o ar está a arder! 🔥
+{0}! Isto vai ser um incêndio!
+Aliança em cinzas, {0}! Agora cada um por si!
+Chama apagada, {0}! A partir de agora luto sozinho!
+{0}, vai ficar quente para ti! 🔥
+A vingança queima mais do que tudo, {0}!
+{0}, já tenho uma coisa no forno… 🔥
+Sentes o fumo, {0}? Hehe.
+Em cheio, bzzt!
+Um raio e já está!
+Zás – feito!
+Queda de tensão!
+Bzzzt – raiva!
+Fusível queimado!
+Xeque! Carga total!
+Xeque de alta tensão!
+Zás – xeque!
+Perigo de curto-circuito!
+Isolamento, depressa!
+Alarme de faíscas!
+{0}, depressa, depressa: nós dois contra {1}? Sim? Bzzt!
+{0}! Circuito em paralelo contra {1} – que dizes?
+Bzzt – ligado, {0}! {1} leva um choque!
+Carga total, {0}! Juntos contra {1}!
+Não, {0}, frequência errada!
+Tensão demais, {0} – não, obrigado!
+Ficha desligada, {0}! Bzzt!
+Ups, {0}, inverti os polos!
+{0}! Isso foi um choque no coração!
+Curto-circuito na confiança, {0}!
+Linha cortada, {0}! Cada um por si!
+Aliança descarregada, {0}. Adeus!
+{0}, vão saltar faíscas!
+Alta tensão para ti, {0}!
+{0}, só um pequeno estalido… nada mais!
+Tudo ligado à terra, {0}. Totalmente inofensivo. Bzzt.
+Uuh – desapareci!
+Mais uma alma…
+Através da parede – e é meu!
+Uuuh… não gosto nada disto!
+Estou a abanar as correntes!
+Grrr… raiva fantasma!
+Xeque… vindo do nada!
+Bu! Xeque!
+Ouves as correntes? Xeque!
+Demasiada luz aqui…
+Uuuh… estou a ficar transparente!
+Vai-te embora, luz!
+{0}… sussurro… assustamos {1} juntos?
+Ouves-me, {0}? Duas sombras contra {1}…
+Uuuh… está bem, {0}. {1} não terá mais paz.
+Assim seja, {0}. Juntos vamos assombrar {1}.
+Não, {0}… fico nas sombras.
+Uuuh… não, {0}. Os fantasmas não precisam de ninguém.
+Surpresa, {0}… buuuh!
+{0}, os fantasmas não cumprem promessas… hihi.
+{0}… vou aparecer nos teus sonhos.
+Isto vai assombrar-te, {0}…
+O nosso pacto dissolve-se na névoa, {0}…
+Hora de desaparecer, {0}… cada um por si.
+{0}… esta noite vou ter contigo.
+Uuuh… {0}, não te esqueci.
+{0}… nem estou aqui… hihi.
+Não tenhas medo, {0}. Só uma brisa.
+Para as profundezas!
+Agarrado com ventosas!
+Uma captura como com rede!
+Maré alta!
+Isso turva-me a água!
+Alarme de tinta!
+Xeque! Com os oito braços!
+Xeque – a maré está a subir!
+Encurralado – xeque!
+Cuidado, tubarão!
+Pouca água aqui!
+Vou recolher-me à minha gruta!
+{0}, uma oferta das profundezas: juntos contra {1}?
+{0}, a corrente é favorável. Nós dois contra {1}?
+Aceite, {0}. {1} vai ser enrolado.
+Combinado, {0}. Juntos vamos arrastar {1} para o fundo.
+Não, {0}. A maré não está boa.
+Sem contrato, {0}. O Kraki prefere esperar.
+Maré baixa no contrato, {0}.
+{0}, não leste as letras pequenas.
+{0}! O mar não esquece nada.
+Quebra de contrato, {0}! Vais arrepender-te nas profundezas.
+Contrato cumprido, {0}. Cada um nada sozinho outra vez.
+A maré está a recuar, {0}. Aliança terminada.
+Um braço para ti, {0}. E mais outro.
+As profundezas vão levar-te, {0}.
+{0}, só estou a andar um pouco à deriva…
+Calma, {0}. Só um pouco de ondulação.
+Apanhado ao sol!
+Radiante!
+Que dia!
+Vem aí uma trovoada!
+Quem encomendou as nuvens?
+Onda de calor!
+Xeque! Sol à farta!
+Xeque – jogada deslumbrante!
+Xeque com um raio de sol!
+Nuvens não, por favor!
+Estou a ficar sombrio…
+Sombras! Eca!
+{0}, vamos brilhar juntos – contra {1}! ☀️
+{0}, és o meu raio de sol! Juntos contra {1}?
+Maravilhoso, {0}! {1} vai ficar ofuscado! ☀️
+Claríssimo, {0}! Juntos contra {1}!
+Obrigado, {0}, mas hoje brilho sozinho.
+Muito querido, {0}, mas não.
+Ups, {0}, uma pequena insolação! 🌇
+Desculpa, {0} – mudança de tempo!
+{0}! E eu que te iluminei tanto!
+Isso lança uma sombra sobre nós, {0}!
+Obrigado pelo bom momento, {0}! Agora cada um por si ☀️
+Pôr do sol, {0}. A nossa aliança acabou.
+{0}, vai ficar mesmo quente!
+Acabou a pausa do calor, {0}!
+{0}, só quero o teu bem… ☀️
+Tudo ensolarado, {0}. Não te preocupes.
+Apanhado, doce como açúcar!
+Patinha em cima – é meu!
+Hihi, vitória fofinha!
+A Fluffi já não está nada doce!
+Arranha, arranha!
+Grrr… raiva de peluche!
+Xeque! Alarme de mimos!
+Xeque com granulado!
+Xequezinho!
+Não me despenteies!
+O meu pelo, o meu lindo pelo!
+Eca, pegajoso!
+{0}, vamos fazer mimos juntos? Contra {1}! 💕
+Psst, {0}… nós dois contra {1}? Tudo fofinho!
+Hihi, com prazer, {0}! {1} vai levar mimos à força! 💕
+Pacto fofinho, {0}! Contra {1}!
+Não, {0}. A Fluffi prefere fazer mimos a si própria.
+Ai não, {0}… hoje não.
+Ups, {0}! A Fluffi mostrou as garras! 😇
+Hihi, {0}, achavas mesmo que eu era só doce?
+Buá, {0}! A Fluffi está toda despenteada do susto!
+Mau, {0}! A Fluffi não vai esquecer!
+Acabaram os mimos, {0}!
+Obrigada pelos mimos, {0}! Agora cada um por si.
+{0}, acabaram-se os mimos!
+A Fluffi vai ficar toda espinhosa, {0}!
+{0}, a Fluffi só quer brincar… 💕
+Sou totalmente inofensiva, {0}. Olha como sou fofinha!

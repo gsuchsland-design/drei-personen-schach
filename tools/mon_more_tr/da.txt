@@ -1,0 +1,224 @@
+Blubb, fanget!
+Hihi, det var nemt!
+Mums, mums!
+Hey, det var min!
+Hvor er det ondt!
+Blubbo surmuler nu!
+Skak! Hop, hop!
+Se – skak!
+Skak, hihi, skak!
+Uha, her er trangt!
+Mor Blubb, hjælp!
+Ikke så tæt på!
+{0}, skal vi være venner? Sammen mod {1}! 🤝
+Hej {0}! Jeg har en idé: vi to mod {1}, ja? Ja?
+Hurra, {0}! Vi to mod {1} – det bliver sjovt!
+Selvfølgelig, {0}! {1} får sin sag for! 🤝
+Nej, {0}, ikke i dag. Måske senere!
+Hmm… nej, {0}. Blubbo vil hoppe alene.
+Hihi, {0}, alliancen var bare for sjov! 😇
+Undskyld, {0}… jeg kunne ikke lade være!
+{0}! Jeg troede, vi var venner! 😢
+Det siger jeg til alle, {0}! Forræder!
+Alliancepause, {0}! Det var hyggeligt med dig!
+Det er slut med os, {0}. Fra nu af hopper hver for sig!
+Bare vent, {0}! Blubbo kommer!
+Det får du igen, {0}! Blubb!
+{0}, jeg kigger ikke engang i din retning… ærligt! 😇
+Jeg er helt sød, {0}. Virkelig, virkelig!
+Væk med den.
+Godt.
+Hmpf. Klaret.
+Grumbo bliver vred!
+Hmmmpf!
+Det skal du få betalt.
+Skak. Løb.
+Konge. Vakler.
+Skak. Hmpf.
+Hmpf. Trangt.
+Grumbo holder øje.
+Ikke godt. Slet ikke godt.
+{0}. {1} er for stærk. Sammen?
+{0}. Grumbo og dig. Mod {1}. Ja?
+Godt, {0}. {1} falder.
+Aftale, {0}. Grumbo holder ord. Mod {1}.
+Nej, {0}.
+Ingen alliance, {0}. Grumbo stoler ikke på nogen.
+Slut, {0}. Grumbo tager, hvad han har brug for.
+Alliance brudt, {0}. Hmpf.
+{0}. Det var en fejl. En stor en.
+Grumbo stolede på dig, {0}. Aldrig igen.
+Alliance slut, {0}. Tak.
+Nok, {0}. Hver kæmper alene igen.
+{0}. Du er den næste.
+Grumbo betaler alt tilbage, {0}.
+{0}. Grumbo holder øje med dig.
+Rolig, {0}. Indtil videre.
+Brændt!
+Ind i gløderne!
+Fnys – fanget!
+Jeg koger af raseri!
+Jeg eksploderer snart!
+Ild og aske!
+Skak! Kan du mærke varmen?
+Skak – det bliver hedt!
+Flammeskak!
+Vand! Alt andet end vand!
+Min ild flakker!
+Pyh, farligt!
+{0}! Lad os sætte ild til {1} – sammen! 🔥
+Hej {0}, dig og mig mod {1}? Det bliver fyrværkeri!
+Jaaa, {0}! {1} går op i flammer! 🔥
+Fyr løs, {0}! Sammen mod {1}!
+Glem det, {0}! Flammo brænder alene!
+Næ, {0}! Med dig? Alt for lunken!
+Overraskelse, {0}! Ild har ingen venner! 🔥
+Undskyld, {0} – du stod for tæt på ilden!
+FORRÆDERI, {0}! Nu brænder luften! 🔥
+{0}! Det bliver en storbrand!
+Alliancen er brændt ud, {0}! Nu hver for sig!
+Flammen er slukket, {0}! Fra nu af kæmper jeg alene!
+{0}, nu bliver det varmt for dig! 🔥
+Hævn brænder hedest, {0}!
+{0}, jeg har allerede noget i ovnen… 🔥
+Lugter du røgen, {0}? Hehe.
+Fuldtræffer, bzzt!
+Lyn og væk!
+Zap – klaret!
+Spændingsfald!
+Bzzzt – raseri!
+Sikringen er sprunget!
+Skak! Fuld opladning!
+Skak med højspænding!
+Zap – skak!
+Fare for kortslutning!
+Isolering, hurtigt!
+Gnistalarm!
+{0}, hurtigt, hurtigt: vi to mod {1}? Ja? Bzzt!
+{0}! Parallelkobling mod {1} – hvad siger du?
+Bzzt – tilsluttet, {0}! {1} får stød!
+Fuld opladning, {0}! Sammen mod {1}!
+Næ, {0}, forkert frekvens!
+For meget spænding, {0} – nej tak!
+Stikket trukket ud, {0}! Bzzt!
+Ups, {0}, jeg har byttet om på polerne!
+{0}! Det var et stød lige i hjertet!
+Kortslutning i tilliden, {0}!
+Forbindelsen afbrudt, {0}! Hver for sig!
+Alliancen er afladet, {0}. Farvel!
+{0}, nu flyver gnisterne!
+Højspænding til dig, {0}!
+{0}, bare en lille knitren… intet andet!
+Alt er jordet, {0}. Helt ufarligt. Bzzt.
+Huu – forsvundet!
+Endnu en sjæl…
+Gennem væggen – og min!
+Huuu… det bryder jeg mig slet ikke om!
+Jeg rasler med lænkerne!
+Grrr… spøgelsesraseri!
+Skak… ud af ingenting!
+Bøh! Skak!
+Hører du lænkerne? Skak!
+For lyst her…
+Huuu… jeg bliver gennemsigtig!
+Gå væk, lys!
+{0}… hvisker… skal vi skræmme {1} sammen?
+Hører du mig, {0}? To skygger mod {1}…
+Huuu… godt, {0}. {1} vil aldrig mere finde ro.
+Så skal det være, {0}. Sammen hjemsøger vi {1}.
+Nej, {0}… jeg bliver i skyggen.
+Huuu… nej, {0}. Spøgelser har ikke brug for nogen.
+Overraskelse, {0}… huhuuu!
+{0}, spøgelser holder ikke løfter… hihi.
+{0}… jeg vil vise mig i dine drømme.
+Det vil hjemsøge dig, {0}…
+Vores pagt opløses i tåge, {0}…
+Tid til at forsvinde, {0}… hver for sig.
+{0}… i nat kommer jeg.
+Huuu… {0}, jeg har ikke glemt dig.
+{0}… jeg er der slet ikke… hihi.
+Bare rolig, {0}. Bare et vindpust.
+Ned i dybet!
+Suget fast!
+En fangst som i et net!
+Stormflod!
+Det gør mit vand grumset!
+Blækalarm!
+Skak! Med alle otte arme!
+Skak – floden kommer!
+Klemt inde – skak!
+Pas på, haj!
+For lavvandet her!
+Jeg trækker mig tilbage til min hule!
+{0}, et tilbud fra dybet: sammen mod {1}?
+{0}, strømmen er gunstig. Vi to mod {1}?
+Accepteret, {0}. {1} bliver viklet ind.
+Aftale, {0}. Sammen trækker vi {1} ned i dybet.
+Nej, {0}. Tidevandet er forkert.
+Ingen kontrakt, {0}. Kraki venter hellere.
+Ebbe i kontrakten, {0}.
+{0}, du læste ikke det med småt.
+{0}! Havet glemmer intet.
+Kontraktbrud, {0}! Det vil du fortryde i dybet.
+Kontrakten er opfyldt, {0}. Hver svømmer alene igen.
+Tidevandet trækker sig tilbage, {0}. Alliancen er slut.
+En arm til dig, {0}. Og en til.
+Dybet tager dig, {0}.
+{0}, jeg driver bare lidt rundt…
+Rolig, {0}. Bare lidt søgang.
+Fanget i solskinnet!
+Strålende smukt!
+Sikken en dag!
+Der er tordenvejr på vej!
+Hvem har bestilt skyerne?
+Hedebølge!
+Skak! Masser af sol!
+Skak – blændende spillet!
+Skak med en solstråle!
+Ingen skyer, tak!
+Jeg bliver helt dyster…
+Skygger! Føj!
+{0}, lad os stråle sammen – mod {1}! ☀️
+{0}, du er mit solskin! Sammen mod {1}?
+Vidunderligt, {0}! {1} bliver blændet! ☀️
+Soleklart, {0}! Sammen mod {1}!
+Tak, {0}, men i dag skinner jeg solo.
+Sødt af dig, {0}, men nej.
+Ups, {0}, et lille solstik! 🌇
+Undskyld, {0} – vejrskifte!
+{0}! Og jeg strålede så meget på dig!
+Det kaster en skygge over os, {0}!
+Tak for den dejlige tid, {0}! Nu hver for sig ☀️
+Solnedgang, {0}. Vores alliance er slut.
+{0}, nu bliver det rigtig varmt!
+Hedeferien er slut, {0}!
+{0}, jeg vil dig kun det bedste… ☀️
+Alt er solrigt, {0}. Bare rolig.
+Sukkersødt fanget!
+Pote på – min!
+Hihi, en fluffy sejr!
+Fluffi er slet ikke sød nu!
+Krads, krads!
+Grrr… plys-raseri!
+Skak! Kramme-alarm!
+Skak med krymmel!
+Skakke-skak!
+Lad være med at pjuske mig!
+Min pels, min smukke pels!
+Føj, klistret!
+{0}, skal vi kramme sammen? Mod {1}! 💕
+Psst, {0}… vi to mod {1}? Helt fluffy!
+Hihi, gerne, {0}! {1} bliver krammet blødt! 💕
+Fnugpagt, {0}! Mod {1}!
+Næ, {0}. Fluffi krammer hellere sig selv.
+Åh nej, {0}… ikke i dag.
+Ups, {0}! Fluffi har vist kløerne! 😇
+Hihi, {0}, troede du virkelig, at jeg kun er sød?
+Buhu, {0}! Fluffi er helt pjusket af forskrækkelse!
+Ondt, {0}! Det husker Fluffi!
+Krammepausen er slut, {0}!
+Tak for krammene, {0}! Nu hver for sig.
+{0}, nu bliver der ikke krammet mere!
+Fluffi bliver snart helt stikkende, {0}!
+{0}, Fluffi vil bare lege… 💕
+Jeg er helt ufarlig, {0}. Se, hvor fluffy!

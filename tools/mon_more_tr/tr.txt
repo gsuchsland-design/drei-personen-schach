@@ -1,0 +1,224 @@
+Blubb, yakaladım!
+Hihi, kolaydı!
+Hım hım, nefis!
+Hey, o benimdi!
+Bu çok kötü!
+Blubbo şimdi küstü!
+Şah! Hop, hop!
+Bak – şah!
+Şah, hihi, şah!
+Ay, burası dar!
+Anne Blubb, yardım et!
+Bu kadar yakın değil!
+{0}, arkadaş olalım mı? {1} karşısında birlikte! 🤝
+Hey {0}! Bir fikrim var: ikimiz {1} karşısında, olur mu? Olur mu?
+Yaşasın, {0}! İkimiz {1} karşısında – çok eğlenceli olacak!
+Tabii, {0}! {1} bunu hak etti! 🤝
+Hayır, {0}, bugün değil. Belki sonra!
+Hmm… hayır, {0}. Blubbo tek başına zıplamak istiyor.
+Hihi, {0}, ittifak sadece şakaydı! 😇
+Kusura bakma, {0}… kendimi tutamadım!
+{0}! Arkadaş olduğumuzu sanıyordum! 😢
+Herkese söyleyeceğim, {0}! Hain!
+İttifaka ara, {0}! Seninle güzeldi!
+Bizimki bitti, {0}. Artık herkes tek başına zıplıyor!
+Sen bekle, {0}! Blubbo geliyor!
+Bunu geri alacaksın, {0}! Blubb!
+{0}, senin tarafına bakmıyorum bile… gerçekten! 😇
+Çok uslu duruyorum, {0}. Gerçekten, gerçekten!
+Defol.
+İyi.
+Hmpf. Bitti.
+Grumbo sinirleniyor!
+Hmmmpf!
+Bunun bedeli ödenecek.
+Şah. Kaç.
+Kral. Sallanıyor.
+Şah. Hmpf.
+Hmpf. Dar.
+Grumbo dikkat ediyor.
+İyi değil. Hiç iyi değil.
+{0}. {1} çok güçlü. Birlikte mi?
+{0}. Grumbo ve sen. {1} karşısında. Olur mu?
+İyi, {0}. {1} düşüyor.
+Anlaştık, {0}. Grumbo sözünü tutar. {1} karşısında.
+Hayır, {0}.
+İttifak yok, {0}. Grumbo kimseye güvenmez.
+Yeter, {0}. Grumbo ihtiyacı olanı alır.
+İttifak bozuldu, {0}. Hmpf.
+{0}. Bu bir hataydı. Büyük bir hata.
+Grumbo sana güvendi, {0}. Bir daha asla.
+İttifak bitti, {0}. Teşekkürler.
+Yeter, {0}. Herkes yine tek başına savaşıyor.
+{0}. Sıradaki sensin.
+Grumbo her şeyin karşılığını verir, {0}.
+{0}. Grumbo seni izliyor.
+Sakin ol, {0}. Şimdilik.
+Yandı!
+Közün içine!
+Fıss – yakaladım!
+Öfkeden kaynıyorum!
+Patlamak üzereyim!
+Ateş ve kül!
+Şah! Sıcaklığı hissediyor musun?
+Şah – ortalık ısınıyor!
+Alevli şah!
+Su! Su olmasın!
+Ateşim titriyor!
+Of, tehlikeli!
+{0}! {1}'i birlikte ateşe verelim! 🔥
+Hey {0}, sen ve ben {1} karşısında? Havai fişek gibi olacak!
+Eveeet, {0}! {1} alevler içinde! 🔥
+Ateş serbest, {0}! {1} karşısında birlikte!
+Unut gitsin, {0}! Flammo tek başına yanar!
+Hayır, {0}! Seninle mi? Fazla ılık!
+Sürpriz, {0}! Ateşin dostu olmaz! 🔥
+Kusura bakma, {0} – ateşe fazla yakındın!
+İHANET, {0}! Şimdi hava yanıyor! 🔥
+{0}! Bu bir yangın olacak!
+İttifak yanıp kül oldu, {0}! Artık herkes kendi başına!
+Alev söndü, {0}! Artık tek başıma savaşıyorum!
+{0}, şimdi senin için ortalık ısınacak! 🔥
+İntikam en çok yakar, {0}!
+{0}, fırında çoktan bir şeyim var… 🔥
+Dumanı kokluyor musun, {0}? Hehe.
+Tam isabet, bzzt!
+Şimşek ve gitti!
+Zırt – tamam!
+Gerilim düştü!
+Bzzzt – öfke!
+Sigorta attı!
+Şah! Tam şarj!
+Yüksek gerilimli şah!
+Zırt – şah!
+Kısa devre tehlikesi!
+Yalıtım, çabuk!
+Kıvılcım alarmı!
+{0}, çabuk, çabuk: ikimiz {1} karşısında? Olur mu? Bzzt!
+{0}! {1} karşısında paralel bağlantı – ne dersin?
+Bzzt – bağlandı, {0}! {1} çarpılacak!
+Tam şarj, {0}! {1} karşısında birlikte!
+Hayır, {0}, yanlış frekans!
+Fazla gerilim, {0} – hayır, sağ ol!
+Fiş çekildi, {0}! Bzzt!
+Hoppala, {0}, kutupları ters çevirdim!
+{0}! Bu kalbime elektrik çarpması gibiydi!
+Güvende kısa devre, {0}!
+Hat kesildi, {0}! Herkes kendi başına!
+İttifakın şarjı bitti, {0}. Hoşça kal!
+{0}, şimdi kıvılcımlar uçuşacak!
+Senin için yüksek gerilim, {0}!
+{0}, sadece küçük bir çıtırtı… başka bir şey değil!
+Her şey topraklı, {0}. Tamamen zararsız. Bzzt.
+Huu – kayboldu!
+Bir ruh daha…
+Duvarın içinden – ve benim!
+Huuu… bu hiç hoşuma gitmedi!
+Zincirlerimi şıkırdatıyorum!
+Grrr… hayalet öfkesi!
+Şah… hiç yoktan!
+Böö! Şah!
+Zincirleri duyuyor musun? Şah!
+Burası çok aydınlık…
+Huuu… şeffaflaşıyorum!
+Git buradan, ışık!
+{0}… fısıltı… {1}'i birlikte korkutalım mı?
+Beni duyuyor musun, {0}? {1} karşısında iki gölge…
+Huuu… peki, {0}. {1} bir daha huzur bulamayacak.
+Öyle olsun, {0}. {1}'in başına birlikte musallat olacağız.
+Hayır, {0}… gölgede kalacağım.
+Huuu… hayır, {0}. Hayaletlerin kimseye ihtiyacı yok.
+Sürpriz, {0}… huhuuu!
+{0}, hayaletler söz tutmaz… hihi.
+{0}… rüyalarında görüneceğim.
+Bu peşini bırakmayacak, {0}…
+Anlaşmamız sise karışıyor, {0}…
+Kaybolma zamanı, {0}… herkes kendi başına.
+{0}… bu gece geliyorum.
+Huuu… {0}, seni unutmadım.
+{0}… burada bile değilim… hihi.
+Korkma, {0}. Sadece bir esinti.
+Derinliklere!
+Vantuzla yapıştım!
+Ağla tutulmuş gibi bir av!
+Fırtına dalgası!
+Bu suyumu bulandırıyor!
+Mürekkep alarmı!
+Şah! Sekiz kolumun hepsiyle!
+Şah – sular yükseliyor!
+Sıkıştırıldı – şah!
+Dikkat, köpek balığı!
+Burası çok sığ!
+Mağarama çekiliyorum!
+{0}, derinlerden bir teklif: {1} karşısında birlikte mi?
+{0}, akıntı uygun. İkimiz {1} karşısında?
+Kabul, {0}. {1} sarılıp sarmalanacak.
+Anlaştık, {0}. {1}'i birlikte derinliklere çekeceğiz.
+Hayır, {0}. Gelgit yanlış.
+Sözleşme yok, {0}. Kraki beklemeyi tercih eder.
+Sözleşmede cezir var, {0}.
+{0}, küçük harfleri okumadın.
+{0}! Deniz hiçbir şeyi unutmaz.
+Sözleşme ihlali, {0}! Derinlerde pişman olacaksın.
+Sözleşme yerine getirildi, {0}. Herkes yine tek başına yüzüyor.
+Sular çekiliyor, {0}. İttifak sona erdi.
+Senin için bir kol, {0}. Bir tane daha.
+Derinlikler seni alacak, {0}.
+{0}, sadece biraz sürükleniyorum…
+Sakin, {0}. Sadece biraz dalga.
+Güneşte yakalandı!
+Işıl ışıl güzel!
+Ne güzel bir gün!
+Fırtına geliyor!
+Bulutları kim sipariş etti?
+Sıcak hava dalgası!
+Şah! Bol güneş!
+Şah – göz kamaştırıcı oynandı!
+Güneş ışınıyla şah!
+Lütfen bulut olmasın!
+İçim kararıyor…
+Gölgeler! Iyy!
+{0}, birlikte parlayalım – {1} karşısında! ☀️
+{0}, sen benim güneşimsin! {1} karşısında birlikte mi?
+Harika, {0}! {1}'in gözleri kamaşacak! ☀️
+Güneş gibi açık, {0}! {1} karşısında birlikte!
+Teşekkürler, {0}, ama bugün tek başıma parlıyorum.
+Çok naziksin, {0}, ama hayır.
+Hoppala, {0}, küçük bir güneş çarpması! 🌇
+Kusura bakma, {0} – hava değişti!
+{0}! Ben de sana o kadar parlamıştım!
+Bu ikimizin üstüne gölge düşürüyor, {0}!
+Güzel zaman için teşekkürler, {0}! Artık herkes kendi başına ☀️
+Gün batımı, {0}. İttifakımız bitti.
+{0}, şimdi gerçekten çok ısınacak!
+Sıcak tatili bitti, {0}!
+{0}, senin sadece iyiliğini istiyorum… ☀️
+Her şey güneşli, {0}. Merak etme.
+Şeker gibi yakaladım!
+Pati üstüne – benim!
+Hihi, pofuduk bir zafer!
+Fluffi şu an hiç tatlı değil!
+Tırmala, tırmala!
+Grrr… peluş öfkesi!
+Şah! Sarılma alarmı!
+Şekerlemeli şah!
+Şahçık-şah!
+Saçımı dağıtma!
+Tüylerim, güzel tüylerim!
+Iyy, yapış yapış!
+{0}, birlikte sarılalım mı? {1} karşısında! 💕
+Pışşt, {0}… ikimiz {1} karşısında? Pofuduk pofuduk!
+Hihi, seve seve, {0}! {1}'e yumuşacık sarılacağız! 💕
+Pofuduk anlaşma, {0}! {1} karşısında!
+Hayır, {0}. Fluffi kendine sarılmayı tercih eder.
+Ah hayır, {0}… bugün değil.
+Hoppala, {0}! Fluffi pençelerini çıkardı! 😇
+Hihi, {0}, gerçekten sadece tatlı olduğumu mu sandın?
+Buhu, {0}! Fluffi korkudan darmadağın oldu!
+Kötüsün, {0}! Fluffi bunu unutmayacak!
+Sarılma molası bitti, {0}!
+Sarılmalar için teşekkürler, {0}! Artık herkes kendi başına.
+{0}, artık sarılmak yok!
+Fluffi birazdan diken diken olacak, {0}!
+{0}, Fluffi sadece oynamak istiyor… 💕
+Tamamen zararsızım, {0}. Bak ne kadar pofudukum!

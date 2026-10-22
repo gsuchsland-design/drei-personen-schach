@@ -1,0 +1,224 @@
+Blubb, gepakt!
+Hihi, dat was makkelijk!
+Mjam, mjam!
+Hé, die was van mij!
+Wat gemeen!
+Blubbo is nu aan het mokken!
+Schaak! Hup, hup!
+Kijk – schaak!
+Schaak, hihi, schaak!
+Oei, krap hier!
+Mama Blubb, help!
+Niet zo dichtbij!
+{0}, zullen we vrienden zijn? Samen tegen {1}! 🤝
+Hé {0}! Ik heb een idee: wij tweeën tegen {1}, ja? Ja?
+Joepie, {0}! Wij tweeën tegen {1} – dat wordt leuk!
+Tuurlijk, {0}! {1} is de klos! 🤝
+Nee, {0}, vandaag niet. Misschien later!
+Hmm… nee, {0}. Blubbo wil alleen huppelen.
+Hihi, {0}, dat bondgenootschap was maar een grapje! 😇
+Sorry, {0}… ik kon het niet laten!
+{0}! Ik dacht dat we vrienden waren! 😢
+Dat vertel ik iedereen, {0}! Verrader!
+Bondgenootschapspauze, {0}! Het was leuk met jou!
+Het is uit tussen ons, {0}. Vanaf nu huppelt iedereen alleen!
+Wacht maar, {0}! Blubbo komt eraan!
+Dat krijg je terug, {0}! Blubb!
+{0}, ik kijk niet eens jouw kant op… echt! 😇
+Ik ben heel lief, {0}. Echt, echt!
+Weg ermee.
+Goed zo.
+Hmpf. Klaar.
+Grumbo wordt boos!
+Hmmmpf!
+Dat zal je bezuren.
+Schaak. Rennen.
+Koning. Wiebelt.
+Schaak. Hmpf.
+Hmpf. Krap.
+Grumbo let op.
+Niet goed. Helemaal niet goed.
+{0}. {1} is te sterk. Samen?
+{0}. Grumbo en jij. Tegen {1}. Ja?
+Goed, {0}. {1} valt.
+Afgesproken, {0}. Grumbo houdt woord. Tegen {1}.
+Nee, {0}.
+Geen bondgenootschap, {0}. Grumbo vertrouwt niemand.
+Klaar, {0}. Grumbo neemt wat hij nodig heeft.
+Bondgenootschap gebroken, {0}. Hmpf.
+{0}. Dat was een fout. Een grote.
+Grumbo vertrouwde je, {0}. Nooit meer.
+Bondgenootschap voorbij, {0}. Bedankt.
+Genoeg, {0}. Iedereen vecht weer alleen.
+{0}. Jij bent de volgende.
+Grumbo betaalt alles terug, {0}.
+{0}. Grumbo houdt je in de gaten.
+Rustig, {0}. Voorlopig.
+Verbrand!
+In de gloeiende kolen!
+Fssst – gepakt!
+Ik kook van woede!
+Ik ontplof zo!
+Vuur en as!
+Schaak! Voel je de hitte?
+Schaak – het wordt heet!
+Vlammenschaak!
+Water! Alles behalve water!
+Mijn vuur flakkert!
+Pff, gevaarlijk!
+{0}! Laten we {1} in brand steken – samen! 🔥
+Hé {0}, jij en ik tegen {1}? Dat wordt vuurwerk!
+Jaaa, {0}! {1} gaat in vlammen op! 🔥
+Vuur vrij, {0}! Samen tegen {1}!
+Vergeet het, {0}! Flammo brandt alleen!
+Nee, {0}! Met jou? Te lauw!
+Verrassing, {0}! Vuur heeft geen vrienden! 🔥
+Sorry, {0} – je stond te dicht bij het vuur!
+VERRAAD, {0}! Nu brandt de lucht! 🔥
+{0}! Dit wordt een bosbrand!
+Bondgenootschap opgebrand, {0}! Nu ieder voor zich!
+Vlam uit, {0}! Vanaf nu vecht ik alleen!
+{0}, het wordt zo heet voor jou! 🔥
+Wraak brandt het heetst, {0}!
+{0}, ik heb al iets in de oven… 🔥
+Ruik je de rook, {0}? Hehe.
+Voltreffer, bzzt!
+Bliksem en weg!
+Zap – gelukt!
+Spanningsval!
+Bzzzt – woede!
+Zekering doorgeslagen!
+Schaak! Volle lading!
+Schaak met hoogspanning!
+Zap – schaak!
+Kortsluitingsgevaar!
+Isolatie, snel!
+Vonkenalarm!
+{0}, snel, snel: wij tweeën tegen {1}? Ja? Bzzt!
+{0}! Parallelschakeling tegen {1} – wat denk je?
+Bzzt – aangesloten, {0}! {1} krijgt een schok!
+Volle lading, {0}! Samen tegen {1}!
+Nee, {0}, verkeerde frequentie!
+Te veel spanning, {0} – nee, dank je!
+Stekker eruit, {0}! Bzzt!
+Oeps, {0}, ik heb de polen omgedraaid!
+{0}! Dat was een schok recht in mijn hart!
+Kortsluiting in het vertrouwen, {0}!
+Verbinding verbroken, {0}! Ieder voor zich!
+Bondgenootschap ontladen, {0}. Doei!
+{0}, zo vliegen de vonken!
+Hoogspanning voor jou, {0}!
+{0}, gewoon een klein geknetter… niets meer!
+Alles geaard, {0}. Volkomen onschuldig. Bzzt.
+Hoe – verdwenen!
+Nog een ziel…
+Door de muur – en van mij!
+Hoeoe… dit bevalt me helemaal niet!
+Ik rammel met mijn kettingen!
+Grrr… spookwoede!
+Schaak… uit het niets!
+Boe! Schaak!
+Hoor je de kettingen? Schaak!
+Te licht hier…
+Hoeoe… ik word doorzichtig!
+Ga weg, licht!
+{0}… fluister… zullen we {1} samen laten schrikken?
+Hoor je me, {0}? Twee schaduwen tegen {1}…
+Hoeoe… goed, {0}. {1} zal geen rust meer vinden.
+Zo zij het, {0}. Samen spoken we bij {1}.
+Nee, {0}… ik blijf in de schaduw.
+Hoeoe… nee, {0}. Spoken hebben niemand nodig.
+Verrassing, {0}… hoehoeoe!
+{0}, spoken houden zich niet aan beloftes… hihi.
+{0}… ik verschijn in je dromen.
+Dit blijft je achtervolgen, {0}…
+Ons verbond lost op in de mist, {0}…
+Tijd om te verdwijnen, {0}… ieder voor zich.
+{0}… vannacht kom ik.
+Hoeoe… {0}, ik ben je niet vergeten.
+{0}… ik ben er niet eens… hihi.
+Geen angst, {0}. Gewoon een zuchtje wind.
+De diepte in!
+Vastgezogen!
+Een vangst als in een net!
+Stormvloed!
+Dat vertroebelt mijn water!
+Inktalarm!
+Schaak! Met alle acht armen!
+Schaak – de vloed komt!
+Ingeklemd – schaak!
+Pas op, haai!
+Te ondiep hier!
+Ik trek me terug in mijn grot!
+{0}, een aanbod uit de diepte: samen tegen {1}?
+{0}, de stroming is gunstig. Wij tweeën tegen {1}?
+Aangenomen, {0}. {1} wordt ingepakt.
+Afgesproken, {0}. Samen trekken we {1} de diepte in.
+Nee, {0}. Het tij zit verkeerd.
+Geen contract, {0}. Kraki wacht liever af.
+Eb in het contract, {0}.
+{0}, je hebt de kleine lettertjes niet gelezen.
+{0}! De zee vergeet niets.
+Contractbreuk, {0}! Daar krijg je spijt van in de diepte.
+Contract nagekomen, {0}. Iedereen zwemt weer alleen.
+Het tij trekt zich terug, {0}. Bondgenootschap beëindigd.
+Eén arm voor jou, {0}. En nog één.
+De diepte haalt je, {0}.
+{0}, ik drijf gewoon een beetje rond…
+Rustig, {0}. Gewoon wat deining.
+Zonnig gepakt!
+Stralend mooi!
+Wat een dag!
+Er komt onweer aan!
+Wie heeft de wolken besteld?
+Hittegolf!
+Schaak! Zon zat!
+Schaak – verblindend gespeeld!
+Schaak met een zonnestraal!
+Alsjeblieft geen wolken!
+Ik word helemaal somber…
+Schaduw! Bah!
+{0}, laten we samen stralen – tegen {1}! ☀️
+{0}, jij bent mijn zonnetje! Samen tegen {1}?
+Geweldig, {0}! {1} wordt verblind! ☀️
+Zonneklaar, {0}! Samen tegen {1}!
+Dank je, {0}, maar vandaag straal ik solo.
+Lief van je, {0}, maar nee.
+Oeps, {0}, een kleine zonnesteek! 🌇
+Sorry, {0} – weeromslag!
+{0}! En ik heb je zo toegestraald!
+Dat werpt een schaduw over ons, {0}!
+Bedankt voor de fijne tijd, {0}! Nu ieder voor zich ☀️
+Zonsondergang, {0}. Ons bondgenootschap is voorbij.
+{0}, het wordt zo echt heet!
+Het hitte-vrij is voorbij, {0}!
+{0}, ik wil alleen het beste voor je… ☀️
+Alles zonnig, {0}. Geen zorgen.
+Suikerzoet gepakt!
+Pootje erop – van mij!
+Hihi, pluizig gewonnen!
+Fluffi is nu helemaal niet lief!
+Krab, krab!
+Grrr… pluchen woede!
+Schaak! Knuffelalarm!
+Schaak met hagelslag!
+Schaakje-schaak!
+Niet in de war maken!
+Mijn vacht, mijn mooie vacht!
+Bah, plakkerig!
+{0}, zullen we samen knuffelen? Tegen {1}! 💕
+Psst, {0}… wij tweeën tegen {1}? Heel pluizig!
+Hihi, graag, {0}! {1} wordt zacht geknuffeld! 💕
+Pluispact, {0}! Tegen {1}!
+Nee, {0}. Fluffi knuffelt liever met zichzelf.
+Ach nee, {0}… vandaag niet.
+Oepsie, {0}! Fluffi heeft haar klauwen uitgeslagen! 😇
+Hihi, {0}, dacht je echt dat ik alleen maar lief ben?
+Boehoe, {0}! Fluffi is helemaal verfomfaaid van schrik!
+Gemeen, {0}! Dat onthoudt Fluffi!
+Knuffelpauze voorbij, {0}!
+Bedankt voor het knuffelen, {0}! Nu ieder voor zich.
+{0}, nu wordt er niet meer geknuffeld!
+Fluffi wordt zo heel prikkelig, {0}!
+{0}, Fluffi wil alleen maar spelen… 💕
+Ik ben volkomen onschuldig, {0}. Kijk eens hoe pluizig!

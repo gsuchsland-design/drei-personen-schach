@@ -1,0 +1,224 @@
+Blubb, mam cię!
+Hihi, to było łatwe!
+Mniam, mniam!
+Ej, to był mój!
+To niesprawiedliwe!
+Blubbo się teraz dąsa!
+Szach! Hop, hop!
+Patrz – szach!
+Szach, hihi, szach!
+Ojej, ciasno tu!
+Mamo Blubb, ratunku!
+Nie tak blisko!
+{0}, będziemy przyjaciółmi? Razem przeciw {1}! 🤝
+Hej, {0}! Mam pomysł: my dwoje przeciw {1}, tak? Tak?
+Hura, {0}! My dwoje przeciw {1} – będzie zabawa!
+Jasne, {0}! {1} dostanie za swoje! 🤝
+Nie, {0}, nie dziś. Może później!
+Hmm… nie, {0}. Blubbo chce skakać sam.
+Hihi, {0}, ten sojusz to był tylko żart! 😇
+Przepraszam, {0}… nie mogłem się powstrzymać!
+{0}! Myślałem, że jesteśmy przyjaciółmi! 😢
+Powiem wszystkim, {0}! Zdrajca!
+Przerwa w sojuszu, {0}! Było miło z tobą!
+Koniec z nami, {0}. Od teraz każdy skacze sam!
+Poczekaj tylko, {0}! Blubbo nadchodzi!
+Oddam ci to, {0}! Blubb!
+{0}, nawet nie patrzę w twoją stronę… naprawdę! 😇
+Jestem bardzo grzeczny, {0}. Naprawdę, naprawdę!
+Precz.
+Dobrze.
+Hmpf. Załatwione.
+Grumbo się złości!
+Hmmmpf!
+To się zemści.
+Szach. Uciekaj.
+Król. Chwieje się.
+Szach. Hmpf.
+Hmpf. Ciasno.
+Grumbo uważa.
+Niedobrze. Wcale niedobrze.
+{0}. {1} jest za silny. Razem?
+{0}. Grumbo i ty. Przeciw {1}. Tak?
+Dobrze, {0}. {1} upada.
+Umowa, {0}. Grumbo dotrzymuje słowa. Przeciw {1}.
+Nie, {0}.
+Żadnego sojuszu, {0}. Grumbo nikomu nie ufa.
+Koniec, {0}. Grumbo bierze, czego potrzebuje.
+Sojusz zerwany, {0}. Hmpf.
+{0}. To był błąd. Duży.
+Grumbo ci zaufał, {0}. Nigdy więcej.
+Koniec sojuszu, {0}. Dzięki.
+Dość, {0}. Każdy znów walczy sam.
+{0}. Jesteś następny.
+Grumbo wszystko odda, {0}.
+{0}. Grumbo cię obserwuje.
+Spokojnie, {0}. Na razie.
+Spalony!
+Do żaru!
+Fsss – mam cię!
+Gotuję się ze złości!
+Zaraz wybuchnę!
+Ogień i popiół!
+Szach! Czujesz żar?
+Szach – robi się gorąco!
+Płomienny szach!
+Woda! Tylko nie woda!
+Mój ogień migocze!
+Uff, niebezpiecznie!
+{0}! Podpalmy {1} – razem! 🔥
+Hej, {0}, ty i ja przeciw {1}? To będą fajerwerki!
+Taaak, {0}! {1} stanie w płomieniach! 🔥
+Ognia, {0}! Razem przeciw {1}!
+Zapomnij, {0}! Flammo płonie sam!
+Nie, {0}! Z tobą? Za letnio!
+Niespodzianka, {0}! Ogień nie ma przyjaciół! 🔥
+Sorry, {0} – stałeś za blisko ognia!
+ZDRADA, {0}! Teraz płonie powietrze! 🔥
+{0}! Będzie pożar!
+Sojusz się wypalił, {0}! Teraz każdy dla siebie!
+Płomień zgasł, {0}! Od teraz walczę sam!
+{0}, zaraz zrobi się dla ciebie gorąco! 🔥
+Zemsta pali najmocniej, {0}!
+{0}, mam już coś w piecu… 🔥
+Czujesz dym, {0}? Hehe.
+Trafiony, bzzt!
+Błysk i po wszystkim!
+Bzyk – gotowe!
+Spadek napięcia!
+Bzzzt – złość!
+Bezpiecznik wysiadł!
+Szach! Pełne naładowanie!
+Szach pod wysokim napięciem!
+Bzyk – szach!
+Groźba zwarcia!
+Izolacja, szybko!
+Alarm iskier!
+{0}, szybko, szybko: my dwoje przeciw {1}? Tak? Bzzt!
+{0}! Połączenie równoległe przeciw {1} – co ty na to?
+Bzzt – podłączone, {0}! {1} dostanie kopa!
+Pełne naładowanie, {0}! Razem przeciw {1}!
+Nie, {0}, zła częstotliwość!
+Za duże napięcie, {0} – nie, dzięki!
+Wtyczka wyciągnięta, {0}! Bzzt!
+Ups, {0}, zamieniłem bieguny!
+{0}! To był prąd prosto w serce!
+Zwarcie w zaufaniu, {0}!
+Połączenie przerwane, {0}! Każdy dla siebie!
+Sojusz rozładowany, {0}. Pa!
+{0}, zaraz polecą iskry!
+Wysokie napięcie dla ciebie, {0}!
+{0}, tylko małe trzaskanie… nic więcej!
+Wszystko uziemione, {0}. Zupełnie nieszkodliwe. Bzzt.
+Uuu – zniknąłem!
+Jeszcze jedna dusza…
+Przez ścianę – i moje!
+Uuuu… wcale mi się to nie podoba!
+Brzęczę łańcuchami!
+Grrr… upiorna złość!
+Szach… znikąd!
+Bu! Szach!
+Słyszysz łańcuchy? Szach!
+Za jasno tu…
+Uuuu… robię się przezroczysty!
+Precz, światło!
+{0}… szept… nastraszymy razem {1}?
+Słyszysz mnie, {0}? Dwa cienie przeciw {1}…
+Uuuu… dobrze, {0}. {1} nie zazna już spokoju.
+Niech tak będzie, {0}. Razem będziemy straszyć {1}.
+Nie, {0}… zostanę w cieniu.
+Uuuu… nie, {0}. Duchy nikogo nie potrzebują.
+Niespodzianka, {0}… buuuu!
+{0}, duchy nie dotrzymują obietnic… hihi.
+{0}… pojawię się w twoich snach.
+To będzie cię prześladować, {0}…
+Nasz pakt rozpływa się we mgle, {0}…
+Czas zniknąć, {0}… każdy dla siebie.
+{0}… dziś w nocy przyjdę.
+Uuuu… {0}, nie zapomniałem o tobie.
+{0}… nawet mnie tu nie ma… hihi.
+Nie bój się, {0}. To tylko powiew wiatru.
+W głębinę!
+Przyssany!
+Połów jak w sieci!
+Sztormowa fala!
+To mąci moją wodę!
+Alarm atramentowy!
+Szach! Wszystkimi ośmioma ramionami!
+Szach – nadchodzi przypływ!
+Przyciśnięty – szach!
+Uwaga, rekin!
+Za płytko tu!
+Wycofuję się do mojej jaskini!
+{0}, oferta z głębin: razem przeciw {1}?
+{0}, prąd jest korzystny. My dwoje przeciw {1}?
+Przyjęte, {0}. {1} zostanie owinięty.
+Umowa, {0}. Razem wciągniemy {1} w głębinę.
+Nie, {0}. Pływ jest zły.
+Bez umowy, {0}. Kraki woli poczekać.
+Odpływ w umowie, {0}.
+{0}, nie przeczytałeś drobnego druku.
+{0}! Morze niczego nie zapomina.
+Złamanie umowy, {0}! Pożałujesz tego w głębinach.
+Umowa wypełniona, {0}. Każdy znów pływa sam.
+Woda odpływa, {0}. Sojusz zakończony.
+Jedno ramię dla ciebie, {0}. I jeszcze jedno.
+Głębina cię zabierze, {0}.
+{0}, tylko sobie trochę dryfuję…
+Spokojnie, {0}. Tylko lekka fala.
+Złapany w słońcu!
+Promiennie pięknie!
+Co za dzień!
+Nadciąga burza!
+Kto zamówił chmury?
+Fala upałów!
+Szach! Słońca pod dostatkiem!
+Szach – olśniewająco zagrane!
+Szach z promieniem słońca!
+Tylko nie chmury!
+Robi mi się ponuro…
+Cienie! Fuj!
+{0}, zabłyśnijmy razem – przeciw {1}! ☀️
+{0}, jesteś moim słoneczkiem! Razem przeciw {1}?
+Cudownie, {0}! {1} zostanie oślepiony! ☀️
+Jasne jak słońce, {0}! Razem przeciw {1}!
+Dzięki, {0}, ale dziś świecę solo.
+Miło z twojej strony, {0}, ale nie.
+Ups, {0}, mały udar słoneczny! 🌇
+Sorry, {0} – zmiana pogody!
+{0}! A ja tak na ciebie świeciłem!
+To rzuca na nas cień, {0}!
+Dzięki za miły czas, {0}! Teraz każdy dla siebie ☀️
+Zachód słońca, {0}. Nasz sojusz się skończył.
+{0}, zaraz zrobi się naprawdę gorąco!
+Koniec przerwy od upału, {0}!
+{0}, chcę dla ciebie tylko dobrze… ☀️
+Wszystko słonecznie, {0}. Bez obaw.
+Złapany, słodki jak cukier!
+Łapka na tym – moje!
+Hihi, puchate zwycięstwo!
+Fluffi teraz wcale nie jest słodka!
+Drap, drap!
+Grrr… pluszowa złość!
+Szach! Alarm przytulania!
+Szach z posypką!
+Szaszach!
+Nie czochraj mnie!
+Moje futerko, moje piękne futerko!
+Fuj, lepkie!
+{0}, poprzytulamy się razem? Przeciw {1}! 💕
+Psst, {0}… my dwoje przeciw {1}? Całkiem puchato!
+Hihi, chętnie, {0}! {1} zostanie miękko przytulony! 💕
+Puchaty pakt, {0}! Przeciw {1}!
+Nie, {0}. Fluffi woli tulić się sama.
+Ojej, nie, {0}… nie dziś.
+Ups, {0}! Fluffi pokazała pazurki! 😇
+Hihi, {0}, naprawdę myślałeś, że jestem tylko słodka?
+Buuu, {0}! Fluffi jest cała rozczochrana ze strachu!
+Wredny, {0}! Fluffi to zapamięta!
+Koniec przytulania, {0}!
+Dzięki za przytulanie, {0}! Teraz każdy dla siebie.
+{0}, koniec z przytulaniem!
+Fluffi zaraz zrobi się kłująca, {0}!
+{0}, Fluffi chce się tylko pobawić… 💕
+Jestem zupełnie nieszkodliwa, {0}. Zobacz, jaka puchata!

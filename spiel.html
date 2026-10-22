@@ -819,8 +819,8 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   </div>
   <ol id="logList"></ol>
 </div>
-<script src="lib/mondata.js?v=2026102203"></script>
-<script src="lib/monsters.js?v=2026102203"></script>
+<script src="lib/mondata.js?v=2026102204"></script>
+<script src="lib/monsters.js?v=2026102204"></script>
 <script>
 // ---------- Sprachen: Auswahl wird gemerkt; die Sprachdatei wird vor dem Spiel geladen ----------
 const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Français','🇫🇷'],['es','Español','🇪🇸'],['it','Italiano','🇮🇹'],['pt','Português','🇵🇹'],
@@ -828,7 +828,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102203"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102203"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102204"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102204"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -1152,7 +1152,7 @@ function netChatOut(m){
 function chatIn(m){   // eingehende (oder eigene) Chat-Nachricht / Reaktion anzeigen
   if(m.ai&&typeof diploText==='function'){   // Computergegner spricht: Baustein in der eigenen Sprache, ggf. laut vorlesen
     if(NET.chat.some(x=>x.id===m.id))return;
-    const t=diploText(m.ai.k,m.p,m.ai.a);if(t)m.text=t;m.lang=myLang();speakMonster(m.p,m.text);
+    const t=diploText(m.ai.k,m.p,m.ai.a,m.ai.v);if(t)m.text=t;m.lang=myLang();speakMonster(m.p,m.text);
     if(m.offer)setTimeout(()=>diploOfferUI(m),60);
   }
   if(m.t==='say'||m.t==='chat')talkAdd(m);
@@ -3069,7 +3069,7 @@ function setEmo(p,emo,dur=3600,force=false){
   const a=AV[p];const now=performance.now();
   if(!force&&(a.emo==='cheer'||a.emo==='cry'))return;           // Spielende bleibt stehen
   const lines=(isAIPlayer(p)?MONSTERS[p].lines:HUMAN_LINES)[emo]||[''];
-  a.emo=emo;a.since=now;a.until=dur?now+dur:Infinity;a.line=emo==='neutral'?'':T(lines[Math.floor(Math.random()*lines.length)]||'');
+  a.emo=emo;a.since=now;a.until=dur?now+dur:Infinity;a.line=emo==='neutral'?'':T((isAIPlayer(p)?MONDATA.line(monId(p),emo):lines[Math.floor(Math.random()*lines.length)])||'');
   // Monstergeräusch (Blubbern, Grollen, Knistern …), höchstens eins pro Augenblick
   try{if(emo!=='neutral'&&emo!=='fear'&&isAIPlayer(p)&&AIVOICE&&window.MV&&now-(setEmo.last||0)>700){setEmo.last=now;MV.sound(monId(p),emo);}}catch(e){}
 }
@@ -5586,12 +5586,14 @@ function diploReset(){DIPLO.log=[];DIPLO.pacts=[];DIPLO.offers=[];DIPLO.grudge={
 function diploBoss(){return DIPLO.on&&!FERN.on&&!REPLAY&&(!NET.on||NET.host)&&TURN_ORDER.some(p=>aiPlayers[p]);}
 function nMoves(){return moveLog.length;}
 function seatName(p){return isAIPlayer(p)?MONSTERS[p].name:(netName(p)||PNAMES[p]);}
-function diploText(k,p,a){const tpl=(MONDATA.DL[k]||{})[monId(p)];return tpl?T(tpl,(a||[]).map(seatName)):'';}
+function diploText(k,p,a,v){const tpl=MONDATA.tpl(k,monId(p),v);return tpl?T(tpl,(a||[]).map(seatName)):'';}
+// welche Variante eines Spruchs (damit online alle Geräte denselben Satz zeigen und sich nichts ständig wiederholt)
+function diploVar(k,p){const t=(MONDATA.DL[k]||{})[monId(p)];return Array.isArray(t)?MONDATA.pick('dl:'+k+':'+monId(p),t.length):0;}
 // Ein Computergegner sagt etwas: Sprechblase, Hinweis, Chat (online an alle) und – falls an – Sprachausgabe
 function aiSay(p,k,args,extra){
-  const text=diploText(k,p,args);if(!text)return;
+  const v=diploVar(k,p),text=diploText(k,p,args,v);if(!text)return;
   DIPLO.lastTalk=nMoves();DIPLO.said++;
-  const m=Object.assign({t:'chat',p,name:MONSTERS[p].name,text,lang:myLang(),id:'ai'+Date.now()+Math.random().toString(36).slice(2,5),ai:{k,a:args||[]}},extra||{});
+  const m=Object.assign({t:'chat',p,name:MONSTERS[p].name,text,lang:myLang(),id:'ai'+Date.now()+Math.random().toString(36).slice(2,5),ai:{k,a:args||[],v}},extra||{});
   if(NET.on&&NET.host)netBroadcast(m);
   chatIn(m);
 }
@@ -6370,8 +6372,8 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
-<script src="lib/varnav.js?v=2026102203"></script>
-<script src="lib/monvoice.js?v=2026102203"></script>
+<script src="lib/varnav.js?v=2026102204"></script>
+<script src="lib/monvoice.js?v=2026102204"></script>
 <script src="lib/three.min.js"></script>
 <script>
 // ================= 3D-Ansicht (three.js) =================

@@ -1,0 +1,224 @@
+Blubb, gotcha!
+Hehe, that was easy!
+Yum, yum!
+Hey, that was mine!
+That's mean!
+Blubbo is sulking now!
+Check! Hop, hop!
+Look – check!
+Check, hehe, check!
+Eek, it's tight here!
+Mama Blubb, help!
+Not so close!
+{0}, shall we be friends? Together against {1}! 🤝
+Hey {0}! I've got an idea: the two of us against {1}, yes? Yes?
+Yay, {0}! The two of us against {1} – this will be fun!
+Sure, {0}! {1} is in for it! 🤝
+Nah, {0}, not today. Maybe later!
+Hmm… no, {0}. Blubbo wants to hop alone.
+Hehe, {0}, the alliance was just for fun! 😇
+Sorry, {0}… I couldn't help it!
+{0}! I thought we were friends! 😢
+I'm telling everyone, {0}! Traitor!
+Alliance break, {0}! It was nice with you!
+That's it for us, {0}. From now on everyone hops alone!
+Just you wait, {0}! Blubbo is coming!
+You'll get that back, {0}! Blubb!
+{0}, I'm not even looking your way… honestly! 😇
+I'm being really nice, {0}. Really, really!
+Gone.
+Good.
+Hmph. Done.
+Grumbo is getting angry!
+Hmmmph!
+You'll pay for that.
+Check. Run.
+King. Wobbles.
+Check. Hmph.
+Hmph. Tight.
+Grumbo is watching.
+Not good. Not good at all.
+{0}. {1} is too strong. Together?
+{0}. Grumbo and you. Against {1}. Yes?
+Good, {0}. {1} falls.
+Deal, {0}. Grumbo keeps his word. Against {1}.
+No, {0}.
+No alliance, {0}. Grumbo trusts no one.
+Enough, {0}. Grumbo takes what he needs.
+Alliance broken, {0}. Hmph.
+{0}. That was a mistake. A big one.
+Grumbo trusted you, {0}. Never again.
+Alliance over, {0}. Thanks.
+Enough, {0}. Everyone fights alone again.
+{0}. You're next.
+Grumbo pays everything back, {0}.
+{0}. Grumbo is watching you.
+Calm, {0}. For now.
+Burnt!
+Into the embers!
+Hiss – gotcha!
+I'm boiling with rage!
+I'm about to explode!
+Fire and ashes!
+Check! Feel the heat?
+Check – things are heating up!
+Flame check!
+Water! Anything but water!
+My fire is flickering!
+Phew, dangerous!
+{0}! Let's set {1} on fire – together! 🔥
+Hey {0}, you and me against {1}? That'll be fireworks!
+Yesss, {0}! {1} goes up in flames! 🔥
+Open fire, {0}! Together against {1}!
+Forget it, {0}! Flammo burns alone!
+Nope, {0}! With you? Too lukewarm!
+Surprise, {0}! Fire has no friends! 🔥
+Sorry, {0} – you stood too close to the fire!
+TREACHERY, {0}! Now the air is burning! 🔥
+{0}! This means a wildfire!
+Alliance burnt out, {0}! Now everyone for themselves!
+Flame's out, {0}! From now on I fight alone!
+{0}, it's about to get hot for you! 🔥
+Revenge burns hottest, {0}!
+{0}, I've got something in the oven already… 🔥
+Smell the smoke, {0}? Hehe.
+Direct hit, bzzt!
+Flash and gone!
+Zap – done!
+Voltage drop!
+Bzzzt – rage!
+Fuse blown!
+Check! Full charge!
+Check with high voltage!
+Zap – check!
+Short-circuit danger!
+Insulation, quick!
+Spark alarm!
+{0}, quick, quick: the two of us against {1}? Yes? Bzzt!
+{0}! Parallel circuit against {1} – what do you say?
+Bzzt – connected, {0}! {1} gets a shock!
+Full charge, {0}! Together against {1}!
+Nah, {0}, wrong frequency!
+Too much voltage, {0} – no thanks!
+Plug pulled, {0}! Bzzt!
+Oops, {0}, I reversed the polarity!
+{0}! That was an electric shock to the heart!
+Short circuit in trust, {0}!
+Line disconnected, {0}! Everyone for themselves!
+Alliance discharged, {0}. Bye!
+{0}, sparks are about to fly!
+High voltage for you, {0}!
+{0}, just a little crackle… nothing more!
+All grounded, {0}. Completely harmless. Bzzt.
+Hoo – vanished!
+One more soul…
+Through the wall – and mine!
+Hooo… I don't like this one bit!
+I'm rattling my chains!
+Grrr… ghostly rage!
+Check… out of nowhere!
+Boo! Check!
+Hear the chains? Check!
+Too bright here…
+Hooo… I'm turning see-through!
+Go away, light!
+{0}… whisper… shall we scare {1} together?
+Can you hear me, {0}? Two shadows against {1}…
+Hooo… fine, {0}. {1} will find no more peace.
+So be it, {0}. Together we'll haunt {1}.
+No, {0}… I'll stay in the shadows.
+Hooo… no, {0}. Ghosts need no one.
+Surprise, {0}… boo-hooo!
+{0}, ghosts don't keep promises… hehe.
+{0}… I will appear in your dreams.
+This will haunt you, {0}…
+Our bond dissolves into mist, {0}…
+Time to vanish, {0}… everyone for themselves.
+{0}… tonight I'm coming.
+Hooo… {0}, I haven't forgotten you.
+{0}… I'm not even here… hehe.
+Don't be scared, {0}. Just a breath of wind.
+Down to the depths!
+Suckered on!
+A catch like in a net!
+Storm surge!
+That clouds my water!
+Ink alarm!
+Check! With all eight arms!
+Check – the tide is coming!
+Trapped – check!
+Watch out, shark!
+Too shallow here!
+I'm retreating to my cave!
+{0}, an offer from the deep: together against {1}?
+{0}, the current is favourable. The two of us against {1}?
+Accepted, {0}. {1} will be wrapped up.
+Deal, {0}. Together we'll pull {1} into the deep.
+No, {0}. The tide is wrong.
+No contract, {0}. Kraki would rather wait.
+Low tide in the contract, {0}.
+{0}, you didn't read the small print.
+{0}! The sea forgets nothing.
+Breach of contract, {0}! You'll regret this in the deep.
+Contract fulfilled, {0}. Everyone swims alone again.
+The tide is going out, {0}. Alliance ended.
+One arm for you, {0}. And another.
+The deep will take you, {0}.
+{0}, I'm just drifting around a bit…
+Easy, {0}. Just a bit of swell.
+Caught in the sunshine!
+Radiantly beautiful!
+What a day!
+Thunderstorm on the way!
+Who ordered the clouds?
+Heatwave!
+Check! Plenty of sun!
+Check – dazzlingly played!
+Check with a sunbeam!
+Please, no clouds!
+I'm getting all gloomy…
+Shadows! Eek!
+{0}, let's shine together – against {1}! ☀️
+{0}, you're my sunshine! Together against {1}?
+Wonderful, {0}! {1} will be dazzled! ☀️
+Clear as day, {0}! Together against {1}!
+Thanks, {0}, but today I shine solo.
+Sweet of you, {0}, but no.
+Oops, {0}, a little sunstroke! 🌇
+Sorry, {0} – change of weather!
+{0}! And I beamed at you so warmly!
+That casts a shadow on us, {0}!
+Thanks for the lovely time, {0}! Now everyone for themselves ☀️
+Sunset, {0}. Our alliance is over.
+{0}, it's about to get really hot!
+The heat break is over, {0}!
+{0}, I only want the best for you… ☀️
+All sunny, {0}. Don't worry.
+Snatched, sugar-sweet!
+Paw on it – mine!
+Hehe, a fluffy win!
+Fluffi isn't sweet at all right now!
+Scratch, scratch!
+Grrr… plushy rage!
+Check! Cuddle alarm!
+Check with sprinkles!
+Checky-check!
+Don't ruffle me!
+My fur, my beautiful fur!
+Eww, sticky!
+{0}, shall we cuddle together? Against {1}! 💕
+Psst, {0}… the two of us against {1}? All fluffy!
+Hehe, gladly, {0}! {1} will be cuddled soft! 💕
+Fluff pact, {0}! Against {1}!
+Nope, {0}. Fluffi would rather cuddle herself.
+Oh no, {0}… not today.
+Oopsie, {0}! Fluffi has shown her claws! 😇
+Hehe, {0}, did you really think I'm only sweet?
+Boo-hoo, {0}! Fluffi is all ruffled with shock!
+Mean, {0}! Fluffi will remember this!
+Cuddle break is over, {0}!
+Thanks for the cuddles, {0}! Now everyone for themselves.
+{0}, no more cuddling now!
+Fluffi is about to get really prickly, {0}!
+{0}, Fluffi just wants to play… 💕
+I'm completely harmless, {0}. Look how fluffy!

@@ -1,0 +1,224 @@
+Blubb, preso!
+Hihi, era facile!
+Gnam, gnam!
+Ehi, quello era mio!
+Che cattiveria!
+Blubbo adesso tiene il broncio!
+Scacco! Salto, salto!
+Guarda – scacco!
+Scacco, hihi, scacco!
+Uh, che stretto qui!
+Mamma Blubb, aiuto!
+Non così vicino!
+{0}, diventiamo amici? Insieme contro {1}! 🤝
+Ehi {0}! Ho un'idea: noi due contro {1}, sì? Sì?
+Evviva, {0}! Noi due contro {1} – sarà divertente!
+Certo, {0}! {1} se la vedrà brutta! 🤝
+No, {0}, oggi no. Magari dopo!
+Mmm… no, {0}. Blubbo vuole saltellare da solo.
+Hihi, {0}, l'alleanza era solo per scherzo! 😇
+Scusa, {0}… non ho resistito!
+{0}! Pensavo fossimo amici! 😢
+Lo dico a tutti, {0}! Traditore!
+Pausa d'alleanza, {0}! È stato bello con te!
+Tra noi è finita, {0}. D'ora in poi ognuno saltella da solo!
+Aspetta e vedrai, {0}! Arriva Blubbo!
+Me la pagherai, {0}! Blubb!
+{0}, non guardo nemmeno dalla tua parte… davvero! 😇
+Sono buonissimo, {0}. Davvero, davvero!
+Via.
+Bene.
+Hmpf. Fatto.
+Grumbo si arrabbia!
+Hmmmpf!
+Questa si paga.
+Scacco. Corri.
+Re. Traballa.
+Scacco. Hmpf.
+Hmpf. Stretto.
+Grumbo sta attento.
+Male. Molto male.
+{0}. {1} è troppo forte. Insieme?
+{0}. Grumbo e tu. Contro {1}. Sì?
+Bene, {0}. {1} cade.
+Affare fatto, {0}. Grumbo mantiene la parola. Contro {1}.
+No, {0}.
+Niente alleanza, {0}. Grumbo non si fida di nessuno.
+Basta, {0}. Grumbo si prende ciò che gli serve.
+Alleanza rotta, {0}. Hmpf.
+{0}. È stato un errore. Grosso.
+Grumbo si è fidato di te, {0}. Mai più.
+Alleanza finita, {0}. Grazie.
+Basta, {0}. Ognuno combatte di nuovo da solo.
+{0}. Sei il prossimo.
+Grumbo restituisce tutto, {0}.
+{0}. Grumbo ti osserva.
+Calma, {0}. Per ora.
+Bruciato!
+Nella brace!
+Fsss – preso!
+Ribollo di rabbia!
+Sto per esplodere!
+Fuoco e cenere!
+Scacco! Senti il calore?
+Scacco – si fa rovente!
+Scacco infuocato!
+Acqua! Tutto ma non l'acqua!
+Il mio fuoco tremola!
+Uff, pericoloso!
+{0}! Diamo fuoco a {1} – insieme! 🔥
+Ehi {0}, tu e io contro {1}? Saranno fuochi d'artificio!
+Sììì, {0}! {1} va in fiamme! 🔥
+Fuoco a volontà, {0}! Insieme contro {1}!
+Scordatelo, {0}! Flammo brucia da solo!
+No, {0}! Con te? Troppo tiepido!
+Sorpresa, {0}! Il fuoco non ha amici! 🔥
+Scusa, {0} – eri troppo vicino al fuoco!
+TRADIMENTO, {0}! Ora brucia l'aria! 🔥
+{0}! Sarà un incendio!
+Alleanza in cenere, {0}! Ora ognuno per sé!
+Fiamma spenta, {0}! D'ora in poi combatto da solo!
+{0}, tra poco scotta per te! 🔥
+La vendetta brucia più di tutto, {0}!
+{0}, ho già qualcosa nel forno… 🔥
+Senti il fumo, {0}? Ehehe.
+Centrato, bzzt!
+Un lampo e via!
+Zac – fatto!
+Calo di tensione!
+Bzzzt – rabbia!
+Fusibile saltato!
+Scacco! Carica piena!
+Scacco ad alta tensione!
+Zac – scacco!
+Pericolo cortocircuito!
+Isolante, presto!
+Allarme scintille!
+{0}, presto, presto: noi due contro {1}? Sì? Bzzt!
+{0}! Circuito in parallelo contro {1} – che ne dici?
+Bzzt – collegato, {0}! {1} prende la scossa!
+Carica piena, {0}! Insieme contro {1}!
+No, {0}, frequenza sbagliata!
+Troppa tensione, {0} – no, grazie!
+Spina staccata, {0}! Bzzt!
+Ops, {0}, ho invertito i poli!
+{0}! È stata una scossa al cuore!
+Cortocircuito nella fiducia, {0}!
+Linea interrotta, {0}! Ognuno per sé!
+Alleanza scarica, {0}. Ciao!
+{0}, adesso volano scintille!
+Alta tensione per te, {0}!
+{0}, solo un piccolo crepitio… niente di più!
+Tutto a terra, {0}. Del tutto innocuo. Bzzt.
+Uuh – sparito!
+Un'anima in più…
+Attraverso il muro – ed è mio!
+Uuuh… non mi piace per niente!
+Faccio tintinnare le catene!
+Grrr… rabbia spettrale!
+Scacco… dal nulla!
+Bu! Scacco!
+Senti le catene? Scacco!
+Troppa luce qui…
+Uuuh… divento trasparente!
+Vattene, luce!
+{0}… sussurro… spaventiamo {1} insieme?
+Mi senti, {0}? Due ombre contro {1}…
+Uuuh… va bene, {0}. {1} non troverà più pace.
+Così sia, {0}. Insieme infesteremo {1}.
+No, {0}… resto nell'ombra.
+Uuuh… no, {0}. I fantasmi non hanno bisogno di nessuno.
+Sorpresa, {0}… buuuh!
+{0}, i fantasmi non mantengono le promesse… hihi.
+{0}… apparirò nei tuoi sogni.
+Questo ti perseguiterà, {0}…
+Il nostro patto si dissolve nella nebbia, {0}…
+È ora di sparire, {0}… ognuno per sé.
+{0}… stanotte vengo da te.
+Uuuh… {0}, non ti ho dimenticato.
+{0}… non sono nemmeno qui… hihi.
+Niente paura, {0}. Solo un soffio di vento.
+Giù negli abissi!
+Attaccato con le ventose!
+Una presa come con la rete!
+Mareggiata!
+Questo mi intorbida l'acqua!
+Allarme inchiostro!
+Scacco! Con tutti e otto i tentacoli!
+Scacco – arriva la marea!
+Bloccato – scacco!
+Attenzione, squalo!
+Troppo basso qui!
+Mi ritiro nella mia grotta!
+{0}, un'offerta dagli abissi: insieme contro {1}?
+{0}, la corrente è favorevole. Noi due contro {1}?
+Accettato, {0}. {1} verrà avvolto.
+Affare fatto, {0}. Insieme trascineremo {1} sul fondo.
+No, {0}. La marea è sbagliata.
+Nessun contratto, {0}. Kraki preferisce aspettare.
+Bassa marea nel contratto, {0}.
+{0}, non hai letto le clausole in piccolo.
+{0}! Il mare non dimentica nulla.
+Violazione del contratto, {0}! Te ne pentirai negli abissi.
+Contratto adempiuto, {0}. Ognuno nuota di nuovo da solo.
+La marea si ritira, {0}. Alleanza finita.
+Un tentacolo per te, {0}. E un altro.
+Gli abissi ti prenderanno, {0}.
+{0}, sto solo andando un po' alla deriva…
+Calma, {0}. Solo un po' di onde.
+Preso al sole!
+Splendidamente bello!
+Che giornata!
+Arriva un temporale!
+Chi ha ordinato le nuvole?
+Ondata di caldo!
+Scacco! Sole a volontà!
+Scacco – giocata abbagliante!
+Scacco con un raggio di sole!
+Niente nuvole, per favore!
+Mi sto incupendo…
+Ombre! Bleah!
+{0}, brilliamo insieme – contro {1}! ☀️
+{0}, sei il mio raggio di sole! Insieme contro {1}?
+Meraviglioso, {0}! {1} sarà abbagliato! ☀️
+Chiaro come il sole, {0}! Insieme contro {1}!
+Grazie, {0}, ma oggi brillo da solo.
+Gentile da parte tua, {0}, ma no.
+Ops, {0}, un piccolo colpo di sole! 🌇
+Scusa, {0} – cambio di tempo!
+{0}! E io che ti illuminavo tanto!
+Questo getta un'ombra su di noi, {0}!
+Grazie per il bel momento, {0}! Ora ognuno per sé ☀️
+Tramonto, {0}. La nostra alleanza è finita.
+{0}, tra poco farà davvero caldo!
+La pausa dal caldo è finita, {0}!
+{0}, voglio solo il tuo bene… ☀️
+Tutto soleggiato, {0}. Non preoccuparti.
+Preso, dolce come lo zucchero!
+Zampetta sopra – mio!
+Hihi, vittoria soffice!
+Fluffi adesso non è per niente dolce!
+Graffio, graffio!
+Grrr… rabbia di peluche!
+Scacco! Allarme coccole!
+Scacco con le codette!
+Scacchetto!
+Non spettinarmi!
+Il mio pelo, il mio bel pelo!
+Bleah, appiccicoso!
+{0}, ci coccoliamo insieme? Contro {1}! 💕
+Psst, {0}… noi due contro {1}? Tutto soffice!
+Hihi, volentieri, {0}! {1} verrà coccolato per bene! 💕
+Patto soffice, {0}! Contro {1}!
+No, {0}. Fluffi preferisce coccolarsi da sola.
+Oh no, {0}… oggi no.
+Ops, {0}! Fluffi ha tirato fuori gli artigli! 😇
+Hihi, {0}, credevi davvero che fossi solo dolce?
+Buaa, {0}! Fluffi è tutta arruffata dallo spavento!
+Cattivo, {0}! Fluffi non lo dimenticherà!
+Fine delle coccole, {0}!
+Grazie per le coccole, {0}! Ora ognuno per sé.
+{0}, niente più coccole!
+Fluffi sta per diventare tutta pungente, {0}!
+{0}, Fluffi vuole solo giocare… 💕
+Sono del tutto innocua, {0}. Guarda come sono soffice!
