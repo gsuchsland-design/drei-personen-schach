@@ -12,7 +12,7 @@ self.addEventListener('push', (e) => {
     for (const c of wins) c.postMessage({ t: 'fern', code: d.code || null });   // offene Seiten sofort aktualisieren
     await self.registration.showNotification(d.title || 'Drei-Personen-Schach', {
       body: d.body || '', tag: d.tag || 'dps', renotify: true,
-      icon: 'icon-192.png', badge: 'icon-192.png', data: { url: d.url || './' },
+      icon: 'icon2-192.png', badge: 'icon2-192.png', data: { url: d.url || './' },
     });
   })());
 });
