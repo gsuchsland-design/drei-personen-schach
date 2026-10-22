@@ -43,7 +43,8 @@ footer.bottom a { color:var(--muted); }
 select.lang { background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:4px 6px; font-size:14px; }
 [dir=rtl] .play { margin-left:0; margin-right:auto; }
 /* Bilder zum Ausprobieren: antippen öffnet das Spiel mit dieser Stellung */
-a.try { display:block; position:relative; border-radius:12px; }
+a.try { display:block; position:relative; border-radius:12px; width:fit-content; max-width:100%; margin-inline:auto; }
+.tryGrid a.try { width:auto; }
 a.try img { transition:transform .15s, box-shadow .15s; }
 a.try:hover img, a.try:focus-visible img { transform:scale(1.01); box-shadow:0 0 0 3px #ffd23f; }
 .tryBadge { position:absolute; right:10px; bottom:10px; background:#ffd23f; color:#111; border-radius:999px; padding:4px 11px; font-weight:700; font-size:15px; box-shadow:0 2px 8px rgba(0,0,0,.45); pointer-events:none; }

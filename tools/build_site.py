@@ -154,9 +154,9 @@ page('index.html', 'Drei-Personen-Schach – Schach zu dritt, kostenlos im Brows
 """, redirect=True)
 
 # ---------- Regeln ----------
-rules = open('/tmp/claude-0/-home-claude/894eb36e-6bd2-5b97-9566-0bfc1d8ee3fa/scratchpad/rules.html', encoding='utf-8').read()
+rules = open(os.path.join(ROOT, 'tools', 'rules_3ps.html'), encoding='utf-8').read()
 rules = re.sub(r'<h2>.*?</h2>', '', rules, count=1)
-rules = rules.replace('<li>Rechts kannst du alle Fälle ausprobieren.</li>', '<li>Im Spiel kannst du unter „📖 Regeln“ jede Figur auf einem Übungsbrett ausprobieren.</li>')
+rules = rules.replace('<li>Rechts kannst du alle Fälle ausprobieren.</li>', '<li>Im Spiel kannst du im Startfenster unter „🎯 Übungsbrett“ jede Figur ausprobieren.</li>')
 rules = rules.replace('<h3>Schach, Hilfspflicht und Matt</h3>', '<h3 id="hilfspflicht">Schach, Hilfspflicht und Matt</h3>')
 rules = rules.replace('<h3>', '<h2>').replace('</h3>', '</h2>').replace('<h3 id="hilfspflicht">', '<h2 id="hilfspflicht">')
 page('regeln.html', 'Spielregeln – Drei-Personen-Schach',
@@ -171,7 +171,7 @@ page('regeln.html', 'Spielregeln – Drei-Personen-Schach',
 {rules}
 <h2>Die Notation</h2>
 <p>Jedes Feld hat einen Namen aus drei Zeichen: Sektion (B, G oder R für Blau, Grün, Rot), Reihe (A bis D) und Spalte (1 bis 8). <b>BA5</b> ist also das Feld A5 in der blauen Sektion – dort steht zu Beginn der blaue König. Ein Zug wird als Start- und Zielfeld notiert, zum Beispiel <b>BB4–BD4</b> für den Doppelschritt eines Bauern; ein Schlagzug mit „×“, etwa <b>GC3×RD6</b>.</p>
-<p class="note">Tipp: Im Spiel lassen sich die Koordinaten im Menü ☰ einblenden. Die Zugliste oben rechts zeigt jeden Zug in dieser Schreibweise, und mit 📼 kannst du jede Partie Zug für Zug nachspielen.</p>
+<p class="note">Tipp: Im Spiel lassen sich die Koordinaten unter „👁 Ansicht“ einblenden. Die Zugliste oben rechts zeigt jeden Zug in dieser Schreibweise, und mit 📼 kannst du jede Partie Zug für Zug nachspielen.</p>
 <p style="text-align:center;margin-top:30px"><a class="cta go" href="spiel.html">▶ Regeln gleich ausprobieren</a></p>
 </article>""")
 

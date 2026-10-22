@@ -564,12 +564,11 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 <div id="rulesModal" onclick="if(event.target===this)closeRules()">
  <div id="rulesBox">
   <button id="rulesClose" onclick="closeRules()" title="Schließen">✕</button>
-  <button id="tourBtnRules" onclick="tourStart()" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
   <div id="rulesText">
    <h2>🎯 Übungsbrett</h2>
-   <p>Hier probierst du aus, wie jede Figur zieht – vor allem über die Mitte in die Nachbarsektionen. Wähle rechts eine Figur oder einen Fall, stelle sie auf ein Feld, und alle erreichbaren Felder leuchten auf.</p>
+   <p>Hier probierst du aus, wie jede Figur zieht – vor allem über die Mitte in die Nachbarsektionen. Wähle einen Fall oder unter „Selbst ausprobieren“ eine Figur, stelle sie auf ein Feld, und alle erreichbaren Felder leuchten auf.</p>
    <p>Alle Regeln mit Bildern stehen auf der Regelseite:</p>
-   <p><button class="rulesLink" onclick="openRulesPage()">📖 Regeln lesen</button></p>
+   <p><button class="rulesLink" onclick="openRulesPage()">📖 Regeln lesen</button> <button class="rulesLink" style="background:#7a6420" onclick="closeRules();tourStart()" title="Kurze Einführung in das Spiel">🎓 Einführung</button></p>
   </div>
   <div id="rulesDemo">
    <div id="demoBtns"></div>
