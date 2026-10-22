@@ -193,6 +193,9 @@ export class Fern {
     }
     const now = Date.now();
     const rules = { help: !(b.rules && b.rules.help === false) };
+    // Welches Monster spielt auf welchem Computerplatz, z. B. "G:I,R:T" (Farbe:Monster)
+    const mons = b.rules && typeof b.rules.mons === 'string' ? b.rules.mons.replace(/[^BGRYLTOI:,]/g, '').slice(0, 48) : '';
+    if (mons) rules.mons = mons;
     if (game !== 'dps') {
       const r = b.rules || {}, n = (v, hi) => Math.max(0, Math.min(hi, Math.round(+v || 0)));
       rules.end = r.end === 'last' ? 'last' : 'first'; rules.opts = clean(r.opts, 80);
@@ -204,7 +207,7 @@ export class Fern {
     if (b.public) {   // in der öffentlichen Lobby anbieten
       seats[me].name = safeName(seats[me].name, 'Spieler');
       const r = await lobbyCall(this.env, 'offer', { kind: 'fern', game, code: b.code, host: seats[me].name, seats: this.lobbySeats(g), order: ord(g),
-        rules: { help: rules.help, spec: rules.spec, lvl: null, lang: b.lang, end: rules.end, opts: rules.opts, live: rules.live, tcMove: rules.tcMove, tcGame: rules.tcGame }, _ip: b._ip });
+        rules: { help: rules.help, spec: rules.spec, lvl: null, lang: b.lang, end: rules.end, opts: rules.opts, live: rules.live, tcMove: rules.tcMove, tcGame: rules.tcGame, mons: rules.mons }, _ip: b._ip });
       if (r && r.id) g.lobby = { id: r.id, key: r.key };
     }
     await this.save(g);

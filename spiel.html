@@ -63,6 +63,9 @@ body.aichat #msgRow { display:flex; }
 #chatForm { display:flex; gap:6px; padding:6px 8px; border-top:1px solid #333; }
 #chatForm input { flex:1; padding:6px 8px; font-size:15px; background:#333; color:#fff; border:1px solid #666; border-radius:6px; min-width:0; }
 #chatForm button { padding:6px 10px; background:#2a6; color:#fff; border:none; border-radius:6px; font-size:14px; cursor:pointer; }
+#chatForm #hearBtn { background:#444; } #chatForm #hearBtn.on { background:#c0392b; animation:hearPulse 1.4s infinite; }
+@keyframes hearPulse { 50% { box-shadow:0 0 0 6px rgba(192,57,43,.25); } }
+body.netgame #hearBtn { display:none; }
 #msgLine { display:none; color:#d9ccff; font-size:13px; margin:-2px 0 4px; min-height:17px; line-height:17px; text-align:center; max-width:96vw;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:opacity .4s; }
 body.online #msgLine { display:block; flex:0 1 auto; min-width:0; }
@@ -117,6 +120,8 @@ body.online #msgLine { display:block; flex:0 1 auto; min-width:0; }
 #rulesText h3 { color:#ffd23f; font-size:15px; margin:14px 0 4px; }
 #rulesText ul { margin:2px 0 2px 20px; } #rulesText li { margin:2px 0; }
 #rulesText b { color:#fff; }
+#rulesText p { margin:6px 0; }
+#rulesText .rulesLink { padding:8px 14px; font-size:15px; background:#2c5d9e; color:#fff; border:none; border-radius:8px; cursor:pointer; }
 #rulesDemo { flex:1 1 520px; display:flex; flex-direction:column; gap:8px; }
 #demoC { background:#1a1a1a; border-radius:8px; width:100%; cursor:pointer; }
 #demoBtns { display:flex; flex-wrap:wrap; gap:6px; }
@@ -158,7 +163,9 @@ body.online #msgLine { display:block; flex:0 1 auto; min-width:0; }
 #micBtn.off { background:#a33; border-color:#d55; }
 .netModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:230; align-items:center; justify-content:center; }
 .netModal.show { display:flex; }
-.netBox { background:#222; border:2px solid #6a4fb0; border-radius:12px; padding:18px 22px; color:#ddd; width:min(440px,94vw); max-height:94vh; overflow:auto; font-size:14px; }
+.netBox { background:#222; border:2px solid #6a4fb0; border-radius:12px; padding:18px 22px; color:#ddd; width:min(440px,94vw); max-height:94vh; overflow-y:auto; overflow-x:hidden; font-size:14px; box-sizing:border-box; }
+.netBox * { max-width:100%; box-sizing:border-box; }
+@media (max-width:520px){ .netBox { padding:14px; } }
 .netBox h3 { font-size:17px; margin-bottom:10px; color:#fff; }
 .netBox p { margin:6px 0 10px; }
 .netBox button, .netBox a.btn { display:block; width:100%; margin-top:10px; padding:9px; font-size:15px; cursor:pointer; background:#2a6; color:#fff; border:none; border-radius:7px; text-align:center; text-decoration:none; }
@@ -179,7 +186,7 @@ button.kick { display:inline-block !important; width:auto !important; margin:0 0
 #lbShare { grid-column:1 / -1; background:#7a3fc4 !important; }
 #lbWa { background:#1f9c55; } #lbSms { background:#3a6ea8; } #lbMail { background:#666; } #lbFb { background:#3b5998; }
 .lbHint { font-size:12px; color:#aaa; margin-top:8px; }
-#pubTabs { display:flex; gap:6px; margin:10px 0; } #pubModal #pubTabs button { flex:1; padding:6px; background:#333; color:#ddd; border:1px solid #555; border-radius:8px; cursor:pointer; font-size:13px; }
+#pubTabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:10px 0; } #pubModal #pubTabs button { min-width:0; white-space:normal; line-height:1.2; padding:6px; background:#333; color:#ddd; border:1px solid #555; border-radius:8px; cursor:pointer; font-size:13px; }
 #pubModal #pubTabs button.on { background:#1f7a6a; color:#fff; border-color:#2fa58e; }
 #pubList { max-height:56vh; overflow:auto; }
 .pubCard { background:#262a33; border:1px solid #3a404c; border-radius:10px; padding:9px 11px; margin:8px 0; text-align:left; }
@@ -451,7 +458,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 </head><body>
 <button id="menuBtn" onclick="toggleMenu()" title="Menü ein-/ausblenden">☰</button>
 <button id="btn3d" onclick="V3.toggle()" title="Ansicht wechseln: 2D → 3D → 3D+ (Würfel)">3D</button>
-<button id="rulesBtn" onclick="openRules()" title="Spielanleitung">📖<span class="lbl"> Regeln</span></button>
+<button id="rulesBtn" onclick="openRulesPage()" title="Spielregeln (neuer Tab)">📖<span class="lbl"> Regeln</span></button>
 <button id="soundBtn" onclick="toggleSound()" title="Ton ein/aus">🔊</button>
 <button id="fsBtn2" onclick="toggleFullscreen()" title="Vollbild – Adressleiste ausblenden">⛶</button>
 <button id="avBtn" onclick="toggleAvMenu()" title="Mitspieler und Kamera">👥</button>
@@ -559,51 +566,10 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <button id="rulesClose" onclick="closeRules()" title="Schließen">✕</button>
   <button id="tourBtnRules" onclick="tourStart()" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
   <div id="rulesText">
-   <h2>Drei-Personen-Schach – Spielanleitung</h2>
-   <h3>Spieler und Brett</h3>
-   <ul>
-    <li>Drei Spieler: <b style="color:#5599ff">Blau</b>, <b style="color:#44ee22">Grün</b>, <b style="color:#ff5533">Rot</b>. Gezogen wird reihum: Blau → Grün → Rot.</li>
-    <li>Das Brett ist ein Davidstern aus drei Sektionen mit je 4 × 8 Feldern: Reihen <b>A–D</b>, Spalten <b>1–8</b>. Reihe A ist die eigene Grundreihe, Reihe D liegt an der Brettmitte.</li>
-    <li>Jeder Spieler hat 16 Figuren wie im normalen Schach. Der König steht auf A5, die Dame auf A4.</li>
-   </ul>
-   <h3>Züge über die Mitte</h3>
-   <ul>
-    <li>Wer über die eigene Reihe D hinauszieht, betritt eine <b>Nachbarsektion</b> – auf deren Reihe D – und zieht dort weiter in Richtung ihrer Reihe A.</li>
-    <li>Die Spalte wird dabei gespiegelt: aus Spalte c wird Spalte <b>9 − c</b>.</li>
-    <li><b>Turm und Dame (gerade):</b> Aus den Spalten 1–3 geht es in die eine, aus 6–8 in die andere Nachbarsektion. Aus den mittleren Spalten 4 und 5 sind <b>beide</b> Sektionen erreichbar.</li>
-    <li><b>Läufer und Dame (schräg):</b> Ein Läufer kreuzt ebenfalls in eine Nachbarsektion, an der Spitze der Mitte in beide.</li>
-    <li><b>Springer:</b> zwei Schritte vor/zurück und einer seitlich (oder umgekehrt), auch über die Mitte. Einige Übergänge an den Grenzen sind ausgeschlossen.</li>
-    <li><b>König:</b> ein Feld in jede Richtung, auch hinüber in die Nachbarsektionen.</li>
-    <li>Rechts kannst du alle Fälle ausprobieren.</li>
-   </ul>
-   <h3>Bauern</h3>
-   <ul>
-    <li>In der eigenen Sektion ziehen Bauern Richtung Mitte (A → D), aus Reihe B auch zwei Felder.</li>
-    <li>Über die Mitte gelangen sie in eine Nachbarsektion und ziehen dort weiter Richtung deren Reihe A. Geschlagen wird schräg nach vorn, auch über die Mitte.</li>
-    <li><b>Umwandlung:</b> auf der Reihe A einer fremden Sektion.</li>
-    <li><b>En passant:</b> Nach einem Doppelschritt dürfen <b>beide</b> Gegner en passant schlagen, bis der Spieler mit dem Doppelschritt wieder zieht.</li>
-   </ul>
-   <h3>Rochade</h3>
-   <ul><li>König (A5) und Turm unbewegt, Felder dazwischen frei und nicht bedroht. Kurz: König nach A7, Turm A8 → A6. Lang: König nach A3, Turm A1 → A4.</li></ul>
-   <h3>Schach, Hilfspflicht und Matt</h3>
-   <ul>
-    <li>Wer im Schach steht, muss es aufheben. Kein Zug darf den eigenen König im Schach lassen.</li>
-    <li><b>Hilfspflicht:</b> Steht ein Spieler im Schach und kommt der dritte Spieler <i>vor</i> ihm an die Reihe, darf dieser keinen Zug machen, nach dem der Bedrohte matt wäre. Ist der Bedrohte bereits matt, muss der dritte Spieler ihn befreien – kann er das nicht, bleibt es beim Matt. Kann sich der Bedrohte ohnehin selbst retten, egal was der dritte Spieler zieht, gibt es keine Einschränkung.</li>
-    <li><b>Schachmatt beendet das Spiel.</b> Es gewinnt, <b>wer dem König Schach gibt</b> – nicht, wer nur Fluchtfelder nimmt. Die beiden anderen verlieren.</li>
-   </ul>
-   <h3>Kein Zug möglich</h3>
-   <ul><li>Wer nicht ziehen kann, ohne im Schach zu stehen, setzt aus. Kann niemand mehr ziehen, entscheidet die Punktewertung.</li></ul>
-   <h3>Zeit und Punkte</h3>
-   <ul>
-    <li>Wahlweise Zeit pro Zug (abgelaufen → Zug verfällt) und/oder pro Partie (verbraucht → keine Züge mehr, Figuren bleiben schlagbar).</li>
-    <li>Punkte: eigene Figuren auf dem Brett + geschlagene gegnerische Figuren. Bauer 1, Springer und Läufer 3, Turm 4, Dame 6. Bei Gleichstand gewinnt, wer weniger Zeit verbraucht hat.</li>
-   </ul>
-   <h3>Bedienung</h3>
-   <ul>
-    <li>Figur anklicken → mögliche Züge leuchten → Zielfeld anklicken. „↶ Zurück“ bzw. Strg+Z nimmt Züge zurück.</li>
-    <li>☰ Menü · 3D-Ansicht · 💾 Speichern / 📂 Laden · ⏸ Pause · 🔊 Ton · ⛶ Vollbild · 👥 Mitspieler-Fenster ein/aus.</li>
-    <li><b>Die Computergegner</b> haben eigene Charaktere: <b style="color:#5599ff">Blubbo</b> (gutmütig, überschwänglich), <b style="color:#44ee22">Grumbo</b> (mürrisch, kräftig) und <b style="color:#ff5533">Flammo</b> (hitzköpfig, zappelig). Sie freuen sich, ärgern sich, bekommen Angst, jubeln und weinen – je nach Spielverlauf.</li>
-   </ul>
+   <h2>🎯 Übungsbrett</h2>
+   <p>Hier probierst du aus, wie jede Figur zieht – vor allem über die Mitte in die Nachbarsektionen. Wähle rechts eine Figur oder einen Fall, stelle sie auf ein Feld, und alle erreichbaren Felder leuchten auf.</p>
+   <p>Alle Regeln mit Bildern stehen auf der Regelseite:</p>
+   <p><button class="rulesLink" onclick="openRulesPage()">📖 Regeln lesen</button></p>
   </div>
   <div id="rulesDemo">
    <div id="demoBtns"></div>
@@ -637,9 +603,10 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="modeTabs"><button data-m="local" onclick="setupMode('local')">🤖 Hier am Gerät</button><button data-m="live" onclick="setupMode('live')">🌐 Online live</button><button data-m="fern" onclick="setupMode('fern')">✉️ Fernpartie</button></div>
     <div class="modeSec" id="secLocal">
     <div class="setLbl">Spieler</div>
-    <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
-    <div class="row"><span style="color:#44ee22;width:46px">Grün</span><select id="plG" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
-    <div class="row"><span style="color:#ff5533;width:46px">Rot</span><select id="plR" class="plsel"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select></div>
+    <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel" onchange="monUI()"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select><select id="mnB" class="monsel" onchange="monPick('B',this.value)" title="Welches Monster spielt diesen Platz?"></select></div>
+    <div class="row"><span style="color:#44ee22;width:46px">Grün</span><select id="plG" class="plsel" onchange="monUI()"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select><select id="mnG" class="monsel" onchange="monPick('G',this.value)" title="Welches Monster spielt diesen Platz?"></select></div>
+    <div class="row"><span style="color:#ff5533;width:46px">Rot</span><select id="plR" class="plsel" onchange="monUI()"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select><select id="mnR" class="monsel" onchange="monPick('R',this.value)" title="Welches Monster spielt diesen Platz?"></select></div>
+    <div class="hint" id="monHint" style="margin-left:0"></div>
           <button onclick="startFromSetup()">Spiel starten (an diesem Gerät)</button>
     </div>
     <div class="modeSec" id="secLive">
@@ -684,6 +651,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
       <button onclick="document.getElementById('loadFile').click()">📂 Partie laden</button>
       <button onclick="aboardOpen()" title="Stellungen aufbauen, Züge prüfen und teilen – unabhängig von einer Partie">🔬 Analysebrett</button>
       <button onclick="tourFromSetup()" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
+      <button onclick="document.getElementById('setupModal').classList.remove('show');setupOpen=false;openRules();" title="Ausprobieren, wie jede Figur über die Mitte zieht">🎯 Übungsbrett</button>
       <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
       <button class="installBtn" onclick="doInstall()" style="display:none">📲 Als App installieren</button></div>
     <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · <a href="index.html#start" style="color:#8fb6ff">Startseite</a> · <a href="regeln.html" style="color:#8fb6ff">Regeln</a> · <a href="strategie.html" style="color:#8fb6ff">Strategie</a> · <a href="impressum.html" style="color:#8fb6ff">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
@@ -764,7 +732,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <div id="chatHead"><b>💬 Chat</b><button onclick="toggleChat()" title="Schließen">✕</button></div>
   <div id="chatList"></div>
   <div id="chatEmo"></div>
-  <form id="chatForm" onsubmit="event.preventDefault();sendChat();"><input id="chatIn" maxlength="200" placeholder="Nachricht …" autocomplete="off"><button>Senden</button></form>
+  <form id="chatForm" onsubmit="event.preventDefault();sendChat();"><button type="button" id="hearBtn" onclick="hearToggle()" title="Mit den Monstern sprechen (Mikrofon)">🎤</button><input id="chatIn" maxlength="200" placeholder="Nachricht …" autocomplete="off"><button>Senden</button></form>
 </div>
 <div id="langModal" class="netModal notr"><div class="netBox" style="border-color:#2a6">
   <h3>🌐 Sprache · Language · Langue · Idioma</h3>
@@ -849,6 +817,8 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   </div>
   <ol id="logList"></ol>
 </div>
+<script src="lib/mondata.js?v=2026102201"></script>
+<script src="lib/monsters.js?v=2026102201"></script>
 <script>
 // ---------- Sprachen: Auswahl wird gemerkt; die Sprachdatei wird vor dem Spiel geladen ----------
 const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Français','🇫🇷'],['es','Español','🇪🇸'],['it','Italiano','🇮🇹'],['pt','Português','🇵🇹'],
@@ -856,12 +826,11 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102007"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102201"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102201"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
   if(!window.I18N)return;
-  if(window.I18N.__rules){const r=document.getElementById('rulesText');if(r)r.innerHTML=window.I18N.__rules;}
   const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement;
     if(!p||p.closest('script,style,#rulesText,.notr'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});
   const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
@@ -1297,15 +1266,24 @@ function srStart(){
     const C=window.SpeechRecognition||window.webkitSpeechRecognition;SR=new C();
     SR.lang=BCP[myLang()]||myLang();SR.continuous=true;SR.interimResults=false;SR.maxAlternatives=1;
     SR.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(!r.isFinal)continue;
-      const text=(r[0].transcript||'').trim();if(text.length>1)netChatOut({t:'say',text:text.slice(0,300),lang:myLang()});}};
+      const text=(r[0].transcript||'').trim();if(text.length>1)netChatOut({t:NET.on?'say':'chat',text:text.slice(0,NET.on?300:200),lang:myLang()});}};
     SR.onend=()=>{srOn=false;SR=null;if(srWant&&!ttsBusy)setTimeout(trTick,400);};
     SR.onerror=e=>{if(e&&(e.error==='not-allowed'||e.error==='service-not-allowed')){TR.speak=false;trSave();updTrUI();toast(T('Spracherkennung ist in diesem Browser nicht erlaubt.'));}};
     SR.start();srOn=true;
   }catch(e){srOn=false;}
 }
 function srStop(){if(SR){try{SR.onend=()=>{srOn=false;SR=null;};SR.stop();}catch(e){}}srOn=false;}
-function trTick(){   // Spracherkennung nur, wenn sie gebraucht wird: online, Mikrofon an, jemand spricht eine andere Sprache
-  srWant=!!(NET.on&&!NET.spec&&micLive()&&!ttsBusy&&((TR.speak&&needTranslation())||(NET.started&&recAll())));
+// Allein gegen Monster: „🎤 Monster hören zu“ – Gesprochenes wird als eigene Chat-Nachricht an die Monster geschickt
+let HEAR=false;try{HEAR=localStorage.getItem('dreiSchach.hear')==='1';}catch(e){}
+function hearLocal(){return HEAR&&!NET.on&&!FERN.on&&document.body.classList.contains('aichat');}
+function hearToggle(){if(!srSupported()){toast(T('Dein Browser kann leider keine Sprache erkennen – schreib den Monstern im Chat.'));return;}
+  HEAR=!HEAR;try{localStorage.setItem('dreiSchach.hear',HEAR?'1':'0');}catch(e){}
+  if(HEAR)toast(T('🎤 Die Monster hören zu. Sprich sie mit Namen an, z. B. „{0}, greif Rot an!“',[seatName(TURN_ORDER.find(q=>isAIPlayer(q))||'G')]),5000);
+  hearUI();trTick();}
+function hearUI(){const b=document.getElementById('hearBtn');if(b){b.classList.toggle('on',HEAR);b.title=T(HEAR?'Monster hören zu – antippen zum Ausschalten':'Mit den Monstern sprechen (Mikrofon)');}}
+setInterval(()=>{if(!NET.on&&(HEAR||srOn))trTick();},4000);
+function trTick(){   // Spracherkennung nur, wenn sie gebraucht wird: online (Übersetzung/Mitschrift) oder allein, wenn die Monster zuhören sollen
+  srWant=!!(!ttsBusy&&((NET.on&&!NET.spec&&micLive()&&((TR.speak&&needTranslation())||(NET.started&&recAll())))||(hearLocal()&&!gameOver)));
   if(srWant&&!srOn)srStart();else if(!srWant&&srOn)srStop();
   updTrUI();
 }
@@ -1620,7 +1598,7 @@ function netStart(){
   NET.started=true;
   const ai={};
   for(const p of TURN_ORDER){const s=NET.seats[p];if(s.kind==='open'){s.kind='ai';}ai[p]=s.kind==='ai'||s.kind==='dropped'?NET.cfg.lvl:null;}
-  const cfg={tc:NET.cfg.tc,ai,rules:RULES};
+  const cfg={tc:NET.cfg.tc,ai,rules:RULES,mons:MONDATA.encode(SEATMON,TURN_ORDER)};
   hostLobby();
   netBroadcast({t:'start',cfg});
   netBeginGame(cfg);
@@ -1817,7 +1795,7 @@ function hideNetModals(){
   setupOpen=false;document.getElementById('startBtn').classList.remove('show');
 }
 function netBeginGame(cfg){
-  NET.started=true;tc=cfg.tc;aiPlayers=cfg.ai;RULES=rulesOf(cfg.rules);
+  NET.started=true;tc=cfg.tc;aiPlayers=cfg.ai;RULES=rulesOf(cfg.rules);if(cfg.mons!=null)monApply(cfg.mons);
   hideNetModals();waitingStart=false;
   rotation=Math.max(0,TURN_ORDER.indexOf(NET.seat));
   initGame();
@@ -2884,7 +2862,7 @@ function rematch(){
   if(NET.on){
     if(!NET.host)return;
     const ai={};for(const p of TURN_ORDER){const k=NET.seats[p].kind;ai[p]=k==='ai'||k==='dropped'?NET.cfg.lvl:null;}
-    const cfg={tc:NET.cfg.tc,ai};netBroadcast({t:'start',cfg});netBeginGame(cfg);
+    const cfg={tc:NET.cfg.tc,ai,mons:MONDATA.encode(SEATMON,TURN_ORDER)};netBroadcast({t:'start',cfg});netBeginGame(cfg);
     netBroadcast({t:'note',txt:T('🔄 Revanche! Neue Partie mit denselben Spielern.')});
     return;
   }
@@ -3045,17 +3023,12 @@ function renderLog(){
 // Dieses Canvas wird in 2D direkt angezeigt und in 3D als Monitor-Textur verwendet.
 // Für den Multiplayer kann später statt des Avatars ein Kamerabild (video) eingesetzt werden.
 const AV_W=320,AV_H=240;
-const MONSTERS={
-  B:{name:'Blubbo',kind:'blob',bounce:1.35,shake:0.8,speed:1.0,
-     lines:{happy:['Juhuu!','Hab dich!','Lecker!'],angry:['Menno!','Nicht fair!','Waaah!'],excited:['SCHACH! Hihi!','Schach, Schach!'],
-            cheer:['ICH HAB GEWONNEN!','Blubbo ist der Größte!'],cry:['Buhuuu…','Schnief…'],fear:['Hilfe!','Oh nein, oh nein…'],neutral:['','','Hmm…']}},
-  G:{name:'Grumbo',kind:'ogre',bounce:0.6,shake:1.6,speed:0.8,
-     lines:{happy:['Hmpf. Gut.','Meins.','Zerquetscht.'],angry:['GRRRR!','DAS WAR MEINS!','Grrmpf!'],excited:['Schach. Zitter!','Grumbo sagt: Schach!'],
-            cheer:['GRUMBO SIEGT!','Wie erwartet.'],cry:['…grmpf…','Nicht weinen. Nein.'],fear:['Uff…','Das gefällt mir nicht.'],neutral:['','','Grmm.']}},
-  R:{name:'Flammo',kind:'flame',bounce:1.1,shake:1.2,speed:1.7,
-     lines:{happy:['Zack!','Heiß serviert!','Ha!'],angry:['Das brennt!','Wie bitte?!','Grrr – Funken!'],excited:['SCHACH! Feuer frei!','Heiß, heiß, Schach!'],
-            cheer:['FLAMMO GLÜHT!','Sieg in Flammen!'],cry:['Mein Feuer erlischt…','Pfff…'],fear:['Zu heiß hier!','Uiuiui!'],neutral:['','','Knister…']}},
-};
+// Die 8 Monster stehen in lib/mondata.js. Jede Farbe kann jedes Monster spielen (Auswahl im Startfenster).
+let SEATMON={B:'B',G:'G',R:'R'};
+function monLoad(){SEATMON={B:'B',G:'G',R:'R'};try{const m=JSON.parse(localStorage.getItem('dreiSchach.mons')||'null');if(m)for(const k in m)if(MONDATA.M[m[k]])SEATMON[k]=m[k];}catch(e){}}
+monLoad();
+function monId(p){return SEATMON[p]&&MONDATA.M[SEATMON[p]]?SEATMON[p]:(MONDATA.M[p]?p:'B');}
+const MONSTERS=new Proxy({},{get:(o,p)=>MONDATA.M[monId(p)]});
 const HUMAN_LINES={happy:['Schön!','Erwischt!'],angry:['Ärgerlich!','Mist!'],excited:['Schach!'],cheer:['Gewonnen!'],cry:['Verloren…'],fear:['Oh je!'],neutral:['']};
 const AV={};   // Zustand je Spieler
 for(const p of ['B','G','R'])AV[p]={emo:'neutral',since:0,until:0,line:'',cv:null,video:null};
@@ -3069,7 +3042,7 @@ function setEmo(p,emo,dur=3600,force=false){
   const lines=(isAIPlayer(p)?MONSTERS[p].lines:HUMAN_LINES)[emo]||[''];
   a.emo=emo;a.since=now;a.until=dur?now+dur:Infinity;a.line=emo==='neutral'?'':T(lines[Math.floor(Math.random()*lines.length)]||'');
   // Monstergeräusch (Blubbern, Grollen, Knistern …), höchstens eins pro Augenblick
-  try{if(emo!=='neutral'&&emo!=='fear'&&isAIPlayer(p)&&AIVOICE&&window.MV&&now-(setEmo.last||0)>700){setEmo.last=now;MV.sound(p,emo);}}catch(e){}
+  try{if(emo!=='neutral'&&emo!=='fear'&&isAIPlayer(p)&&AIVOICE&&window.MV&&now-(setEmo.last||0)>700){setEmo.last=now;MV.sound(monId(p),emo);}}catch(e){}
 }
 function resetEmos(){for(const p of ['B','G','R'])setEmo(p,'neutral',0,true);}
 function isAIPlayer(p){return typeof aiPlayers!=='undefined'&&!!aiPlayers[p];}
@@ -3111,7 +3084,8 @@ function drawAvatar0(p,t){
   x.fillStyle='rgba(0,0,0,.35)';x.beginPath();x.ellipse(AV_W/2,212,70*sc*(1+bob/120),10,0,0,Math.PI*2);x.fill();
   const blink=(emo==='neutral'||emo==='fear')&&((t/1000*sp)%3.3<0.12);
   let did3D=false;
-  if(ai&&avatars3D&&M3.ok()){   // Monster als echtes 3D-Modell
+  const OLD3=M.kind==='blob'||M.kind==='ogre'||M.kind==='flame';
+  if(ai&&avatars3D&&OLD3&&M3.ok()){   // Monster als echtes 3D-Modell
     try{const img=M3.render(p,M.kind,col,emo,t,blink,{bob,dx,rot,sc});
       if(img){if(emo==='angry'){x.shadowColor='rgba(255,40,0,.6)';x.shadowBlur=18;}
       x.drawImage(img,0,0,AV_W,AV_H);x.shadowBlur=0;did3D=true;}}catch(e){avatars3D=false;}
@@ -3120,6 +3094,7 @@ function drawAvatar0(p,t){
     x.save();x.translate(AV_W/2+dx,150+bob);x.rotate(rot);x.scale(sc,sc);
     if(emo==='angry'){x.shadowColor='rgba(255,40,0,.6)';x.shadowBlur=18;}
     if(!ai)drawHuman(x,col,emo,t,blink);
+    else if(!OLD3&&window.MON)MON.drawKind(x,M.kind,col,emo,t,blink);
     else if(M.kind==='blob')drawBlob(x,col,emo,t,blink);
     else if(M.kind==='ogre')drawOgre(x,col,emo,t,blink);
     else drawFlame(x,col,emo,t,blink);
@@ -4016,6 +3991,8 @@ function showDemo(i){
   document.getElementById('demoExpl').innerHTML=T(d.txt);
   renderDemo();
 }
+// Die Regeln stehen nur auf der Regelseite (eine Quelle); das Fenster hier ist das Übungsbrett
+function openRulesPage(){const u=window.rulesUrl?rulesUrl('spiel.html'):'regeln.html';const w=window.open(u,'_blank');if(!w)location.href=u;}
 function openRules(){
   const box=document.getElementById('demoBtns');
   if(!box.children.length){
@@ -4195,6 +4172,7 @@ setInterval(()=>{
   renderClocks();
 },200);
 function openSetup(){
+  if(!NET.on&&!FERN.on){monLoad();setTimeout(monUI,0);setTimeout(()=>{try{hearUI();}catch(e){}},0);}
   replayExit();setTimeout(()=>{try{renderEndBar();}catch(e){}},0);
   let has=false;try{has=!!localStorage.getItem(SAVE_KEY);}catch(e){}
   const rb=document.getElementById('btnResume');rb.style.display=has?'':'none';
@@ -4207,6 +4185,15 @@ function openSetup(){
 function contUpd(){const fl=document.getElementById('fnList'),rb=document.getElementById('btnResume');
   document.getElementById('contBox').style.display=(rb.style.display!=='none'||(fl&&fl.textContent.trim()))?'':'none';}
 setTimeout(()=>{const fl=document.getElementById('fnList');if(fl&&window.MutationObserver)new MutationObserver(contUpd).observe(fl,{childList:true,subtree:true});},0);
+// Monster je Computerplatz wählen (jedes Monster nur einmal; gewählt wird getauscht)
+// Monster-Zuordnung aus einer Online- oder Fernpartie übernehmen (ohne die eigene gespeicherte Wahl zu ändern)
+function monApply(str){if(str==null)return;SEATMON={B:'B',G:'G',R:'R'};Object.assign(SEATMON,MONDATA.decode(str));}
+function monPick(p,m){MONDATA.assign(SEATMON,p,m,TURN_ORDER);try{localStorage.setItem('dreiSchach.mons',JSON.stringify(SEATMON));}catch(e){}monUI();try{for(const q of TURN_ORDER)drawAvatar(q,performance.now());}catch(e){}}
+function monUI(){const hint=[];for(const p of TURN_ORDER){const sel=document.getElementById('mn'+p),pl=document.getElementById('pl'+p);if(!sel||!pl)continue;
+    sel.innerHTML=MONDATA.options(monId(p));sel.style.display=pl.value?'':'none';
+    if(pl.value){const M=MONDATA.M[monId(p)];hint.push(`${M.icon} <b>${M.name}</b>: ${T(M.sty.desc)}`);}}
+  const h=document.getElementById('monHint');if(h)h.innerHTML=hint.join('<br>');}
+setTimeout(monUI,0);
 function startFromSetup(){
   const mOn=document.getElementById('tcMoveOn').checked,gOn=document.getElementById('tcGameOn').checked;
   const ms=Math.max(5,+document.getElementById('tcMoveSec').value||60),gm=Math.max(1,+document.getElementById('tcGameMin').value||15);
@@ -4360,15 +4347,15 @@ function aiMove(){
 function aiChoose(p,lvl){oppPrepare(p);try{return aiChoose0(p,lvl);}finally{OPPF=null;}}
 function aiChoose0(p,lvl){   // bester Zug für p in der aktuellen Stellung (ohne ihn auszuführen)
   const moves=allLegalMoves(p);if(!moves.length)return null;
-  let best=null;
+  let best=null;const ST=monStyle(p);
   if(lvl==='easy'){
     const caps=moves.filter(m=>gameState[m.to]);
     best=(caps.length&&Math.random()<0.5)?caps[Math.floor(Math.random()*caps.length)]:moves[Math.floor(Math.random()*moves.length)];
   } else {
     const scored=moves.map(m=>{
       const ns=m.castle?applyCastle(gameState,m.from,m.castle):applyMove(gameState,m.from,m.to,epTarget);
-      const b=diploBias(p,m,ns)+oppBias(p,m,ns);   // Bündnis, Verrat, Rache, wackelnde Gegner
-      return{m,ns,b,v:evalAfter(p,ns,m)+b+Math.random()*(lvl==='medium'?0.12:0.04)};
+      const b=diploBias(p,m,ns)+oppBias(p,m,ns)+styleBias(p,m,ns,ST);   // Bündnis, Verrat, Rache, wackelnde Gegner, Spielstil des Monsters
+      return{m,ns,b,v:evalAfter(p,ns,m)+b+Math.random()*(lvl==='medium'?0.12:0.04)*ST.rnd};
     }).sort((a,b)=>b.v-a.v);
     best=scored[0].m;
     if(lvl==='master'&&scored[0].v<1e3){
@@ -4394,6 +4381,14 @@ function aiChoose0(p,lvl){   // bester Zug für p in der aktuellen Stellung (ohn
   }
   return best;
 }
+// Spielstil des Monsters (lib/mondata.js): Zuschläge in Materialeinheiten
+function monStyle(p){return MONDATA.factors(monId(p),q=>score(q),TURN_ORDER.filter(q=>!eliminated.has(q)));}
+function styleBias(p,m,ns,ST){let b=0;const vic=gameState[m.to],pd=gameState[m.from];
+  if(vic&&vic.player!==p)b+=(VALUE[vic.piece]||0)*(ST.greed*ST.target(vic.player)-1)*0.35;
+  const opp=TURN_ORDER.filter(q=>q!==p&&!eliminated.has(q));if(opp.some(q=>isInCheck(q,ns)))b+=(ST.chk-1)*0.5;
+  if(pd&&pd.piece!=='K'&&pd.piece!=='P'&&m.to[0]!==p&&m.from[0]===p)b+=(ST.agg-1)*0.25;   // ins Gebiet eines Gegners
+  if(pd&&pd.piece!=='K'&&/^D[45]$/.test(m.to.slice(1)))b+=(ST.dev-1)*0.15;   // Mitte
+  return b;}
 function aiPlay(p,best){
   // 1. Figur auswählen und Zugmöglichkeiten zeigen
   const allAI=TURN_ORDER.every(q=>aiPlayers[q]);
@@ -5007,7 +5002,7 @@ async function fernCreate(){
   btn.disabled=true;const old=btn.textContent;btn.textContent=T('Einen Moment …');
   try{
     RULES={help:document.getElementById('chkHelp').checked};
-    const j=await fernApi('new',{name,seat,ai,rules:RULES,public:document.getElementById('fnPublic').checked,lang:LANG_SET||'de'});
+    const j=await fernApi('new',{name,seat,ai,rules:Object.assign({},RULES,{mons:MONDATA.encode(SEATMON,TURN_ORDER)}),public:document.getElementById('fnPublic').checked,lang:LANG_SET||'de'});
     if(!j.code)throw{msg:j.error||'Fehler'};
     fernStore(j.code,{t:j.token,seat:j.seat});
     try{window.history.replaceState(null,'','?fern='+j.code+fernQS());}catch(e){}
@@ -5085,7 +5080,7 @@ function fernEnter(st,token,fresh){
 // ---------- Stand vom Server übernehmen ----------
 function fernApply(st,anim){
   if(st.rtc)FERN.rtc=st.rtc;
-  RULES=rulesOf(st.rules);
+  RULES=rulesOf(st.rules);monApply(st.rules&&st.rules.mons);
   FERN.seats=st.seats;FERN.next=st.next;FERN.over=st.over;FERN.used=st.used;FERN.age=st.age||0;FERN.loadedAt=Date.now();
   if(st.rematch&&FERN.rematch!==st.rematch){FERN.rematch=st.rematch;if(st.over)ask('rematch',T('🔄 Revanche! Eine neue Partie mit denselben Plätzen wartet.'),[{label:T('🔄 Zur Revanche'),fn:()=>{location.href=fernLink(st.rematch);}},{label:T('Später'),bg:'#555',fn:()=>{}}]);}
   renderFernPanel();setTimeout(fernBarFix,50);
@@ -5536,11 +5531,7 @@ function varAI(){
 // ================= Diplomatie der Computergegner: Bündnisse, Verrat, Bluffs, Rache – mit Sprachausgabe =================
 // Rechnet nur das Gerät, das auch die Computerzüge rechnet (allein: dieses Gerät; online: der Gastgeber).
 // Gesprochen wird über Chat-Nachrichten mit Textbaustein (ai:{k,a}); jedes Gerät setzt sie in seiner Sprache zusammen.
-const DPERS={   // Charaktere: wie oft sie Bündnisse anbieten / annehmen / verraten, wie nachtragend sie sind
-  B:{propose:.22,accept:.9,betray:.2,grudge:.6,bluff:.05,voice:{pitch:1.55,rate:1.08}},
-  G:{propose:.09,accept:.75,betray:0,grudge:1.2,bluff:.02,voice:{pitch:.55,rate:.86}},
-  R:{propose:.15,accept:.6,betray:.1,grudge:1.6,bluff:.07,voice:{pitch:1.15,rate:1.28}},
-};
+const DPERS=new Proxy({},{get:(o,p)=>MONDATA.M[monId(p)].per});   // Charaktere: Bündnisse anbieten / annehmen / verraten, Nachtragen
 const DLINES={   // Textbausteine: {0},{1} = Spielernamen
   propose:{B:'{0}, lass uns zusammen {1} ärgern – der ist viel zu stark! Deal? 🤝',G:'{0}. Wir zwei gegen {1}. Einverstanden?',R:'{0}! {1} wird zu heiß – wir löschen ihn gemeinsam, ja?'},
   accept:{B:'Au ja, {0}! Zusammen gegen {1}! 🤝',G:'Hmpf. Einverstanden, {0}. Gegen {1}.',R:'Abgemacht, {0}! {1} wird brennen! 🔥'},
@@ -5565,7 +5556,7 @@ function diploReset(){DIPLO.log=[];DIPLO.pacts=[];DIPLO.offers=[];DIPLO.grudge={
 function diploBoss(){return DIPLO.on&&!FERN.on&&!REPLAY&&(!NET.on||NET.host)&&TURN_ORDER.some(p=>aiPlayers[p]);}
 function nMoves(){return moveLog.length;}
 function seatName(p){return isAIPlayer(p)?MONSTERS[p].name:(netName(p)||PNAMES[p]);}
-function diploText(k,p,a){const tpl=(DLINES[k]||{})[p];return tpl?T(tpl,(a||[]).map(seatName)):'';}
+function diploText(k,p,a){const tpl=(MONDATA.DL[k]||{})[monId(p)];return tpl?T(tpl,(a||[]).map(seatName)):'';}
 // Ein Computergegner sagt etwas: Sprechblase, Hinweis, Chat (online an alle) und – falls an – Sprachausgabe
 function aiSay(p,k,args,extra){
   const text=diploText(k,p,args);if(!text)return;
@@ -5577,7 +5568,7 @@ function aiSay(p,k,args,extra){
 function speakMonster(p,text){
   if(!AIVOICE||!window.speechSynthesis||!text)return;
   const lang=myLang();if(!window.MV)return;
-  MV.speak(p,text,lang,{bcp:BCP[lang]||lang,onstart:()=>{ttsBusy=true;if(typeof srStop==='function')srStop();},onend:()=>{ttsBusy=false;setTimeout(()=>{if(typeof trTick==='function')trTick();},300);}});
+  MV.speak(monId(p),text,lang,{bcp:BCP[lang]||lang,onstart:()=>{ttsBusy=true;if(typeof srStop==='function')srStop();},onend:()=>{ttsBusy=false;setTimeout(()=>{if(typeof trTick==='function')trTick();},300);}});
 }
 function pactOf(p){return DIPLO.pacts.find(x=>x.a===p||x.b===p)||null;}
 function allyOf(p){const x=pactOf(p);return x?(x.a===p?x.b:x.a):null;}
@@ -5691,18 +5682,21 @@ function diploHear(m){
   },900);
 }
 // ---------- Freies Gespräch mit den Monstern (KI über den eigenen Server) ----------
-const MPERS={B:'gutmütig, überschwänglich, kindlich verspielt, bietet gern Bündnisse an und verrät sie auch mal mit einem Engelsgesicht',
-  G:'mürrisch, wortkarg, ehrlich und stur, hält Abmachungen, vergisst aber nie ein Unrecht',
-  R:'hitzköpfig, zappelig, angeberisch, rachsüchtig, blufft gern'};
+const MPERS=new Proxy({},{get:(o,p)=>MONDATA.M[monId(p)].persona});
 var MCH={last:{},n:0,busy:false};
 function monsterAddressed(text){   // welches Monster ist gemeint? (Name oder Farbe; bei nur einem Monster auch ohne Namen)
   const ais=TURN_ORDER.filter(q=>isAIPlayer(q)&&!eliminated.has(q));if(!ais.length)return null;
   const t=text.toLowerCase();
-  const byName=ais.find(q=>t.includes(MONSTERS[q].name.toLowerCase()));if(byName)return byName;
+  const flat=t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+  const byName=ais.find(q=>{const n=MONSTERS[q].name.toLowerCase();return t.includes(n)||flat.includes(n)||flat.includes(n.slice(0,4));});if(byName)return byName;
   const w={B:['blau','blue'],G:['grün','gruen','green'],R:['rot','red']};
   const byCol=ais.filter(q=>w[q].some(x=>new RegExp('(^|\\W)'+x+'(\\W|$)').test(t)));
   if(byCol.length===1&&/[?!]|\b(du|dir|dich|you)\b/i.test(t))return byCol[0];
-  if(ais.length===1&&/\?|\b(du|dir|dich|you|hey|hallo|hi)\b/i.test(t))return ais[0];
+  if(ais.length===1)return ais[0];
+  // nicht namentlich angesprochen: wer zuletzt geredet hat, sonst ein zufälliges Monster – allein am Gerät antwortet immer jemand
+  const last=NET.chat.slice().reverse().find(x=>(x.mon||x.ai)&&ais.includes(x.p)&&Date.now()-(+String(x.id).replace(/\D/g,'').slice(0,13)||0)<120000);
+  if(last)return last.p;
+  if(!NET.on)return ais[Math.floor(Math.random()*ais.length)];
   return null;
 }
 function monsterSituation(q){
@@ -5713,7 +5707,7 @@ function monsterSituation(q){
 async function monsterChat(m){
   if(!diploBoss()||!AIVOICE&&!DIPLO.on)return;
   const q=monsterAddressed(String(m.text||''));if(!q||q===m.p)return;
-  const now=Date.now();if(MCH.busy||now-(MCH.last[q]||0)<12000||MCH.n>=60)return;
+  const now=Date.now();if(MCH.busy||now-(MCH.last[q]||0)<4000||MCH.n>=80)return;
   MCH.busy=true;MCH.last[q]=now;MCH.n++;
   try{
     if(!await fernSrvLoad())return;
@@ -6342,8 +6336,8 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
-<script src="lib/varnav.js?v=2026102106"></script>
-<script src="lib/monvoice.js?v=2026102104"></script>
+<script src="lib/varnav.js?v=2026102201"></script>
+<script src="lib/monvoice.js?v=2026102201"></script>
 <script src="lib/three.min.js"></script>
 <script>
 // ================= 3D-Ansicht (three.js) =================

@@ -279,3 +279,5 @@ U = {'Start': '首页',
  'Schach ohne Grenzen': '无界象棋',
  'Sternschach': '星形象棋',
  'Offene Spiele': '公开对局'}
+
+D["<b>Monster mit Charakter:</b> Die Computergegner heißen Blubbo, Grumbo, Flammo, Zappo, Spuki, Kraki, Sonno und Fluffi. Sie freuen und ärgern sich auf den Monitoren, schmieden Bündnisse gegen den Führenden, verraten sie auch mal, rächen sich – und sprechen auf Wunsch. Man kann mit ihnen im Chat verhandeln („Grumbo, lass uns gemeinsam Rot angreifen!“). Sie merken sich außerdem, wie die Menschen spielen. Für jeden Computerplatz wählst du, welches Monster spielt – jedes hat sein eigenes Aussehen, seine eigene Stimme und seinen eigenen Spielstil: Flammo stürmt los, Grumbo mauert, Kraki baut geduldig auf, Fluffi sammelt gierig Material, Spuki jagt den Schwächsten. Mit „🎤“ kannst du einfach mit ihnen sprechen."]="<b>有个性的怪兽：</b>电脑对手名叫布鲁波、格朗博、弗拉莫、扎波、斯普基和克拉基。他们在显示屏上高兴、生气，结盟对付领先者，有时也会背叛，会复仇——如果你愿意，他们还会说话。你可以在聊天中和他们谈判（“格朗博，我们一起进攻红方！”）。他们还会记住人类的下法。 每个电脑座位都可以选择由哪个怪兽来下——每个怪兽都有自己的外形、声音和棋风：弗拉莫猛冲猛打，格伦博筑墙防守，克拉基耐心布局，弗拉菲贪心地收集子力，斯普基专挑最弱的人下手。用“🎤”就能直接和它们说话。"
