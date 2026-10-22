@@ -7,11 +7,11 @@ SITE = 'Drei-Personen-Schach'
 DOMAIN = 'dreipersonenschach.de'
 LIVE = os.path.exists(os.path.join(ROOT, 'CNAME'))   # erst mit eigener Domain: kanonische Adressen setzen
 PAGES = []
-# Hauptmenü: zwei Klappmenüs (Spielen, Regeln) und „Über das Spiel“
-NAV = [('Spielen', [('spiel.html', 'Drei-Personen-Schach'), ('raum.html', 'Schach der 6 Reiche'), ('grenzenlos.html', 'Schach ohne Grenzen'),
-                    ('stern.html', 'Sternschach'), ('spiel.html?lobby=1', 'Offene Spiele'), ('computergegner.html', 'Die Computergegner')]),
+# Hauptmenü: zwei Klappmenüs (Spiele, Regeln) und „Über das Spiel“
+NAV = [('Spiele', [('spiel.html', 'Drei-Personen-Schach'), ('raum.html', 'Schach der 6 Reiche'), ('grenzenlos.html', 'Schach ohne Grenzen'),
+                    ('stern.html', 'Sternschach'), ('spiel.html?lobby=1', 'Offene Spiele')]),
        ('Regeln', [('regeln.html', 'Drei-Personen-Schach'), ('reiche-regeln.html', 'Schach der 6 Reiche'), ('grenzenlos-regeln.html', 'Schach ohne Grenzen'),
-                   ('stern-regeln.html', 'Sternschach'), ('strategie.html', 'Strategie')]),
+                   ('stern-regeln.html', 'Sternschach'), ('strategie.html', 'Strategie'), ('computergegner.html', 'Die Computergegner')]),
        ('ueber.html', 'Über das Spiel')]
 def navhtml(fn):
     out = ''
