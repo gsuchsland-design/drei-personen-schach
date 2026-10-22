@@ -602,9 +602,9 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
     <div class="modeTabs"><button data-m="local" onclick="setupMode('local')">🤖 Hier am Gerät</button><button data-m="live" onclick="setupMode('live')">🌐 Online live</button><button data-m="fern" onclick="setupMode('fern')">✉️ Fernpartie</button></div>
     <div class="modeSec" id="secLocal">
     <div class="setLbl">Spieler</div>
-    <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel" onchange="monUI()"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select><select id="mnB" class="monsel" onchange="monPick('B',this.value)" title="Welches Monster spielt diesen Platz?"></select></div>
-    <div class="row"><span style="color:#44ee22;width:46px">Grün</span><select id="plG" class="plsel" onchange="monUI()"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select><select id="mnG" class="monsel" onchange="monPick('G',this.value)" title="Welches Monster spielt diesen Platz?"></select></div>
-    <div class="row"><span style="color:#ff5533;width:46px">Rot</span><select id="plR" class="plsel" onchange="monUI()"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select><select id="mnR" class="monsel" onchange="monPick('R',this.value)" title="Welches Monster spielt diesen Platz?"></select></div>
+    <div class="row"><span style="color:#5599ff;width:46px">Blau</span><select id="plB" class="plsel" onchange="monUI()"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium">Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select><select id="mnB" class="monsel" onchange="monPick('B',this.value)" title="Welcher Computergegner spielt diesen Platz?"></select></div>
+    <div class="row"><span style="color:#44ee22;width:46px">Grün</span><select id="plG" class="plsel" onchange="monUI()"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select><select id="mnG" class="monsel" onchange="monPick('G',this.value)" title="Welcher Computergegner spielt diesen Platz?"></select></div>
+    <div class="row"><span style="color:#ff5533;width:46px">Rot</span><select id="plR" class="plsel" onchange="monUI()"><option value="">Mensch</option><option value="easy">Computer – leicht</option><option value="medium" selected>Computer – mittel</option><option value="hard">Computer – stark</option><option value="master">Computer – Meister</option></select><select id="mnR" class="monsel" onchange="monPick('R',this.value)" title="Welcher Computergegner spielt diesen Platz?"></select></div>
     <div class="hint" id="monHint" style="margin-left:0"></div>
           <button onclick="startFromSetup()">Spiel starten (an diesem Gerät)</button>
     </div>
@@ -731,7 +731,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   <div id="chatHead"><b>💬 Chat</b><button onclick="toggleChat()" title="Schließen">✕</button></div>
   <div id="chatList"></div>
   <div id="chatEmo"></div>
-  <form id="chatForm" onsubmit="event.preventDefault();sendChat();"><button type="button" id="hearBtn" onclick="hearToggle()" title="Mit den Monstern sprechen (Mikrofon)">🎤</button><input id="chatIn" maxlength="200" placeholder="Nachricht …" autocomplete="off"><button>Senden</button></form>
+  <form id="chatForm" onsubmit="event.preventDefault();sendChat();"><button type="button" id="hearBtn" onclick="hearToggle()" title="Mit den Computergegnern sprechen (Mikrofon)">🎤</button><input id="chatIn" maxlength="200" placeholder="Nachricht …" autocomplete="off"><button>Senden</button></form>
 </div>
 <div id="langModal" class="netModal notr"><div class="netBox" style="border-color:#2a6">
   <h3>🌐 Sprache · Language · Langue · Idioma</h3>
@@ -1275,11 +1275,11 @@ function srStop(){if(SR){try{SR.onend=()=>{srOn=false;SR=null;};SR.stop();}catch
 // Allein gegen Monster: „🎤 Monster hören zu“ – Gesprochenes wird als eigene Chat-Nachricht an die Monster geschickt
 let HEAR=false;try{HEAR=localStorage.getItem('dreiSchach.hear')==='1';}catch(e){}
 function hearLocal(){return HEAR&&!NET.on&&!FERN.on&&document.body.classList.contains('aichat');}
-function hearToggle(){if(!srSupported()){toast(T('Dein Browser kann leider keine Sprache erkennen – schreib den Monstern im Chat.'));return;}
+function hearToggle(){if(!srSupported()){toast(T('Dein Browser kann leider keine Sprache erkennen – schreib den Computergegnern im Chat.'));return;}
   HEAR=!HEAR;try{localStorage.setItem('dreiSchach.hear',HEAR?'1':'0');}catch(e){}
-  if(HEAR)toast(T('🎤 Die Monster hören zu. Sprich sie mit Namen an, z. B. „{0}, greif Rot an!“',[seatName(TURN_ORDER.find(q=>isAIPlayer(q))||'G')]),5000);
+  if(HEAR)toast(T('🎤 Die Computergegner hören zu. Sprich sie mit Namen an, z. B. „{0}, greif Rot an!“',[seatName(TURN_ORDER.find(q=>isAIPlayer(q))||'G')]),5000);
   hearUI();trTick();}
-function hearUI(){const b=document.getElementById('hearBtn');if(b){b.classList.toggle('on',HEAR);b.title=T(HEAR?'Monster hören zu – antippen zum Ausschalten':'Mit den Monstern sprechen (Mikrofon)');}}
+function hearUI(){const b=document.getElementById('hearBtn');if(b){b.classList.toggle('on',HEAR);b.title=T(HEAR?'Die Computergegner hören zu – antippen zum Ausschalten':'Mit den Computergegnern sprechen (Mikrofon)');}}
 setInterval(()=>{if(!NET.on&&(HEAR||srOn))trTick();},4000);
 function trTick(){   // Spracherkennung nur, wenn sie gebraucht wird: online (Übersetzung/Mitschrift) oder allein, wenn die Monster zuhören sollen
   srWant=!!(!ttsBusy&&((NET.on&&!NET.spec&&micLive()&&((TR.speak&&needTranslation())||(NET.started&&recAll())))||(hearLocal()&&!gameOver)));
