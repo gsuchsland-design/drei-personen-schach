@@ -61,6 +61,7 @@ async function aiReport(req, env) {
     'Regeln: Nutze ausschließlich die gegebenen Fakten; erfinde keine Züge, Zahlen, Zitate oder Ereignisse (zum Beispiel kein Ende eines Bündnisses, wenn es nicht in den Fakten steht). ' +
     'Spieler mit dem Zusatz (Computer) sind Programme: beschreibe sie kurz, gib ihnen aber keine Tipps. Tipps nur für Menschen, jeweils einen konkreten. ' +
     'Psychologie heißt Spielverhalten unter Druck (zum Beispiel mehr Fehler nach Verlusten, Rachezüge, Bündnistreue) – keine Diagnosen, keine Urteile über die Person, kein Spott. ' +
+    'Wo die Fakten eine kognitive Verzerrung nennen (mit „→“ markiert, z. B. Sunk-Cost-Effekt oder Verlustaversion), benenne sie klar beim Namen und erkläre in einem Satz, woran sie sich in dieser Partie gezeigt hat. ' +
     'Enthalten die Fakten eine freiwillige Selbsteinschätzung, füge vor den Tipps einen Abschnitt „Selbstbild und Spiel“ hinzu: Vergleiche behutsam, wie sich der Spieler eingeschätzt hat, mit dem, was er laut Auswertung und Mitschrift tatsächlich getan und gesagt hat. Würdige Übereinstimmungen, formuliere Abweichungen als Anregung zum Nachdenken über das eigene Denken (Metakognition), nie als Vorwurf, und bedenke, dass sich auch die Auswertung irren kann. Dann dürfen es höchstens 360 Wörter sein. ' +
     'Hinweise auf mögliche Computerhilfe nur bei Menschen und nur vorsichtig als Hinweis. Ironie oder Bluffs in der Mitschrift darfst du deuten, kennzeichne das als Vermutung.';
   try {

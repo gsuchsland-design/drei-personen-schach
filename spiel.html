@@ -653,7 +653,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
       <button onclick="document.getElementById('setupModal').classList.remove('show');setupOpen=false;openRules();" title="Ausprobieren, wie jede Figur über die Mitte zieht">🎯 Übungsbrett</button>
       <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
       <button class="installBtn" onclick="doInstall()" style="display:none">📲 Als App installieren</button></div>
-    <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · <a href="index.html#start" style="color:#8fb6ff">Startseite</a> · <a href="regeln.html" style="color:#8fb6ff">Regeln</a> · <a href="strategie.html" style="color:#8fb6ff">Strategie</a> · <a href="impressum.html" style="color:#8fb6ff">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
+    <div class="hint" style="margin:14px 0 0;text-align:center">© 2026 Guido Suchsland · <a href="index.html#start" style="color:#8fb6ff">Startseite</a> · <a href="regeln.html" style="color:#8fb6ff">Regeln</a> · <a href="strategie.html" style="color:#8fb6ff">Strategie</a> · <a href="psychologie.html" style="color:#8fb6ff">Psychologie</a> · <a href="impressum.html" style="color:#8fb6ff">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener" style="color:#8fb6ff">Datenschutz</a></div>
   </div>
 </div>
 <div id="lobbyModal" class="netModal"><div class="netBox">
@@ -5837,7 +5837,7 @@ function anaJump(i){anaClose();if(REPLAY){replayStop();replayGo(i);}}
 function anaStats(){
   const R=ANA.R,log=R.real.moveLog,res=ANA.res,boards=R.boards,st={};
   for(const p of TURN_ORDER)st[p]={moves:0,loss:0,good:0,blunder:0,mistake:0,inacc:0,ms:[],capOn:{B:0,G:0,R:0},chkOn:{B:0,G:0,R:0},
-    leadCaps:0,caps:0,revOpp:0,revHit:0,tiltLoss:0,tiltN:0,fastErr:0,fastN:0,slowErr:0,slowN:0};
+    leadCaps:0,caps:0,revOpp:0,revHit:0,tiltLoss:0,tiltN:0,fastErr:0,fastN:0,slowErr:0,slowN:0,net:{},sunkAtt:{}};
   const lastHurt={};   // wer hat mich zuletzt geschlagen (und wie viele eigene Züge her)
   const big={};       // nach großem Verlust: Anzahl folgender Züge mit Beobachtung
   const scoreAt=(i,q)=>{const b=boards[i];let v=0;for(const pd of Object.values(b.gs))if(pd.player===q)v+=VALUE[pd.piece];for(const c of b.cap[q])v+=VALUE[c.piece];return v;};
@@ -5850,9 +5850,13 @@ function anaStats(){
       const others=TURN_ORDER.filter(q=>q!==p),lead=others.reduce((a,q)=>scoreAt(i,q)>scoreAt(i,a)?q:a,others[0]);
       if(scoreAt(i,lead)>scoreAt(i,others.find(q=>q!==lead))&&lead===e.capFrom)s.leadCaps++;
       if(lastHurt[p]){s.revOpp++;if(lastHurt[p]===e.capFrom)s.revHit++;lastHurt[p]=null;}
-      const v=VALUE[e.cap]||0;lastHurt[e.capFrom]=p;if(v>=3)big[e.capFrom]=2;}
-    if(e.mark==='+'||e.mark==='#'){const nb=boards[i+1];if(nb)for(const q of TURN_ORDER)if(q!==p&&isInCheck(q,nb.gs))s.chkOn[q]++;}
+      const v=VALUE[e.cap]||0;lastHurt[e.capFrom]=p;if(v>=3)big[e.capFrom]=2;
+      // Sunk Cost: greift weiter an, obwohl er gegen diesen Gegner schon deutlich mehr verloren als gewonnen hat
+      if((s.net[e.capFrom]||0)<=-5)s.sunkAtt[e.capFrom]=(s.sunkAtt[e.capFrom]||0)+1;
+      s.net[e.capFrom]=(s.net[e.capFrom]||0)+v;st[e.capFrom].net[p]=(st[e.capFrom].net[p]||0)-v;}
+    if(e.mark==='+'||e.mark==='#'){const nb=boards[i+1];if(nb)for(const q of TURN_ORDER)if(q!==p&&isInCheck(q,nb.gs)){s.chkOn[q]++;if((s.net[q]||0)<=-5)s.sunkAtt[q]=(s.sunkAtt[q]||0)+1;}}
   });
+  for(const p of TURN_ORDER){const s=st[p];s.sunk=TURN_ORDER.filter(q=>q!==p&&(s.sunkAtt[q]||0)>=2&&(s.net[q]||0)<=-4);}
   return st;
 }
 // Mitschrift: angekündigte Angriffe mit den folgenden Zügen vergleichen
@@ -5914,11 +5918,12 @@ function anaRender(){
     lines.push(T('Geschlagen bei: {0}',[tg.map(t=>`${anaName(t.q)} ${t.c}`).join(' · ')])+(tg.some(t=>t.k)?' · '+T('Schach gegen: {0}',[tg.map(t=>`${anaName(t.q)} ${t.k}`).join(' · ')]):''));
     const traits=[];
     if(s.caps>=4&&s.leadCaps/s.caps>=0.6)traits.push(T('greift bevorzugt den Führenden an'));
-    if(s.revOpp>=3&&s.revHit/s.revOpp>=0.6)traits.push(T('nachtragend: schlägt oft zurück, wer ihn zuletzt geschlagen hat'));
-    if(s.tiltN>=3&&s.tiltLoss/s.tiltN>avg*1.6+0.3)traits.push(T('nach eigenen Verlusten deutlich unruhiger (mehr Fehler)'));
+    if(s.revOpp>=3&&s.revHit/s.revOpp>=0.6)traits.push(T('nachtragend: schlägt oft zurück, wer ihn zuletzt geschlagen hat')+(window.BIAS?BIAS.tag('vergeltung'):''));
+    if(s.tiltN>=3&&s.tiltLoss/s.tiltN>avg*1.6+0.3)traits.push(T('nach eigenen Verlusten deutlich unruhiger (mehr Fehler)')+(window.BIAS?BIAS.tag('verlustaversion'):''));
     else if(s.tiltN>=3&&s.tiltLoss/s.tiltN<avg*0.7)traits.push(T('bleibt nach Verlusten ruhig'));
-    if(s.fastN>=5&&s.slowN>=5&&s.fastErr/s.fastN>s.slowErr/s.slowN*1.8+0.05)traits.push(T('schnelle Züge sind deutlich fehleranfälliger'));
-    if(s.caps===0&&s.moves>=15)traits.push(T('sehr vorsichtig: hat nichts geschlagen'));
+    if(s.fastN>=5&&s.slowN>=5&&s.fastErr/s.fastN>s.slowErr/s.slowN*1.8+0.05)traits.push(T('schnelle Züge sind deutlich fehleranfälliger')+(window.BIAS?BIAS.tag('impulsivitaet'):''));
+    if(s.caps===0&&s.moves>=15)traits.push(T('sehr vorsichtig: hat nichts geschlagen')+(window.BIAS?BIAS.tag('verlustaversion'):''));
+    for(const q of s.sunk||[])traits.push(T('konnte von einem Angriff auf {0} nicht ablassen, obwohl er dort deutlich mehr verlor als gewann',[anaName(q)])+(window.BIAS?BIAS.tag('sunk-cost'):''));
     if(traits.length)lines.push('<b>'+T('Auffällig:')+'</b> '+traits.join('; '));
     if(!isAIPlayer(p)){const ev=res.filter(r=>r&&r.p===p&&r.eng!==undefined),hit=ev.filter(r=>r.eng).length;
       if(ev.length>=8){const q=Math.round(100*hit/ev.length);
@@ -6395,7 +6400,8 @@ try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage
 </script>
 <script src="lib/varnav.js?v=2026102206"></script>
 <script src="lib/tourbg.js?v=2026102206"></script>
-<script src="lib/selbst.js?v=2026102208"></script>
+<script src="lib/bias.js?v=2026102209"></script>
+<script src="lib/selbst.js?v=2026102209"></script>
 <script src="lib/monvoice.js?v=2026102206"></script>
 <script src="lib/three.min.js"></script>
 <script>
