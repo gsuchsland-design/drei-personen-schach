@@ -9,7 +9,7 @@ LIVE = os.path.exists(os.path.join(ROOT, 'CNAME'))   # erst mit eigener Domain: 
 PAGES = []
 # Hauptmenü: zwei Klappmenüs (Spielen, Regeln) und „Über das Spiel“
 NAV = [('Spielen', [('spiel.html', 'Drei-Personen-Schach'), ('raum.html', 'Schach der 6 Reiche'), ('grenzenlos.html', 'Schach ohne Grenzen'),
-                    ('stern.html', 'Sternschach'), ('spiel.html?lobby=1', 'Offene Spiele')]),
+                    ('stern.html', 'Sternschach'), ('spiel.html?lobby=1', 'Offene Spiele'), ('computergegner.html', 'Die Computergegner')]),
        ('Regeln', [('regeln.html', 'Drei-Personen-Schach'), ('reiche-regeln.html', 'Schach der 6 Reiche'), ('grenzenlos-regeln.html', 'Schach ohne Grenzen'),
                    ('stern-regeln.html', 'Sternschach'), ('strategie.html', 'Strategie')]),
        ('ueber.html', 'Über das Spiel')]
@@ -176,6 +176,35 @@ page('regeln.html', 'Spielregeln – Drei-Personen-Schach',
 </article>""")
 
 # ---------- Strategie ----------
+
+# ---------- Die Computergegner ----------
+import json as _json, subprocess as _sp
+_M = _json.loads(_sp.run(['node', '-e', "global.window={};require('./lib/mondata.js');const M=window.MONDATA.M;const o={};for(const k of window.MONDATA.IDS)o[k]={name:M[k].name,icon:M[k].icon,persona:M[k].persona,style:M[k].sty.desc,lines:M[k].lines};process.stdout.write(JSON.stringify(o))"], cwd=ROOT, capture_output=True, text=True, check=True).stdout)
+_LOOK = {'B': 'ein flauschiger Zyklop mit Hörnern', 'G': 'ein brummiger Oger mit Hauern und Warzen', 'R': 'eine zappelige Flamme mit drei Augen',
+         'Y': 'ein knisterndes Blitzwesen', 'L': 'ein Gespenst im wehenden Laken', 'T': 'eine Krake mit acht wogenden Armen',
+         'O': 'eine strahlende Sonne – bei guter Laune mit Sonnenbrille', 'I': 'ein Wölkchen aus Zuckerwatte'}
+def _card(k):
+    m = _M[k]; L = m['lines']
+    q = [L['happy'][0], L['excited'][0], L['cheer'][-1]]
+    cap = lambda t: t[:1].upper() + t[1:]
+    return (f'<section class="kig" id="{m["name"].lower()}"><img src="img/kigegner-{k}.webp" width="320" height="240" alt="{m["name"]}, {_LOOK[k]}" loading="lazy">'
+            f'<div><h2>{m["icon"]} {m["name"]}</h2><p class="kigLook">{cap(_LOOK[k])}</p>'
+            f'<p><b>Charakter:</b> {cap(m["persona"])}.</p><p><b>Spielstil:</b> {cap(m["style"])}.</p>'
+            f'<p class="kigQ">{" · ".join("„" + x + "“" for x in q)}</p>'
+            f'<p><a class="cta go small" href="spiel.html?gegner={k}">▶ Gegen {m["name"]} spielen</a></p></div></section>')
+page('computergegner.html', 'Die Computergegner – 8 KI-Gegner mit Charakter',
+ 'Die acht Computergegner der Schachvarianten: Blubbo, Grumbo, Flammo, Zappo, Spuki, Kraki, Sonno und Fluffi – jeder mit eigenem Aussehen, eigener Stimme und eigenem Spielstil.',
+ '<article>\n<h1>Die Computergegner</h1>\n<p class="lead">Acht KI-Gegner mit Charakter: Jeder sieht anders aus, klingt anders und spielt anders. Sie freuen und ärgern sich auf den Monitoren, verhandeln, schmieden Bündnisse, verraten sie auch mal – und du kannst mit ihnen reden.</p>\n'
+ '<h2>So wählst du deinen Gegner</h2>\n<ul>\n<li>Im Startfenster stellst du für jeden Platz ein, ob dort ein Mensch oder der Computer spielt. Beim Computer wählst du die <b>Stärke</b> (leicht, mittel, stark, Meister) und daneben, <b>welcher Gegner</b> spielt.</li>\n'
+ '<li>Stärke und Charakter sind unabhängig: Ein leichter Flammo stürmt genauso los wie ein starker – er übersieht nur mehr.</li>\n'
+ '<li>Jeder Gegner spielt in allen vier Varianten: Drei-Personen-Schach, Schach der 6 Reiche, Schach ohne Grenzen und Sternschach.</li>\n</ul>\n'
+ + '\n'.join(_card(k) for k in _M) +
+ '\n<h2>Mit den Computergegnern reden</h2>\n<ul>\n<li><b>Chat:</b> Schreib ihnen einfach, zum Beispiel „Grumbo, lass uns gemeinsam Rot angreifen!“ oder „Fluffi, wie geht es dir?“. Sie antworten in ihrem Charakter.</li>\n'
+ '<li><b>Sprechen:</b> Mit „🎤“ hören sie dir zu – sprich sie am besten mit Namen an.</li>\n'
+ '<li><b>Bündnisse:</b> Sie bieten Bündnisse gegen den Führenden an, nehmen deine Angebote an oder lehnen ab – und manche verraten dich im dümmsten Moment.</li>\n'
+ '<li><b>Lernen:</b> Auf Wunsch merken sie sich, wie du spielst, und stellen sich darauf ein.</li>\n</ul>\n'
+ '<p style="text-align:center;margin-top:30px"><a class="cta go" href="spiel.html">▶ Jetzt spielen</a></p>\n</article>')
+
 page('strategie.html', 'Strategie für Drei-Personen-Schach – Tipps für Eröffnung, Mitte, Bündnisse und Endspiel',
  'Wie denkt man im Schach zu dritt? Strategie-Ratgeber für Drei-Personen-Schach: Eröffnung, die Mitte des Sterns, Doppelangriffe, Hilfspflicht, Bündnisse, Königssicherheit und Punktewertung.',
  """<article>

@@ -64,3 +64,12 @@ details.dd > div a:hover, details.dd > div a.on { background:#2a2e38; color:#fff
 /* Varianten-Karten auf der Startseite */
 .grid.vars .card img { width:100%; height:auto; border-radius:10px; border:1px solid var(--line); margin-bottom:8px; }
 .cta.small { font-size:15px; padding:7px 14px; margin:6px 10px 0 0; }
+
+/* Die Computergegner */
+.kig { display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); gap:22px; align-items:center; margin:34px 0; padding:18px; background:#1d2129; border:1px solid #2c3240; border-radius:14px; }
+.kig img { width:100%; height:auto; border-radius:10px; display:block; }
+.kig h2 { margin:0 0 4px; }
+.kig p { margin:6px 0; }
+.kig .kigLook { color:#9aa3b5; font-style:italic; }
+.kig .kigQ { color:#ffd23f; }
+@media (max-width:640px){ .kig { grid-template-columns:1fr; } }

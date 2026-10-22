@@ -286,3 +286,5 @@ D["Im Spiel kannst du im Startfenster unter „🎯 Übungsbrett“ jede Figur a
 D["Oben im Spiel: „＋ Neues Spiel“, „📁 Partie“ (Speichern, Laden, Zugliste) und „👁 Ansicht“ (Koordinaten, Brett drehen, Farben, Vollbild). Dazu die 3D-Ansicht, 🔊 Ton, ⏸ Pause und 👥 Mitspieler-Fenster."]="游戏上方：“＋ 新游戏”、“📁 对局”（保存、载入、着法列表）和“👁 视图”（坐标、旋转棋盘、颜色、全屏）。另有3D视图、🔊 声音、⏸ 暂停和👥 玩家窗口。"
 D["<b>Die Computergegner</b> sind 8 Monster mit eigenem Aussehen, eigener Stimme und eigenem Spielstil: Blubbo, Grumbo, Flammo, Zappo, Spuki, Kraki, Sonno und Fluffi. Im Startfenster wählst du für jeden Computerplatz, welches Monster spielt. Sie freuen sich, ärgern sich, verhandeln und verbünden sich – und mit „🎤“ kannst du einfach mit ihnen sprechen."]="<b>电脑对手</b>是8个怪兽，各有自己的外形、声音和棋风：Blubbo, Grumbo, Flammo, Zappo, Spuki, Kraki, Sonno, Fluffi。在开始窗口中，你可以为每个电脑座位选择由哪个怪兽来下。它们会高兴、生气、谈判和结盟——用“🎤”就能直接和它们说话。"
 D["Tipp: Im Spiel lassen sich die Koordinaten unter „👁 Ansicht“ einblenden. Die Zugliste oben rechts zeigt jeden Zug in dieser Schreibweise, und mit 📼 kannst du jede Partie Zug für Zug nachspielen."]="提示：游戏中可在“👁 视图”里显示坐标。右上角的着法列表用这种记法显示每一步，用📼可以逐步回放任何一局。"
+
+U['Die Computergegner']="电脑对手"

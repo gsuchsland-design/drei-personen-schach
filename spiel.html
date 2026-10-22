@@ -4191,6 +4191,7 @@ function monPick(p,m){MONDATA.assign(SEATMON,p,m,TURN_ORDER);try{localStorage.se
 function monUI(){const hint=[];for(const p of TURN_ORDER){const sel=document.getElementById('mn'+p),pl=document.getElementById('pl'+p);if(!sel||!pl)continue;
     sel.innerHTML=MONDATA.options(monId(p));sel.style.display=pl.value?'':'none';
     if(pl.value){const M=MONDATA.M[monId(p)];hint.push(`${M.icon} <b>${M.name}</b>: ${T(M.sty.desc)}`);}}
+  if(hint.length)hint.push(`<a href="computergegner.html" target="_blank" style="color:#8fb6ff">${T('Mehr über die Computergegner')} ›</a>`);
   const h=document.getElementById('monHint');if(h)h.innerHTML=hint.join('<br>');}
 setTimeout(monUI,0);
 function startFromSetup(){
@@ -6321,7 +6322,8 @@ function setupMode(m){if(!['local','live','fern'].includes(m))m='local';try{loca
   for(const[id,k]of[['secLocal','local'],['secLive','live'],['secFern','fern']])document.getElementById(id).classList.toggle('on',k===m);}
 setTimeout(()=>{let m='local';try{m=localStorage.getItem('dreiSchach.setupMode')||'local';}catch(e){}setupMode(m);},0);
 let demoEntry=false;   // von der Regelseite (?demo=…) direkt ins Übungsbrett
-function startFlow(){if(QS.get('demo')!==null){demo.idx=Math.max(0,Math.min(DEMOS.length-1,parseInt(QS.get('demo'))||0));demoEntry=true;openRules();setTimeout(()=>{const c=document.getElementById('demoBtns');if(c)c.scrollIntoView({block:'start'});},300);return;}if(QS.get('lobby')){pubOpen();return;}if(QS.get('pos')){aboardOpen(QS.get('pos'));return;}if(QS.get('fern')){fernOpen(QS.get('fern'));return;}if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else if(tourSeen()||QS.get('pos'))openSetup();else tourStart(openSetup);}
+function startFlow(){const gg=QS.get('gegner');if(gg&&MONDATA.M[gg]){try{const pl=document.getElementById('plG');if(pl&&!pl.value)pl.value='medium';monPick('G',gg);}catch(e){}}
+if(QS.get('demo')!==null){demo.idx=Math.max(0,Math.min(DEMOS.length-1,parseInt(QS.get('demo'))||0));demoEntry=true;openRules();setTimeout(()=>{const c=document.getElementById('demoBtns');if(c)c.scrollIntoView({block:'start'});},300);return;}if(QS.get('lobby')){pubOpen();return;}if(QS.get('pos')){aboardOpen(QS.get('pos'));return;}if(QS.get('fern')){fernOpen(QS.get('fern'));return;}if(NET_CODE_URL){const hs=hostSaved();if(hs)netResumeHost(hs);else openJoin();}else if(tourSeen()||QS.get('pos'))openSetup();else tourStart(openSetup);}
 function tourFromSetup(){document.getElementById('setupModal').classList.remove('show');setupOpen=false;tourStart(openSetup);}
 function afterLang(){startFlow();}
 if(!LANG_SET)openLang();else startFlow();
