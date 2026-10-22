@@ -650,6 +650,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
       <button onclick="document.getElementById('loadFile').click()">📂 Partie laden</button>
       <button onclick="aboardOpen()" title="Stellungen aufbauen, Züge prüfen und teilen – unabhängig von einer Partie">🔬 Analysebrett</button>
       <button onclick="tourFromSetup()" title="Kurze Einführung in das Spiel">🎓 Einführung</button>
+      <button onclick="window.SPIELER&&SPIELER.umzug()" title="Spielername, Partien und Einstellungen auf ein anderes Gerät übertragen">📲 Geräte verbinden</button>
       <button onclick="document.getElementById('setupModal').classList.remove('show');setupOpen=false;openRules();" title="Ausprobieren, wie jede Figur über die Mitte zieht">🎯 Übungsbrett</button>
       <button class="langBtn notr" onclick="openLang()">🌐 Sprache · Language</button>
       <button class="installBtn" onclick="doInstall()" style="display:none">📲 Als App installieren</button></div>
@@ -828,7 +829,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';try{document.documentElement.lang=window.LANG;}catch(e){}
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102206"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102206"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102301"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102301"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -859,7 +860,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-22 21:00';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-23 00:57';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -6413,7 +6414,7 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
-<script src="lib/spieler.js?v=2026102212"></script>
+<script src="lib/spieler.js?v=2026102301"></script>
 <script src="lib/wertung.js?v=2026102212"></script>
 <script src="lib/varnav.js?v=2026102211"></script>
 <script src="lib/tourbg.js?v=2026102206"></script>
@@ -7041,5 +7042,5 @@ varNav('spiel.html',document.getElementById('varNav'));
 <script>document.addEventListener('click',e=>{document.querySelectorAll('#controls details.dd[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.ddBox button'))d.removeAttribute('open');});});
 document.querySelectorAll('#controls details.dd').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)document.querySelectorAll('#controls details.dd[open]').forEach(o=>{if(o!==d)o.removeAttribute('open');});}));</script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/update.js?v=2026-10-22_21:00" data-v="2026-10-22 21:00"></script>
+<script src="lib/update.js?v=2026-10-23_00:57" data-v="2026-10-23 00:57"></script>
 </body></html>

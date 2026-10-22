@@ -35,6 +35,14 @@ class_name = "Spieler"
 tag = "v4"
 new_sqlite_classes = ["Spieler"]
 
+[[durable_objects.bindings]]
+name = "UMZUG"
+class_name = "Umzug"
+
+[[migrations]]
+tag = "v5"
+new_sqlite_classes = ["Umzug"]
+
 # Sprachmodell für den KI-Bericht der Spielanalyse (Cloudflare Workers AI, kostenloses Tageskontingent)
 [ai]
 binding = "AI"

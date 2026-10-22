@@ -5,12 +5,14 @@
 // 3. /fern/…: Fernpartien – Spielstand liegt auf dem Server, Benachrichtigung per Web-Push (siehe fern.js).
 // 4. /ai/bericht: KI-Bericht zur Spielanalyse (Cloudflare Workers AI).
 // 5. /lobby: öffentliche Liste offener Einladungen (siehe lobby.js).
+// 6. /umzug/…: Geräte verbinden – verschlüsselte Übertragung aller Daten auf ein anderes Gerät (siehe umzug.js).
 // © 2026 Guido Suchsland
 
 import { fernRoute, Fern } from './fern.js';
 import { lobbyRoute, Lobby } from './lobby.js';
 import { spielerRoute, Spieler } from './spieler.js';
-export { Fern, Lobby, Spieler };
+import { umzugRoute, Umzug } from './umzug.js';
+export { Fern, Lobby, Spieler, Umzug };
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -129,6 +131,7 @@ export default {
     if (url.pathname.startsWith('/fern/')) return fernRoute(req, env, url);
     if (url.pathname === '/lobby' || url.pathname.startsWith('/lobby/')) return lobbyRoute(req, env, url);
     if (url.pathname.startsWith('/spieler/')) return spielerRoute(req, env, url);
+    if (url.pathname.startsWith('/umzug/')) return umzugRoute(req, env, url);
     if (url.pathname === '/ai/bericht' && req.method === 'POST') return aiReport(req, env);
     if (url.pathname === '/ai/monster' && req.method === 'POST') return aiMonster(req, env);
     if (url.pathname === '/peerjs/id') return new Response(randomId(), { headers: { 'Content-Type': 'text/plain', ...CORS } });

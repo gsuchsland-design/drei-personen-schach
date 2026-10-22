@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon3-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16181d">
-<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102206"><\/script>');})();</script>
+<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102301"><\/script>');})();</script>
 <style>
 :root { --bg:#16181d; --panel:rgba(28,30,38,.95); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
 * { box-sizing:border-box; }
@@ -91,7 +91,7 @@ a { color:#8fb6ff; }
  </div>
 </div>
 <script src="lib/monsters.js?v=2026102206"></script>
-<script src="lib/spieler.js?v=2026102212"></script>
+<script src="lib/spieler.js?v=2026102301"></script>
 <script>function plOn(n){const e=document.getElementById('gEnd'),c=document.getElementById('gPlaetze');return !!(e&&c&&e.value==='last'&&n>=4&&c.checked);}
 function plUI(){const e=document.getElementById('gEnd'),n=document.getElementById('gN'),r=document.getElementById('gPlRow');if(r)r.style.display=e&&e.value==='last'&&(+(n&&n.value)||0)>=4?'':'none';}
 document.addEventListener('change',e=>{if(e.target&&(e.target.id==='gEnd'||e.target.id==='gN'))plUI();});document.addEventListener('DOMContentLoaded',plUI);</script>
@@ -802,5 +802,5 @@ varNav('grenzenlos.html',document.getElementById('varNav'));
 slimMenu('grenz');
 </script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/update.js?v=2026-10-22_21:00" data-v="2026-10-22 21:00"></script>
+<script src="lib/update.js?v=2026-10-23_00:57" data-v="2026-10-23 00:57"></script>
 </body></html>

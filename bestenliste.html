@@ -56,7 +56,7 @@
 </div></footer>
 <script>document.addEventListener('click',function(e){document.querySelectorAll('details.dd[open]').forEach(function(d){if(!d.contains(e.target)||(e.target.closest&&e.target.closest('a')))d.removeAttribute('open');});});</script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/spieler.js?v=2026102212"></script>
+<script src="lib/spieler.js?v=2026102301"></script>
 <script>
 (function(){
 const ST={master:'Meister',hard:'stark',medium:'mittel',easy:'leicht'},esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -81,5 +81,5 @@ for(const b of document.querySelectorAll('.blTabs button'))b.onclick=()=>{show(b
 show(['3ps','raum','grenz','stern'].includes(location.hash.slice(1))?location.hash.slice(1):'3ps');
 })();
 </script>
-<script src="lib/update.js?v=2026-10-22_21:00" data-v="2026-10-22 21:00"></script>
+<script src="lib/update.js?v=2026-10-23_00:57" data-v="2026-10-23 00:57"></script>
 </body></html>
