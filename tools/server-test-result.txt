@@ -1,5 +1,8 @@
-{"name":"Drei-Personen-Schach-Server","ok":true,"turn":true,"fern":true,"lobby":true}
-{"list":[],"now":1792474367598}
-{"id":"5fnrnbwgfj","key":"5c89475e96e8ae407393","entry":{"id":"5fnrnbwgfj","kind":"live","game":"dps","code":"test01","host":"Servertest","seats":[{"p":"B","kind":"human","name":"Servertest","lvl":null},{"p":"G","kind":"open","name":"","lvl":null},{"p":"R","kind":"open","name":"","lvl":null}],"rules":{"help":false,"tcMove":0,"tcGame":0,"lvl":null,"cam":false,"spec":"ask","lang":""},"started":false,"open":2,"created":1792474367742,"age":0}}
-{"code":"9gwshgs3","token":"75bce0fad552ce34341d4276","seat":"B","state":{"code":"9gwshgs3","v":0,"snap":null,"next":"B","over":false,"last":null,"used":{"B":0,"R":0,"L":0},"created":1792474368210,"updated":1792474368210,"age":0,"seats":{"B":{"kind":"human","name":"Servertest","lvl":null,"push":false},"R":{"kind":"open","name":"","lvl":null,"push":false},"L":{"kind":"ai","name":"","lvl":"medium","
+{"name":"Drei-Personen-Schach-Server","ok":true,"turn":true,"fern":true,"lobby":true,"spieler":true}
+{"list":[{"id":"qcnsduxdj3","kind":"fern","game":"dps","code":"9xyp6vft","host":"Guido Suchsland","seats":[{"p":"B","kind":"human","name":"Guido Suchsland","lvl":null},{"p":"G","kind":"open","name":"","lvl":null},{"p":"R","kind":"open","name":"","lvl":null}],"rules":{"help":true,"tcMove":0,"tcGame":0,"lvl":null,"cam":false,"spec":"ask","lang":"de"},"started":true,"open":2,"created":1792553672408,"age":156467747}],"now":1792710140155}
+{"id":"y6p3kdwtq8","key":"7f62c3c20d913189904f","entry":{"id":"y6p3kdwtq8","kind":"live","game":"dps","code":"test01","host":"Servertest","seats":[{"p":"B","kind":"human","name":"Servertest","lvl":null},{"p":"G","kind":"open","name":"","lvl":null},{"p":"R","kind":"open","name":"","lvl":null}],"rules":{"help":false,"tcMove":0,"tcGame":0,"lvl":null,"cam":false,"spec":"ask","lang":""},"started":false,"open":2,"created":1792710140291,"age":0}}
+{"code":"2em7f2gr","token":"8ab6560762e8cb2743b263d1","seat":"B","state":{"code":"2em7f2gr","v":0,"snap":null,"next":"B","over":false,"last":null,"used":{"B":0,"R":0,"L":0},"created":1792710140733,"updated":1792710140733,"age":0,"seats":{"B":{"kind":"human","name":"Servertest","lvl":null,"push":false},"R":{"kind":"open","name":"","lvl":null,"push":false},"L":{"kind":"ai","name":"","lvl":"medium","
+{"ok":true,"until":1792711041089}
+{"data":"dGVzdA=="}
+{"error":"Code unbekannt oder abgelaufen."}
 {"ok":true}
