@@ -1957,7 +1957,7 @@ function pubRender(){
   if(!L.length){el.innerHTML='<div class="lbHint">'+T('Gerade gibt es keine offenen Spiele. Biete selbst eine Partie an – oder schau später noch einmal vorbei.')+'</div>';return;}
   el.innerHTML=L.map(e=>{
     const seats=e.seats.map(s=>`<span class="pubSeat" style="border-color:${PCOLOR[s.p]||RCOL[s.p]}">${s.kind==='human'?esc(s.name):s.kind==='ai'?'🤖 '+T(PUB_LVL[s.lvl]||'Computer'):'<i>'+T('frei')+'</i>'}</span>`).join('');
-    const r=e.rules||{},raum=e.game==='raum'||e.game==='grenz'||e.game==='stern',grenz=e.game==='grenz',stern=e.game==='stern',parts=raum?[T('{0} Spieler',[e.seats.length]),r.end==='last'?T('wer matt ist, scheidet aus'):T('erstes Matt entscheidet')]:[r.help===false?T('ohne Hilfspflicht'):T('mit Hilfspflicht')];
+    const r=e.rules||{},raum=e.game==='raum'||e.game==='grenz'||e.game==='stern',grenz=e.game==='grenz',stern=e.game==='stern',parts=raum?[T('{0} Spieler',[e.seats.length]),r.end==='last'?T('wer matt ist, scheidet aus')+(r.plaetze?' · 🏆 '+T('Plätze nach Ausscheiden'):''):T('erstes Matt entscheidet')]:[r.help===false?T('ohne Hilfspflicht'):T('mit Hilfspflicht')];
     if(raum&&!grenz)parts.push(...pubRuleParts(e.game,r.opts));
     parts.push(...pubUnfair(e));
     if(raum){if(r.help&&e.seats.length>=3)parts.push(T('mit Hilfspflicht'));parts.push(r.live===false?T('Fernpartie'):T('Live'));if(r.tcMove)parts.push(T('{0} s pro Zug',[r.tcMove]));if(r.tcGame)parts.push(T('{0} Min. pro Partie',[r.tcGame]));}

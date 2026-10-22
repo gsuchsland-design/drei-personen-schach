@@ -199,6 +199,7 @@ export class Fern {
     if (game !== 'dps') {
       const r = b.rules || {}, n = (v, hi) => Math.max(0, Math.min(hi, Math.round(+v || 0)));
       rules.end = r.end === 'last' ? 'last' : 'first'; rules.opts = clean(r.opts, 80);
+      rules.plaetze = rules.end === 'last' && order.length >= 4 && r.plaetze === true;   // Bestenliste: Plätze nach Ausscheiden (nur ab vier Spielern)
       rules.spec = r.spec === 'never' ? 'never' : 'always'; rules.live = r.live !== false; rules.tcMove = rules.live ? n(r.tcMove, 3600) : 0; rules.tcGame = rules.live ? n(r.tcGame, 600) : 0;
     }
     const used = {}; for (const p of order) used[p] = 0;
@@ -207,7 +208,7 @@ export class Fern {
     if (b.public) {   // in der öffentlichen Lobby anbieten
       seats[me].name = safeName(seats[me].name, 'Spieler');
       const r = await lobbyCall(this.env, 'offer', { kind: 'fern', game, code: b.code, host: seats[me].name, seats: this.lobbySeats(g), order: ord(g),
-        rules: { help: rules.help, spec: rules.spec, lvl: null, lang: b.lang, end: rules.end, opts: rules.opts, live: rules.live, tcMove: rules.tcMove, tcGame: rules.tcGame, mons: rules.mons }, _ip: b._ip });
+        rules: { help: rules.help, spec: rules.spec, lvl: null, lang: b.lang, end: rules.end, plaetze: rules.plaetze || undefined, opts: rules.opts, live: rules.live, tcMove: rules.tcMove, tcGame: rules.tcGame, mons: rules.mons }, _ip: b._ip });
       if (r && r.id) g.lobby = { id: r.id, key: r.key };
     }
     await this.save(g);

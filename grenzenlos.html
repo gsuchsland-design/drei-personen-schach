@@ -61,6 +61,7 @@ a { color:#8fb6ff; }
    <div id="gSeatRows"></div>
    <div class="row" id="promoRow">Umwandlung: <select id="gPromo"><option value="zone">beim Erreichen einer fremden Startzone</option><option value="rank">erst auf der Grundreihe der Admiräle</option></select></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
+   <div class="row" id="gPlRow" style="display:none"><label title="Für die Bestenliste: Wer später ausscheidet, steht weiter vorn. Sonst gibt es einen Sieger, alle anderen haben gleich verloren."><input type="checkbox" id="gPlaetze"> 🏆 Plätze nach Ausscheiden (Bestenliste)</label></div>
    <div class="row" id="helpRow"><label title="Steht ein Spieler im Schach, muss jeder, der vor ihm zieht, ihm helfen: Ist er matt, muss der Zug ihn befreien – ist er nicht matt, darf der Zug ihn nicht mattsetzen."><input type="checkbox" id="gHelp"> 🆘 Hilfspflicht (ab 3 Spielern)</label></div>
    <div id="tcBox"></div>
    <div id="gOnline" style="display:none">
@@ -91,11 +92,14 @@ a { color:#8fb6ff; }
 </div>
 <script src="lib/monsters.js?v=2026102206"></script>
 <script src="lib/spieler.js?v=2026102212"></script>
+<script>function plOn(n){const e=document.getElementById('gEnd'),c=document.getElementById('gPlaetze');return !!(e&&c&&e.value==='last'&&n>=4&&c.checked);}
+function plUI(){const e=document.getElementById('gEnd'),n=document.getElementById('gN'),r=document.getElementById('gPlRow');if(r)r.style.display=e&&e.value==='last'&&(+(n&&n.value)||0)>=4?'':'none';}
+document.addEventListener('change',e=>{if(e.target&&(e.target.id==='gEnd'||e.target.id==='gN'))plUI();});document.addEventListener('DOMContentLoaded',plUI);</script>
 <script src="lib/wertung.js?v=2026102212"></script>
 <script src="lib/varnav.js?v=2026102211"></script>
 <script src="lib/monvoice.js?v=2026102206"></script>
 <script src="lib/mondata.js?v=2026102206"></script>
-<script src="lib/kit.js?v=2026102212"></script>
+<script src="lib/kit.js?v=2026102213"></script>
 <script src="lib/tourbg.js?v=2026102206"></script>
 <script src="lib/bias.js?v=2026102209"></script>
 <script src="lib/gegner.js?v=2026102210"></script>
@@ -207,7 +211,7 @@ function gameStart(){
   for(const p of order)ctrl[p]=document.getElementById('gS'+p).value;
   if(order.some(p=>ctrl[p]==='open')){onCreate(order,ctrl);return;}
   setup(n);hist=[];moves=[];EP=null;LASTMV=null;
-  GM={order,ctrl,mons:KIT.monPicks(order),end:document.getElementById('gEnd').value,promo:document.getElementById('gPromo').value,idx:0,out:[],over:false,winner:null,start:Date.now(),note:'',quiet:0,rec:[],tc:KIT.tcRead(),help:order.length>=3&&document.getElementById('gHelp').checked};
+  GM={order,ctrl,mons:KIT.monPicks(order),end:document.getElementById('gEnd').value,plaetze:plOn(order.length),promo:document.getElementById('gPromo').value,idx:0,out:[],over:false,winner:null,start:Date.now(),note:'',quiet:0,rec:[],tc:KIT.tcRead(),help:order.length>=3&&document.getElementById('gHelp').checked};
   KIT.clockInit(GM);enterGame();KIT.autosave();
 }
 function enterGame(){sel=null;targets=[];REP=null;document.getElementById('ui').classList.add('ingame');
@@ -687,7 +691,7 @@ async function onCreate(order,ctrl){
   const ai={};for(const p of order)if(!['human','open'].includes(ctrl[p]))ai[p]=ctrl[p];
   for(const p of order)if(ctrl[p]==='human'&&p!==seat)ctrl[p]='open';
   const end=document.getElementById('gEnd').value,promo=document.getElementById('gPromo').value,live=document.getElementById('gMode').value==='live',tc=live?KIT.tcRead():null;
-  let j;try{j=await api('/fern/new',{game:'grenz',order,seat,name,ai,rules:{mons:MONDATA.encode(KIT.monPicks(order),order),spec:document.getElementById('gSpec').value,help:order.length>=3&&document.getElementById('gHelp').checked,end,opts:promo,live,tcMove:tc?tc.move:0,tcGame:tc?tc.game:0},public:document.getElementById('gPub').checked,lang:KIT.myLang()});}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
+  let j;try{j=await api('/fern/new',{game:'grenz',order,seat,name,ai,rules:{mons:MONDATA.encode(KIT.monPicks(order),order),spec:document.getElementById('gSpec').value,help:order.length>=3&&document.getElementById('gHelp').checked,end,plaetze:plOn(order.length),opts:promo,live,tcMove:tc?tc.move:0,tcGame:tc?tc.game:0},public:document.getElementById('gPub').checked,lang:KIT.myLang()});}catch(e){alert('⚠️ Server nicht erreichbar.');return;}
   if(!j.code){alert('⚠️ '+(j.error||'Fehler beim Anlegen'));return;}
   try{localStorage.setItem('grenz.t.'+j.code,j.token);}catch(e){}
   setup(order.length);hist=[];moves=[];EP=null;
@@ -724,7 +728,7 @@ async function onOpen(code){code=String(code).toLowerCase().replace(/[^a-z0-9]/g
 function onBegin(st){const ctrl={};for(const p of st.order)ctrl[p]=st.seats[p].kind==='ai'?(st.seats[p].lvl||'medium'):'open';
   setup(st.order.length);hist=[];moves=[];EP=null;
   const r=st.rules||{},tc=r.tcMove||r.tcGame?{move:r.tcMove||0,game:r.tcGame||0}:null;
-  GM={order:st.order,ctrl,mons:MONDATA.decode(r.mons),end:r.end==='last'?'last':'first',promo:r.opts==='rank'?'rank':'zone',idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:st.order.find(p=>st.seats[p].kind==='human'),rec:[],tc,help:st.order.length>=3&&r.help===true};KIT.clockInit(GM);
+  GM={order:st.order,ctrl,mons:MONDATA.decode(r.mons),end:r.end==='last'?'last':'first',plaetze:!!r.plaetze,promo:r.opts==='rank'?'rank':'zone',idx:0,out:[],over:false,winner:null,note:'',quiet:0,online:true,lastBy:st.order.find(p=>st.seats[p].kind==='human'),rec:[],tc,help:st.order.length>=3&&r.help===true};KIT.clockInit(GM);
   ON.v=-1;onEnter();if(st.snap||st.v>0)onApply(st);else ON.v=st.v;}
 async function onJoin(){const name=(document.getElementById('joinName').value||'').trim().slice(0,18)||'Gast';try{localStorage.setItem('dreiSchach.name',name);}catch(e){}
   const j=await api('/fern/g/'+ON.code+'/join',{name});
