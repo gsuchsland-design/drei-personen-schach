@@ -2700,9 +2700,13 @@ let showCoordRing=true;
 
 // Merkmale der Computergegner je Partie (nie Angaben über Menschen)
 let OPPLOG=[];
+// Ergebnis der Partie für die Bestenliste: Gruppen von Plätzen, beste zuerst (gleiche Gruppe = gleich platziert)
+let END=null,GAMESTART=0;
+function rankGroups(list){const r=ranking().filter(x=>list.includes(x.p)),g=[];for(const x of r){const l=g[g.length-1];if(l&&l.k===x.pts+'|'+x.sec)l.a.push(x.p);else g.push({k:x.pts+'|'+x.sec,a:[x.p]});}return g.map(x=>x.a);}
+function endSet(rang){END={rang:rang.filter(g=>g.length)};}
 function oppRec(){if(!window.GEGNER)return;try{const seats=TURN_ORDER.filter(p=>isAIPlayer(p)).map(p=>({p,monId:SEATMON[p],level:aiPlayers[p]}));
   GEGNER.record(OPPLOG,seats,moveLog.length,typeof AIVOICE!=='undefined'&&AIVOICE);}catch(e){}}
-function initGame(){OPPLOG=[];
+function initGame(){OPPLOG=[];END=null;GAMESTART=Date.now();
   replayExit();
   TALK=[];
   if(typeof diploReset==='function')diploReset();
@@ -2787,7 +2791,7 @@ function drawAI3(){const pend=drawPending(),p=cur();if(!pend||pend.yes.includes(
   if(yes&&alive3().every(q=>q===p||pend.yes.includes(q))){drawFinish(p);netOrigin({t:'drawok',p});return true;}
   drawMark=yes?'yes':'no';return false;}
 function drawFinish(p){if(gameOver)return;cancelAI();
-  moveLog.push({player:p,draw:'agreed',mark:''});gameOver=true;
+  moveLog.push({player:p,draw:'agreed',mark:''});gameOver=true;endSet([alive3(),[...eliminated]]);
   for(const q of TURN_ORDER)setEmo(q,'happy',0,true);
   const el=document.getElementById('status');el.textContent=T('🤝 Remis vereinbart – alle haben zugestimmt.');el.style.color='#fff';
   renderLog();renderClocks();draw();renderEndBar();autosave();
@@ -2803,10 +2807,10 @@ function resignDo(p){if(gameOver||eliminated.has(p))return;cancelAI();
   drawMark=null;selected=null;validMoves=new Set();setEmo(p,'cry',0,true);
   const rest=alive3();renderLog();
   // Bleiben nur Computer übrig, lohnt kein Weiterspielen: Es gewinnt, wer die meisten Punkte hat
-  if(rest.length>1&&rest.every(q=>aiPlayers[q])){const w=rest.slice().sort((x,y)=>score(y)-score(x))[0];gameOver=true;setEmo(w,'cheer',0,true);
+  if(rest.length>1&&rest.every(q=>aiPlayers[q])){const w=rest.slice().sort((x,y)=>score(y)-score(x))[0];gameOver=true;endSet([...rankGroups(rest),[...eliminated]]);setEmo(w,'cheer',0,true);
     const el=document.getElementById('status');el.textContent=T('🏳 {0} gibt auf – es spielen nur noch Computer. {1} gewinnt nach Punkten!',[PNAMES[p],PNAMES[w]]);el.style.color=PCOLOR[w];
     updateCaptured();renderClocks();draw();renderEndBar();autosave();gameEndPrompt(el.textContent);return;}
-  if(rest.length===1){gameOver=true;const w=rest[0];setEmo(w,'cheer',0,true);
+  if(rest.length===1){gameOver=true;const w=rest[0];endSet([[w],TURN_ORDER.filter(q=>q!==w)]);setEmo(w,'cheer',0,true);
     const el=document.getElementById('status');el.textContent=T('🏳 {0} gibt auf – {1} gewinnt!',[PNAMES[p],PNAMES[w]]);el.style.color=PCOLOR[w];
     updateCaptured();renderClocks();draw();renderEndBar();autosave();gameEndPrompt(T('🏳 {0} gibt auf – {1} gewinnt!',[PNAMES[p],PNAMES[w]]));return;}
   pendingNote=T('{0} hat aufgegeben. ',[PNAMES[p]]);
@@ -2859,7 +2863,7 @@ function recheckHelpDuty(){
   updateStatus();draw();return false;
 }
 function endGame(winner,loser){
-  gameOver=true;renderEndBar();
+  gameOver=true;endSet([[winner],TURN_ORDER.filter(p=>p!==winner)]);renderEndBar();
   for(const p of TURN_ORDER)setEmo(p,p===winner?'cheer':'cry',0,true);setTimeout(()=>snd('mate'),250);
   const el=document.getElementById('status');
   el.textContent=T(`{0}SCHACHMATT gegen {1} – {2} gewinnt!`,[turnNote,PNAMES[loser],PNAMES[winner]]);
@@ -2868,8 +2872,14 @@ function endGame(winner,loser){
   gameEndPrompt(T(`♚ Schachmatt gegen {0} – {1} gewinnt!`,[PNAMES[loser],PNAMES[winner]]));
 }
 // Spielende: Meldung in der Leiste (kein Fenster), dazu „Revanche“ bzw. „Noch eine Partie“
+function wertungMelden(){if(!window.WERTUNG||!END)return;
+  const zuege=moveLog.map(e=>e.player+(e.from||'')+(e.to||'')+(e.resign?'R':'')+(e.draw?'D':'')).join(' ');
+  const online=NET.on&&!NET.spec&&NET.seat?{code:NET.code,seat:NET.seat}:FERN.on&&FERN.seat?{code:FERN.code,seat:FERN.seat}:null;
+  const humans=TURN_ORDER.filter(p=>!aiPlayers[p]),ai={};for(const p of TURN_ORDER)if(aiPlayers[p])ai[p]=aiPlayers[p];
+  WERTUNG.melden({spiel:'3ps',rang:END.rang,zuege,online,humans,ai,start:GAMESTART,zuegeMensch:humans.length===1?moveLog.filter(e=>e.player===humans[0]&&e.from).length:0});}
 function gameEndPrompt(text){
   if(AB){toast(text,4000);return;}
+  if(!REPLAY)wertungMelden();
   if(typeof oppSave==='function')oppSave();
   if(REPLAY){toast(text,4000);return;}   // Ende in einer Variante: nur Hinweis, keine Revanche
   const an={label:T('🔬 Analysieren'),bg:'#7a6420',fn:()=>setTimeout(analyseGame,50)};
@@ -4066,13 +4076,13 @@ function ser(v){return JSON.stringify(v,(k,x)=>x instanceof Set?{__set:[...x]}:x
 function deser(t){return JSON.parse(t,(k,x)=>x&&typeof x==='object'&&Array.isArray(x.__set)?new Set(x.__set):x);}
 function gameData(){
   replayExit();
-  return{v:1,saved:new Date().toISOString(),rules:RULES,talk:TALK,dlog:DIPLO.log,oppLog:OPPLOG,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
+  return{v:1,saved:new Date().toISOString(),rules:RULES,talk:TALK,dlog:DIPLO.log,oppLog:OPPLOG,end:END,start:GAMESTART,gameState,movedPieces,epTarget,turnIdx,helpDuty,gameOver,turnNote,
     capturedBy,moveLog,history,tc,clock,timeUsed,flagged,moveLeft,aiPlayers,rotation,
     status:document.getElementById('status').textContent,statusColor:document.getElementById('status').style.color};
 }
 function applyGameData(d){
   replayExit();
-  TALK=d.talk||[];DIPLO.log=d.dlog||[];RULES=rulesOf(d.rules);OPPLOG=d.oppLog||[];
+  TALK=d.talk||[];DIPLO.log=d.dlog||[];RULES=rulesOf(d.rules);OPPLOG=d.oppLog||[];END=d.end||null;GAMESTART=d.start||0;
   resetEmos();
   cancelAI();moveAnim=null;kicks=[];
   gameState=d.gameState;movedPieces=d.movedPieces;epTarget=d.epTarget||[];turnIdx=d.turnIdx;helpDuty=d.helpDuty;
@@ -4132,7 +4142,7 @@ function ranking(){
     .sort((a,b)=>b.pts-a.pts||a.sec-b.sec);
 }
 function endByPoints(){
-  renderEndBar();
+  renderEndBar();{const al=TURN_ORDER.filter(p=>!eliminated.has(p));endSet([...rankGroups(al),[...eliminated]]);}
   {const r=ranking(),top=r.filter(x=>x.pts===r[0].pts&&x.sec===r[0].sec);
    for(const x of r)setEmo(x.p,top.includes(x)?(top.length>1?'happy':'cheer'):'cry',0,true);}
   setTimeout(()=>snd('end'),250);
@@ -6403,7 +6413,8 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
-<script src="lib/spieler.js?v=2026102211"></script>
+<script src="lib/spieler.js?v=2026102212"></script>
+<script src="lib/wertung.js?v=2026102212"></script>
 <script src="lib/varnav.js?v=2026102211"></script>
 <script src="lib/tourbg.js?v=2026102206"></script>
 <script src="lib/bias.js?v=2026102209"></script>

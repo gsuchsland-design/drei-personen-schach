@@ -90,11 +90,12 @@ a { color:#8fb6ff; }
  </div>
 </div>
 <script src="lib/monsters.js?v=2026102206"></script>
-<script src="lib/spieler.js?v=2026102211"></script>
+<script src="lib/spieler.js?v=2026102212"></script>
+<script src="lib/wertung.js?v=2026102212"></script>
 <script src="lib/varnav.js?v=2026102211"></script>
 <script src="lib/monvoice.js?v=2026102206"></script>
 <script src="lib/mondata.js?v=2026102206"></script>
-<script src="lib/kit.js?v=2026102210"></script>
+<script src="lib/kit.js?v=2026102212"></script>
 <script src="lib/tourbg.js?v=2026102206"></script>
 <script src="lib/bias.js?v=2026102209"></script>
 <script src="lib/gegner.js?v=2026102210"></script>
@@ -206,7 +207,7 @@ function gameStart(){
   for(const p of order)ctrl[p]=document.getElementById('gS'+p).value;
   if(order.some(p=>ctrl[p]==='open')){onCreate(order,ctrl);return;}
   setup(n);hist=[];moves=[];EP=null;LASTMV=null;
-  GM={order,ctrl,mons:KIT.monPicks(order),end:document.getElementById('gEnd').value,promo:document.getElementById('gPromo').value,idx:0,out:[],over:false,winner:null,note:'',quiet:0,rec:[],tc:KIT.tcRead(),help:order.length>=3&&document.getElementById('gHelp').checked};
+  GM={order,ctrl,mons:KIT.monPicks(order),end:document.getElementById('gEnd').value,promo:document.getElementById('gPromo').value,idx:0,out:[],over:false,winner:null,start:Date.now(),note:'',quiet:0,rec:[],tc:KIT.tcRead(),help:order.length>=3&&document.getElementById('gHelp').checked};
   KIT.clockInit(GM);enterGame();KIT.autosave();
 }
 function enterGame(){sel=null;targets=[];REP=null;document.getElementById('ui').classList.add('ingame');

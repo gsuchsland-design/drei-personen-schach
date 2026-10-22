@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bestenliste – Drei-Personen-Schach</title>
+<meta name="description" content="Die Bestenliste des Drei-Personen-Schachs und seiner Varianten: Wertungszahlen aus Partien gegen Menschen und Rekorde gegen die Computergegner.">
+<meta name="theme-color" content="#16181d">
+<link rel="icon" href="icon3-192.png">
+<link rel="manifest" href="manifest.webmanifest?v=4">
+<meta property="og:title" content="Bestenliste – Drei-Personen-Schach">
+<meta property="og:description" content="Die Bestenliste des Drei-Personen-Schachs und seiner Varianten: Wertungszahlen aus Partien gegen Menschen und Rekorde gegen die Computergegner.">
+<meta property="og:image" content="img/brett-3d.webp">
+<link rel="stylesheet" href="site.css">
+
+<style>
+.blTabs{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}.blTabs button{padding:7px 12px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--muted);font:inherit;font-size:14px;cursor:pointer}.blTabs button.on{color:#fff;border-color:#ffd23f}
+.blTab{width:100%;border-collapse:collapse;font-size:15px}.blTab th,.blTab td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}.blTab td.n,.blTab th.n{text-align:right;font-variant-numeric:tabular-nums}
+.blTab tr.me td{background:rgba(255,210,63,.12)}.blNote{color:var(--muted);font-size:14px}.blProv{color:var(--muted);font-size:12px}
+</style>
+</head><body>
+<header class="top"><div class="in">
+<a class="logo" href="index.html#start"><img src="icon3-192.png" alt="">Drei-Personen-Schach</a>
+<nav class="main"><details class="dd"><summary>Spiele</summary><div><a href="spiel.html">Drei-Personen-Schach</a><a href="raum.html">Schach der 6 Reiche</a><a href="grenzenlos.html">Schach ohne Grenzen</a><a href="stern.html">Sternschach</a><a href="spiel.html?lobby=1">Offene Spiele</a><a href="bestenliste.html" class=on>🏆 Bestenliste</a></div></details><details class="dd"><summary>Regeln</summary><div><a href="regeln.html">Drei-Personen-Schach</a><a href="reiche-regeln.html">Schach der 6 Reiche</a><a href="grenzenlos-regeln.html">Schach ohne Grenzen</a><a href="stern-regeln.html">Sternschach</a><a href="strategie.html">Strategie</a><a href="computergegner.html">Die Computergegner</a></div></details><a href="psychologie.html">Psychologie</a><a href="ueber.html" class=on>Über das Spiel</a></nav>
+<a class="play" href="spiel.html">▶ Jetzt spielen</a>
+</div></header>
+<main>
+<article>
+<h1>🏆 Bestenliste</h1>
+<p class="lead">Wer spielt am stärksten? Hier stehen alle mit Spielernamen, die online oder als Fernpartie gegen andere Menschen gespielt haben – und die Rekorde gegen die Computergegner.</p>
+<div class="blTabs" role="tablist">
+<button data-s="3ps" class="on">♟ Drei-Personen-Schach</button><button data-s="raum">👑 Schach der 6 Reiche</button><button data-s="grenz">♾️ Schach ohne Grenzen</button><button data-s="stern">⭐ Sternschach</button>
+</div>
+<h2>Partien gegen Menschen</h2>
+<div id="blListe"><p class="blNote">Lädt …</p></div>
+<h2>Rekorde gegen den Computer</h2>
+<p class="blNote">Siege allein gegen Computergegner, je Spielstärke. Bei gleich vielen Siegen zählt der schnellste Sieg (wenigste eigene Züge). Diese Siege meldet dein Gerät selbst.</p>
+<div id="blRekorde"></div>
+
+<h2 id="regeln">So wird gewertet</h2>
+<ul>
+<li><b>Mitmachen:</b> Lege im Spiel unter „👤 Spielername“ einen Spitznamen an. E-Mail und Passwort brauchst du nicht.</li>
+<li><b>Was zählt:</b> Online- und Fernpartien, an denen mindestens zwei Menschen mit Spielernamen teilnehmen. Das Ergebnis zählt, sobald zwei von ihnen dasselbe Ergebnis gemeldet haben – das geschieht automatisch am Ende der Partie.</li>
+<li><b>Ein Sieger, kein zweiter Platz:</b> Endet eine Partie durch Matt oder Aufgabe, gibt es genau einen Sieger. Alle anderen haben gleich verloren – egal, wer mattgesetzt wurde und wer nur zugesehen hat. Das gehört zur Idee des Spiels: Wer einen anderen ins Matt laufen lässt, steht am Ende genauso da.</li>
+<li><b>Nur nach Punkten gibt es Plätze:</b> Entscheidet am Ende das Material (zum Beispiel, wenn niemand mehr ziehen kann), gibt es einen ersten, zweiten und dritten Platz.</li>
+<li><b>Die Wertungszahl:</b> Alle beginnen mit 1500. Wer gegen Stärkere gewinnt, bekommt mehr Punkte; wer gegen Schwächere verliert, verliert mehr. In den ersten zehn Partien ändert sich die Zahl schneller („vorläufig“).</li>
+<li><b>Fair Play:</b> Hilfe von Schachprogrammen ist nicht erlaubt. Die Auswertung jeder Partie zeigt, wie oft jemand mit dem stärksten Computer übereinstimmt.</li>
+</ul>
+<p class="blNote">Gespeichert werden nur Spitzname, Wertungszahl, Zahl der Partien und Siege. Dein Spielername lässt sich jederzeit löschen – dann verschwindest du auch aus der Bestenliste. Mehr dazu in der <a href="datenschutz.html#spielername">Datenschutzerklärung</a>.</p>
+<p style="text-align:center;margin-top:30px"><a class="cta go" href="spiel.html">▶ Jetzt spielen</a></p>
+</article>
+</main>
+<footer class="bottom"><div class="in">
+<span>© 2026 Guido Suchsland</span>
+<a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="ueber.html#kontakt">Kontakt</a><a href="regeln.html">Spielregeln</a><a href="strategie.html">Strategie</a><a href="psychologie.html">Psychologie</a><a href="bestenliste.html">Bestenliste</a>
+</div></footer>
+<script>document.addEventListener('click',function(e){document.querySelectorAll('details.dd[open]').forEach(function(d){if(!d.contains(e.target))d.removeAttribute('open');});});</script>
+<script src="lib/vorlesen.js?v=2026102208"></script>
+<script src="lib/spieler.js?v=2026102212"></script>
+<script>
+(function(){
+const ST={master:'Meister',hard:'stark',medium:'mittel',easy:'leicht'},esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let host=null;async function base(){if(host)return host;const q=new URLSearchParams(location.search).get('fernhost');if(q)return host=(/^(localhost|127\.)/.test(q)?'http://':'https://')+q;
+  const j=await (await fetch('server.json?'+Date.now(),{cache:'no-store'})).json();return host='https://'+String(j.host||'').replace(/^https?:\/\//,'');}
+const myNick=()=>window.SPIELER?SPIELER.nick():'';
+async function show(sp){
+  for(const b of document.querySelectorAll('.blTabs button'))b.classList.toggle('on',b.dataset.s===sp);
+  const L=document.getElementById('blListe'),R=document.getElementById('blRekorde');L.innerHTML=R.innerHTML='<p class="blNote">Lädt …</p>';
+  try{const h=await base();
+    const [a,b]=await Promise.all([fetch(h+'/spieler/liste?spiel='+sp).then(r=>r.json()),fetch(h+'/spieler/rekorde?spiel='+sp).then(r=>r.json())]);
+    const me=myNick();
+    L.innerHTML=a.liste&&a.liste.length?'<table class="blTab"><tr><th class="n">#</th><th>Spieler</th><th class="n">Wertung</th><th class="n">Partien</th><th class="n">Siege</th></tr>'+
+      a.liste.map((r,i)=>`<tr${r.nick===me?' class="me"':''}><td class="n">${i+1}</td><td>${esc(r.nick)}${r.vorlaeufig?' <span class="blProv">vorläufig</span>':''}</td><td class="n">${r.elo}</td><td class="n">${r.partien}</td><td class="n">${r.siege}</td></tr>`).join('')+'</table>'
+      :'<p class="blNote">Noch niemand in der Liste – spiel eine Online- oder Fernpartie mit Spielernamen und sei die oder der Erste!</p>';
+    let rh='';for(const st of ['master','hard','medium','easy']){const rows=(b.rekorde||{})[st]||[];if(!rows.length)continue;
+      rh+=`<h3>Spielstärke ${ST[st]}</h3><table class="blTab"><tr><th class="n">#</th><th>Spieler</th><th class="n">Siege</th><th class="n">schnellster Sieg</th></tr>`+
+        rows.map((r,i)=>`<tr${r.nick===me?' class="me"':''}><td class="n">${i+1}</td><td>${esc(r.nick)}</td><td class="n">${r.siege}</td><td class="n">${r.bestzuege} Züge</td></tr>`).join('')+'</table>';}
+    R.innerHTML=rh||'<p class="blNote">Noch keine Rekorde. Besiege die Computergegner mit Spielernamen!</p>';
+  }catch(e){L.innerHTML=R.innerHTML='<p class="blNote">Die Bestenliste ist gerade nicht erreichbar.</p>';}}
+for(const b of document.querySelectorAll('.blTabs button'))b.onclick=()=>{show(b.dataset.s);try{history.replaceState(null,'','#'+b.dataset.s);}catch(e){}};
+show(['3ps','raum','grenz','stern'].includes(location.hash.slice(1))?location.hash.slice(1):'3ps');
+})();
+</script>
+</body></html>
