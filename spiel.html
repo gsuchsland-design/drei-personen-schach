@@ -34,6 +34,7 @@ h2 { color:#eee; margin:4px 0; font-size:15px; }
 label { color:#ccc; font-size:12px; cursor:pointer; }
 canvas { display:block; cursor:default; }
 #c { touch-action:none; }
+.srOnly { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
 #fullscreenBtn { padding:3px 10px; font-size:12px; cursor:pointer; }
 body.fullscreen { padding:0; overflow:hidden; }
 body.fullscreen #info { display:none; }
@@ -522,6 +523,7 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
 </div>
 </div>
 <div id="status">Blau am Zug</div>
+<div id="srLive" class="srOnly notr" aria-live="polite" aria-atomic="true"></div>
 <div id="endBar"></div>
 <div id="msgRow"><span id="recBadge" title="Gesprochenes und Chat werden für die Spielanalyse mitgeschrieben – alle haben zugestimmt">📝</span><div id="msgLine"></div><button id="chatBtn" onclick="toggleChat()" title="Chat und Reaktionen">💬<span id="chatBadge"></span></button></div>
 <div id="askBar"><span id="askTxt"></span><span id="askBtns"></span></div>
@@ -829,7 +831,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';try{document.documentElement.lang=window.LANG;}catch(e){}
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102301"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102301"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102302"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102302"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -860,7 +862,7 @@ function openLang(){
 // ================= Online-Spiel (PeerJS / WebRTC) =================
 // Gastgeber = Schiedsrichter: prüft und verteilt alle Züge, rechnet die Computer-Spieler und die Uhr.
 // Gäste verbinden sich per Datenkanal mit dem Gastgeber; Bild + Ton laufen direkt zwischen allen drei Geräten.
-const APP_VER='2026-10-23 00:57';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
+const APP_VER='2026-10-23 01:55';   // bei jeder Veröffentlichung erhöhen (wird für Versionsprüfung und Update-Hinweis verglichen)
 function verLabel(){const[d,t]=APP_VER.split(' ');const[y,m,dd]=d.split('-');return T(`Version {0}.{1}. {2}`,[dd,m,t]);}
 const NET={on:false,host:false,seat:null,code:null,peer:null,hostConn:null,started:false,
   seats:{},lobby:{},q:[],specs:{},specList:[],spec:false,specTokens:new Set(),banned:new Set(),specReqs:[],specMode:'ask',calls:{},vids:{},avs:{},cfg:null,dv:null,da:null,wake:null,joinTimer:null};
@@ -2077,6 +2079,12 @@ function topBarFix(){   // Zugfenster darf die Knöpfe oben nicht verdecken
   let right=0;for(const id of['menuBtn','btn3d','rulesBtn','soundBtn','fsBtn2','avBtn','micBtn']){const e=document.getElementById(id);if(e&&e.getClientRects().length)right=Math.max(right,e.getBoundingClientRect().right);}
   if(lb.getBoundingClientRect().left<right+4)document.body.classList.add('logLow');
 }
+// Scharfe Darstellung auf Retina-/Handy-Bildschirmen: Die Zeichenfläche hat devicePixelRatio-mal so viele Pixel,
+// gezeichnet und gerechnet wird weiter in CSS-Pixeln (cv._lw × cv._lh); draw() setzt dafür die Skalierung.
+const DPR=()=>Math.min(Math.max(window.devicePixelRatio||1,1),3);
+function cvSize(cv,w,h,css){const d=DPR();cv._lw=w;cv._lh=h;cv._d=d;cv.width=Math.round(w*d);cv.height=Math.round(h*d);
+  if(css){cv.style.width=w+'px';cv.style.height=h+'px';}}
+const LW=cv=>cv._lw||cv.width,LH=cv=>cv._lh||cv.height;
 function resizeCanvas(){
   topBarFix();
   const cv=document.getElementById('c');
@@ -2085,8 +2093,8 @@ function resizeCanvas(){
   if(isLand()){   // Handy quer: Infospalte links, Brett füllt den Rest
     const side=document.getElementById('status').getBoundingClientRect().width||Math.min(innerWidth*.34,300);
     const bb=document.body.classList.contains('barBottom');
-    cv.width=Math.max(240,Math.floor(innerWidth-side-6-8));cv.height=Math.max(200,Math.floor(innerHeight-(bb?48:8)));
-    if(window.V3&&V3.resize)V3.resize(cv.width,cv.height);
+    cvSize(cv,Math.max(240,Math.floor(innerWidth-side-6-8)),Math.max(200,Math.floor(innerHeight-(bb?48:8))),true);
+    if(window.V3&&V3.resize)V3.resize(LW(cv),LH(cv));
     fitBoard();draw();return;
   }
   const avw=window.innerWidth-(fs?0:16);
@@ -2102,8 +2110,8 @@ function resizeCanvas(){
     if(top>0&&top<window.innerHeight-150)avh=Math.floor(window.innerHeight-top-pb-2);}
   {let bar=0;for(const id of['abBar','replayBar']){const e=document.getElementById(id);if(e&&e.getClientRects().length)bar=Math.max(bar,e.offsetHeight+12);}
    if(bar&&avh-bar>=250)avh-=bar;}
-  cv.width=Math.max(300,avw);cv.height=Math.max(250,avh);
-  if(window.V3&&V3.resize)V3.resize(cv.width,cv.height);
+  cvSize(cv,Math.max(300,avw),Math.max(250,avh),true);
+  if(window.V3&&V3.resize)V3.resize(LW(cv),LH(cv));
   fitBoard();draw();
 }
 window.addEventListener('resize',resizeCanvas);
@@ -2115,9 +2123,9 @@ function fitBoard(){
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
   for(const d of Object.values(FIELDS))for(const[x,y]of d.pts){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}
   const pad=SIDE*FIT_PAD;x0-=pad;y0-=pad;x1+=pad;y1+=pad;
-  zoom=Math.min(cv.width/(x1-x0),cv.height/(y1-y0));
-  ox=(cv.width-(x1-x0)*zoom)/2-x0*zoom;
-  oy=(cv.height-(y1-y0)*zoom)/2-y0*zoom;
+  zoom=Math.min(LW(cv)/(x1-x0),LH(cv)/(y1-y0));
+  ox=(LW(cv)-(x1-x0)*zoom)/2-x0*zoom;
+  oy=(LH(cv)-(y1-y0)*zoom)/2-y0*zoom;
 }
 
 function toggleFullscreen(){
@@ -3044,7 +3052,26 @@ function moveText(e){
   if(e.mark)t+=`<b style="color:#ff5555">${e.mark}</b>`;
   return t;
 }
-function renderLog(){
+// Zugansage für Screenreader: jeder neue Zug wird in Worten in eine unsichtbare Live-Region geschrieben
+// („Blau: Springer von BD2 nach BF3. Schach!“). Kurz verzögert, weil Schach/Matt erst nach dem Zug feststehen.
+let SR_N=0,SR_T=0;
+function srSay(){const el=document.getElementById('srLive');if(!el||REPLAY)return;
+  const n=moveLog.length,from=SR_N;SR_N=n;
+  if(n<=from||n-from>3)return;   // zurückgenommen oder ganze Partie geladen: nichts ansagen
+  el.textContent=moveLog.slice(from).map(srText).join(' ');}
+function srText(e){
+  const PN={K:'König',Q:'Dame',R:'Turm',B:'Läufer',N:'Springer',P:'Bauer'},pn=x=>T(PN[x]||x),who=PNAMES[e.player];
+  let t;
+  if(e.timeout)t=who+': '+(e.timeout==='move'?T('Zugzeit abgelaufen'):T('Partiezeit verbraucht'))+'.';
+  else if(e.resign)t=who+': '+T('gibt auf')+'.';
+  else if(e.draw==='agreed')t=T('Remis vereinbart')+'.';
+  else if(e.castle)t=T('{0}: Rochade.',[who]);
+  else if(e.cap)t=T('{0}: {1} von {2} schlägt {3} auf {4}.',[who,pn(e.piece),e.from,pn(e.cap)+' ('+PNAMES[e.capFrom]+')',e.to]);
+  else t=T('{0}: {1} von {2} nach {3}.',[who,pn(e.piece),e.from,e.to]);
+  if(e.promo)t+=' '+T('Umwandlung in {0}.',[pn(e.promo)]);
+  if(e.mark==='#')t+=' '+T('Matt!');else if(e.mark==='+')t+=' '+T('Schach!');
+  return t;}
+function renderLog(){clearTimeout(SR_T);SR_T=setTimeout(srSay,250);
   const ol=document.getElementById('logList');if(!ol)return;
   const R=REPLAY,L=R?R.real.moveLog:moveLog,ri=R?R.i:-1;
   const li=(e,num,cls,di)=>`<li${cls?` class="${cls}"`:''}${di!=null?` data-i="${di}"`:''}><span class="num">${num}</span><span style="color:${PCOLOR[e.player]}">●</span> ${moveText(e)}${e.ms!=null?`<span class="ms">${fmtMs(e.ms)}</span>`:''}</li>`;
@@ -4050,7 +4077,7 @@ function openRules(){
       if(demo.sel&&demo.state[demo.sel])demo.state[demo.sel].player=demo.color;renderDemo();};
     document.getElementById('demoC').addEventListener('click',e=>{
       const cv=e.target,r=cv.getBoundingClientRect();
-      const x=(e.clientX-r.left)*cv.width/r.width,y=(e.clientY-r.top)*cv.height/r.height;
+      const x=(e.clientX-r.left)*LW(cv)/r.width,y=(e.clientY-r.top)*LH(cv)/r.height;
       const fid=withDemo(()=>{buildFields();return fidAt(x,y);});
       if(!fid)return;const coord=COORD_LABELS[fid];
       if(demo.place){demo.state={};demo.state[coord]={piece:demo.place,player:demo.color};demo.sel=coord;
@@ -4751,7 +4778,10 @@ function draw(){
   }
   buildFields();
   const cv=document.getElementById(CANVAS_ID),ctx=cv.getContext('2d');
-  ctx.clearRect(0,0,cv.width,cv.height);
+  if(!cv._lw)cvSize(cv,cv.width,cv.height,false);   // z. B. das Übungsbrett: feste Größe, per CSS skaliert
+  if(cv._d!==DPR())cvSize(cv,LW(cv),LH(cv),cv.id==='c');   // Fenster auf einen anderen Bildschirm geschoben
+  ctx.setTransform(cv._d,0,0,cv._d,0,0);
+  ctx.clearRect(0,0,LW(cv),LH(cv));
   const checkedKings=new Set();
   for(const pl of TURN_ORDER)if(isInCheck(pl,gameState)){
     const kc=Object.keys(gameState).find(c=>gameState[c].piece==='K'&&gameState[c].player===pl);
@@ -7042,5 +7072,5 @@ varNav('spiel.html',document.getElementById('varNav'));
 <script>document.addEventListener('click',e=>{document.querySelectorAll('#controls details.dd[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.ddBox button'))d.removeAttribute('open');});});
 document.querySelectorAll('#controls details.dd').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)document.querySelectorAll('#controls details.dd[open]').forEach(o=>{if(o!==d)o.removeAttribute('open');});}));</script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/update.js?v=2026-10-23_00:57" data-v="2026-10-23 00:57"></script>
+<script src="lib/update.js?v=2026-10-23_01:55" data-v="2026-10-23 01:55"></script>
 </body></html>
