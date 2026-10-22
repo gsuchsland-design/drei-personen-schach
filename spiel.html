@@ -5791,7 +5791,7 @@ function analyseGame(){
   if(R.var)varDiscard();
   replayStop();
   const log=R.real.moveLog,n=log.length,res=new Array(n).fill(null);
-  ANA={R,res,i:0,n,done:false};
+  ANA={R,res,i:0,n,done:false};if(window.SELBST)SELBST.reset();
   anaOpen();anaProgress(0);
   const savedW=AIW;
   const step=()=>{
@@ -5955,15 +5955,22 @@ function anaRender(){
   else h+=`<p class="anaNote">${T('Keine groben Fehler gefunden.')}</p>`;
   h+=`<p class="anaNote">${T('Fair Play: Menschen stimmen bei nicht eindeutigen Zügen meist zu deutlich unter 50 % mit dem starken Computer überein. Sehr hohe Werte über viele Züge können auf Hilfe von außen hindeuten – ein Hinweis, kein Beweis.')}</p>`;
   h+=`<p class="anaNote">${T('Bewertet wird mit der Stellungsbewertung des Computers (eine Ebene tief, bei drei Spielern gibt es keinen objektiv besten Zug). Die Angaben sind Hinweise, keine Urteile.')}</p>`;
-  document.getElementById('anaBody').innerHTML=aiBox+h;
+  // Selbsteinschätzung (freiwillig) – geht in den KI-Bericht ein
+  let slf='';
+  if(window.SELBST){const me=NET.on?NET.seat:FERN.on?FERN.seat:null,hum=TURN_ORDER.filter(p=>!isAIPlayer(p)&&(!me||p===me));
+    slf=SELBST.html({T,me,humans:hum.map(p=>({p,name:anaName(p)})),opps:p=>TURN_ORDER.filter(q=>q!==p).map(q=>({p:q,name:anaName(q)})),st,silent:sil,
+      pacts:(DIPLO.log||[]).filter(d=>d.k==='pact'),talk:TALK.length?anaTalk().map(t=>({p:t.x.p,verdict:t.verdict})):[],hasTalk:!!TALK.length});}
+  document.getElementById('anaBody').innerHTML=slf+aiBox+h;
+  if(window.SELBST)SELBST.init();
 }
 // ---------- KI-Bericht (Profi-Analyse) ----------
 function anaFacts(){
-  const R=ANA.R,body=document.getElementById('anaBody').cloneNode(true),w=body.querySelector('#anaAIWrap');if(w)w.remove();
+  const R=ANA.R,body=document.getElementById('anaBody').cloneNode(true),w=body.querySelector('#anaAIWrap');if(w)w.remove();{const sb=body.querySelector('#slfBox');if(sb)sb.remove();}
   for(const sv of body.querySelectorAll('svg'))sv.remove();
   const names=TURN_ORDER.map(p=>`${PNAMES[p]}: ${anaName(p)}${isAIPlayer(p)?' ('+T('Computer')+')':''}`).join(', ');
   let f=`${T('Spieler')}: ${names}\n${T('Ergebnis')}: ${R.real.gameOver?R.real.status:T('Partie läuft noch')}\n${T('Züge')}: ${R.n}\n\n`+(()=>{const tmp=document.createElement('div');tmp.style.cssText='position:fixed;left:-9999px;top:0;width:800px';tmp.appendChild(body);document.body.appendChild(tmp);const t=body.innerText;tmp.remove();return t;})().replace(/\n{3,}/g,'\n\n');
   if(TALK.length){f+='\n\n'+T('Gesprächsmitschrift')+':\n'+TALK.slice(-80).map(x=>`[${T('nach Zug {0}',[x.n])}] ${talkName(x)}: ${x.text}`).join('\n');}
+  if(window.SELBST){const sf=SELBST.facts();if(sf)f=f.slice(0,9000-sf.length)+sf;}
   return f.slice(0,9000);
 }
 function mdLite(t){return esc(t).replace(/^#{1,4}\s*(.+)$/gm,'<h4>$1</h4>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');}
@@ -6388,6 +6395,7 @@ try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage
 </script>
 <script src="lib/varnav.js?v=2026102206"></script>
 <script src="lib/tourbg.js?v=2026102206"></script>
+<script src="lib/selbst.js?v=2026102207"></script>
 <script src="lib/monvoice.js?v=2026102206"></script>
 <script src="lib/three.min.js"></script>
 <script>
