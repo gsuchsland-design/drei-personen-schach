@@ -1,0 +1,70 @@
+Xadrez estrela
+As tuas partidas em curso
+toca para continuar a jogar; com «🌍 Lobby» no jogo podes voltar aqui a qualquer momento.
+é a vez dos outros
+uma fila de peões (8)
+duas filas de peões (16)
+peões 4 × 4 (16)
+64 peões + 64 almirantes
+todas as peças feéricas
+só peças clássicas
+Peças feéricas: {0}
+bispo também pelas diagonais espaciais
+dama sem diagonais espaciais
+rei sem diagonais espaciais
+cavalo também 2 + 1 + 1
+o peão também captura pelas diagonais espaciais
+peão: passo duplo só no primeiro lance
+peão: sempre até 2 casas
+promoção só na última camada
+sem unicórnio
+com unicórnio
+com buraco de minhoca
+⚠️ não totalmente equilibrado
+Aceitas o empate – faz agora o teu lance.
+Recusado.
+{0} propõe empate.
+Aceitar
+Recusar
+Empate proposto por {0}
+Empate proposto – faz agora o teu lance.
+Os outros são consultados à vez
+Propor empate
+Sais do jogo; os outros continuam
+Desistir
+🤝 Empate acordado – todos aceitaram.
+{0}: queres mesmo desistir?
+🏳 {0} desiste – só restam computadores. {1} ganha por pontos!
+🏳 {0} desiste – {1} ganha!
+{0} desistiu.
+🔄 Para a desforra
+Só os jogadores podem criar uma desforra.
+desiste
+Empate acordado
+🔄 Desforra! Uma nova partida com os mesmos lugares está à espera.
+Pontos
+Na liderança: {0}.
+Estás aliado com {0} contra {1}.
+De momento não tens nenhuma aliança.
+A jogar: {0}.
+Mudar de variante
+Lobby num novo separador – esta partida continua aberta
+Lobby
+Guia rápido
+Os adversários do computador fazem alianças, traem e vingam-se
+Unicórnio – só diagonais espaciais
+Unicórnio – só pelos cantos
+Cavaleiro noturno – vários saltos de cavalo em linha
+Xadrez no tetraedro estrelado, a estrela de David tridimensional, para 2 a 8 jogadores
+Quem alcança uma das 8 casas centrais por uma diagonal espacial pode continuar pelo ponto central para qualquer outra diagonal espacial – até qualquer ponta. Vale para unicórnio, dama e rei.
+não totalmente equilibrado
+As peças feéricas desmarcadas são substituídas por clássicas na posição inicial: Unicórnio → Bispo · Cavaleiro noturno → Cavalo · Duquesa → Torre · Governador → Bispo · Arcebispo → Bispo · Chanceler → Torre · Amazona → Dama.
+As peças feéricas desmarcadas são substituídas por clássicas na posição inicial: Unicórnio → Bispo.
+O tetraedro estrelado é a estrela de David tridimensional com 8 pontas. O tabuleiro é um cubo de 8 × 8 × 8 dobrado em estrela: 512 casas com 6 faces cada, cada canto do cubo é uma ponta. Cada exército está numa ponta. Toca numa peça → os seus lances acendem-se (verde = livre, vermelho = captura). Arrastar = rodar, roda/dois dedos = zoom, clique direito e arrastar/dois dedos = deslocar.
+Toca numa cor: ● visível → ◐ esbatida → ○ oculta. Deslocar: clique direito/Shift + arrastar ou com dois dedos. Duplo clique = estrela inteira.
+Peças feéricas:
+Torre ♜: a direito através das faces das casas. Bispo ♝: na diagonal pelas arestas. Unicórnio 🦄: pelos cantos. Buraco de minhoca (se o anfitrião o ativar): quem alcança uma das 8 casas centrais por uma diagonal espacial pode continuar pelo ponto central para qualquer outra diagonal espacial. Dama ♛: tudo isto. Rei ♚: um passo como a dama. Cavalo ♞: 2 + 1 de lado. Peão ♟: uma casa mais longe da sua própria ponta, captura na diagonal para a frente; nas três camadas exteriores de uma ponta alheia torna-se dama. A ferramenta de colocar também oferece as peças feéricas do Xadrez dos 6 Reinos.
+A dois, os exércitos estão nos polos; a três e a quatro, nas pontas de um tetraedro; a seis, num anel à volta do centro; a oito, em todas as pontas. As 8 pontas são equivalentes. A cinco e a sete também dá, mas não é totalmente equilibrado (⚠️). Quem não pode jogar sem ficar em xeque passa a vez. Quem só tem o rei está derrotado. A partir da primeira captura: após 30 rondas sem capturas nem lances de peão, decide o material.
+Para colocar peças, escolhe uma área – depois as suas casas ficam clicáveis.
+🌀 Buraco de minhoca no centro
+🌍 Lobby

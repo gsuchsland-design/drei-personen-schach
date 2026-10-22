@@ -13,8 +13,9 @@ de=FLAT();MARK='// mon_more (tools/build_mon_more.py)'
 for f in sorted(os.listdir(os.path.join(ROOT,'tools','mon_more_tr'))):
     lg=f[:-4];L=open(os.path.join(ROOT,'tools','mon_more_tr',f),encoding='utf-8').read().rstrip('\n').split('\n')
     assert len(L)==len(de),lg
-    P=os.path.join(ROOT,'lib','lang',lg+'.js');s=open(P,encoding='utf-8').read()
-    s=re.sub(r'\n'+re.escape(MARK)+r'\n.*?\n(?=\n|$)','',s,flags=re.S).rstrip('\n')+'\n'
-    s+='\n'+MARK+'\nObject.assign(window.I18N,'+json.dumps(dict(zip(de,L)),ensure_ascii=False)+');\n'
-    open(P,'w',encoding='utf-8').write(s)
+    for nm in (lg+'.js','v-'+lg+'.js'):   # Drei-Personen-Schach lädt beide, die anderen Spiele nur v-*.js
+        P=os.path.join(ROOT,'lib','lang',nm);s=open(P,encoding='utf-8').read()
+        s=re.sub(r'\n'+re.escape(MARK)+r'\n.*?\n(?=\n|$)','',s,flags=re.S).rstrip('\n')+'\n'
+        s+='\n'+MARK+'\nObject.assign(window.I18N,'+json.dumps(dict(zip(de,L)),ensure_ascii=False)+');\n'
+        open(P,'w',encoding='utf-8').write(s)
     print(lg,len(L))

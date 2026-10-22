@@ -1,0 +1,70 @@
+Star Chess
+Your ongoing games
+tap to continue playing; with “🌍 Lobby” in the game you can come back here at any time.
+the others are on turn
+one row of pawns (8)
+two rows of pawns (16)
+pawns 4 × 4 (16)
+64 pawns + 64 admirals
+all fairy pieces
+classic pieces only
+Fairy pieces: {0}
+bishop also along space diagonals
+queen without space diagonals
+king without space diagonals
+knight also 2 + 1 + 1
+pawn also captures along space diagonals
+pawn: double step only on its first move
+pawn: always up to 2 squares
+promotion only on the rearmost layer
+without unicorn
+with unicorn
+with wormhole
+⚠️ not quite balanced
+You accept the draw – now make your move.
+Declined.
+{0} offers a draw.
+Accept
+Decline
+Draw offered by {0}
+Draw offered – now make your move.
+The others are asked in turn
+Offer a draw
+You drop out; the others play on
+Resign
+🤝 Draw agreed – everyone has accepted.
+{0}: Do you really want to resign?
+🏳 {0} resigns – only computers are left. {1} wins on points!
+🏳 {0} resigns – {1} wins!
+{0} has resigned.
+🔄 To the rematch
+Only players can set up a rematch.
+resigns
+Draw agreed
+🔄 Rematch! A new game with the same seats is waiting.
+Points
+In the lead: {0}.
+You are allied with {0} against {1}.
+You currently have no alliance.
+To move: {0}.
+Switch variant
+Lobby in a new tab – this game stays open
+Lobby
+Quick guide
+The computer opponents forge alliances, betray each other and take revenge
+Unicorn – space diagonals only
+Unicorn – only across corners
+Nightrider – several knight jumps in a line
+Chess in the stella octangula, the three-dimensional Star of David, for 2 to 8 players
+Whoever reaches one of the 8 centre cells on a space diagonal may continue through the centre point into any other space diagonal – all the way into any point. Applies to unicorn, queen and king.
+not quite balanced
+Fairy pieces that are deselected are replaced by classic ones in the setup: Unicorn → Bishop · Nightrider → Knight · Duchess → Rook · Governor → Bishop · Archbishop → Bishop · Chancellor → Rook · Amazon → Queen.
+Fairy pieces that are deselected are replaced by classic ones in the setup: Unicorn → Bishop.
+The stella octangula is the three-dimensional Star of David with 8 points. The board is an 8 × 8 × 8 cube folded into a star: 512 cells with 6 faces each, every corner of the cube is a point. Each army stands in one point. Tap a piece → its moves light up (green = free, red = capture). Drag = rotate, wheel/two fingers = zoom, right-click drag/two fingers = pan.
+Tap a colour: ● visible → ◐ faded → ○ hidden. Pan: right-click/Shift + drag or with two fingers. Double-click = whole star.
+Fairy pieces:
+Rook ♜: straight through the faces of the cells. Bishop ♝: diagonally across the edges. Unicorn 🦄: across the corners. Wormhole (if the host switches it on): whoever reaches one of the 8 centre cells on a space diagonal can continue through the centre point into any other space diagonal. Queen ♛: all of these. King ♚: one step like the queen. Knight ♞: 2 + 1 across. Pawn ♟: one cell further away from its own point, captures diagonally forward; in the three outermost layers of a foreign point it becomes a queen. The placing tool also offers the fairy pieces from Chess of the 6 Realms.
+With two players the armies stand at the poles, with three or four at the points of a tetrahedron, with six in a ring around the centre, with eight in all points. All 8 points are equivalent. Five or seven players also work, but it is not quite balanced (⚠️). Whoever cannot move without being in check skips a turn. Whoever has only the king left is beaten. Once the first capture has happened: after 30 rounds without a capture or a pawn move, material decides.
+To place pieces, choose an area – then its cells can be clicked.
+🌀 Wormhole in the centre
+🌍 Lobby

@@ -1,0 +1,70 @@
+Stjerneskak
+Dine igangværende partier
+tryk for at spille videre; med „🌍 Lobby” i spillet kan du altid komme tilbage hertil.
+det er de andres tur
+én række bønder (8)
+to rækker bønder (16)
+bønder 4 × 4 (16)
+64 bønder + 64 admiraler
+alle eventyrbrikker
+kun klassiske brikker
+Eventyrbrikker: {0}
+løber også ad rumdiagonaler
+dronning uden rumdiagonaler
+konge uden rumdiagonaler
+springer også 2 + 1 + 1
+bonde slår også ad rumdiagonaler
+bonde: dobbelttræk kun ved første træk
+bonde: altid op til 2 felter
+forvandling først på det bageste lag
+uden enhjørning
+med enhjørning
+med ormehul
+⚠️ ikke helt afbalanceret
+Du accepterer remis – lav nu dit træk.
+Afvist.
+{0} tilbyder remis.
+Accepter
+Afvis
+Remis tilbudt af {0}
+Remis tilbudt – lav nu dit træk.
+De andre bliver spurgt på skift
+Tilbyd remis
+Du udgår; de andre spiller videre
+Opgiv
+🤝 Remis aftalt – alle har accepteret.
+{0}: Vil du virkelig opgive?
+🏳 {0} opgiver – der spiller kun computere nu. {1} vinder på point!
+🏳 {0} opgiver – {1} vinder!
+{0} har opgivet.
+🔄 Til revanchen
+Kun spillere kan oprette en revanche.
+opgiver
+Remis aftalt
+🔄 Revanche! Et nyt parti med de samme pladser venter.
+Point
+I spidsen: {0}.
+Du er allieret med {0} mod {1}.
+Du har ingen alliance lige nu.
+I trækket: {0}.
+Skift variant
+Lobby i en ny fane – dette parti forbliver åbent
+Lobby
+Kort vejledning
+Computermodstanderne indgår alliancer, forråder hinanden og hævner sig
+Enhjørning – kun rumdiagonaler
+Enhjørning – kun over hjørner
+Natrytter – flere springerspring på en linje
+Skak i stjernetetraederet, den tredimensionale davidsstjerne, for 2 til 8 spillere
+Den, der på en rumdiagonal når et af de 8 midterfelter, må fortsætte gennem midtpunktet ind i enhver anden rumdiagonal – helt ind i hver spids. Gælder for enhjørning, dronning og konge.
+ikke helt afbalanceret
+Fravalgte eventyrbrikker erstattes af klassiske i opstillingen: Enhjørning → Løber · Natrytter → Springer · Hertuginde → Tårn · Guvernør → Løber · Ærkebiskop → Løber · Kansler → Tårn · Amazone → Dronning.
+Fravalgte eventyrbrikker erstattes af klassiske i opstillingen: Enhjørning → Løber.
+Stjernetetraederet er den tredimensionale davidsstjerne med 8 spidser. Brættet er en 8 × 8 × 8-terning foldet til en stjerne: 512 felter med hver 6 flader, hvert hjørne af terningen er en spids. Hver hær står i en spids. Tryk på en brik → dens træk lyser op (grøn = fri, rød = slå). Træk = drej, hjul/to fingre = zoom, højreklik-træk/to fingre = flyt.
+Tryk på en farve: ● synlig → ◐ bleg → ○ skjult. Flyt: højreklik/Shift + træk eller med to fingre. Dobbeltklik = hele stjernen.
+Eventyrbrikker:
+Tårn ♜: lige igennem feltets flader. Løber ♝: skråt over kanterne. Enhjørning 🦄: over hjørnerne. Ormehul (hvis værten slår det til): den, der på en rumdiagonal når et af de 8 midterfelter, kan fortsætte gennem midtpunktet ind i enhver anden rumdiagonal. Dronning ♛: alt dette. Konge ♚: ét skridt som dronningen. Springer ♞: 2 + 1 på tværs. Bonde ♟: ét felt længere væk fra sin egen spids, slår skråt fremad; i de tre yderste lag af en fremmed spids bliver den til dronning. Placeringsværktøjet tilbyder desuden eventyrbrikkerne fra Skak med de 6 riger.
+To spillere står ved polerne, tre og fire ved spidserne af et tetraeder, seks i en ring om midten, otte i alle spidser. Alle 8 spidser er ligeværdige. Med fem og syv går det også, men det er ikke helt afbalanceret (⚠️). Den, der ikke kan trække uden at stå i skak, springer over. Den, der kun har kongen tilbage, er slået. Så snart der er slået første gang, gælder: Efter 30 runder uden slag og uden bondetræk afgør materialet.
+Vælg et område for at placere brikker – så kan dets felter klikkes.
+🌀 Ormehul i midten
+🌍 Lobby

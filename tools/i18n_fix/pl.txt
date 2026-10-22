@@ -1,0 +1,70 @@
+Szachy gwiezdne
+Twoje trwające partie
+dotknij, aby grać dalej; przez „🌍 Lobby” w grze możesz tu wrócić w każdej chwili.
+ruch mają inni
+jeden rząd pionów (8)
+dwa rzędy pionów (16)
+piony 4 × 4 (16)
+64 piony + 64 admirałów
+wszystkie figury baśniowe
+tylko klasyczne figury
+Figury baśniowe: {0}
+goniec także po przekątnych przestrzennych
+hetman bez przekątnych przestrzennych
+król bez przekątnych przestrzennych
+skoczek także 2 + 1 + 1
+pion bije także po przekątnych przestrzennych
+pion: podwójny krok tylko w pierwszym ruchu
+pion: zawsze do 2 pól
+promocja dopiero na ostatniej warstwie
+bez jednorożca
+z jednorożcem
+z tunelem czasoprzestrzennym
+⚠️ nie całkiem wyrównane
+Przyjmujesz remis – teraz wykonaj swój ruch.
+Odrzucono.
+{0} proponuje remis.
+Przyjmij
+Odrzuć
+Remis zaproponowany przez {0}
+Zaproponowano remis – teraz wykonaj swój ruch.
+Pozostali są pytani po kolei
+Zaproponuj remis
+Odpadasz; pozostali grają dalej
+Poddaj się
+🤝 Remis uzgodniony – wszyscy się zgodzili.
+{0}: Czy naprawdę chcesz się poddać?
+🏳 {0} się poddaje – grają już tylko komputery. {1} wygrywa na punkty!
+🏳 {0} się poddaje – {1} wygrywa!
+{0} się poddał.
+🔄 Do rewanżu
+Tylko gracze mogą utworzyć rewanż.
+się poddaje
+Remis uzgodniony
+🔄 Rewanż! Czeka nowa partia z tymi samymi miejscami.
+Punkty
+Prowadzi: {0}.
+Jesteś w sojuszu z {0} przeciw {1}.
+Nie masz teraz żadnego sojuszu.
+Ruch: {0}.
+Zmień wariant
+Lobby w nowej karcie – ta partia pozostaje otwarta
+Lobby
+Krótka instrukcja
+Komputerowi przeciwnicy zawierają sojusze, zdradzają i się mszczą
+Jednorożec – tylko przekątne przestrzenne
+Jednorożec – tylko przez rogi
+Nocny jeździec – kilka skoków skoczka w jednej linii
+Szachy w gwiaździstym czworościanie, trójwymiarowej gwieździe Dawida, dla 2 do 8 graczy
+Kto na przekątnej przestrzennej dotrze do jednego z 8 środkowych pól, może przejść przez punkt środkowy do dowolnej innej przekątnej przestrzennej – aż do każdego wierzchołka. Dotyczy jednorożca, hetmana i króla.
+nie całkiem wyrównane
+Odznaczone figury baśniowe są w ustawieniu zastępowane klasycznymi: Jednorożec → Goniec · Nocny jeździec → Skoczek · Księżna → Wieża · Gubernator → Goniec · Arcybiskup → Goniec · Kanclerz → Wieża · Amazonka → Hetman.
+Odznaczone figury baśniowe są w ustawieniu zastępowane klasycznymi: Jednorożec → Goniec.
+Gwiaździsty czworościan to trójwymiarowa gwiazda Dawida z 8 wierzchołkami. Plansza to sześcian 8 × 8 × 8 złożony w gwiazdę: 512 pól o 6 ścianach każde, każdy róg sześcianu jest wierzchołkiem. Każda armia stoi w jednym wierzchołku. Dotknij figury → jej ruchy się podświetlą (zielony = wolne, czerwony = bicie). Przeciąganie = obracanie, kółko/dwa palce = powiększenie, przeciąganie prawym przyciskiem/dwa palce = przesuwanie.
+Dotknij koloru: ● widoczny → ◐ blady → ○ ukryty. Przesuwanie: prawy przycisk/Shift + przeciąganie lub dwoma palcami. Podwójne kliknięcie = cała gwiazda.
+Figury baśniowe:
+Wieża ♜: prosto przez ściany pól. Goniec ♝: ukośnie przez krawędzie. Jednorożec 🦄: przez rogi. Tunel (jeśli gospodarz go włączy): kto na przekątnej przestrzennej dotrze do jednego z 8 środkowych pól, może przejść przez punkt środkowy do dowolnej innej przekątnej przestrzennej. Hetman ♛: wszystko to. Król ♚: jeden krok jak hetman. Skoczek ♞: 2 + 1 w poprzek. Pion ♟: jedno pole dalej od własnego wierzchołka, bije ukośnie do przodu; w trzech zewnętrznych warstwach obcego wierzchołka zamienia się w hetmana. Narzędzie ustawiania oferuje też figury baśniowe z Szachów 6 Królestw.
+We dwoje armie stoją na biegunach, we troje i we czworo na wierzchołkach czworościanu, w szóstkę w pierścieniu wokół środka, w ósemkę we wszystkich wierzchołkach. Wszystkie 8 wierzchołków jest równorzędnych. W piątkę i w siódemkę też się da, ale nie jest to całkiem wyrównane (⚠️). Kto nie może wykonać ruchu bez szacha, traci kolejkę. Kto ma już tylko króla, przegrywa. Od pierwszego bicia obowiązuje: po 30 rundach bez bicia i bez ruchu pionem decyduje materiał.
+Aby ustawić figury, wybierz obszar – wtedy jego pola będą klikalne.
+🌀 Tunel czasoprzestrzenny w środku
+🌍 Lobby

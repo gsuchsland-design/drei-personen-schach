@@ -1,0 +1,70 @@
+Ajedrez estrella
+Tus partidas en curso
+toca para seguir jugando; con «🌍 Lobby» en el juego puedes volver aquí en cualquier momento.
+les toca a los demás
+una fila de peones (8)
+dos filas de peones (16)
+peones 4 × 4 (16)
+64 peones + 64 almirantes
+todas las piezas feéricas
+solo piezas clásicas
+Piezas feéricas: {0}
+alfil también por las diagonales espaciales
+dama sin diagonales espaciales
+rey sin diagonales espaciales
+caballo también 2 + 1 + 1
+el peón también captura por las diagonales espaciales
+peón: paso doble solo en su primer movimiento
+peón: siempre hasta 2 casillas
+coronación solo en la última capa
+sin unicornio
+con unicornio
+con agujero de gusano
+⚠️ no del todo equilibrado
+Aceptas las tablas: haz ahora tu jugada.
+Rechazado.
+{0} ofrece tablas.
+Aceptar
+Rechazar
+Tablas ofrecidas por {0}
+Tablas ofrecidas: haz ahora tu jugada.
+Se pregunta a los demás por turnos
+Ofrecer tablas
+Quedas fuera; los demás siguen jugando
+Rendirse
+🤝 Tablas acordadas: todos han aceptado.
+{0}: ¿de verdad quieres rendirte?
+🏳 {0} se rinde: solo quedan ordenadores. ¡{1} gana por puntos!
+🏳 {0} se rinde: ¡{1} gana!
+{0} se ha rendido.
+🔄 A la revancha
+Solo los jugadores pueden crear una revancha.
+se rinde
+Tablas acordadas
+🔄 ¡Revancha! Te espera una nueva partida con los mismos puestos.
+Puntos
+Va en cabeza: {0}.
+Estás aliado con {0} contra {1}.
+Ahora mismo no tienes ninguna alianza.
+Le toca a: {0}.
+Cambiar de variante
+Lobby en una pestaña nueva: esta partida sigue abierta
+Lobby
+Guía rápida
+Los rivales del ordenador forjan alianzas, traicionan y se vengan
+Unicornio: solo diagonales espaciales
+Unicornio: solo por las esquinas
+Jinete nocturno: varios saltos de caballo en línea
+Ajedrez en el tetraedro estrellado, la estrella de David tridimensional, para 2 a 8 jugadores
+Quien llega a una de las 8 casillas centrales por una diagonal espacial puede seguir por el punto central hacia cualquier otra diagonal espacial, hasta cualquier punta. Vale para unicornio, dama y rey.
+no del todo equilibrado
+Las piezas feéricas desmarcadas se sustituyen por clásicas en la posición inicial: Unicornio → Alfil · Jinete nocturno → Caballo · Duquesa → Torre · Gobernador → Alfil · Arzobispo → Alfil · Canciller → Torre · Amazona → Dama.
+Las piezas feéricas desmarcadas se sustituyen por clásicas en la posición inicial: Unicornio → Alfil.
+El tetraedro estrellado es la estrella de David tridimensional con 8 puntas. El tablero es un cubo de 8 × 8 × 8 plegado en estrella: 512 casillas con 6 caras cada una; cada esquina del cubo es una punta. Cada ejército está en una punta. Toca una pieza → sus movimientos se iluminan (verde = libre, rojo = captura). Arrastrar = girar, rueda/dos dedos = zoom, clic derecho y arrastrar/dos dedos = desplazar.
+Toca un color: ● visible → ◐ tenue → ○ oculto. Desplazar: clic derecho/Mayús + arrastrar o con dos dedos. Doble clic = toda la estrella.
+Piezas feéricas:
+Torre ♜: recto a través de las caras de las casillas. Alfil ♝: en diagonal por las aristas. Unicornio 🦄: por las esquinas. Agujero de gusano (si el anfitrión lo activa): quien llega a una de las 8 casillas centrales por una diagonal espacial puede seguir por el punto central hacia cualquier otra diagonal espacial. Dama ♛: todo lo anterior. Rey ♚: un paso como la dama. Caballo ♞: 2 + 1 en ángulo. Peón ♟: una casilla más lejos de su propia punta, captura en diagonal hacia delante; en las tres capas exteriores de una punta ajena se convierte en dama. La herramienta de colocar también ofrece las piezas feéricas del Ajedrez de los 6 Reinos.
+Con dos jugadores, los ejércitos están en los polos; con tres y cuatro, en las puntas de un tetraedro; con seis, en un anillo alrededor del centro; con ocho, en todas las puntas. Las 8 puntas son equivalentes. Con cinco y siete también se puede, pero no está del todo equilibrado (⚠️). Quien no puede mover sin quedar en jaque pasa turno. Quien solo tiene el rey está derrotado. A partir de la primera captura: tras 30 rondas sin capturas ni movimientos de peón, decide el material.
+Para colocar piezas, elige una zona: entonces se podrá hacer clic en sus casillas.
+🌀 Agujero de gusano en el centro
+🌍 Lobby

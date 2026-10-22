@@ -819,8 +819,8 @@ body.replay #c { outline:2px dashed rgba(212,167,44,.55); outline-offset:-2px; }
   </div>
   <ol id="logList"></ol>
 </div>
-<script src="lib/mondata.js?v=2026102204"></script>
-<script src="lib/monsters.js?v=2026102204"></script>
+<script src="lib/mondata.js?v=2026102205"></script>
+<script src="lib/monsters.js?v=2026102205"></script>
 <script>
 // ---------- Sprachen: Auswahl wird gemerkt; die Sprachdatei wird vor dem Spiel geladen ----------
 const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Français','🇫🇷'],['es','Español','🇪🇸'],['it','Italiano','🇮🇹'],['pt','Português','🇵🇹'],
@@ -828,7 +828,7 @@ const LANGS=[['de','Deutsch','🇩🇪'],['en','English','🇬🇧'],['fr','Fran
 var LANG_SET=null;try{LANG_SET=localStorage.getItem('dreiSchach.lang');}catch(e){}
 if(LANG_SET&&!LANGS.some(l=>l[0]===LANG_SET))LANG_SET=null;
 window.LANG=LANG_SET||'de';
-if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102204"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102204"><\/script>');
+if(LANG_SET&&LANG_SET!=='de')document.write('<script src="lib/lang/'+LANG_SET+'.js?v=2026102205"><\/script><script src="lib/lang/v-'+LANG_SET+'.js?v=2026102205"><\/script>');
 function T(s,a){let r=(window.I18N&&window.I18N[s])||s;if(a)r=r.replace(/\{(\d+)\}/g,(m,i)=>a[i]==null?'':a[i]);return r;}
 function trKey(t){return t.replace(/\s+/g,' ').trim();}
 function translateDom(root){   // feste Texte der Seite (Knöpfe, Beschriftungen, Hinweise) übersetzen
@@ -6372,8 +6372,8 @@ document.querySelector(`input[name=camOffMode][value=${camOffMode}]`).checked=tr
 layoutStrip();resizeCanvas();
 try{document.getElementById('monSize').value=Math.round((parseFloat(localStorage.getItem('dreiSchach.monScale'))||1)*100);}catch(e){}
 </script>
-<script src="lib/varnav.js?v=2026102204"></script>
-<script src="lib/monvoice.js?v=2026102204"></script>
+<script src="lib/varnav.js?v=2026102205"></script>
+<script src="lib/monvoice.js?v=2026102205"></script>
 <script src="lib/three.min.js"></script>
 <script>
 // ================= 3D-Ansicht (three.js) =================

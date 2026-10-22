@@ -1,0 +1,70 @@
+Yıldız satrancı
+Devam eden oyunların
+oynamaya devam etmek için dokun; oyundaki „🌍 Lobi” ile istediğin zaman buraya dönebilirsin.
+sıra diğerlerinde
+bir sıra piyon (8)
+iki sıra piyon (16)
+piyonlar 4 × 4 (16)
+64 piyon + 64 amiral
+tüm masal taşları
+yalnızca klasik taşlar
+Masal taşları: {0}
+fil uzay köşegenlerinde de
+vezir uzay köşegenleri olmadan
+şah uzay köşegenleri olmadan
+at 2 + 1 + 1 de
+piyon uzay köşegenlerinde de alır
+piyon: çift adım yalnızca ilk hamlede
+piyon: her zaman 2 kareye kadar
+terfi yalnızca en arka katmanda
+tek boynuzlu at olmadan
+tek boynuzlu atlı
+solucan delikli
+⚠️ tam dengeli değil
+Beraberliği kabul ediyorsun – şimdi hamleni yap.
+Reddedildi.
+{0} beraberlik teklif ediyor.
+Kabul et
+Reddet
+{0} beraberlik teklif etti
+Beraberlik teklif edildi – şimdi hamleni yap.
+Diğerlerine sırayla soruluyor
+Beraberlik teklif et
+Oyundan çıkıyorsun; diğerleri devam ediyor
+Pes et
+🤝 Beraberlikte anlaşıldı – herkes kabul etti.
+{0}: Gerçekten pes etmek istiyor musun?
+🏳 {0} pes ediyor – yalnızca bilgisayarlar kaldı. {1} puanla kazanıyor!
+🏳 {0} pes ediyor – {1} kazanıyor!
+{0} pes etti.
+🔄 Rövanşa
+Yalnızca oyuncular rövanş oluşturabilir.
+pes ediyor
+Beraberlikte anlaşıldı
+🔄 Rövanş! Aynı yerlerle yeni bir oyun bekliyor.
+Puan
+Önde: {0}.
+{1} karşısında {0} ile müttefiksin.
+Şu anda bir ittifakın yok.
+Sıra: {0}.
+Varyant değiştir
+Yeni sekmede lobi – bu oyun açık kalır
+Lobi
+Kısa kılavuz
+Bilgisayar rakipler ittifak kurar, ihanet eder ve intikam alır
+Tek boynuzlu at – yalnızca uzay köşegenleri
+Tek boynuzlu at – yalnızca köşelerden
+Gece süvarisi – bir doğru üzerinde birkaç at sıçraması
+Yıldız dört yüzlüde satranç, üç boyutlu Davut yıldızı, 2 ila 8 oyuncu için
+Bir uzay köşegeninde 8 merkez hücreden birine ulaşan, merkez noktadan geçerek başka herhangi bir uzay köşegenine devam edebilir – her uca kadar. Tek boynuzlu at, vezir ve şah için geçerlidir.
+tam dengeli değil
+Seçimi kaldırılan masal taşları dizilişte klasik taşlarla değiştirilir: Tek boynuzlu at → Fil · Gece süvarisi → At · Düşes → Kale · Vali → Fil · Başpiskopos → Fil · Şansölye → Kale · Amazon → Vezir.
+Seçimi kaldırılan masal taşları dizilişte klasik taşlarla değiştirilir: Tek boynuzlu at → Fil.
+Yıldız dört yüzlü, 8 uçlu üç boyutlu Davut yıldızıdır. Tahta, yıldız şeklinde katlanmış 8 × 8 × 8'lik bir küptür: her biri 6 yüzlü 512 hücre, küpün her köşesi bir uç. Her ordu bir uçta durur. Bir taşa dokun → hamleleri yanar (yeşil = boş, kırmızı = alma). Sürükle = döndür, tekerlek/iki parmak = yakınlaştır, sağ tıklayıp sürükle/iki parmak = kaydır.
+Bir renge dokun: ● görünür → ◐ soluk → ○ gizli. Kaydır: sağ tık/Shift + sürükle ya da iki parmakla. Çift tık = tüm yıldız.
+Masal taşları:
+Kale ♜: hücrelerin yüzlerinden dümdüz. Fil ♝: kenarlardan çapraz. Tek boynuzlu at 🦄: köşelerden. Solucan deliği (ev sahibi açarsa): bir uzay köşegeninde 8 merkez hücreden birine ulaşan, merkez noktadan geçerek başka herhangi bir uzay köşegenine devam edebilir. Vezir ♛: bunların hepsi. Şah ♚: vezir gibi bir adım. At ♞: 2 + 1 çapraz. Piyon ♟: kendi ucundan bir hücre uzağa, ileri çapraz alır; yabancı bir ucun en dıştaki üç katmanında vezire dönüşür. Yerleştirme aracında ayrıca 6 Krallık Satrancı'nın masal taşları da var.
+İki kişide ordular kutuplarda, üç ve dört kişide bir dört yüzlünün uçlarında, altı kişide merkezin çevresinde bir halkada, sekiz kişide tüm uçlarda durur. 8 ucun hepsi eşdeğerdir. Beş ve yedi kişiyle de olur ama tam dengeli değildir (⚠️). Şah altında kalmadan hamle yapamayan sırasını atlar. Elinde yalnızca şahı kalan yenilmiştir. İlk alma gerçekleştikten sonra: 30 tur boyunca alma ve piyon hamlesi olmazsa malzeme karar verir.
+Taş yerleştirmek için bir alan seç – sonra hücreleri tıklanabilir olur.
+🌀 Merkezde solucan deliği
+🌍 Lobi

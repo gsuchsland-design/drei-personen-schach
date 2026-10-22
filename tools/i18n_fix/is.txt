@@ -1,0 +1,70 @@
+Stjörnuskák
+Skákirnar þínar í gangi
+pikkaðu til að halda áfram; með „🌍 Lobby“ í leiknum geturðu alltaf komið hingað aftur.
+hinir eiga leik
+ein röð af peðum (8)
+tvær raðir af peðum (16)
+peð 4 × 4 (16)
+64 peð + 64 aðmírálar
+allir ævintýramenn
+aðeins klassískir taflmenn
+Ævintýramenn: {0}
+biskup líka eftir rúmskálínum
+drottning án rúmskálína
+kóngur án rúmskálína
+riddari líka 2 + 1 + 1
+peð drepur líka eftir rúmskálínum
+peð: tvöfalt skref aðeins í fyrsta leik
+peð: alltaf allt að 2 reitir
+upphækkun aðeins á aftasta laginu
+án einhyrnings
+með einhyrningi
+með ormagöngum
+⚠️ ekki alveg jafnvægi
+Þú samþykkir jafntefli – leiktu nú.
+Hafnað.
+{0} býður jafntefli.
+Samþykkja
+Hafna
+Jafntefli boðið af {0}
+Jafntefli boðið – leiktu nú.
+Hinir eru spurðir hver á eftir öðrum
+Bjóða jafntefli
+Þú dettur út; hinir halda áfram
+Gefast upp
+🤝 Jafntefli samþykkt – allir hafa samþykkt.
+{0}: Viltu virkilega gefast upp?
+🏳 {0} gefst upp – aðeins tölvur eru eftir. {1} vinnur á stigum!
+🏳 {0} gefst upp – {1} vinnur!
+{0} hefur gefist upp.
+🔄 Í endurleikinn
+Aðeins leikmenn geta stofnað endurleik.
+gefst upp
+Jafntefli samþykkt
+🔄 Endurleikur! Ný skák með sömu sætum bíður.
+Stig
+Í forystu: {0}.
+Þú ert í bandalagi með {0} gegn {1}.
+Þú ert ekki í neinu bandalagi núna.
+Á leik: {0}.
+Skipta um afbrigði
+Lobby í nýjum flipa – þessi skák helst opin
+Lobby
+Stuttar leiðbeiningar
+Tölvuandstæðingarnir mynda bandalög, svíkja og hefna sín
+Einhyrningur – aðeins rúmskálínur
+Einhyrningur – aðeins yfir horn
+Næturriddari – mörg riddarastökk í línu
+Skák í stjörnufjórflötungnum, þrívíðri Davíðsstjörnu, fyrir 2 til 8 leikmenn
+Sá sem nær einum af 8 miðjureitunum á rúmskálínu má halda áfram í gegnum miðpunktinn inn í hvaða aðra rúmskálínu sem er – alla leið inn í hvern odd. Gildir um einhyrning, drottningu og kóng.
+ekki alveg jafnvægi
+Ævintýramenn sem eru afvaldir eru í uppstillingunni leystir af klassískum: Einhyrningur → Biskup · Næturriddari → Riddari · Hertogaynja → Hrókur · Landstjóri → Biskup · Erkibiskup → Biskup · Kanslari → Hrókur · Amasóna → Drottning.
+Ævintýramenn sem eru afvaldir eru í uppstillingunni leystir af klassískum: Einhyrningur → Biskup.
+Stjörnufjórflötungurinn er þrívíð Davíðsstjarna með 8 odda. Borðið er 8 × 8 × 8 teningur brotinn í stjörnu: 512 reitir með 6 hliðum hver, hvert horn teningsins er oddur. Hver her stendur í einum oddi. Pikkaðu á taflmann → leikirnir hans lýsast upp (grænt = laust, rautt = drepa). Draga = snúa, hjól/tveir fingur = þysja, hægrismella og draga/tveir fingur = færa.
+Pikkaðu á lit: ● sýnilegur → ◐ daufur → ○ falinn. Færa: hægrismella/Shift + draga eða með tveimur fingrum. Tvísmella = öll stjarnan.
+Ævintýramenn:
+Hrókur ♜: beint í gegnum hliðar reitanna. Biskup ♝: á ská yfir brúnirnar. Einhyrningur 🦄: yfir hornin. Ormagöng (ef gestgjafinn kveikir á þeim): sá sem nær einum af 8 miðjureitunum á rúmskálínu getur haldið áfram í gegnum miðpunktinn inn í hvaða aðra rúmskálínu sem er. Drottning ♛: allt þetta. Kóngur ♚: eitt skref eins og drottningin. Riddari ♞: 2 + 1 þvert. Peð ♟: einum reit lengra frá eigin oddi, drepur á ská fram á við; í þremur ystu lögum annars odds verður það drottning. Í staðsetningartólinu eru líka ævintýramennirnir úr Skák sex ríkja.
+Tveir: herirnir standa við pólana; þrír og fjórir: við odda fjórflötungs; sex: í hring um miðjuna; átta: í öllum oddum. Allir 8 oddar eru jafngildir. Fimm og sjö ganga líka, en það er ekki alveg jafnvægi (⚠️). Sá sem getur ekki leikið án þess að vera í skák situr hjá. Sá sem á aðeins kónginn eftir er sigraður. Um leið og fyrst hefur verið drepið gildir: eftir 30 umferðir án drápa og án peðsleiks ræður liðsaflinn.
+Veldu svæði til að setja taflmenn – þá er hægt að smella á reiti þess.
+🌀 Ormagöng í miðjunni
+🌍 Lobby

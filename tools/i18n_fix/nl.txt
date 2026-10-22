@@ -1,0 +1,70 @@
+Sterschaak
+Je lopende partijen
+tik om verder te spelen; met „🌍 Lobby” in het spel kom je hier altijd terug.
+de anderen zijn aan zet
+één rij pionnen (8)
+twee rijen pionnen (16)
+pionnen 4 × 4 (16)
+64 pionnen + 64 admiraals
+alle sprookjesstukken
+alleen klassieke stukken
+Sprookjesstukken: {0}
+loper ook over ruimtediagonalen
+dame zonder ruimtediagonalen
+koning zonder ruimtediagonalen
+paard ook 2 + 1 + 1
+pion slaat ook over ruimtediagonalen
+pion: dubbele stap alleen bij de eerste zet
+pion: altijd tot 2 velden
+promotie pas op de achterste laag
+zonder eenhoorn
+met eenhoorn
+met wormgat
+⚠️ niet helemaal in evenwicht
+Je neemt de remise aan – doe nu je zet.
+Afgewezen.
+{0} biedt remise aan.
+Aannemen
+Afwijzen
+Remise aangeboden door {0}
+Remise aangeboden – doe nu je zet.
+De anderen worden om de beurt gevraagd
+Remise aanbieden
+Je valt af; de anderen spelen door
+Opgeven
+🤝 Remise overeengekomen – iedereen heeft ingestemd.
+{0}: wil je echt opgeven?
+🏳 {0} geeft op – er spelen alleen nog computers. {1} wint op punten!
+🏳 {0} geeft op – {1} wint!
+{0} heeft opgegeven.
+🔄 Naar de revanche
+Alleen spelers kunnen een revanche aanmaken.
+geeft op
+Remise overeengekomen
+🔄 Revanche! Er wacht een nieuwe partij met dezelfde plaatsen.
+Punten
+Aan de leiding: {0}.
+Je bent bondgenoot van {0} tegen {1}.
+Je hebt op dit moment geen bondgenootschap.
+Aan zet: {0}.
+Variant wisselen
+Lobby in een nieuw tabblad – deze partij blijft open
+Lobby
+Korte handleiding
+De computertegenstanders sluiten bondgenootschappen, verraden elkaar en nemen wraak
+Eenhoorn – alleen ruimtediagonalen
+Eenhoorn – alleen over hoeken
+Nachtruiter – meerdere paardensprongen in een lijn
+Schaken in het stertetraëder, de driedimensionale davidster, voor 2 tot 8 spelers
+Wie op een ruimtediagonaal een van de 8 middenvelden bereikt, mag door het middelpunt verder in elke andere ruimtediagonaal – tot in elke punt. Geldt voor eenhoorn, dame en koning.
+niet helemaal in evenwicht
+Uitgezette sprookjesstukken worden in de opstelling door klassieke vervangen: Eenhoorn → Loper · Nachtruiter → Paard · Hertogin → Toren · Gouverneur → Loper · Aartsbisschop → Loper · Kanselier → Toren · Amazone → Dame.
+Uitgezette sprookjesstukken worden in de opstelling door klassieke vervangen: Eenhoorn → Loper.
+Het stertetraëder is de driedimensionale davidster met 8 punten. Het bord is een kubus van 8 × 8 × 8, tot een ster gevouwen: 512 velden met elk 6 vlakken, elke hoek van de kubus is een punt. Elk leger staat in een punt. Tik op een stuk → zijn zetten lichten op (groen = vrij, rood = slaan). Slepen = draaien, wieltje/twee vingers = zoomen, rechtsklik-slepen/twee vingers = verschuiven.
+Tik op een kleur: ● zichtbaar → ◐ vaag → ○ verborgen. Verschuiven: rechtsklik/Shift + slepen of met twee vingers. Dubbelklik = hele ster.
+Sprookjesstukken:
+Toren ♜: recht door de vlakken van de velden. Loper ♝: schuin over de randen. Eenhoorn 🦄: over de hoeken. Wormgat (als de gastheer het inschakelt): wie op een ruimtediagonaal een van de 8 middenvelden bereikt, kan door het middelpunt verder in elke andere ruimtediagonaal. Dame ♛: dit allemaal. Koning ♚: één stap zoals de dame. Paard ♞: 2 + 1 dwars. Pion ♟: één veld verder weg van de eigen punt, slaat schuin vooruit; in de drie buitenste lagen van een vreemde punt wordt hij een dame. In het plaatsgereedschap zijn bovendien de sprookjesstukken uit Schaken van de 6 Rijken beschikbaar.
+Met z'n tweeën staan de legers aan de polen, met drie en vier op de punten van een viervlak, met zes in een ring om het midden, met acht in alle punten. Alle 8 punten zijn gelijkwaardig. Met vijf en zeven kan het ook, maar het is niet helemaal in evenwicht (⚠️). Wie niet kan zetten zonder schaak te staan, slaat een beurt over. Wie alleen nog de koning heeft, is verslagen. Zodra er eenmaal geslagen is, geldt: na 30 rondes zonder slaan en zonder pionzet beslist het materiaal.
+Kies een gebied om stukken te plaatsen – dan zijn de velden ervan aanklikbaar.
+🌀 Wormgat in het midden
+🌍 Lobby

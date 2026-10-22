@@ -1,0 +1,70 @@
+Scacchi stella
+Le tue partite in corso
+tocca per continuare a giocare; con «🌍 Lobby» nel gioco puoi tornare qui in qualsiasi momento.
+tocca agli altri
+una fila di pedoni (8)
+due file di pedoni (16)
+pedoni 4 × 4 (16)
+64 pedoni + 64 ammiragli
+tutti i pezzi fiabeschi
+solo pezzi classici
+Pezzi fiabeschi: {0}
+alfiere anche sulle diagonali spaziali
+donna senza diagonali spaziali
+re senza diagonali spaziali
+cavallo anche 2 + 1 + 1
+il pedone cattura anche sulle diagonali spaziali
+pedone: passo doppio solo alla prima mossa
+pedone: sempre fino a 2 case
+promozione solo sull'ultimo strato
+senza unicorno
+con unicorno
+con wormhole
+⚠️ non del tutto equilibrato
+Accetti la patta – ora fai la tua mossa.
+Rifiutato.
+{0} offre la patta.
+Accetta
+Rifiuta
+Patta offerta da {0}
+Patta offerta – ora fai la tua mossa.
+Gli altri vengono interpellati a turno
+Offri la patta
+Sei fuori; gli altri continuano a giocare
+Abbandona
+🤝 Patta concordata – tutti hanno accettato.
+{0}: vuoi davvero abbandonare?
+🏳 {0} abbandona – restano solo computer. {1} vince ai punti!
+🏳 {0} abbandona – {1} vince!
+{0} ha abbandonato.
+🔄 Alla rivincita
+Solo i giocatori possono creare una rivincita.
+abbandona
+Patta concordata
+🔄 Rivincita! Una nuova partita con gli stessi posti ti aspetta.
+Punti
+In testa: {0}.
+Sei alleato con {0} contro {1}.
+Al momento non hai alleanze.
+Al tratto: {0}.
+Cambia variante
+Lobby in una nuova scheda – questa partita resta aperta
+Lobby
+Guida rapida
+Gli avversari computer stringono alleanze, tradiscono e si vendicano
+Unicorno – solo diagonali spaziali
+Unicorno – solo attraverso gli angoli
+Cavaliere notturno – più salti di cavallo in linea
+Scacchi nella stella tetraedrica, la stella di David tridimensionale, da 2 a 8 giocatori
+Chi raggiunge una delle 8 celle centrali su una diagonale spaziale può proseguire attraverso il punto centrale in qualsiasi altra diagonale spaziale – fino in ogni punta. Vale per unicorno, donna e re.
+non del tutto equilibrato
+I pezzi fiabeschi deselezionati vengono sostituiti da pezzi classici nella posizione iniziale: Unicorno → Alfiere · Cavaliere notturno → Cavallo · Duchessa → Torre · Governatore → Alfiere · Arcivescovo → Alfiere · Cancelliere → Torre · Amazzone → Donna.
+I pezzi fiabeschi deselezionati vengono sostituiti da pezzi classici nella posizione iniziale: Unicorno → Alfiere.
+La stella tetraedrica è la stella di David tridimensionale con 8 punte. La scacchiera è un cubo 8 × 8 × 8 piegato a stella: 512 celle con 6 facce ciascuna, ogni angolo del cubo è una punta. Ogni esercito sta in una punta. Tocca un pezzo → le sue mosse si illuminano (verde = libero, rosso = cattura). Trascina = ruota, rotella/due dita = zoom, clic destro e trascina/due dita = sposta.
+Tocca un colore: ● visibile → ◐ tenue → ○ nascosto. Spostare: clic destro/Maiusc + trascina o con due dita. Doppio clic = tutta la stella.
+Pezzi fiabeschi:
+Torre ♜: dritto attraverso le facce delle celle. Alfiere ♝: in diagonale lungo gli spigoli. Unicorno 🦄: attraverso gli angoli. Wormhole (se l'host lo attiva): chi raggiunge una delle 8 celle centrali su una diagonale spaziale può proseguire attraverso il punto centrale in qualsiasi altra diagonale spaziale. Donna ♛: tutto questo. Re ♚: un passo come la donna. Cavallo ♞: 2 + 1 di traverso. Pedone ♟: una cella più lontano dalla propria punta, cattura in diagonale in avanti; nei tre strati più esterni di una punta altrui diventa donna. Lo strumento di posizionamento offre anche i pezzi fiabeschi degli Scacchi dei 6 Regni.
+In due gli eserciti stanno ai poli, in tre e in quattro alle punte di un tetraedro, in sei in un anello intorno al centro, in otto in tutte le punte. Tutte le 8 punte sono equivalenti. In cinque e in sette si può, ma non è del tutto equilibrato (⚠️). Chi non può muovere senza finire sotto scacco salta il turno. Chi ha solo il re è sconfitto. Dalla prima cattura in poi: dopo 30 turni senza catture né mosse di pedone decide il materiale.
+Per posizionare i pezzi scegli un'area – poi le sue celle diventano cliccabili.
+🌀 Wormhole al centro
+🌍 Lobby

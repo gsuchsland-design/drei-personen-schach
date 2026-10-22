@@ -1,0 +1,70 @@
+Échecs étoile
+Tes parties en cours
+touche pour continuer à jouer ; avec « 🌍 Lobby » dans le jeu, tu peux revenir ici à tout moment.
+c'est aux autres de jouer
+une rangée de pions (8)
+deux rangées de pions (16)
+pions 4 × 4 (16)
+64 pions + 64 amiraux
+toutes les pièces féeriques
+seulement les pièces classiques
+Pièces féeriques : {0}
+fou aussi sur les diagonales spatiales
+dame sans diagonales spatiales
+roi sans diagonales spatiales
+cavalier aussi 2 + 1 + 1
+le pion prend aussi sur les diagonales spatiales
+pion : double pas seulement au premier coup
+pion : toujours jusqu'à 2 cases
+promotion seulement sur la dernière couche
+sans licorne
+avec licorne
+avec trou de ver
+⚠️ pas tout à fait équilibré
+Tu acceptes la nulle – joue maintenant ton coup.
+Refusé.
+{0} propose la nulle.
+Accepter
+Refuser
+Nulle proposée par {0}
+Nulle proposée – joue maintenant ton coup.
+Les autres sont consultés à tour de rôle
+Proposer la nulle
+Tu es éliminé ; les autres continuent
+Abandonner
+🤝 Nulle conclue – tout le monde a accepté.
+{0} : veux-tu vraiment abandonner ?
+🏳 {0} abandonne – il ne reste que des ordinateurs. {1} gagne aux points !
+🏳 {0} abandonne – {1} gagne !
+{0} a abandonné.
+🔄 Vers la revanche
+Seuls les joueurs peuvent créer une revanche.
+abandonne
+Nulle conclue
+🔄 Revanche ! Une nouvelle partie avec les mêmes places attend.
+Points
+En tête : {0}.
+Tu es allié avec {0} contre {1}.
+Tu n'as actuellement aucune alliance.
+Au trait : {0}.
+Changer de variante
+Lobby dans un nouvel onglet – cette partie reste ouverte
+Lobby
+Guide rapide
+Les adversaires ordinateur forment des alliances, trahissent et se vengent
+Licorne – seulement les diagonales spatiales
+Licorne – seulement par les coins
+Noctambule – plusieurs sauts de cavalier en ligne
+Échecs dans l'étoile tétraédrique, l'étoile de David en trois dimensions, pour 2 à 8 joueurs
+Qui atteint l'une des 8 cases centrales sur une diagonale spatiale peut continuer par le point central vers n'importe quelle autre diagonale spatiale – jusque dans chaque pointe. Valable pour la licorne, la dame et le roi.
+pas tout à fait équilibré
+Les pièces féeriques désélectionnées sont remplacées par des classiques dans la position de départ : Licorne → Fou · Noctambule → Cavalier · Duchesse → Tour · Gouverneur → Fou · Archevêque → Fou · Chancelier → Tour · Amazone → Dame.
+Les pièces féeriques désélectionnées sont remplacées par des classiques dans la position de départ : Licorne → Fou.
+L'étoile tétraédrique est l'étoile de David en trois dimensions avec 8 pointes. Le plateau est un cube de 8 × 8 × 8 plié en étoile : 512 cases à 6 faces chacune, chaque coin du cube est une pointe. Chaque armée se tient dans une pointe. Touche une pièce → ses coups s'allument (vert = libre, rouge = prise). Glisser = tourner, molette/deux doigts = zoom, clic droit + glisser/deux doigts = déplacer.
+Touche une couleur : ● visible → ◐ pâle → ○ masquée. Déplacer : clic droit/Maj + glisser ou avec deux doigts. Double-clic = toute l'étoile.
+Pièces féeriques :
+Tour ♜ : tout droit à travers les faces des cases. Fou ♝ : en diagonale par les arêtes. Licorne 🦄 : par les coins. Trou de ver (si l'hôte l'active) : qui atteint l'une des 8 cases centrales sur une diagonale spatiale peut continuer par le point central vers n'importe quelle autre diagonale spatiale. Dame ♛ : tout cela. Roi ♚ : un pas comme la dame. Cavalier ♞ : 2 + 1 de travers. Pion ♟ : une case plus loin de sa propre pointe, prend en diagonale vers l'avant ; dans les trois couches extérieures d'une pointe adverse, il devient dame. L'outil de placement propose aussi les pièces féeriques des Échecs des 6 Royaumes.
+À deux, les armées se tiennent aux pôles, à trois et à quatre aux pointes d'un tétraèdre, à six en anneau autour du centre, à huit dans toutes les pointes. Les 8 pointes sont équivalentes. À cinq et à sept, c'est possible aussi, mais pas tout à fait équilibré (⚠️). Qui ne peut pas jouer sans être en échec passe son tour. Qui n'a plus que son roi est battu. Dès la première prise : après 30 tours sans prise ni coup de pion, le matériel décide.
+Pour placer des pièces, choisis une zone – ses cases deviennent alors cliquables.
+🌀 Trou de ver au centre
+🌍 Lobby
