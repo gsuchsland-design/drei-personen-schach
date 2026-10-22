@@ -58,7 +58,7 @@ def page(fn, title, desc, body, redirect=False):
 <title>{title}</title>
 <meta name="description" content="{desc}">
 <meta name="theme-color" content="#16181d">
-<link rel="icon" href="icon2-192.png">
+<link rel="icon" href="icon3-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
@@ -67,7 +67,7 @@ def page(fn, title, desc, body, redirect=False):
 {canon}{rd}
 </head><body>
 <header class="top"><div class="in">
-<a class="logo" href="index.html#start"><img src="icon2-192.png" alt="">{SITE}</a>
+<a class="logo" href="index.html#start"><img src="icon3-192.png" alt="">{SITE}</a>
 <nav class="main">{nav}</nav>
 <a class="play" href="spiel.html">▶ Jetzt spielen</a>
 </div></header>
