@@ -9,7 +9,8 @@
 
 import { fernRoute, Fern } from './fern.js';
 import { lobbyRoute, Lobby } from './lobby.js';
-export { Fern, Lobby };
+import { spielerRoute, Spieler } from './spieler.js';
+export { Fern, Lobby, Spieler };
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -127,6 +128,7 @@ export default {
     }
     if (url.pathname.startsWith('/fern/')) return fernRoute(req, env, url);
     if (url.pathname === '/lobby' || url.pathname.startsWith('/lobby/')) return lobbyRoute(req, env, url);
+    if (url.pathname.startsWith('/spieler/')) return spielerRoute(req, env, url);
     if (url.pathname === '/ai/bericht' && req.method === 'POST') return aiReport(req, env);
     if (url.pathname === '/ai/monster' && req.method === 'POST') return aiMonster(req, env);
     if (url.pathname === '/peerjs/id') return new Response(randomId(), { headers: { 'Content-Type': 'text/plain', ...CORS } });
@@ -136,7 +138,7 @@ export default {
       catch (e) { return json({ iceServers: [], signal: true, error: String(e.message || e) }, 502); }
     }
     if (url.pathname === '/' || url.pathname === '/peerjs/') {
-      return json({ name: 'Drei-Personen-Schach-Server', ok: true, turn: !!(env.TURN_KEY_ID && env.TURN_KEY_TOKEN), fern: !!env.FERN, lobby: !!env.LOBBY });
+      return json({ name: 'Drei-Personen-Schach-Server', ok: true, turn: !!(env.TURN_KEY_ID && env.TURN_KEY_TOKEN), fern: !!env.FERN, lobby: !!env.LOBBY, spieler: !!env.SPIELER });
     }
     return json({ error: 'not found' }, 404);
   },
