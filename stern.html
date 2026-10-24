@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon3-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16181d">
-<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102405"><\/script>');})();</script>
+<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102406"><\/script>');})();</script>
 <style>
 :root { --bg:#16181d; --panel:rgba(28,30,38,.94); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
 * { box-sizing:border-box; }
@@ -219,7 +219,7 @@ const EXO='U',EXO_REPL={U:'B',W:'N',H:'R',V:'B',A:'B',C:'R',M:'Q'};
 const exoOk=t=>!EXO.includes(t)||OPT.X.includes(t);
 const exoPiece=t=>exoOk(t)?t:EXO_REPL[t];
 // kurze Beschreibung der gewählten Figuren für Einladung und Lobby
-const exoText=()=>(OPT.W==='1'?', mit Wurmloch':'')+((typeof exoUsed==='function'&&!exoUsed())?'':OPT.X==='-'?', nur klassische Figuren':OPT.X===EXO?(EXO.length>1?', mit allen Märchenfiguren':', mit '+PNAMES[EXO]):', mit '+OPT.X.split('').map(t=>PNAMES[t]).join(', '));
+const exoText=()=>(OPT.G==='1016'?', 1.016 Felder':'')+(OPT.Z==='1'?', mit Zentralfeld':'')+(OPT.W==='1'?', mit Wurmloch':'')+((typeof exoUsed==='function'&&!exoUsed())?'':OPT.X==='-'?', nur klassische Figuren':OPT.X===EXO?(EXO.length>1?', mit allen Märchenfiguren':', mit '+PNAMES[EXO]):', mit '+OPT.X.split('').map(t=>PNAMES[t]).join(', '));
 function xUI(){const box=document.getElementById('xRow');if(!box)return;
   box.innerHTML='Märchenfiguren: '+EXO.split('').map(t=>`<label title="${PNAMES[t]}${PDESC[t]?' – '+PDESC[t]:''}" style="white-space:nowrap"><input type="checkbox" data-x="${t}"${OPT.X.includes(t)?' checked':''}> ${PLAB(t)} ${PNAMES[t]}</label>`).join(' ')+'<div class="hint" style="flex-basis:100%">Abgewählte Märchenfiguren werden in der Aufstellung durch klassische ersetzt: '+EXO.split('').map(t=>PNAMES[t]+' → '+PNAMES[EXO_REPL[t]]).join(' · ')+'.</div>';
   box.style.display=(typeof exoUsed==='function'&&!exoUsed())?'none':'flex';
@@ -1107,5 +1107,5 @@ varNav('stern.html',document.getElementById('varNav'));
 slimMenu('stern');
 </script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/update.js?v=2026-10-24_05:36" data-v="2026-10-24 05:36"></script>
+<script src="lib/update.js?v=2026-10-24_05:37" data-v="2026-10-24 05:37"></script>
 </body></html>
