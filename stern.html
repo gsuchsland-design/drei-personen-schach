@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon3-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16181d">
-<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102402"><\/script>');})();</script>
+<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102404"><\/script>');})();</script>
 <style>
 :root { --bg:#16181d; --panel:rgba(28,30,38,.94); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
 * { box-sizing:border-box; }
@@ -475,13 +475,15 @@ function render(){
   markGroup.clear();
   if(HINT)markGroup.add(cellLines(HINT,'#ffd23f',1,1.08));
   if(sel){markGroup.add(cellLines(sel,'#ffdd00',1,1));markGroup.add(cellSolid(sel,'#ffdd00',0.12,0.98));
-    const gs=new THREE.SphereGeometry(0.17,14,10);
     const segs=[];
     for(const t of targets)if(t.jump){const pts=[sel].concat(t.hops||[]);segs.push(pts[pts.length-1],t.c);}
     if(segs.length){const g=new THREE.BufferGeometry().setFromPoints(segs.map(c=>P(c)));
       markGroup.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:targets[0]&&targets[0].view?'#9fc4ff':'#c8ffd0',transparent:true,opacity:0.45})));}
-    for(const t of targets){const m=new THREE.Mesh(gs,new THREE.MeshBasicMaterial({color:t.view?(t.cap?'#ff9a3a':'#7fb8ff'):(t.cap?'#ff3322':'#3ee05a'),transparent:true,opacity:inSlice(t.c)?0.95:0.55}));
-      if(t.cap)m.scale.setScalar(2.4);m.position.copy(P(t.c));m.userData.cell=t.c;m.userData.target=t;markGroup.add(m);}
+    // Ziele als leuchtende Raumfelder: innerer Leuchtkörper (anklickbar) und heller Umriss des Feldes
+    for(const t of targets){const col=t.view?(t.cap?'#ff9a3a':'#7fb8ff'):(t.cap?'#ff3322':'#3ee05a'),on=inSlice(t.c);
+      const m=cellSolid(t.c,col,on?(t.cap?0.42:0.32):0.14,t.cap?0.86:0.74);m.material.blending=THREE.AdditiveBlending;
+      m.userData.cell=t.c;m.userData.target=t;markGroup.add(m);
+      markGroup.add(cellLines(t.c,col,on?0.95:0.4,0.97));}
   }
   // letzter Zug: Start- und Zielfeld in der Farbe des Ziehenden, dazwischen eine Linie
   const lm=RPLM!==null?RPLM:GM?GM.lastMove:LASTMV;
@@ -1031,7 +1033,7 @@ function tourStart(){const ui=document.getElementById('ui');if(ui.classList.cont
   KIT.tour([
   {t:'⭐ Willkommen im Sternschach',x:'Der Sterntetraeder ist der räumliche Davidstern – von oben gesehen genau das Brett des Drei-Personen-Schachs. Das Brett ist ein 8 × 8 × 8-Würfel, zum Stern gefaltet: Jede Würfelecke wird zu einer Spitze. 512 Felder mit je 6 Flächen, und es gelten die Regeln des Raumschachs. Jedes Heer steht in einer Spitze.',run:()=>viewReset()},
   {t:'Drehen, zoomen, verschieben',x:'Ziehen dreht den Stern, Mausrad oder zwei Finger zoomen, Rechtsklick-Ziehen verschiebt. Doppelklick zeigt wieder den ganzen Stern. Mit „🎯 Meine Armee“ schaust du von außen in deine Spitze.'},
-  {t:'Figur antippen',x:'Grüne Kugeln: freie Felder. Rote Kugeln: Schlagen. Gerade Linien laufen von Feld zu Feld weiter und biegen sich mit dem Stern: Der Turm erreicht über die Kehlen die 3 Nachbarspitzen, der Läufer über die Mulden die 3 Spitzen über Eck, das Einhorn durch die Mitte die gegenüberliegende Spitze. Gegnerische Figuren zeigen ihre Züge hellblau und orange, nur zur Ansicht.'},
+  {t:'Figur antippen',x:'Grün leuchtende Felder: frei. Rot leuchtende Felder: Schlagen. Gerade Linien laufen von Feld zu Feld weiter und biegen sich mit dem Stern: Der Turm erreicht über die Kehlen die 3 Nachbarspitzen, der Läufer über die Mulden die 3 Spitzen über Eck, das Einhorn durch die Mitte die gegenüberliegende Spitze. Gegnerische Figuren zeigen ihre Züge hellblau und orange, nur zur Ansicht.'},
   {t:'Das Wurmloch (Option)',x:'Im Mittelpunkt berühren sich 8 Mittelfelder mit einer Ecke. Schaltet der Gastgeber das Wurmloch ein, kann jede Figur mit Einhorn-Zügen – Dame, Einhorn – über diese Ecke in jede andere Raumdiagonale weiter, bis ganz nach außen in jede Spitze. Achtung: Jeder König steht auf so einer Diagonale.',el:'#gWorm'},
   {t:'Die Figuren',x:'König ganz außen in der Spitze, davor Dame und zwei Türme, dann Läufer, Springer und Einhörner, davor zehn Bauern. Die Bauern ziehen immer weiter weg von der eigenen Spitze und schlagen schräg nach vorn. In einer fremden Spitze werden sie zur Dame.'},
   {t:'Übersicht behalten',x:'Unter „Farben“ blendest du einzelne Heere blass oder aus, unter „Bereich“ greifst du ein Achtel des Sterns heraus. Figuren gibt es als Symbole, 3D-Schachfiguren, Sternfiguren oder Raumschiffe – auf Wunsch vor dem Weltall.',el:'#styleSel'},
@@ -1070,5 +1072,5 @@ varNav('stern.html',document.getElementById('varNav'));
 slimMenu('stern');
 </script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/update.js?v=2026-10-24_04:27" data-v="2026-10-24 04:27"></script>
+<script src="lib/update.js?v=2026-10-24_04:32" data-v="2026-10-24 04:32"></script>
 </body></html>
