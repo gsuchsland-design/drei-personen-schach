@@ -302,7 +302,9 @@ function setSpace(on){SPACE_ON=on;try{localStorage.setItem('reiche.space',on?'1'
 const camera=new THREE.PerspectiveCamera(45,1,0.1,400);
 const C0=new THREE.Vector3(0,0,0);
 const cam={th:0.95,ph:1.0,r:30},TGT=C0.clone();   // TGT = Blickpunkt (verschiebbar)
-function applyCam(){const sp=Math.sin(cam.ph);camera.position.set(TGT.x+cam.r*sp*Math.cos(cam.th),TGT.y+cam.r*Math.cos(cam.ph),TGT.z+cam.r*sp*Math.sin(cam.th));camera.lookAt(TGT);}
+const wrapPh=p=>{const T=2*Math.PI;return((p%T)+T)%T;};
+function applyCam(){let sp0=Math.sin(cam.ph);if(Math.abs(sp0)<1e-3){cam.ph+=sp0>=0?2e-3:-2e-3;}camera.up.set(0,Math.sin(cam.ph)>=0?1:-1,0);   // über die Pole hinaus drehbar (360°)
+  const sp=Math.sin(cam.ph);camera.position.set(TGT.x+cam.r*sp*Math.cos(cam.th),TGT.y+cam.r*Math.cos(cam.ph),TGT.z+cam.r*sp*Math.sin(cam.th));camera.lookAt(TGT);}
 // Blickpunkt in der Bildebene verschieben (Pixel)
 function panBy(dx,dy){const right=new THREE.Vector3(),up=new THREE.Vector3();camera.updateMatrixWorld();right.setFromMatrixColumn(camera.matrixWorld,0);up.setFromMatrixColumn(camera.matrixWorld,1);
   const k=cam.r*0.0018;TGT.addScaledVector(right,-dx*k).addScaledVector(up,dy*k);for(const a of['x','y','z'])TGT[a]=Math.max(-16,Math.min(16,TGT[a]));draw();}
@@ -992,7 +994,7 @@ cv.addEventListener('pointermove',e=>{const tip=document.getElementById('tip');
     const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;panBy(mx-pinch.mx,my-pinch.my);pinch.mx=mx;pinch.my=my;draw();return;}
   if(down){const dx=e.clientX-down.x,dy=e.clientY-down.y;down.x=e.clientX;down.y=e.clientY;down.moved+=Math.abs(dx)+Math.abs(dy);
     if(down.moved>6&&(down.btn===2||down.shift)){panBy(dx,dy);tip.style.display='none';return;}
-    if(down.moved>6){cam.th+=dx*0.008;cam.ph=Math.max(0.05,Math.min(Math.PI-0.05,cam.ph-dy*0.008));tip.style.display='none';draw();}return;}
+    if(down.moved>6){cam.th+=dx*0.008*(Math.sin(cam.ph)>=0?1:-1);cam.ph=wrapPh(cam.ph-dy*0.008);tip.style.display='none';draw();}return;}
   if(e.pointerType==='touch')return;
   const h=hit(e);if(h){const pc=S.get(key(...h.cell));tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
     tip.textContent=cname(...h.cell)+(pc?' | '+PNAMES[pc.t]+' '+PNAME[pc.p]:'');}else tip.style.display='none';});
@@ -1013,7 +1015,7 @@ cv.addEventListener('dblclick',()=>viewReset());
 cv.addEventListener('wheel',e=>{e.preventDefault();cam.r=Math.max(2,Math.min(90,cam.r*(e.deltaY<0?0.9:1.1)));draw();},{passive:false});
 addEventListener('resize',resize);
 addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
-KIT.keyCam({rot:(dt,dp)=>{cam.th+=dt;cam.ph=Math.max(0.05,Math.min(Math.PI-0.05,cam.ph-dp));draw();},pan:(dx,dy)=>panBy(dx,dy),zoom:f=>{cam.r=Math.max(2,Math.min(90,cam.r*f));draw();},reset:()=>viewReset()});
+KIT.keyCam({rot:(dt,dp)=>{cam.th+=dt*(Math.sin(cam.ph)>=0?1:-1);cam.ph=wrapPh(cam.ph-dp);draw();},pan:(dx,dy)=>panBy(dx,dy),zoom:f=>{cam.r=Math.max(2,Math.min(90,cam.r*f));draw();},reset:()=>viewReset()});
 
 // ================= Start =================
 function gridOp(){gridGroup.traverse(o=>{if(o.material&&o.material.opacity!==undefined){if(o.userData.op0===undefined)o.userData.op0=o.material.opacity;o.material.opacity=o.userData.op0*(SPACE_ON?0.7:1);}});}
@@ -1068,5 +1070,5 @@ varNav('stern.html',document.getElementById('varNav'));
 slimMenu('stern');
 </script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/update.js?v=2026-10-24_04:11" data-v="2026-10-24 04:11"></script>
+<script src="lib/update.js?v=2026-10-24_04:24" data-v="2026-10-24 04:24"></script>
 </body></html>
