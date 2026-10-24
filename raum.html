@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon3-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16181d">
-<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102303"><\/script>');})();</script>
+<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102402"><\/script>');})();</script>
 <style>
 :root { --bg:#16181d; --panel:rgba(28,30,38,.94); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
 * { box-sizing:border-box; }
@@ -58,6 +58,7 @@ a { color:#8fb6ff; }
  <div class="body">
   <div id="varNav"></div>
   <div class="hint">Würfel aus 8 × 8 × 8 Feldern, an jeder Seite ein Heimatquader mit 8 × 8 × 4 Feldern. Figur antippen → ihre Züge leuchten (grün = frei, rot = Schlagen). Ziehen = drehen, Rad/zwei Finger = Zoom, Rechtsklick-Ziehen/zwei Finger = verschieben.</div>
+  <div class="hint">⌨️ Tastatur: Pfeiltasten drehen, Umschalt + Pfeiltasten verschieben, + und − zoomen, Pos1 zurück zur Grundansicht.</div>
 
   <h2>Partie</h2>
   <div id="gameSetup">
@@ -157,7 +158,7 @@ document.addEventListener('change',e=>{if(e.target&&(e.target.id==='gEnd'||e.tar
 <script src="lib/varnav.js?v=2026102211"></script>
 <script src="lib/monvoice.js?v=2026102206"></script>
 <script src="lib/mondata.js?v=2026102206"></script>
-<script src="lib/kit.js?v=2026102213"></script>
+<script src="lib/kit.js?v=2026102402"></script>
 <script src="lib/tourbg.js?v=2026102206"></script>
 <script src="lib/bias.js?v=2026102209"></script>
 <script src="lib/gegner.js?v=2026102210"></script>
@@ -992,6 +993,7 @@ cv.addEventListener('dblclick',()=>viewReset());
 cv.addEventListener('wheel',e=>{e.preventDefault();cam.r=Math.max(2,Math.min(90,cam.r*(e.deltaY<0?0.9:1.1)));draw();},{passive:false});
 addEventListener('resize',resize);
 addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+KIT.keyCam({rot:(dt,dp)=>{cam.th+=dt;cam.ph=Math.max(0.05,Math.min(Math.PI-0.05,cam.ph-dp));draw();},pan:(dx,dy)=>panBy(dx,dy),zoom:f=>{cam.r=Math.max(2,Math.min(90,cam.r*f));draw();},reset:()=>viewReset()});
 
 // ================= Start =================
 function gridOp(){gridGroup.traverse(o=>{if(o.material&&o.material.opacity!==undefined){if(o.userData.op0===undefined)o.userData.op0=o.material.opacity;o.material.opacity=o.userData.op0*(SPACE_ON?0.7:1);}});}
@@ -1044,5 +1046,5 @@ varNav('raum.html',document.getElementById('varNav'));
 slimMenu('raum');
 </script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/update.js?v=2026-10-24_03:28" data-v="2026-10-24 03:28"></script>
+<script src="lib/update.js?v=2026-10-24_04:11" data-v="2026-10-24 04:11"></script>
 </body></html>

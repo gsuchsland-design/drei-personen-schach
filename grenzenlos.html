@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon3-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16181d">
-<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102303"><\/script>');})();</script>
+<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102402"><\/script>');})();</script>
 <style>
 :root { --bg:#16181d; --panel:rgba(28,30,38,.95); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
 * { box-sizing:border-box; }
@@ -54,6 +54,7 @@ a { color:#8fb6ff; }
  <div class="body">
   <div id="varNav"></div>
   <div class="hint">Normales Schach auf einem unendlichen Brett. Ziehen = verschieben, Rad/zwei Finger = Zoom, Doppelklick = alle Figuren einpassen. Die Übersicht unten rechts zeigt das ganze Geschehen.</div>
+  <div class="hint">⌨️ In der 3D-Ansicht: Pfeiltasten drehen, Umschalt + Pfeiltasten verschieben, + und − zoomen, Pos1 alle Figuren einpassen.</div>
   <h2>Partie</h2>
   <div id="gameSetup">
    <div id="resumeBox"></div>
@@ -99,7 +100,7 @@ document.addEventListener('change',e=>{if(e.target&&(e.target.id==='gEnd'||e.tar
 <script src="lib/varnav.js?v=2026102211"></script>
 <script src="lib/monvoice.js?v=2026102206"></script>
 <script src="lib/mondata.js?v=2026102206"></script>
-<script src="lib/kit.js?v=2026102213"></script>
+<script src="lib/kit.js?v=2026102402"></script>
 <script src="lib/tourbg.js?v=2026102206"></script>
 <script src="lib/bias.js?v=2026102209"></script>
 <script src="lib/gegner.js?v=2026102210"></script>
@@ -522,6 +523,7 @@ function g3Init(){const T=THREE,c3=document.getElementById('cv3');
   c3.addEventListener('pointerup',up3);c3.addEventListener('pointercancel',up3);c3.addEventListener('contextmenu',e=>e.preventDefault());
   c3.addEventListener('wheel',e=>{e.preventDefault();G3.cam.r=Math.max(5,Math.min(90,G3.cam.r*(e.deltaY<0?0.9:1.1)));render();},{passive:false});
   c3.addEventListener('dblclick',()=>{fitAll();G3.cam.r=Math.max(12,Math.min(60,900/V.s));render();});
+  KIT.keyCam({active:()=>G3.on,rot:(dt,dp)=>{G3.cam.th+=dt;G3.cam.ph=Math.max(0.15,Math.min(1.45,G3.cam.ph-dp));render();},pan:(dx,dy)=>{g3Pan(dx,dy);render();},zoom:f=>{G3.cam.r=Math.max(5,Math.min(90,G3.cam.r*f));render();},reset:()=>{fitAll();G3.cam.r=Math.max(12,Math.min(60,900/V.s));render();}});
   addEventListener('resize',g3Resize);}
 function g3Resize(){if(!G3.ready)return;G3.R.setSize(innerWidth,innerHeight,false);G3.camera.aspect=innerWidth/innerHeight;G3.camera.updateProjectionMatrix();render();}
 const W3=(x,y,h)=>new THREE.Vector3(x,h||0,-y);   // Brett (x,y) → Welt (x,h,−y)
@@ -802,5 +804,5 @@ varNav('grenzenlos.html',document.getElementById('varNav'));
 slimMenu('grenz');
 </script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/update.js?v=2026-10-24_03:28" data-v="2026-10-24 03:28"></script>
+<script src="lib/update.js?v=2026-10-24_04:11" data-v="2026-10-24 04:11"></script>
 </body></html>
