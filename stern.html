@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon3-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16181d">
-<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102404"><\/script>');})();</script>
+<script>(function(){var l='';try{l=localStorage.getItem('dreiSchach.lang')||'';}catch(e){}if(!l)l=(navigator.language||'de').slice(0,2).toLowerCase();if(['en','fr','es','it','pt','nl','pl','tr','ru','uk','zh','ja','ko','th','ar','is','da'].indexOf(l)>=0)document.write('<script src="lib/lang/v-'+l+'.js?v=2026102405"><\/script>');})();</script>
 <style>
 :root { --bg:#16181d; --panel:rgba(28,30,38,.94); --line:#353a48; --text:#e6e6e6; --muted:#9aa1ad; }
 * { box-sizing:border-box; }
@@ -66,6 +66,9 @@ a { color:#8fb6ff; }
    <div class="row">Spieler: <select id="gN" onchange="gSeats()"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 ⚠️</option><option value="6">6</option><option value="7">7 ⚠️</option><option value="8">8</option></select></div>
    <div id="gSeatRows"></div>
    <div class="row" id="xRow" style="flex-wrap:wrap"></div>
+   <div class="row">Brett: <select id="gBrett" onchange="try{brettChange()}catch(e){}"><option value="512">512 Felder – gefalteter Würfel</option><option value="1016">1.016 Felder – Rhomboeder mit Zwischenräumen</option></select></div>
+   <div class="row"><label title="Ein kleines eigenes Feld genau in der Mitte, das an alle Mittelfelder grenzt. Ohne Zentralfeld ist die Mitte ein Punkt wie im Drei-Personen-Schach: Linien, die genau hindurchlaufen, gehen geradeaus weiter."><input type="checkbox" id="gZent" onchange="try{brettChange()}catch(e){}"> 🟡 Zentralfeld in der Mitte</label></div>
+   <div class="hint" id="brettHint"></div>
    <div class="row"><label title="Wer auf einer Raumdiagonale eines der 8 Mittelfelder erreicht, darf durch den Mittelpunkt in jede andere Raumdiagonale weiterziehen – bis in jede Spitze. Gilt für Einhorn, Dame und König."><input type="checkbox" id="gWorm" onchange="OPT.W=this.checked?'1':'0';wUI();if(!GM&&!moves.length)setup(lastN);else render();"> 🌀 Wurmloch in der Mitte</label></div>
    <div class="row">Spielende: <select id="gEnd"><option value="first">erstes Matt entscheidet – wer Schach gibt, gewinnt</option><option value="last">wer matt ist, scheidet aus – bis einer übrig ist</option></select></div>
    <div class="row" id="gPlRow" style="display:none"><label title="Für die Bestenliste: Wer später ausscheidet, steht weiter vorn. Sonst gibt es einen Sieger, alle anderen haben gleich verloren."><input type="checkbox" id="gPlaetze"> 🏆 Plätze nach Ausscheiden (Bestenliste)</label></div>
@@ -154,7 +157,11 @@ document.addEventListener('change',e=>{if(e.target&&(e.target.id==='gEnd'||e.tar
 <script src="lib/bias.js?v=2026102209"></script>
 <script src="lib/gegner.js?v=2026102210"></script>
 <script src="lib/selbst.js?v=2026102209"></script>
-<script src="lib/sternbrett.js?v=2026102401"></script>
+<!-- Brettwahl: 512 Felder (gefalteter Würfel) oder 1016 Felder (Variante A), jeweils wahlweise mit Zentralfeld -->
+<script>(function(){var q=new URLSearchParams(location.search),b=q.get('brett');try{if(!b)b=localStorage.getItem('stern.brett');}catch(e){}if(q.get('try'))b='512';
+  if(['512','512z','1016','1016z'].indexOf(b)<0)b='512';window.SB_BRETT=b;
+  if(b.indexOf('1016')===0)document.write('<script src="lib/sternbrett'+b+'.js?v=2026102405"><\/script>');})();</script>
+<script src="lib/sternbrett.js?v=2026102405"></script>
 <script>
 'use strict';
 // ================= Spielfeld =================
@@ -194,14 +201,16 @@ function cornerOf(c){const x=CELLS[c[0]];return x&&x.d<=3?SB.TIPS[x.tip]:null;}
 function region(id){const k=cornerOf([id]);if(!k)return null;for(const p in CFG)if(CFG[p].join()===k)return p;return null;}
 // Bereiche: 8 Achtel (S1–S8), je von der Spitze bis zur Mitte; Feldname = Achtel · Abstand von der Spitze je Achse
 function zoneOf(id){return't'+CELLS[id].tip;}
-function cellLbl(c){const x=CELLS[c[0]];if(!x)return'?';return'S'+(x.tip+1)+'·'+x.loc.map(v=>v+1).join('');}
-function cname(id){const r=region(id),k=cornerOf([id]);return cellLbl([id])+(r?` (Spitze ${PNAME[r]})`:k?' (freie Spitze)':SB.MID.includes(id)?' (Mitte)':'');}
+function cellLbl(c){const x=CELLS[c[0]];if(!x)return'?';if(x.center)return'Mitte';
+  if(x.tip<0){if(!x.lbl){const same=CELLS.filter(y=>y.tip<0&&y.gap===x.gap&&!y.center);x.lbl='Z'+(x.gap+1)+'·'+(same.indexOf(x)+1);}return x.lbl;}
+  return'S'+(x.tip+1)+'·'+x.loc.map(v=>v+1).join('');}
+function cname(id){const r=region(id),k=cornerOf([id]);return cellLbl([id])+(r?` (Spitze ${PNAME[r]})`:k?' (freie Spitze)':CELLS[id].center?' (Zentralfeld)':SB.MID.includes(id)?' (Mitte)':CELLS[id].tip<0?' (Zwischenraum)':'');}
 
 // ================= Zustand =================
 let S=new Map();          // Feldnummer → {t,p,m}  m = schon gezogen
 // Zugregeln wie im Schach der 6 Reiche (feste Einstellung)
-let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'s',X:'U',W:'0'};let lastN=2;
-const OK=['B','Q','K','N','P','U','S','F','X','W'];
+let OPT={B:'f',Q:'1',K:'26',N:'1',P:'4',U:'in',S:'home',F:'s',X:'U',W:'0',G:SB.BRETT.replace('z',''),Z:/z$/.test(SB.BRETT)?'1':'0'};let lastN=2;
+const OK=['B','Q','K','N','P','U','S','F','X','W','G','Z'];
 // Wurmloch (W='1'): Option des Gastgebers
 function wUI(){SB.setWorm(OPT.W==='1');const c=document.getElementById('gWorm');if(c)c.checked=OPT.W==='1';}
 // Märchenfiguren: Der Gastgeber wählt, welche dabei sind (X = erlaubte Buchstaben, '-' = keine).
@@ -241,9 +250,9 @@ function fill(n){S=new Map();if(CORN[n])CFG=CORN[n];
 
 // ================= Zugregeln =================
 // Alle Strahlen sind in lib/sternbrett.js vorberechnet.
-function slides(rays,p,max){const out=[];
+function slides(rays,p,max){const out=[],seen=new Set();   // Strahlen können sich verzweigen (Kreuzungen) – jedes Ziel nur einmal
   for(const r of rays)for(let i=0;i<Math.min(r.length,max||99);i++){const x=r[i],o=S.get(key(x)),hops=r.slice(0,i).map(v=>[v]);
-    if(o){if(o.p!==p)out.push({c:[x],cap:true,hops});break;}out.push({c:[x],cap:false,hops});}
+    if(o){if(o.p!==p&&!seen.has(x)){seen.add(x);out.push({c:[x],cap:true,hops});}break;}if(!seen.has(x)){seen.add(x);out.push({c:[x],cap:false,hops});}}
   return out;}
 function knights(id,p){const out=[];for(const x of SB.KN[id]){const o=S.get(key(x));if(o&&o.p===p)continue;out.push({c:[x],cap:!!o,hops:[],jump:1});}return out;}
 function riders(id,p){const out=[];
@@ -322,8 +331,8 @@ function visUI(){const box=document.getElementById('visRow');if(!box)return;box.
 function resize(){R.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();draw();}
 // Kanten aller Felder einer Auswahl als Linien (doppelte Kanten nur einmal)
 function cellEdges(ids,col,op){const seen=new Set(),L=[];
-  for(const id of ids){const v=CELLS[id].v;for(let q=0;q<8;q++)for(const b of[1,2,4]){if(q&b)continue;const a=v[q],z=v[q|b];if(a===z)continue;const k=a<z?a+'_'+z:z+'_'+a;if(seen.has(k))continue;seen.add(k);
-    const A=VPW[a],Z=VPW[z];L.push(A.x,A.y,A.z,Z.x,Z.y,Z.z);}}
+  for(const id of ids)for(const f of CELLS[id].F)for(let t=0;t<f.length;t++){const a=f[t],z=f[(t+1)%f.length];if(a===z)continue;const k=a<z?a+'_'+z:z+'_'+a;if(seen.has(k))continue;seen.add(k);
+    const A=VPW[a],Z=VPW[z];L.push(A.x,A.y,A.z,Z.x,Z.y,Z.z);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L,3));
   return new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false}));
 }
@@ -418,15 +427,20 @@ for(const sx of[-1,1])for(const sy of[-1,1])for(const sz of[-1,1]){const sg=[sx,
   // Spitze (Heimat) als Gitter
   const ti=SB.TIPS.indexOf(k);
   gridGroup.add(cellEdges(CELLS.filter(c=>c.tip===ti).map(c=>c.id),own?PCOL[own]:'#8090b0',own?0.32:0.14));}
+// Zwischenräume (nur Brett mit 1016 Feldern) und Zentralfeld
+const rest=CELLS.filter(c=>c.tip<0&&!c.center).map(c=>c.id);if(rest.length)gridGroup.add(cellEdges(rest,'#8a96b4',0.16));
+const cz=CELLS.find(c=>c.center);if(cz){gridGroup.add(cellEdges([cz.id],'#ffd23f',0.9));gridGroup.add(cellSolid([cz.id],'#ffd23f',0.18,1));}
 if(typeof SPACE_ON!=='undefined'&&SPACE_ON&&typeof gridOp==='function')gridOp();}
 buildGrid();
 
 // Feld als Umriss (Kanten) oder Körper, um die Mitte des Feldes skaliert
-function cellGeo(id,k){const c=CP[id],v=CELLS[id].v.map(g=>VPW[g].clone().sub(c).multiplyScalar(k));return v;}
-function cellLines(c,col,op,k){const v=cellGeo(c[0],k||1),L=[];for(let q=0;q<8;q++)for(const b of[1,2,4]){if(q&b)continue;L.push(v[q].x,v[q].y,v[q].z,v[q|b].x,v[q|b].y,v[q|b].z);}
+function cellGeo(id,k){const c=CP[id],m=new Map();for(const f of CELLS[id].F)for(const g of f)if(!m.has(g))m.set(g,VPW[g].clone().sub(c).multiplyScalar(k));return m;}
+function cellLines(c,col,op,k){const v=cellGeo(c[0],k||1),L=[],seen=new Set();
+  for(const f of CELLS[c[0]].F)for(let t=0;t<f.length;t++){const a=f[t],z=f[(t+1)%f.length],kk=a<z?a+'_'+z:z+'_'+a;if(a===z||seen.has(kk))continue;seen.add(kk);const A=v.get(a),Z=v.get(z);L.push(A.x,A.y,A.z,Z.x,Z.y,Z.z);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L,3));
   const m=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:col,transparent:op<1,opacity:op}));m.position.copy(CP[c[0]]);return m;}
-function cellSolid(c,col,op,k){const v=cellGeo(c[0],k||1),L=[];for(const f of SB.FV){const o=[f[0],f[1],f[3],f[2]];for(const t of[[0,1,2],[0,2,3]])for(const i of t)L.push(v[o[i]].x,v[o[i]].y,v[o[i]].z);}
+function cellSolid(c,col,op,k){const v=cellGeo(c[0],k||1),L=[];
+  for(const f of CELLS[c[0]].F)for(let t=1;t+1<f.length;t++)for(const i of[f[0],f[t],f[t+1]]){const q=v.get(i);L.push(q.x,q.y,q.z);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L,3));
   const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false,side:THREE.DoubleSide}));m.position.copy(CP[c[0]]);return m;}
 // Figuren als Plaketten (immer zur Kamera gedreht)
@@ -856,7 +870,23 @@ async function api(path,body){const b=await srvBase();
   const r=await fetch(b+path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});
   const j=await r.json().catch(()=>({}));j._status=r.status;return j;}
 const optStr=()=>OK.map(k=>OPT[k]).join('.');
-function setOpts(str){const ov=String(str||'').split('.');OPT.W='0';OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});xUI();wUI();}
+function setOpts(str,pending){const ov=String(str||'').split('.');OPT.W='0';OPT.G='512';OPT.Z='0';OK.forEach((k,i)=>{if(ov[i]){OPT[k]=ov[i];const e=document.getElementById('o'+k);if(e)e.value=ov[i];}});xUI();wUI();brettCheck(pending);brettUI();}
+// Brett der Partie ≠ geladenes Brett: Seite mit dem richtigen Brett neu laden (dieselbe Adresse, Partie wird dann wieder geöffnet)
+function brettWanted(){return(OPT.G==='1016'?'1016':'512')+(OPT.Z==='1'?'z':'');}
+function brettReload(b,pending){try{localStorage.setItem('stern.brett',b);if(pending)sessionStorage.setItem('stern.pending',JSON.stringify(pending));}catch(e){}
+  const q=new URLSearchParams(location.search);q.delete('brett');const qs=q.toString();location.replace(location.pathname+(qs?'?'+qs:'')+location.hash);throw new Error('brett');}
+function brettCheck(pending){const b=brettWanted();if(b!==SB.BRETT)brettReload(b,pending);}
+const BRETT_TXT={'512':'Gefalteter 8 × 8 × 8-Würfel: alle 512 Felder gleich groß, überall dieselben Raumschach-Regeln.',
+  '1016':'Die 8 Spitzen sind Rhomboeder mit je 4 × 4 × 4 Feldern, dazwischen liegen 6 Zwischenräume mit je 84 Feldern. Gerade Linien laufen durch die Zwischenräume von Spitze zu Spitze. Die 4 Achsenfelder jedes Zwischenraums sind Kreuzungen: Dort darf der Turm abbiegen, Läufer, Einhorn und Springer kommen nicht hindurch. Der Nachtreiter springt hier nur einmal.',
+  z1:'Zentralfeld: ein kleines eigenes Feld genau in der Mitte, das an alle Mittelfelder grenzt. Das Einhorn zieht hindurch oder bleibt darauf stehen.',
+  z1t:'Der Turm erreicht es über die Achsenfelder an der Mitte.',
+  z0:'Ohne Zentralfeld ist die Mitte ein Punkt wie im Drei-Personen-Schach: Das Einhorn zieht über ihn hinweg geradeaus in die gegenüberliegende Spitze.'};
+function brettUI(){const s=document.getElementById('gBrett'),z=document.getElementById('gZent'),h=document.getElementById('brettHint');if(s)s.value=OPT.G;if(z)z.checked=OPT.Z==='1';
+  if(h){const t=BRETT_TXT[OPT.G==='1016'?'1016':'512']+' '+(OPT.Z==='1'?BRETT_TXT.z1+(OPT.G==='1016'?' '+BRETT_TXT.z1t:''):BRETT_TXT.z0);
+    h.textContent='';for(const x of t.split(/(?<=[.!?])\s+/)){const sp=document.createElement('span');sp.textContent=x+' ';h.appendChild(sp);}}}   // je Satz ein Textknoten (Übersetzung Satz für Satz)
+function brettChange(){const s=document.getElementById('gBrett'),z=document.getElementById('gZent');
+  if(GM&&!GM.over){alert('Das Brett lässt sich erst nach der Partie wechseln.');brettUI();return;}
+  OPT.G=s.value;OPT.Z=z.checked?'1':'0';brettReload(brettWanted());}
 function onLink(){return location.origin+location.pathname+'?g='+ON.code+fernQS()+(QS.get('peerhost')?'&peerhost='+QS.get('peerhost')+'&peerport='+(QS.get('peerport')||9000):'');}
 function onSnap(){const g=Object.assign({},GM);delete g.online;return JSON.stringify({pos:encode(),gm:g,moves});}
 async function onCreate(order,ctrl){
@@ -963,8 +993,9 @@ function monDraw(){
     const act=KIT.monPaint(M.cv.getContext('2d'),p);M.fr.material.color.set(act?'#ffffff':PCOL[p]);M.tex.needsUpdate=true;}
   draw();}
 let RPLM=null,HINT=null,VSAVE=null;
-function snapGame(){const g=Object.assign({},GM);delete g.online;return{pos:encode(),gm:JSON.parse(JSON.stringify(g)),moves:moves.slice()};}
+function snapGame(){const g=Object.assign({},GM);delete g.online;return{pos:encode(),gm:JSON.parse(JSON.stringify(g)),moves:moves.slice(),opts:optStr()};}
 function loadGame(d){if(GM&&GM.online){alert('Erst die Online-Partie verlassen.');return;}clearTimeout(aiT);
+  if(d.opts){try{setOpts(d.opts,d);}catch(e){return;}}   // falsches Brett: Seite lädt mit dem richtigen neu (siehe brettCheck)
   decode(d.pos);GM=Object.assign(d.gm,{online:false,paused:false});GM.rec=GM.rec||[];GM.turnAt=Date.now();moves=d.moves||[];hist=[];lastN=GM.order.length;
   document.getElementById('gN').value=String(GM.order.length);enterGame();}
 function resumeUI(){const d=KIT.autoData(),b=document.getElementById('resumeBox');if(!b)return;
@@ -1026,6 +1057,10 @@ KIT.init({game:'stern',title:'Sternschach',descr:'Schach im Sterntetraeder, dem 
   onColors:()=>{for(const k in TEX)delete TEX[k];buildGrid();buildPalette();render();},
   snap:snapGame,load:loadGame,moveList:()=>moves,replayShow,resume:()=>{if(GM&&!GM.over)turnStart();},poll:()=>onPoll(),varEnter,varExit,varUndo:()=>undo(),varAI,showMove});
 resumeUI();
+brettUI();
+// Partie, die auf einem anderen Brett gespeichert war: nach dem Neuladen mit dem richtigen Brett öffnen
+{let pend=null;try{pend=JSON.parse(sessionStorage.getItem('stern.pending')||'null');sessionStorage.removeItem('stern.pending');}catch(e){}
+  if(pend)setTimeout(()=>{try{loadGame(pend);}catch(e){}},0);}
 document.getElementById('tcBox').innerHTML=KIT.tcHTML();document.getElementById('kitBox').innerHTML=KIT.tbHTML()+KIT.monUI();
 for(const k in TEX)delete TEX[k];buildGrid();
 // ---------- Einführung ----------
@@ -1072,5 +1107,5 @@ varNav('stern.html',document.getElementById('varNav'));
 slimMenu('stern');
 </script>
 <script src="lib/vorlesen.js?v=2026102208"></script>
-<script src="lib/update.js?v=2026-10-24_04:32" data-v="2026-10-24 04:32"></script>
+<script src="lib/update.js?v=2026-10-24_05:36" data-v="2026-10-24 05:36"></script>
 </body></html>
